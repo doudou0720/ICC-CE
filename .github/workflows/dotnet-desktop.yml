@@ -1,4 +1,4 @@
-name: .NET Build
+name: .NET Build & PR Check
 
 on:
   push:
@@ -6,16 +6,16 @@ on:
   pull_request:
     branches: [ main ]
     paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "Images/**"
-      - "Manual.md"
-      - "README.md"
-      - "UpdateLog.md"
-      - "CODE_OF_CONDUCT.md"
-      - "LICENSE"
-      - "privacy.txt"
-      - "icc.png"
+      - '**/*.md'
+      - 'docs/**'
+      - 'Images/**'
+      - 'Manual.md'
+      - 'README.md'
+      - 'UpdateLog.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'LICENSE'
+      - 'privacy.txt'
+      - 'icc.png'
   workflow_dispatch:
 
 concurrency:
@@ -37,187 +37,174 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-
       - name: Set build information
         id: build-info
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: |
-          echo "build_time=$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" >> $env:GITHUB_OUTPUT
-          echo "commit_hash=$("${{ github.sha }}".SubString(0, 7))" >> $env:GITHUB_OUTPUT
-          echo "build_number=${{ github.run_number }}" >> $env:GITHUB_OUTPUT
+          $buildTime = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+          $commitHash = $env:GITHUB_SHA.SubString(0, 7)
           
-      - name: Display build info
-        run: |
-          echo "Build time: ${{ steps.build-info.outputs.build_time }}"
-          echo "Commit hash: ${{ steps.build-info.outputs.commit_hash }}"
-          echo "Build number: ${{ steps.build-info.outputs.build_number }}"
+          echo "build_time=$buildTime" >> $env:GITHUB_OUTPUT
+          echo "commit_hash=$commitHash" >> $env:GITHUB_OUTPUT
+          echo "build_number=$env:GITHUB_RUN_NUMBER" >> $env:GITHUB_OUTPUT
+          
+          echo "构建信息已设置:"
+          echo "  时间: $buildTime"
+          echo "  提交: $commitHash"
+          echo "  编号: $env:GITHUB_RUN_NUMBER"
 
-  restore:
-    name: Restore Dependencies
+  pr-preview-comment:
+    name: PR Preview (Building)
     needs: prepare
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2.0.1
-
-      - name: Cache NuGet tools
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~\AppData\Local\NuGet\Cache
-            ~\AppData\Local\Microsoft\MSBuild
-          key: ${{ runner.os }}-nuget-tools-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-tools-
-
-      - name: Restore NuGet Packages
-        run: nuget restore "Ink Canvas.sln"
-
-      - name: Cache restored packages
-        uses: actions/cache@v4
-        with:
-          path: '~\AppData\Local\NuGet\Cache'
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-
-  build:
-    name: Build Application
-    needs: [prepare, restore]
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
-
-      - name: Restore NuGet tools from cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~\AppData\Local\NuGet\Cache
-            ~\AppData\Local\Microsoft\MSBuild
-          key: ${{ runner.os }}-nuget-tools-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-tools-
-
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Restore NuGet packages from cache
-        uses: actions/cache@v4
-        with:
-          path: '~\AppData\Local\NuGet\Cache'
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-
-      - name: Build the Solution
-        run: |
-          msbuild -t:restore /p:GitFlow="Github Action"
-          msbuild /p:platform="AnyCPU" /p:configuration="Debug" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4.5.0
-        with:
-          name: InkCanvasForClass-Build
-          path: "Ink Canvas/bin/Debug/net472"
-
-  package:
-    name: Package Application
-    needs: build
-    runs-on: windows-latest
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: InkCanvasForClass-Build
-          path: build-output
-
-      - name: Create release archive
-        run: |
-          $version = "debug-${{ github.sha }}-${{ needs.prepare.outputs.build_number }}"
-          $archiveName = "InkCanvasForClass.CE.$version.zip"
-          Compress-Archive -Path "build-output\*" -DestinationPath $archiveName -Force
-          echo "archive_name=$archiveName" >> $env:GITHUB_OUTPUT
-
-      - name: Upload packaged artifact
-        uses: actions/upload-artifact@v4.5.0
-        with:
-          name: InkCanvasForClass-Package
-          path: "*.zip"
-
-      - name: Generate build summary
-        run: |
-          echo "## Build Summary" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Property | Value |" >> $env:GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Build time | ${{ needs.prepare.outputs.build_time }} |" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Commit hash | ${{ needs.prepare.outputs.commit_hash }} |" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Branch | ${{ github.ref_name }} |" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Build number | ${{ needs.prepare.outputs.build_number }} |" >> $env:GITHUB_STEP_SUMMARY
-          echo "| Archive | ${{ github.workspace }}/*.zip |" >> $env:GITHUB_STEP_SUMMARY
-          
-          echo "### Artifacts" >> $env:GITHUB_STEP_SUMMARY
-          echo "Created package: ${{ github.workspace }}/*.zip" >> $env:GITHUB_STEP_SUMMARY
-          
-  comment-pr:
-    name: Comment on PR
-    needs: [prepare, build, package]
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
-      - name: Find Existing Comment
+      - name: Prepare Preview Comment
+        id: prepare-preview
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_SHA: ${{ github.sha }}
+          BUILD_TIME: ${{ needs.prepare.outputs.build_time }}
+        run: |
+          # 构建预览评论内容，使用文件确保换行
+          {
+            echo "🏗️ **正在构建中...**"
+            echo ""
+            echo "| 状态 | 提交 | 开始时间 | 操作 |"
+            echo "|------|------|---------|------|"
+            echo "| 🟡 Building | $GH_SHA | $BUILD_TIME | [查看运行详情](https://github.com/$GH_REPO/actions/runs/$GH_RUN_ID) |"
+            echo ""
+            echo "<sub>🤖 构建完成后，状态将自动更新</sub>"
+          } > preview_comment.txt
+          
+          # 输出多行内容
+          preview_content=$(cat preview_comment.txt)
+          delimiter="PREVIEW_$(date +%s)"
+          echo "preview_body<<$delimiter" >> $GITHUB_OUTPUT
+          echo "$preview_content" >> $GITHUB_OUTPUT
+          echo "$delimiter" >> $GITHUB_OUTPUT
+          
+          echo "预览评论内容已准备"
+      - name: Post Preview Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.prepare-preview.outputs.preview_body }}
+          edit-mode: replace
+
+  build-and-package:
+    name: Build & Package
+    needs: prepare
+    runs-on: windows-latest
+    outputs:
+      archive_name: ${{ steps.create-archive.outputs.archive_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2.0.1
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\AppData\Local\NuGet\Cache
+            ~\AppData\Local\Microsoft\MSBuild
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+      - name: Restore and Build
+        run: |
+          nuget restore "Ink Canvas.sln"
+          msbuild /p:platform="AnyCPU" /p:configuration="Debug" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj"
+      - name: Create Package
+        id: create-archive
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          PREPARE_BUILD_NUMBER: ${{ needs.prepare.outputs.build_number }}
+        run: |
+          $version = "debug-$env:GITHUB_SHA-$env:PREPARE_BUILD_NUMBER"
+          $archiveName = "InkCanvasForClass.CE.$version.zip"
+          Compress-Archive -Path "Ink Canvas\bin\Debug\net472\*" -DestinationPath $archiveName -Force
+          echo "archive_name=$archiveName" >> $env:GITHUB_OUTPUT
+          echo "已创建归档包: $archiveName"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4.5.0
+        with:
+          name: app-package
+          path: "*.zip"
+
+  pr-check-comment:
+    name: PR Check & Comment (Final)
+    needs: [build-and-package, pr-preview-comment]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find Existing Preview Comment
         uses: peter-evans/find-comment@v3
-        id: find-comment
+        id: find-existing-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: '# 构建历史记录'
-
-      - name: Format status
-        id: status
+          body-includes: '正在构建中'
+          
+      - name: Prepare Final Comment Content
+        id: prepare-final-comment
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_RUN_ID: ${{ github.run_id }}
+          GH_SHA: ${{ github.sha }}
+          BUILD_TIME: ${{ needs.prepare.outputs.build_time }}
+          BUILD_RESULT: ${{ needs.build-and-package.result }}
         run: |
-          if [ "${{ needs.package.result }}" = "success" ]; then
-            echo "icon=✅" >> $GITHUB_OUTPUT
-            echo "text=成功" >> $GITHUB_OUTPUT
+          # 确定构建状态
+          if [ "$BUILD_RESULT" = "success" ]; then
+            STATUS_ICON="✅"
+            STATUS_TEXT="成功"
           else
-            echo "icon=❌" >> $GITHUB_OUTPUT
-            echo "text=失败" >> $GITHUB_OUTPUT
+            STATUS_ICON="❌"
+            STATUS_TEXT="失败"
           fi
           
-      - name: Build Previous Entries
-        id: prev
-        if: steps.find-comment.outputs.comment-id != ''
-        run: |
-          comment_url="https://api.github.com/repos/${{ github.repository }}/issues/comments/${{ steps.find-comment.outputs.comment-id }}"
-          prev_entries=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "$comment_url" | \
-            jq -r '.body' | \
-            grep '^| ' | \
-            grep -v '^| 状态 | 提交 | 构建产物 |' | \
-            head -n 15)
-          echo "entries<<EOF" >> $GITHUB_OUTPUT
-          echo "$prev_entries" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # 处理时间变量，防止空白
+          FINAL_BUILD_TIME="${BUILD_TIME}"
+          if [ -z "$FINAL_BUILD_TIME" ]; then
+            FINAL_BUILD_TIME="未知时间"
+            echo "提示：BUILD_TIME 为空，使用默认值"
+          fi
           
-          # Count the number of previous builds
-          build_count=$(echo "$prev_entries" | grep -c '^| ')
-          echo "build_count=$build_count" >> $GITHUB_OUTPUT
+          # 构建最终评论内容，使用文件确保正确换行
+          {
+            echo "# 构建完成 $STATUS_ICON"
+            echo ""
+            echo "| 状态 | 提交 | 完成时间 | 操作 |"
+            echo "|------|------|----------|------|"
+            echo "| $STATUS_ICON $STATUS_TEXT | $GH_SHA | $FINAL_BUILD_TIME | [查看运行详情](https://github.com/$GH_REPO/actions/runs/$GH_RUN_ID) |"
+            echo ""
+            echo "<sub>🤖 由 GitHub Actions 自动发布</sub>"
+          } > final_comment.txt
           
-      - name: Create or update comment
+          # 输出多行内容
+          final_content=$(cat final_comment.txt)
+          delimiter="FINAL_$(date +%s)"
+          echo "final_body<<$delimiter" >> $GITHUB_OUTPUT
+          echo "$final_content" >> $GITHUB_OUTPUT
+          echo "$delimiter" >> $GITHUB_OUTPUT
+          
+          echo "最终评论内容已生成"
+          echo "构建状态: $STATUS_ICON $STATUS_TEXT"
+          echo "构建时间: $FINAL_BUILD_TIME"
+          
+      - name: Update to Final Comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          comment-id: ${{ steps.find-existing-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            # 构建历史记录 ${{ steps.status.outputs.icon }}
-            
-            | 状态 | 提交 | 构建产物 | 构建时间 | 操作 |
-            |------|------|---------|---------|------|
-            | ${{ steps.status.outputs.icon }} ${{ steps.status.outputs.text }} | ${{ github.sha }}<br>（当前提交） | ${{ needs.package.result == 'success' && '[📦 下载](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})' || '无' }} | ${{ needs.prepare.outputs.build_time }} | [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
-            ${{ steps.prev.outputs.entries }}
-            
-            ${{ steps.prev.outputs.build_count > 5 && '_💡 提示: 如果您仍在进行开发更改，可以考虑将此 PR 转换为 Draft_' || ''}}
-            
-            ---
-            <sub>🤖 这是由 GitHub Actions 自动发布的评论。如有问题请联系项目维护者。</sub>
+          body: ${{ steps.prepare-final-comment.outputs.final_body }}
           edit-mode: replace
