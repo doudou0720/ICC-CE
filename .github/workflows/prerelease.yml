@@ -33,7 +33,7 @@ jobs:
       tag_name: ${{ steps.get_tag.outputs.tag_name }}
       version: ${{ steps.get_tag.outputs.version }}
       is_prerelease: ${{ steps.release_type.outputs.is_prerelease }}
-      changelog: ${{ steps.changelog.outputs.changelog }}
+      changelog: ${{ steps.read_changelog.outputs.changelog }}
     
     steps:
       - name: Checkout code
@@ -139,179 +139,23 @@ jobs:
             echo "is_prerelease=${{ github.event.inputs.prerelease }}" >> $env:GITHUB_OUTPUT
           }
 
-      # ========== 生成变更日志 ==========
-      - name: Generate Changelog
-        id: changelog
+      # ========== 使用 git-cliff 生成变更日志 ==========
+      - name: Generate changelog with git-cliff
+        id: git_cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml  # 使用项目根目录的 cliff.toml 配置
+          args: --latest --tag ${{ steps.get_tag.outputs.tag_name }} --output CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read changelog content
+        id: read_changelog
         run: |
-          $version = "${{ steps.get_tag.outputs.version }}"
-          
-          # 获取变更范围
-          if ("${{ github.event_name }}" -eq "push") {
-            $currentTag = "${{ steps.get_tag.outputs.tag_name }}"
-            # 获取前一个tag（使用正确的git命令）
-            # 获取所有标签并按时间排序，找到当前标签的前一个
-            $allTags = git tag --sort=-creatordate
-            $previousTag = $null
-            $foundCurrent = $false
-            
-            foreach ($tag in $allTags) {
-              if ($foundCurrent) {
-                $previousTag = $tag
-                break
-              }
-              if ($tag -eq $currentTag) {
-                $foundCurrent = $true
-              }
-            }
-            
-            if ($previousTag) {
-              echo "Comparing $previousTag..$currentTag"
-              $commits = git log --pretty=format:"%h|%s|%an|%ad" --date=short "$previousTag..$currentTag"
-            } else {
-              # 如果没有前一个tag，获取所有提交直到当前标签
-              echo "No previous tag found, getting all commits up to $currentTag"
-              $commits = git log --pretty=format:"%h|%s|%an|%ad" --date=short "$currentTag"
-            }
-          } else {
-            # workflow_dispatch: 从最新tag到HEAD
-            $latestTag = git describe --tags --abbrev=0 2>$null
-            if ($latestTag) {
-              echo "Comparing $latestTag..HEAD"
-              $commits = git log --pretty=format:"%h|%s|%an|%ad" --date=short "$latestTag..HEAD"
-            } else {
-              echo "No tag found, getting all commits"
-              $commits = git log --pretty=format:"%h|%s|%an|%ad" --date=short
-            }
-          }
-          
-          # 初始化分类数组
-          $fixes = @()
-          $improvements = @()
-          $additions = @()
-          $deletions = @()
-          $versionChanges = @()
-          $others = @()
-          
-          # 解析每个commit
-          foreach ($commit in $commits) {
-            if ($commit -match "^([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)$") {
-              $hash = $matches[1]
-              $message = $matches[2]
-              $author = $matches[3]
-              $date = $matches[4]
-              
-              $commitInfo = @{
-                Hash = $hash
-                Message = $message
-                Author = $author
-                Date = $date
-              }
-              
-              # 根据commit消息分类
-              if ($message -match "^(fix|修复)") {
-                $fixes += $commitInfo
-              } elseif ($message -match "^(improve|改进|优化)") {
-                $improvements += $commitInfo
-              } elseif ($message -match "^(add|新增|添加)") {
-                $additions += $commitInfo
-              } elseif ($message -match "^(delete|删除|移除)") {
-                $deletions += $commitInfo
-              } elseif ($message -match "(版本|version|更新版本号)") {
-                $versionChanges += $commitInfo
-              } else {
-                $others += $commitInfo
-              }
-            }
-          }
-          
-          # 生成changelog内容 - 大标题不折叠，只折叠详细内容
-          $changelog = "# ICC CE $version 更新日志`n`n"
-          
-          # 添加修复部分
-          $changelog += "## 修复 (Fixes)`n"
-          if ($fixes.Count -gt 0) {
-            $changelog += "<details>`n<summary>点击展开/折叠详细内容</summary>`n`n"
-            foreach ($fix in $fixes) {
-              $changelog += "- $($fix.Message) ($($fix.Author), $($fix.Date))`n"
-            }
-            $changelog += "</details>`n"
-          } else {
-            $changelog += "- 无`n"
-          }
-          $changelog += "`n"
-          
-          # 添加改进部分
-          $changelog += "## 改进 (Improvements)`n"
-          if ($improvements.Count -gt 0) {
-            $changelog += "<details>`n<summary>点击展开/折叠详细内容</summary>`n`n"
-            foreach ($improvement in $improvements) {
-              $changelog += "- $($improvement.Message) ($($improvement.Author), $($improvement.Date))`n"
-            }
-            $changelog += "</details>`n"
-          } else {
-            $changelog += "- 无`n"
-          }
-          $changelog += "`n"
-          
-          # 添加新增功能部分
-          $changelog += "## 新增功能 (New Features)`n"
-          if ($additions.Count -gt 0) {
-            $changelog += "<details>`n<summary>点击展开/折叠详细内容</summary>`n`n"
-            foreach ($addition in $additions) {
-              $changelog += "- $($addition.Message) ($($addition.Author), $($addition.Date))`n"
-            }
-            $changelog += "</details>`n"
-          } else {
-            $changelog += "- 无`n"
-          }
-          $changelog += "`n"
-          
-          # 添加删除功能部分
-          $changelog += "## 删除功能 (Removed Features)`n"
-          if ($deletions.Count -gt 0) {
-            $changelog += "<details>`n<summary>点击展开/折叠详细内容</summary>`n`n"
-            foreach ($deletion in $deletions) {
-              $changelog += "- $($deletion.Message) ($($deletion.Author), $($deletion.Date))`n"
-            }
-            $changelog += "</details>`n"
-          } else {
-            $changelog += "- 无`n"
-          }
-          $changelog += "`n"
-          
-          # 添加版本更新部分
-          $changelog += "## 版本更新 (Version Updates)`n"
-          if ($versionChanges.Count -gt 0) {
-            $changelog += "<details>`n<summary>点击展开/折叠详细内容</summary>`n`n"
-            foreach ($versionChange in $versionChanges) {
-              $changelog += "- $($versionChange.Message) ($($versionChange.Author), $($versionChange.Date))`n"
-            }
-            $changelog += "</details>`n"
-          } else {
-            $changelog += "- 无`n"
-          }
-          $changelog += "`n"
-          
-          # 添加其他更改部分
-          $changelog += "## 其他更改 (Other Changes)`n"
-          if ($others.Count -gt 0) {
-            $changelog += "<details>`n<summary>点击展开/折叠详细内容</summary>`n`n"
-            foreach ($other in $others) {
-              $changelog += "- $($other.Message) ($($other.Author), $($other.Date))`n"
-            }
-            $changelog += "</details>`n"
-          } else {
-            $changelog += "- 无`n"
-          }
-          
-          $changelog += "`n---`n*此更新日志由GitHub Actions自动生成*`n"
-          
-          # 输出changelog内容到步骤输出
+          $changelogContent = Get-Content -Path CHANGELOG.md -Raw
           echo "changelog<<EOF" >> $env:GITHUB_OUTPUT
-          echo $changelog >> $env:GITHUB_OUTPUT
+          echo $changelogContent >> $env:GITHUB_OUTPUT
           echo "EOF" >> $env:GITHUB_OUTPUT
-          
-          echo "Changelog generated successfully"
 
   build:
     needs: prepare
@@ -493,7 +337,7 @@ jobs:
         run: |
           $version = "${{ needs.prepare.outputs.version }}"
           
-          # 读取原始changelog内容（从job输出中获取）
+          # 读取git-cliff生成的changelog内容
           $originalChangelog = "${{ needs.prepare.outputs.changelog }}"
           
           # 构建文件信息表格
@@ -538,21 +382,4 @@ jobs:
           files: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sig
-          fail_on_unmatched_files: false
-          overwrite: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Display Summary
-        run: |
-          echo "=== Release Summary ===" >> $env:GITHUB_STEP_SUMMARY
-          echo "Version: ${{ needs.prepare.outputs.version }}" >> $env:GITHUB_STEP_SUMMARY
-          echo "Tag: ${{ needs.prepare.outputs.tag_name }}" >> $env:GITHUB_STEP_SUMMARY
-          echo "Pre-release: ${{ needs.prepare.outputs.is_prerelease == 'true' }}" >> $env:GITHUB_STEP_SUMMARY
-          echo "Changelog: Generated with file information" >> $env:GITHUB_STEP_SUMMARY
-          echo "Archive: InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip" >> $env:GITHUB_STEP_SUMMARY
-          echo "Archive size: ${{ needs.build.outputs.zip_size }} bytes" >> $env:GITHUB_STEP_SUMMARY
-          echo "Archive hash: ${{ needs.build.outputs.zip_hash }}" >> $env:GITHUB_STEP_SUMMARY
-          echo "Signatures: Created and verified" >> $env:GITHUB_STEP_SUMMARY
-          echo "" >> $env:GITHUB_STEP_SUMMARY
-          echo "All jobs completed successfully!" >> $env:GITHUB_STEP_SUMMARY
+          fail_on_unmatched_files:
