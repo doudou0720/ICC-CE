@@ -279,6 +279,8 @@ jobs:
     needs: [prepare, build]
     if: success()
     runs-on: windows-latest
+    permissions:
+      id-token: write
     outputs:
       signatures_created: ${{ steps.verify_signing.outputs.signatures_created }}
       zip_sig_size: ${{ steps.calculate_sig_sizes.outputs.zip_sig_size }}
@@ -291,14 +293,10 @@ jobs:
           name: build-files-${{ needs.prepare.outputs.version }}
           
       - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.7.0
-        with:
-          cosign-release: 'v2.4.1'
+        uses: sigstore/cosign-installer@v4.0.0
 
       - name: Sign release artifacts
         id: sign_artifacts
-        env:
-          COSIGN_EXPERIMENTAL: "true"
         run: |
           $version = "${{ needs.prepare.outputs.version }}"
           $archiveName = "InkCanvasForClass.CE.$version.zip"
