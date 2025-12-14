@@ -16,7 +16,7 @@ body = """
     {% for commit in commits %}
         - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
             {% if commit.breaking %}[**breaking**] {% endif %}\
-            {{ commit.message | upper_first }}\
+            {{ commit.message | upper_first }} ({{commit.id}} by {{commit.author.name}})\
     {% endfor %}
 {% endfor %}
 """
@@ -58,22 +58,25 @@ protect_breaking_commits = false
 # An array of regex based parsers for extracting data from the commit message.
 # Assigns commits to groups.
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
+
 commit_parsers = [
-    { message = "^feat", group = "<!-- 0 -->🚀 Features" },
-    { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
-    { message = "^doc", group = "<!-- 3 -->📚 Documentation" },
-    { message = "^perf", group = "<!-- 4 -->⚡ Performance" },
-    { message = "^refactor", group = "<!-- 2 -->🚜 Refactor" },
-    { message = "^style", group = "<!-- 5 -->🎨 Styling" },
-    { message = "^test", group = "<!-- 6 -->🧪 Testing" },
+    { message = "^(add|新增|添加)", group = "<!-- 0 -->🚀 新增功能" },
+    { message = "^(fix|修复)", group = "<!-- 1 -->🐛 修复" },
+    { message = "^doc", group = "<!-- 5 -->📚 文档更改" },
+    { message = "^(improve|改进|优化)", group = "<!-- 3 -->⚡ 体验优化" },
+    { message = "^refactor", group = "<!-- 2 -->🚜 重构" },
+    { message = "^style", group = "<!-- 6 -->🎨 格式化" },
+    { message = "^(delete|删除|移除)", group = "<!-- 4 -->❌ 删除功能" },
+    { message = "^test", group = "<!-- 7 -->🧪 测试" },
     { message = "^chore\\(release\\): prepare for", skip = true },
     { message = "^chore\\(deps.*\\)", skip = true },
     { message = "^chore\\(pr\\)", skip = true },
     { message = "^chore\\(pull\\)", skip = true },
-    { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Miscellaneous Tasks" },
-    { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
-    { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
-    { message = ".*", group = "<!-- 10 -->💼 Other" },
+    { message = "^chore|^ci", group = "<!-- 8 -->⚙️ 杂项" },
+    { body = ".*security", group = "<!-- 9 -->🛡️ 安全" },
+    { message = "^revert", group = "<!-- 10 -->◀️ 回退" },
+    { message = "(版本|version|更新版本号)", group = "<!-- 11 -->🎉 版本号更新" },
+    { message = ".*", group = "<!-- 12 -->💼 其他更改" },
 ]
 # Exclude commits that are not matched by any commit parser.
 filter_commits = false

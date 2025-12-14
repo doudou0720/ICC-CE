@@ -15,6 +15,7 @@ on:
         - patch
         - minor
         - major
+        - build
       prerelease:
         description: 'Create as pre-release'
         required: true
@@ -53,7 +54,7 @@ jobs:
             echo "Found latest tag: $latestTag"
           } else {
             # 如果没有tag，使用默认值
-            $version = "0.0.0"
+            $version = "1.0.0.0"
             echo "No tag found, using default version: $version"
           }
           echo "current_version=$version" >> $env:GITHUB_OUTPUT
@@ -73,19 +74,28 @@ jobs:
             echo "version=$cleanVersion" >> $env:GITHUB_OUTPUT
             echo "Using pushed tag: $tagName, version: $cleanVersion"
           } else {
-            # 从 workflow_dispatch 计算新版本
+            # 从 workflow_dispatch 计算新版本（4位格式）
             $currentVersion = "${{ steps.get_version.outputs.current_version }}"
             $versionParts = $currentVersion.Split('.')
             
-            # 确保版本号格式正确（至少3部分）
-            if ($versionParts.Length -ge 3) {
+            # 确保版本号格式正确（至少4部分）
+            if ($versionParts.Length -ge 4) {
               $major = [int]$versionParts[0]
               $minor = [int]$versionParts[1]
               $patch = [int]$versionParts[2]
+              $build = [int]$versionParts[3]
             } else {
-              # 如果版本号格式不正确，抛出错误
-              echo "Error: Invalid version format. Expected format: x.y.z (e.g., 1.2.3)"
-              exit 1
+              # 如果版本号格式不正确，补充为4位
+              if ($versionParts.Length -ge 3) {
+                $major = [int]$versionParts[0]
+                $minor = [int]$versionParts[1]
+                $patch = [int]$versionParts[2]
+                $build = 0
+              } else {
+                # 如果版本号格式不正确，抛出错误
+                echo "Error: Invalid version format. Expected format: x.y.z.w (e.g., 1.7.18.0)"
+                exit 1
+              }
             }
             
             $versionType = "${{ github.event.inputs.version_type }}"
@@ -96,18 +106,24 @@ jobs:
                 $major++
                 $minor = 0
                 $patch = 0
+                $build = 0
               }
               "minor" { 
                 $minor++
                 $patch = 0
+                $build = 0
               }
               "patch" { 
                 $patch++
+                $build = 0
+              }
+              "build" { 
+                $build++
               }
             }
             
-            # 生成新版本号（保持3位格式，如1.7.13）
-            $newVersion = "$major.$minor.$patch"
+            # 生成新版本号（4位格式，如1.7.18.0）
+            $newVersion = "$major.$minor.$patch.$build"
             
             # 根据是否为预发布决定标签前缀
             if ($isPrerelease) {
@@ -169,27 +185,40 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Setup MSBuild cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~\AppData\Local\NuGet\Cache
-            ~\AppData\Local\Microsoft\MSBuild
-          key: ${{ runner.os }}-msbuild-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-msbuild-
-        
-      - name: Setup MSbuild
-        uses: microsoft/setup-msbuild@v2
 
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2.0.1
 
-      - name: Restore NuGet Packages
-        run: nuget restore "Ink Canvas.sln"
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Cache NuGet packages and obj files
+        id: cache-nuget
+        uses: actions/cache@v4
+        with:
+          path: |
+            # NuGet 全局包缓存（已下载的包）
+            ~/.nuget/packages
+            # NuGet 缓存目录（包索引）
+            ~\AppData\Local\NuGet\Cache
+            # 项目 obj 目录（包含 project.assets.json）
+            Ink Canvas/obj/
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.config', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet packages (if cache missed)
+        if: steps.cache-nuget.outputs.cache-hit != 'true'
+        run: |
+          Write-Host "📥 缓存未命中，正在恢复 NuGet 包..." -ForegroundColor Yellow
+          
+          # 恢复解决方案级别的包
+          nuget restore "Ink Canvas.sln" -Verbosity minimal
+          
+          # 恢复项目级别的包
+          msbuild -t:restore "Ink Canvas/InkCanvasForClass.csproj" /p:GitFlow="Github Action" /p:RestorePackagesConfig=true /verbosity:minimal
+          
+          Write-Host "✅ NuGet 包恢复完成" -ForegroundColor Green
 
       - name: Display version info
         run: |
@@ -199,8 +228,10 @@ jobs:
           
       - name: Build the Solution
         run: |
-          msbuild -t:restore /p:GitFlow="Github Action"
-          msbuild /p:platform="AnyCPU" /p:configuration="Release" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj"
+          Write-Host "🔨 正在构建项目..." -ForegroundColor Cyan
+          msbuild /p:platform="AnyCPU" /p:configuration="Release" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal
+          
+          Write-Host "🏗️ 构建命令执行完成" -ForegroundColor Cyan
           
       - name: Create Release Archive
         id: create_archive
@@ -382,4 +413,4 @@ jobs:
           files: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sig
-          fail_on_unmatched_files:
+          fail_on_unmatched_files: true
