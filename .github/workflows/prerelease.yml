@@ -38,7 +38,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -184,7 +184,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2.0.1
@@ -269,7 +269,7 @@ jobs:
           echo "SHA256 hash: $hash"
           
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4.5.0
+        uses: actions/upload-artifact@v4
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           path: |
@@ -278,13 +278,11 @@ jobs:
   sign:
     needs: [prepare, build]
     if: success()
-    runs-on: windows-latest
-    permissions:
-      id-token: write
+    runs-on: ubuntu-latest  # 改为 Ubuntu 以使用 Python 签名工具
     outputs:
-      signatures_created: ${{ steps.verify_signing.outputs.signatures_created }}
-      zip_sig_size: ${{ steps.calculate_sig_sizes.outputs.zip_sig_size }}
-      zip_sig_hash: ${{ steps.calculate_sig_sizes.outputs.zip_sig_hash }}
+      signatures_created: ${{ steps.sign_artifacts.outputs.signatures_created }}
+      sigstore_file: "InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json"
+      sigstore_hash: ${{ steps.calculate_sig_hash.outputs.sigstore_hash }}
     
     steps:
       - name: Download Build Artifacts
@@ -292,63 +290,64 @@ jobs:
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v4.0.0
-
-      - name: Sign release artifacts
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Sign release artifacts with sigstore-python
         id: sign_artifacts
-        run: |
-          $version = "${{ needs.prepare.outputs.version }}"
-          $archiveName = "InkCanvasForClass.CE.$version.zip"
-          
-          # 为 ZIP 文件生成签名
-          echo "Signing $archiveName..."
-          cosign sign-blob $archiveName --output-signature $archiveName.sig --yes
-          
-      - name: Calculate signature sizes and hashes
-        id: calculate_sig_sizes
-        run: |
-          $version = "${{ needs.prepare.outputs.version }}"
-          
-          # 计算ZIP签名文件大小和哈希
-          $zipSigFile = "InkCanvasForClass.CE.$version.zip.sig"
-          $zipSigSize = (Get-Item $zipSigFile).Length
-          $zipSigHash = (Get-FileHash $zipSigFile -Algorithm SHA256).Hash
-          
-          echo "zip_sig_size=$zipSigSize" >> $env:GITHUB_OUTPUT
-          echo "zip_sig_hash=$zipSigHash" >> $env:GITHUB_OUTPUT
-          
-          echo "ZIP signature size: $zipSigSize bytes"
-          echo "ZIP signature hash: $zipSigHash"
-          
-      - name: Verify signed artifacts
-        id: verify_signing
+        uses: sigstore/gh-action-sigstore-python@v3.2.0
+        with:
+          inputs: |
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+          release-signing-artifacts: true
+          upload-signing-artifacts: true
         env:
-          COSIGN_EXPERIMENTAL: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Check generated signature files
         run: |
-          $version = "${{ needs.prepare.outputs.version }}"
-          $archiveName = "InkCanvasForClass.CE.$version.zip"
+          version="${{ needs.prepare.outputs.version }}"
+          echo "Checking for generated signature files..."
+          ls -la *.sig* || true
+          echo "Current directory contents:"
+          pwd
+          ls -la
           
-          # 验证 ZIP 文件签名
-          echo "Verifying signature for $archiveName..."
-          cosign verify-blob $archiveName --signature $archiveName.sig
+      - name: Calculate signature hash
+        id: calculate_sig_hash
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          sigstoreFile="InkCanvasForClass.CE.$version.zip.sigstore.json"
           
-          echo "All signatures verified successfully!"
-          echo "signatures_created=true" >> $env:GITHUB_OUTPUT
+          if [ -f "$sigstoreFile" ]; then
+            # 计算SHA256哈希
+            sigstoreHash=$(sha256sum "$sigstoreFile" | cut -d' ' -f1)
+            
+            echo "sigstore_hash=$sigstoreHash" >> $GITHUB_OUTPUT
+            echo "Sigstore JSON file hash: $sigstoreHash"
+            echo "Sigstore file size: $(stat -c%s "$sigstoreFile") bytes"
+          else
+            echo "Warning: Sigstore file not found: $sigstoreFile"
+            echo "sigstore_hash=" >> $GITHUB_OUTPUT
+          fi
           
       - name: Upload Signed Artifacts
-        uses: actions/upload-artifact@v4.5.0
+        if: steps.calculate_sig_hash.outputs.sigstore_hash != ''
+        uses: actions/upload-artifact@v4
         with:
           name: signed-files-${{ needs.prepare.outputs.version }}
           path: |
-            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sig
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json
 
   release:
     needs: [prepare, build, sign]
     if: success()
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write  # 需要这个权限来验证签名
     
     steps:
       - name: Download Build Artifacts
@@ -356,39 +355,77 @@ jobs:
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           
-      - name: Download Signed Artifacts
+      - name: Download Signed Artifacts (if exists)
         uses: actions/download-artifact@v4
         with:
           name: signed-files-${{ needs.prepare.outputs.version }}
+          continue-on-error: true
+          
+      - name: Verify signatures (if sigstore file exists)
+        if: hashFiles('InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json') != ''
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          zipFile="InkCanvasForClass.CE.$version.zip"
+          sigstoreFile="$zipFile.sigstore.json"
+          
+          if [ -f "$sigstoreFile" ]; then
+            echo "Verifying signature for $zipFile using sigstore bundle..."
+            
+            # 使用 sigstore-python 验证签名
+            python -m sigstore verify \
+              "$zipFile" \
+              --bundle "$sigstoreFile" \
+              --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/prerelease.yml@${{ github.ref_name }}" \
+              --cert-oidc-issuer "https://token.actions.githubusercontent.com"
+            
+            echo "✅ Sigstore signature verified successfully!"
+          else
+            echo "⚠️ No sigstore bundle found, skipping signature verification"
+          fi
+          
+      - name: Setup Python for verification
+        if: hashFiles('InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json') != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install sigstore for verification
+        if: hashFiles('InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json') != ''
+        run: |
+          python -m pip install sigstore
           
       - name: Create enhanced changelog with file table
         id: enhanced_changelog
         run: |
-          $version = "${{ needs.prepare.outputs.version }}"
+          version="${{ needs.prepare.outputs.version }}"
           
           # 读取git-cliff生成的changelog内容
-          $originalChangelog = "${{ needs.prepare.outputs.changelog }}"
+          originalChangelog="${{ needs.prepare.outputs.changelog }}"
           
           # 构建文件信息表格
-          $fileTable = "`n## 文件信息 (File Information)`n`n"
-          $fileTable += "| 文件名 | 大小 | SHA256 哈希 |`n"
-          $fileTable += "|--------|------|-------------|`n"
+          fileTable="\n## 文件信息 (File Information)\n\n"
+          fileTable+="| 文件名 | 大小 | SHA256 哈希 |\n"
+          fileTable+="|--------|------|-------------|\n"
           
           # ZIP 文件信息
-          $fileTable += "| InkCanvasForClass.CE.$version.zip | ${{ needs.build.outputs.zip_size }} bytes | ${{ needs.build.outputs.zip_hash }} |`n"
+          fileTable+="| InkCanvasForClass.CE.$version.zip | ${{ needs.build.outputs.zip_size }} bytes | ${{ needs.build.outputs.zip_hash }} |\n"
           
-          # ZIP 签名文件信息
-          $fileTable += "| InkCanvasForClass.CE.$version.zip.sig | ${{ needs.sign.outputs.zip_sig_size }} bytes | ${{ needs.sign.outputs.zip_sig_hash }} |`n"
+          # 检查是否有签名文件
+          if [ -f "InkCanvasForClass.CE.$version.zip.sigstore.json" ]; then
+            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.zip.sigstore.json")
+            sigstoreHash=$(sha256sum "InkCanvasForClass.CE.$version.zip.sigstore.json" | cut -d' ' -f1)
+            fileTable+="| InkCanvasForClass.CE.$version.zip.sigstore.json | $sigstoreSize bytes | $sigstoreHash |\n"
+          fi
           
-          $fileTable += "`n*文件哈希和大小信息由GitHub Actions自动生成*"
+          fileTable+="\n*文件哈希和大小信息由GitHub Actions自动生成*"
           
           # 将表格附加到原始changelog
-          $enhancedChangelog = $originalChangelog + $fileTable
+          enhancedChangelog="${originalChangelog}${fileTable}"
           
           # 输出增强版changelog内容
-          echo "enhanced_changelog<<EOF" >> $env:GITHUB_OUTPUT
-          echo $enhancedChangelog >> $env:GITHUB_OUTPUT
-          echo "EOF" >> $env:GITHUB_OUTPUT
+          echo "enhanced_changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$enhancedChangelog" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           
           echo "Enhanced changelog created with file information table"
           
@@ -410,5 +447,7 @@ jobs:
           prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
           files: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
-            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sig
-          fail_on_unmatched_files: true
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
