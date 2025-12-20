@@ -970,6 +970,24 @@ namespace Ink_Canvas
 
         private async void AutoUpdate()
         {
+            if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
+            {
+                if (DateTime.TryParse(Settings.Startup.AutoUpdatePauseUntilDate, out DateTime pauseUntilDate))
+                {
+                    if (DateTime.Now < pauseUntilDate)
+                    {
+                        LogHelper.WriteLogToFile($"AutoUpdate | 自动更新已暂停，直到 {pauseUntilDate:yyyy-MM-dd}");
+                        return; 
+                    }
+                    else
+                    {
+                        LogHelper.WriteLogToFile($"AutoUpdate | 暂停期已过，恢复自动更新检查");
+                        Settings.Startup.AutoUpdatePauseUntilDate = "";
+                        SaveSettingsToFile();
+                    }
+                }
+            }
+
             // 清除之前的更新状态，确保使用新通道重新检查
             AvailableLatestVersion = null;
             AvailableLatestLineGroup = null;

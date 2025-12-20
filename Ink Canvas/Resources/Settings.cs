@@ -157,6 +157,8 @@ namespace Ink_Canvas
         public UpdateChannel UpdateChannel { get; set; } = UpdateChannel.Release;
         [JsonProperty("skippedVersion")]
         public string SkippedVersion { get; set; } = "";
+        [JsonProperty("autoUpdatePauseUntilDate")]
+        public string AutoUpdatePauseUntilDate { get; set; } = "";
         [JsonProperty("isEnableNibMode")]
         public bool IsEnableNibMode { get; set; }
         [JsonProperty("isFoldAtStartup")]

@@ -20,103 +20,105 @@
                 <Border.Effect>
                     <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="0" Opacity="0.1"/>
                 </Border.Effect>
-                <Grid>
-                    <!-- 标题栏 -->
-                    <Border Background="{DynamicResource SettingsPageBackground}" Height="48" VerticalAlignment="Top">
-                        <Grid>
-                            <TextBlock Text="{TemplateBinding Title}" 
-                                     FontSize="14" FontWeight="SemiBold" 
-                                     Foreground="{DynamicResource SettingsPageForeground}" 
-                                     VerticalAlignment="Center" 
-                                     Margin="16,0,0,0"/>
-                            <!-- 最小化按钮 -->
-                            <Button Name="MinimizeButton" 
-                                    HorizontalAlignment="Right" 
-                                    VerticalAlignment="Top" 
-                                    Margin="0,8,40,0"
-                                    Width="32" Height="32" 
-                                    Background="Transparent" 
-                                    BorderThickness="0"
-                                    Click="MinimizeButton_Click"
-                                    Cursor="Hand"
-                                    ToolTip="最小化">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" 
-                                                CornerRadius="4" 
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                BorderBrush="{TemplateBinding BorderBrush}">
-                                            <TextBlock Text="−" FontSize="14" 
-                                                     Foreground="{DynamicResource SettingsPageForeground}" 
-                                                     HorizontalAlignment="Center" 
-                                                     VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="#FF2563eb" Opacity="0.1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="#FF2563eb" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                            
-                            <!-- 关闭按钮 -->
-                            <Button Name="CloseButton" 
-                                    HorizontalAlignment="Right" 
-                                    VerticalAlignment="Top" 
-                                    Margin="0,8,8,0"
-                                    Width="32" Height="32" 
-                                    Background="Transparent" 
-                                    BorderThickness="0"
-                                    Click="CloseButton_Click"
-                                    Cursor="Hand"
-                                    ToolTip="关闭">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" 
-                                                CornerRadius="4" 
-                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                BorderBrush="{TemplateBinding BorderBrush}">
-                                            <TextBlock Text="×" FontSize="14" 
-                                                     Foreground="{DynamicResource SettingsPageForeground}" 
-                                                     HorizontalAlignment="Center" 
-                                                     VerticalAlignment="Center"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="#ef4444" Opacity="0.1"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Trigger>
-                                            <Trigger Property="IsPressed" Value="True">
-                                                <Setter Property="Background">
-                                                    <Setter.Value>
-                                                        <SolidColorBrush Color="#ef4444" Opacity="0.2"/>
-                                                    </Setter.Value>
-                                                </Setter>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </Grid>
-                    </Border>
-                    <!-- 内容区域 -->
-                    <ContentPresenter Margin="0,48,0,0"/>
-                </Grid>
+                <AdornerDecorator>
+                    <Grid>
+                        <!-- 标题栏 -->
+                        <Border Background="{DynamicResource SettingsPageBackground}" Height="48" VerticalAlignment="Top">
+                            <Grid>
+                                <TextBlock Text="{TemplateBinding Title}" 
+                                         FontSize="14" FontWeight="SemiBold" 
+                                         Foreground="{DynamicResource SettingsPageForeground}" 
+                                         VerticalAlignment="Center" 
+                                         Margin="16,0,0,0"/>
+                                <!-- 最小化按钮 -->
+                                <Button Name="MinimizeButton" 
+                                        HorizontalAlignment="Right" 
+                                        VerticalAlignment="Top" 
+                                        Margin="0,8,40,0"
+                                        Width="32" Height="32" 
+                                        Background="Transparent" 
+                                        BorderThickness="0"
+                                        Click="MinimizeButton_Click"
+                                        Cursor="Hand"
+                                        ToolTip="最小化">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                                <TextBlock Text="−" FontSize="14" 
+                                                         Foreground="{DynamicResource SettingsPageForeground}" 
+                                                         HorizontalAlignment="Center" 
+                                                         VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush Color="#FF2563eb" Opacity="0.1"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush Color="#FF2563eb" Opacity="0.2"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                
+                                <!-- 关闭按钮 -->
+                                <Button Name="CloseButton" 
+                                        HorizontalAlignment="Right" 
+                                        VerticalAlignment="Top" 
+                                        Margin="0,8,8,0"
+                                        Width="32" Height="32" 
+                                        Background="Transparent" 
+                                        BorderThickness="0"
+                                        Click="CloseButton_Click"
+                                        Cursor="Hand"
+                                        ToolTip="关闭">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                                <TextBlock Text="×" FontSize="14" 
+                                                         Foreground="{DynamicResource SettingsPageForeground}" 
+                                                         HorizontalAlignment="Center" 
+                                                         VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush Color="#ef4444" Opacity="0.1"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Background">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush Color="#ef4444" Opacity="0.2"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        <!-- 内容区域 -->
+                        <ContentPresenter Margin="0,48,0,0"/>
+                    </Grid>
+                </AdornerDecorator>
             </Border>
         </ControlTemplate>
     </Window.Template>

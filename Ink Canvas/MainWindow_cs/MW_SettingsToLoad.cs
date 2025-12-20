@@ -195,7 +195,7 @@ namespace Ink_Canvas
                     }
                 }
 
-                // ToggleSwitchIsAutoUpdateWithSilence.Visibility = Settings.Startup.IsAutoUpdate ? Visibility.Visible : Visibility.Collapsed;
+                ToggleSwitchIsAutoUpdateWithSilence.Visibility = Settings.Startup.IsAutoUpdate ? Visibility.Visible : Visibility.Collapsed;
                 if (Settings.Startup.IsAutoUpdateWithSilence)
                 {
                     ToggleSwitchIsAutoUpdateWithSilence.IsOn = true;
