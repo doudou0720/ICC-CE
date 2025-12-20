@@ -122,6 +122,7 @@ jobs:
     outputs:
       archive_name: ${{ steps.create-archive.outputs.archive_name }}
       build_result: ${{ steps.check-exe.outputs.build_success }}
+      artifact_url: ${{ steps.upload-artifact.outputs.artifact-url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -244,6 +245,7 @@ jobs:
           Write-Host "✅ 已创建归档包: $archiveName" -ForegroundColor Green
       
       - name: Upload Artifact (if build succeeded)
+        id: upload-artifact
         if: steps.check-exe.outputs.build_success == 'true'
         uses: actions/upload-artifact@v4.5.0
         with:
@@ -263,6 +265,7 @@ jobs:
         run: |
           # 从构建作业获取构建结果
           BUILD_SUCCESS="${{ needs.build-and-package.outputs.build_result }}"
+          ARTIFACT_URL="${{ needs.build-and-package.outputs.artifact_url }}"
           
           # 使用 PR 分支的实际提交哈希
           PR_HEAD_SHA="${{ github.event.pull_request.head.sha }}"
@@ -306,7 +309,11 @@ jobs:
             if [ "$BUILD_SUCCESS" = "true" ]; then
               echo ""
               echo "## 构建产物"
-              echo "- 📦 [下载构建产物](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              if [ -n "$ARTIFACT_URL" ]; then
+                echo "- 📦 [下载构建产物]($ARTIFACT_URL)"
+              else
+                echo "- 📦 [下载构建产物](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              fi
               
               if [ "$READY_FOR_REVIEW" = "true" ]; then
                 echo ""
