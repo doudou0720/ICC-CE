@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -707,7 +706,7 @@ namespace Ink_Canvas
                     dec.Clear();
                 }
                 isSingleFingerDragMode = false;
-                
+
                 if (drawingShapeMode == 0
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke
@@ -722,14 +721,14 @@ namespace Ink_Canvas
         private void Main_Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
             if (isInMultiTouchMode || !Settings.Gesture.IsEnableTwoFingerGesture) return;
-            
+
             bool hasMultipleManipulators = e.Manipulators.Count() >= 2;
-            bool shouldUseTwoFingerGesture = (dec.Count >= 2 && hasMultipleManipulators && 
+            bool shouldUseTwoFingerGesture = (dec.Count >= 2 && hasMultipleManipulators &&
                                              (Settings.PowerPointSettings.IsEnableTwoFingerGestureInPresentationMode ||
                                               StackPanelPPTControls.Visibility != Visibility.Visible ||
                                               StackPanelPPTButtons.Visibility == Visibility.Collapsed)) ||
                                             isSingleFingerDragMode;
-            
+
             if (shouldUseTwoFingerGesture)
             {
                 var md = e.DeltaManipulation;

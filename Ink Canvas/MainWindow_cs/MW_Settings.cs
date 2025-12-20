@@ -1855,7 +1855,7 @@ namespace Ink_Canvas
                 // 检查是否是第一次打开（检查用户是否已设置Token）
                 bool hasToken = !string.IsNullOrEmpty(Settings?.Dlass?.UserToken?.Trim());
                 bool isFirstTime = !hasToken;
-                
+
                 if (isFirstTime)
                 {
                     // 第一次打开，询问用户是否已注册
@@ -1866,7 +1866,7 @@ namespace Ink_Canvas
                         "Dlass账号注册",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
-                    
+
                     if (result == MessageBoxResult.No)
                     {
                         // 用户未注册，打开浏览器
@@ -1882,14 +1882,14 @@ namespace Ink_Canvas
                         catch (Exception ex)
                         {
                             LogHelper.WriteLogToFile($"打开浏览器时出错: {ex.Message}", LogHelper.LogType.Error);
-                            MessageBox.Show($"无法打开浏览器。请手动访问: https://dlass.tech/dashboard", 
+                            MessageBox.Show($"无法打开浏览器。请手动访问: https://dlass.tech/dashboard",
                                 "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         return; // 不打开设置窗口
                     }
                     // 如果用户选择"是"，继续打开设置窗口
                 }
-                
+
                 // 打开设置管理窗口
                 var dlassSettingsWindow = new Windows.DlassSettingsWindow();
                 dlassSettingsWindow.Owner = this;
@@ -1945,7 +1945,7 @@ namespace Ink_Canvas
         private void ComboBoxAutoSaveStrokesInterval_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded || ComboBoxAutoSaveStrokesInterval.SelectedItem == null) return;
-            
+
             var selectedItem = ComboBoxAutoSaveStrokesInterval.SelectedItem as System.Windows.Controls.ComboBoxItem;
             if (selectedItem?.Tag != null && int.TryParse(selectedItem.Tag.ToString(), out int intervalMinutes))
             {
@@ -2720,13 +2720,13 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.RandSettings.EnableOvertimeCountUp = ToggleSwitchEnableOvertimeCountUp.IsOn;
-            
+
             if (!ToggleSwitchEnableOvertimeCountUp.IsOn)
             {
                 ToggleSwitchEnableOvertimeRedText.IsOn = false;
                 Settings.RandSettings.EnableOvertimeRedText = false;
             }
-            
+
             SaveSettingsToFile();
         }
 
@@ -2739,7 +2739,7 @@ namespace Ink_Canvas
                 ToggleSwitchEnableOvertimeCountUp.IsOn = true;
                 Settings.RandSettings.EnableOvertimeCountUp = true;
             }
-            
+
             Settings.RandSettings.EnableOvertimeRedText = ToggleSwitchEnableOvertimeRedText.IsOn;
             SaveSettingsToFile();
         }
@@ -2865,7 +2865,7 @@ namespace Ink_Canvas
 
             // 保存设置到文件
             SaveSettingsToFile();
-            
+
             // 根据设置状态显示或隐藏快抽悬浮按钮
             ShowQuickDrawFloatingButton();
         }

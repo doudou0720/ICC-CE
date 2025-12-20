@@ -28,15 +28,14 @@ using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
 using Button = System.Windows.Controls.Button;
 using Cursor = System.Windows.Input.Cursor;
-using MouseEventArgs = System.Windows.Input.MouseEventArgs;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using VerticalAlignment = System.Windows.VerticalAlignment;
 using Cursors = System.Windows.Input.Cursors;
 using DpiChangedEventArgs = System.Windows.DpiChangedEventArgs;
 using File = System.IO.File;
 using GroupBox = System.Windows.Controls.GroupBox;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Point = System.Windows.Point;
+using VerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace Ink_Canvas
 {
@@ -67,7 +66,7 @@ namespace Ink_Canvas
         // 设置面板相关状态
         private bool userChangedNoFocusModeInSettings;
         private bool isTemporarilyDisablingNoFocusMode = false;
-        
+
         // 全屏处理状态标志
         public bool isFullScreenApplied = false;
 
@@ -271,7 +270,7 @@ namespace Ink_Canvas
 
             // 为滑块控件添加触摸事件支持
             AddTouchSupportToSliders();
-            
+
             // 初始化计时器控件事件
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -280,24 +279,24 @@ namespace Ink_Canvas
                     TimerControl.ShowMinimizedRequested += TimerControl_ShowMinimizedRequested;
                     TimerControl.HideMinimizedRequested += TimerControl_HideMinimizedRequested;
                 }
-                
+
                 if (MinimizedTimerControl != null && TimerControl != null)
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
                 }
             }), DispatcherPriority.Loaded);
         }
-        
+
         private void TimerControl_ShowMinimizedRequested(object sender, EventArgs e)
         {
             var timerContainer = FindName("TimerContainer") as FrameworkElement;
             var minimizedContainer = FindName("MinimizedTimerContainer") as FrameworkElement;
-            
+
             if (timerContainer != null && minimizedContainer != null)
             {
                 double x = 0, y = 0;
-                
-                if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center && 
+
+                if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center &&
                     timerContainer.VerticalAlignment == VerticalAlignment.Center)
                 {
                     var timerPoint = timerContainer.TransformToAncestor(this).Transform(new Point(0, 0));
@@ -310,30 +309,30 @@ namespace Ink_Canvas
                     x = double.IsNaN(timerMargin.Left) ? 0 : timerMargin.Left;
                     y = double.IsNaN(timerMargin.Top) ? 0 : timerMargin.Top;
                 }
-                
+
                 minimizedContainer.Margin = new Thickness(x, y, 0, 0);
                 minimizedContainer.HorizontalAlignment = HorizontalAlignment.Left;
                 minimizedContainer.VerticalAlignment = VerticalAlignment.Top;
-                
+
                 timerContainer.Margin = new Thickness(x, y, 0, 0);
                 timerContainer.HorizontalAlignment = HorizontalAlignment.Left;
                 timerContainer.VerticalAlignment = VerticalAlignment.Top;
-                
+
                 timerContainer.Visibility = Visibility.Collapsed;
                 minimizedContainer.Visibility = Visibility.Visible;
             }
         }
-        
+
         private void TimerControl_HideMinimizedRequested(object sender, EventArgs e)
         {
             var timerContainer = FindName("TimerContainer") as FrameworkElement;
             var minimizedContainer = FindName("MinimizedTimerContainer") as FrameworkElement;
-            
+
             if (timerContainer != null && minimizedContainer != null)
             {
                 minimizedContainer.Visibility = Visibility.Collapsed;
                 timerContainer.Visibility = Visibility.Visible;
-                
+
                 if (TimerControl != null)
                 {
                     TimerControl.UpdateActivityTime();
@@ -643,7 +642,7 @@ namespace Ink_Canvas
             // 初始化UIA置顶开关
             ToggleSwitchUIAccessTopMost.IsOn = Settings.Advanced.EnableUIAccessTopMost;
             UpdateUIAccessTopMostVisibility();
-            
+
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
 
             // 初始化剪贴板监控
@@ -692,14 +691,14 @@ namespace Ink_Canvas
                     }
                 }), DispatcherPriority.Loaded);
             }
-            
+
             // 初始化计时器控件关联
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (TimerControl != null && MinimizedTimerControl != null)
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
-                    
+
                     TimerControl.ShowMinimizedRequested += (s, args) =>
                     {
                         if (TimerContainer != null && MinimizedTimerContainer != null && MinimizedTimerControl != null)
@@ -709,7 +708,7 @@ namespace Ink_Canvas
                             MinimizedTimerControl.Visibility = Visibility.Visible;
                         }
                     };
-                    
+
                     TimerControl.HideMinimizedRequested += (s, args) =>
                     {
                         if (MinimizedTimerContainer != null && MinimizedTimerControl != null)
@@ -802,7 +801,7 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"关闭快抽悬浮按钮时出错: {ex.Message}", LogHelper.LogType.Error);
             }
-            
+
             if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
             {
                 // 第一个确认对话框
@@ -1956,7 +1955,7 @@ namespace Ink_Canvas
         private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
         [DllImport("kernel32.dll")]
         private static extern uint GetCurrentProcessId();
-        
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
 
@@ -2011,16 +2010,16 @@ namespace Ink_Canvas
         {
             if (nCode >= 0)
             {
-                if (Settings.Advanced.IsNoFocusMode && 
-                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                if (Settings.Advanced.IsNoFocusMode &&
+                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
                     currentMode == 0)
                 {
                     KBDLLHOOKSTRUCT hookStruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                     uint vkCode = hookStruct.vkCode;
-                    
+
                     if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
                     {
-                        if (vkCode == 0x22 || vkCode == 0x28 || vkCode == 0x27 || 
+                        if (vkCode == 0x22 || vkCode == 0x28 || vkCode == 0x27 ||
                             vkCode == 0x4E || vkCode == 0x20)
                         {
                             Dispatcher.BeginInvoke(new Action(() =>
@@ -2029,7 +2028,7 @@ namespace Ink_Canvas
                             }), DispatcherPriority.Normal);
                             return (IntPtr)1;
                         }
-                        else if (vkCode == 0x21 || vkCode == 0x26 || vkCode == 0x25 || 
+                        else if (vkCode == 0x21 || vkCode == 0x26 || vkCode == 0x25 ||
                                  vkCode == 0x50)
                         {
                             Dispatcher.BeginInvoke(new Action(() =>
@@ -2072,10 +2071,10 @@ namespace Ink_Canvas
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            
-            bool shouldBeNoFocus = isTemporarilyDisablingNoFocusMode ? 
+
+            bool shouldBeNoFocus = isTemporarilyDisablingNoFocusMode ?
                 false : Settings.Advanced.IsNoFocusMode;
-            
+
             if (shouldBeNoFocus)
             {
                 SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE);
@@ -2185,8 +2184,8 @@ namespace Ink_Canvas
 
         public void ResumeTopmostMaintenance()
         {
-            if (Settings.Advanced.IsAlwaysOnTop && 
-                Settings.Advanced.IsNoFocusMode && 
+            if (Settings.Advanced.IsAlwaysOnTop &&
+                Settings.Advanced.IsNoFocusMode &&
                 !Settings.Advanced.EnableUIAccessTopMost)
             {
                 if (topmostMaintenanceTimer != null && !isTopmostMaintenanceEnabled)
@@ -2286,12 +2285,12 @@ namespace Ink_Canvas
             var toggle = sender as ToggleSwitch;
             Settings.Advanced.IsNoFocusMode = toggle != null && toggle.IsOn;
             SaveSettingsToFile();
-                
+
             if (isTemporarilyDisablingNoFocusMode)
             {
                 isTemporarilyDisablingNoFocusMode = false;
             }
-            
+
             ApplyNoFocusMode();
 
             // 如果启用了窗口置顶，需要重新应用置顶设置以处理无焦点模式的变化
@@ -2322,13 +2321,13 @@ namespace Ink_Canvas
             if (!isLoaded) return;
             var toggle = sender as ToggleSwitch;
             bool newValue = toggle != null && toggle.IsOn;
-            
+
             Settings.Advanced.EnableUIAccessTopMost = newValue;
             SaveSettingsToFile();
             ApplyUIAccessTopMost();
-            
+
             App.IsUIAccessTopMostEnabled = newValue;
-        
+
         }
 
         private void Window_Activated(object sender, EventArgs e)
@@ -3193,12 +3192,12 @@ namespace Ink_Canvas
             try
             {
                 var visibility = Settings.Advanced.IsAlwaysOnTop ? Visibility.Visible : Visibility.Collapsed;
-                
+
                 if (UIAccessTopMostPanel != null)
                 {
                     UIAccessTopMostPanel.Visibility = visibility;
                 }
-                
+
                 if (UIAccessTopMostDescription != null)
                 {
                     UIAccessTopMostDescription.Visibility = visibility;
@@ -3222,7 +3221,7 @@ namespace Ink_Canvas
                     // 检查是否以管理员权限运行
                     var identity = WindowsIdentity.GetCurrent();
                     var principal = new WindowsPrincipal(identity);
-                    
+
                     if (principal.IsInRole(WindowsBuiltInRole.Administrator))
                     {
                         try
@@ -3233,8 +3232,8 @@ namespace Ink_Canvas
                                 App.watchdogProcess.Kill();
                                 App.watchdogProcess = null;
                             }
-        
-                            
+
+
                             // 调用UIAccess DLL
                             if (Environment.Is64BitProcess)
                             {
@@ -3244,7 +3243,7 @@ namespace Ink_Canvas
                             {
                                 PrepareUIAccessX86();
                             }
-                            
+
                             App.StartWatchdogIfNeeded();
                             timerKillProcess.Start();
                         }

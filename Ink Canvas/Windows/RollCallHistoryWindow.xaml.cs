@@ -1,11 +1,10 @@
 using Ink_Canvas.Helpers;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
-using Newtonsoft.Json;
-using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 
 namespace Ink_Canvas
 {
@@ -95,26 +94,26 @@ namespace Ink_Canvas
                 // 显示统计信息
                 int totalCount = historyData.History.Count;
                 string lastUpdate = historyData.LastUpdate.ToString("yyyy-MM-dd HH:mm:ss");
-                
+
                 // 计算累计统计信息
                 var statsLines = new System.Collections.Generic.List<string>();
                 statsLines.Add($"");
                 statsLines.Add($"");
                 statsLines.Add($"累计抽选次数统计：");
-                
+
                 // 按累计次数降序排序显示
                 var sortedStats = nameCountDict.OrderByDescending(kvp => kvp.Value).ToList();
                 foreach (var kvp in sortedStats)
                 {
                     statsLines.Add($"  {kvp.Key}: {kvp.Value}次");
                 }
-                
+
                 statsLines.Add($"");
                 statsLines.Add($"共 {totalCount} 条记录，最后更新：{lastUpdate}");
-                
+
                 // 组合历史记录和统计信息
-                TextBoxHistory.Text = string.Join(Environment.NewLine, historyLines) + 
-                                     Environment.NewLine + 
+                TextBoxHistory.Text = string.Join(Environment.NewLine, historyLines) +
+                                     Environment.NewLine +
                                      string.Join(Environment.NewLine, statsLines);
             }
             catch (Exception ex)
@@ -184,7 +183,7 @@ namespace Ink_Canvas
             try
             {
                 var resources = this.Resources;
-                
+
                 if (theme == "Light")
                 {
                     // 应用浅色主题资源

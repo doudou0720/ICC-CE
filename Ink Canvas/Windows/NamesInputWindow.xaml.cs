@@ -103,7 +103,7 @@ namespace Ink_Canvas
             try
             {
                 var resources = this.Resources;
-                
+
                 if (theme == "Light")
                 {
                     // 应用浅色主题资源

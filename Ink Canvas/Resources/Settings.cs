@@ -604,7 +604,7 @@ namespace Ink_Canvas
         public bool EnableUIAccessTopMost { get; set; } = false;
 
         [JsonProperty("windowMode")]
-        public bool WindowMode { get; set; } = true; 
+        public bool WindowMode { get; set; } = true;
     }
 
     public class InkToShape
@@ -624,7 +624,7 @@ namespace Ink_Canvas
         [JsonProperty("lineStraightenSensitivity")]
         public double LineStraightenSensitivity { get; set; } = 0.20;
         [JsonProperty("lineNormalizationThreshold")]
-        public double LineNormalizationThreshold { get; set; } = 0.5; 
+        public double LineNormalizationThreshold { get; set; } = 0.5;
     }
 
     public class RandSettings

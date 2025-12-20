@@ -117,7 +117,8 @@ namespace Ink_Canvas
             }
         }
 
-        private void BtnPen_Click(object sender, RoutedEventArgs e) {
+        private void BtnPen_Click(object sender, RoutedEventArgs e)
+        {
             forceEraser = false;
             drawingShapeMode = 0;
             inkCanvas.EditingMode = InkCanvasEditingMode.Ink;
@@ -126,8 +127,10 @@ namespace Ink_Canvas
             isLongPressSelected = false;
         }
 
-        private Task<bool> CheckIsDrawingShapesInMultiTouchMode() {
-            if (isInMultiTouchMode) {
+        private Task<bool> CheckIsDrawingShapesInMultiTouchMode()
+        {
+            if (isInMultiTouchMode)
+            {
                 ToggleSwitchEnableMultiTouchMode.IsOn = false;
                 lastIsInMultiTouchMode = true;
             }
@@ -135,18 +138,21 @@ namespace Ink_Canvas
             return Task.FromResult(true);
         }
 
-        public async void BtnDrawLine_Click(object sender, MouseButtonEventArgs e) {
+        public async void BtnDrawLine_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
-            if (lastMouseDownSender == sender) {
+            if (lastMouseDownSender == sender)
+            {
                 forceEraser = true;
                 drawingShapeMode = 1;
                 inkCanvas.EditingMode = InkCanvasEditingMode.None;
                 inkCanvas.IsManipulationEnabled = true;
-            CancelSingleFingerDragMode();
+                CancelSingleFingerDragMode();
             }
 
             lastMouseDownSender = null;
-            if (isLongPressSelected) {
+            if (isLongPressSelected)
+            {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
                 var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
                 ImageDrawLine.BeginAnimation(OpacityProperty, dA);
@@ -155,18 +161,21 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawDashedLine_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawDashedLine_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
-            if (lastMouseDownSender == sender) {
+            if (lastMouseDownSender == sender)
+            {
                 forceEraser = true;
                 drawingShapeMode = 8;
                 inkCanvas.EditingMode = InkCanvasEditingMode.None;
                 inkCanvas.IsManipulationEnabled = true;
-            CancelSingleFingerDragMode();
+                CancelSingleFingerDragMode();
             }
 
             lastMouseDownSender = null;
-            if (isLongPressSelected) {
+            if (isLongPressSelected)
+            {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
                 var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
                 ImageDrawDashedLine.BeginAnimation(OpacityProperty, dA);
@@ -175,18 +184,21 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawDotLine_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawDotLine_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
-            if (lastMouseDownSender == sender) {
+            if (lastMouseDownSender == sender)
+            {
                 forceEraser = true;
                 drawingShapeMode = 18;
                 inkCanvas.EditingMode = InkCanvasEditingMode.None;
                 inkCanvas.IsManipulationEnabled = true;
-            CancelSingleFingerDragMode();
+                CancelSingleFingerDragMode();
             }
 
             lastMouseDownSender = null;
-            if (isLongPressSelected) {
+            if (isLongPressSelected)
+            {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
                 var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
                 ImageDrawDotLine.BeginAnimation(OpacityProperty, dA);
@@ -195,18 +207,21 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawArrow_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawArrow_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
-            if (lastMouseDownSender == sender) {
+            if (lastMouseDownSender == sender)
+            {
                 forceEraser = true;
                 drawingShapeMode = 2;
                 inkCanvas.EditingMode = InkCanvasEditingMode.None;
                 inkCanvas.IsManipulationEnabled = true;
-            CancelSingleFingerDragMode();
+                CancelSingleFingerDragMode();
             }
 
             lastMouseDownSender = null;
-            if (isLongPressSelected) {
+            if (isLongPressSelected)
+            {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
                 var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
                 ImageDrawArrow.BeginAnimation(OpacityProperty, dA);
@@ -215,18 +230,21 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawParallelLine_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawParallelLine_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
-            if (lastMouseDownSender == sender) {
+            if (lastMouseDownSender == sender)
+            {
                 forceEraser = true;
                 drawingShapeMode = 15;
                 inkCanvas.EditingMode = InkCanvasEditingMode.None;
                 inkCanvas.IsManipulationEnabled = true;
-            CancelSingleFingerDragMode();
+                CancelSingleFingerDragMode();
             }
 
             lastMouseDownSender = null;
-            if (isLongPressSelected) {
+            if (isLongPressSelected)
+            {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
                 var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
                 ImageDrawParallelLine.BeginAnimation(OpacityProperty, dA);
@@ -235,7 +253,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCoordinate1_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCoordinate1_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 11;
@@ -245,7 +264,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCoordinate2_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCoordinate2_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 12;
@@ -255,7 +275,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCoordinate3_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCoordinate3_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 13;
@@ -265,7 +286,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCoordinate4_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCoordinate4_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 14;
@@ -275,7 +297,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCoordinate5_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCoordinate5_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 17;
@@ -285,7 +308,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawRectangle_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawRectangle_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 3;
@@ -295,7 +319,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawRectangleCenter_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawRectangleCenter_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 19;
@@ -305,7 +330,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawEllipse_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawEllipse_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 4;
@@ -315,7 +341,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCircle_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCircle_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 5;
@@ -325,7 +352,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCenterEllipse_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCenterEllipse_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 16;
@@ -335,7 +363,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCenterEllipseWithFocalPoint_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCenterEllipseWithFocalPoint_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 23;
@@ -345,7 +374,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawDashedCircle_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawDashedCircle_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 10;
@@ -355,7 +385,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawHyperbola_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawHyperbola_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 24;
@@ -366,7 +397,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawHyperbolaWithFocalPoint_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawHyperbolaWithFocalPoint_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 25;
@@ -377,7 +409,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawParabola1_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawParabola1_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 20;
@@ -387,7 +420,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawParabolaWithFocalPoint_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawParabolaWithFocalPoint_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 22;
@@ -397,7 +431,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawParabola2_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawParabola2_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 21;
@@ -407,7 +442,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCylinder_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCylinder_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 6;
@@ -417,7 +453,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCone_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCone_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 7;
@@ -427,7 +464,8 @@ namespace Ink_Canvas
             DrawShapePromptToPen();
         }
 
-        private async void BtnDrawCuboid_Click(object sender, MouseButtonEventArgs e) {
+        private async void BtnDrawCuboid_Click(object sender, MouseButtonEventArgs e)
+        {
             await CheckIsDrawingShapesInMultiTouchMode();
             forceEraser = true;
             drawingShapeMode = 9;
@@ -442,19 +480,24 @@ namespace Ink_Canvas
 
         #endregion
 
-        private void inkCanvas_TouchMove(object sender, TouchEventArgs e) {
+        private void inkCanvas_TouchMove(object sender, TouchEventArgs e)
+        {
             if (isSingleFingerDragMode) return;
-            if (drawingShapeMode != 0) {
+            if (drawingShapeMode != 0)
+            {
                 //EraserContainer.Background = null;
                 //ImageEraser.Visibility = Visibility.Visible;
                 if (isWaitUntilNextTouchDown) return;
-                if (dec.Count > 1) {
+                if (dec.Count > 1)
+                {
                     isWaitUntilNextTouchDown = true;
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -478,7 +521,8 @@ namespace Ink_Canvas
 
         #region 形状绘制主函数
 
-        private void MouseTouchMove(Point endP) {
+        private void MouseTouchMove(Point endP)
+        {
             // 禁用原有的FitToCurve，使用新的高级贝塞尔曲线平滑
             if (Settings.Canvas.FitToCurve) drawingAttributes.FitToCurve = false;
             // 在绘制过程中禁用浮动栏交互，避免干扰绘制
@@ -498,10 +542,12 @@ namespace Ink_Canvas
                         new Point(endP.X, endP.Y)
                     };
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -512,10 +558,12 @@ namespace Ink_Canvas
                 case 8:
                     _currentCommitType = CommitReason.ShapeDrawing;
                     strokes.Add(GenerateDashedLineStrokeCollection(iniP, endP));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -525,10 +573,12 @@ namespace Ink_Canvas
                 case 18:
                     _currentCommitType = CommitReason.ShapeDrawing;
                     strokes.Add(GenerateDotLineStrokeCollection(iniP, endP));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -550,10 +600,12 @@ namespace Ink_Canvas
                         new Point(endP.X + (w * cost + h * sint), endP.Y - (h * cost - w * sint))
                     };
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -615,10 +667,12 @@ namespace Ink_Canvas
                         new Point(endP.X + x * sinTheta, endP.Y + x * cosTheta)));
                     strokes.Add(GenerateLineStroke(new Point(iniP.X + 3 * x * sinTheta, iniP.Y + 3 * x * cosTheta),
                         new Point(endP.X + 3 * x * sinTheta, endP.Y + 3 * x * cosTheta)));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -631,10 +685,12 @@ namespace Ink_Canvas
                         new Point(endP.X, iniP.Y)));
                     strokes.Add(GenerateArrowLineStroke(new Point(iniP.X, 2 * iniP.Y - (endP.Y + 20)),
                         new Point(iniP.X, endP.Y)));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -649,10 +705,12 @@ namespace Ink_Canvas
                         new Point(endP.X, iniP.Y)));
                     strokes.Add(GenerateArrowLineStroke(new Point(iniP.X, 2 * iniP.Y - (endP.Y + 20)),
                         new Point(iniP.X, endP.Y)));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -667,10 +725,12 @@ namespace Ink_Canvas
                     strokes.Add(GenerateArrowLineStroke(
                         new Point(iniP.X, iniP.Y + (iniP.Y - endP.Y) / Math.Abs(iniP.Y - endP.Y) * 25),
                         new Point(iniP.X, endP.Y)));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -686,10 +746,12 @@ namespace Ink_Canvas
                     strokes.Add(GenerateArrowLineStroke(
                         new Point(iniP.X, iniP.Y + (iniP.Y - endP.Y) / Math.Abs(iniP.Y - endP.Y) * 25),
                         new Point(iniP.X, endP.Y)));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -705,10 +767,12 @@ namespace Ink_Canvas
                     d = (Math.Abs(iniP.X - endP.X) + Math.Abs(iniP.Y - endP.Y)) / 2;
                     strokes.Add(GenerateArrowLineStroke(new Point(iniP.X, iniP.Y),
                         new Point(iniP.X - d / 1.76, iniP.Y + d / 1.76)));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -725,10 +789,12 @@ namespace Ink_Canvas
                         new Point(iniP.X, iniP.Y)
                     };
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -748,10 +814,12 @@ namespace Ink_Canvas
                         new Point(iniP.X - a, iniP.Y - b)
                     };
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -763,10 +831,12 @@ namespace Ink_Canvas
                     _currentCommitType = CommitReason.ShapeDrawing;
                     pointList = GenerateEllipseGeometry(iniP, endP);
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -780,10 +850,12 @@ namespace Ink_Canvas
                     pointList = GenerateEllipseGeometry(new Point(iniP.X - R, iniP.Y - R),
                         new Point(iniP.X + R, iniP.Y + R));
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -792,7 +864,8 @@ namespace Ink_Canvas
                     inkCanvas.Strokes.Add(stroke);
 
                     // 如果启用了圆心标记功能，则绘制圆心
-                    if (Settings.Canvas.ShowCircleCenter) {
+                    if (Settings.Canvas.ShowCircleCenter)
+                    {
                         DrawCircleCenter(iniP);
                     }
                     break;
@@ -803,10 +876,12 @@ namespace Ink_Canvas
                     pointList = GenerateEllipseGeometry(new Point(iniP.X - halfA, iniP.Y - halfB),
                         new Point(iniP.X + halfA, iniP.Y + halfB));
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
                     catch { }
@@ -821,46 +896,54 @@ namespace Ink_Canvas
                     pointList = GenerateEllipseGeometry(new Point(iniP.X - a, iniP.Y - b),
                         new Point(iniP.X + a, iniP.Y + b));
                     point = new StylusPointCollection(pointList);
-                    stroke = new Stroke(point) {
+                    stroke = new Stroke(point)
+                    {
                         DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                     };
                     strokes.Add(stroke);
                     var c = Math.Sqrt(Math.Abs(a * a - b * b));
                     StylusPoint stylusPoint;
-                    if (a > b) {
+                    if (a > b)
+                    {
                         stylusPoint = new StylusPoint(iniP.X + c, iniP.Y, (float)1.0);
                         point = new StylusPointCollection();
                         point.Add(stylusPoint);
-                        stroke = new Stroke(point) {
+                        stroke = new Stroke(point)
+                        {
                             DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                         };
                         strokes.Add(stroke.Clone());
                         stylusPoint = new StylusPoint(iniP.X - c, iniP.Y, (float)1.0);
                         point = new StylusPointCollection();
                         point.Add(stylusPoint);
-                        stroke = new Stroke(point) {
+                        stroke = new Stroke(point)
+                        {
                             DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                         };
                         strokes.Add(stroke.Clone());
                     }
-                    else if (a < b) {
+                    else if (a < b)
+                    {
                         stylusPoint = new StylusPoint(iniP.X, iniP.Y - c, (float)1.0);
                         point = new StylusPointCollection();
                         point.Add(stylusPoint);
-                        stroke = new Stroke(point) {
+                        stroke = new Stroke(point)
+                        {
                             DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                         };
                         strokes.Add(stroke.Clone());
                         stylusPoint = new StylusPoint(iniP.X, iniP.Y + c, (float)1.0);
                         point = new StylusPointCollection();
                         point.Add(stylusPoint);
-                        stroke = new Stroke(point) {
+                        stroke = new Stroke(point)
+                        {
                             DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone()
                         };
                         strokes.Add(stroke.Clone());
                     }
 
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
                     catch { }
@@ -873,10 +956,12 @@ namespace Ink_Canvas
                     R = GetDistance(iniP, endP);
                     strokes = GenerateDashedLineEllipseStrokeCollection(new Point(iniP.X - R, iniP.Y - R),
                         new Point(iniP.X + R, iniP.Y + R));
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
@@ -891,7 +976,8 @@ namespace Ink_Canvas
                     var pointList2 = new List<Point>();
                     var pointList3 = new List<Point>();
                     var pointList4 = new List<Point>();
-                    if (drawMultiStepShapeCurrentStep == 0) {
+                    if (drawMultiStepShapeCurrentStep == 0)
+                    {
                         //第一笔：画渐近线
                         var k = Math.Abs((endP.Y - iniP.Y) / (endP.X - iniP.X));
                         strokes.Add(
@@ -902,24 +988,29 @@ namespace Ink_Canvas
                         drawMultiStepShapeSpecialParameter3 = k;
                         drawMultiStepShapeSpecialStrokeCollection = strokes;
                     }
-                    else {
+                    else
+                    {
                         //第二笔：画双曲线
                         // 先将第一笔的渐近线添加到strokes中
-                        if (drawMultiStepShapeSpecialStrokeCollection != null && drawMultiStepShapeSpecialStrokeCollection.Count > 0) {
-                            foreach (var asymptoteStroke in drawMultiStepShapeSpecialStrokeCollection) {
+                        if (drawMultiStepShapeSpecialStrokeCollection != null && drawMultiStepShapeSpecialStrokeCollection.Count > 0)
+                        {
+                            foreach (var asymptoteStroke in drawMultiStepShapeSpecialStrokeCollection)
+                            {
                                 strokes.Add(asymptoteStroke.Clone());
                             }
                         }
-                        
+
                         var k = drawMultiStepShapeSpecialParameter3;
                         var isHyperbolaFocalPointOnXAxis = Math.Abs((endP.Y - iniP.Y) / (endP.X - iniP.X)) < k;
-                        if (isHyperbolaFocalPointOnXAxis) {
+                        if (isHyperbolaFocalPointOnXAxis)
+                        {
                             // 焦点在 x 轴上
                             a = Math.Sqrt(Math.Abs((endP.X - iniP.X) * (endP.X - iniP.X) -
                                                    (endP.Y - iniP.Y) * (endP.Y - iniP.Y) / (k * k)));
                             b = a * k;
                             pointList = new List<Point>();
-                            for (var i = a; i <= Math.Abs(endP.X - iniP.X); i += 0.5) {
+                            for (var i = a; i <= Math.Abs(endP.X - iniP.X); i += 0.5)
+                            {
                                 var rY = Math.Sqrt(Math.Abs(k * k * i * i - b * b));
                                 pointList.Add(new Point(iniP.X + i, iniP.Y - rY));
                                 pointList2.Add(new Point(iniP.X + i, iniP.Y + rY));
@@ -927,13 +1018,15 @@ namespace Ink_Canvas
                                 pointList4.Add(new Point(iniP.X - i, iniP.Y + rY));
                             }
                         }
-                        else {
+                        else
+                        {
                             // 焦点在 y 轴上
                             a = Math.Sqrt(Math.Abs((endP.Y - iniP.Y) * (endP.Y - iniP.Y) -
                                                    (endP.X - iniP.X) * (endP.X - iniP.X) * (k * k)));
                             b = a / k;
                             pointList = new List<Point>();
-                            for (var i = a; i <= Math.Abs(endP.Y - iniP.Y); i += 0.5) {
+                            for (var i = a; i <= Math.Abs(endP.Y - iniP.Y); i += 0.5)
+                            {
                                 var rX = Math.Sqrt(Math.Abs(i * i / k / k - b * b));
                                 pointList.Add(new Point(iniP.X - rX, iniP.Y + i));
                                 pointList2.Add(new Point(iniP.X + rX, iniP.Y + i));
@@ -942,7 +1035,8 @@ namespace Ink_Canvas
                             }
                         }
 
-                        try {
+                        try
+                        {
                             point = new StylusPointCollection(pointList);
                             stroke = new Stroke(point)
                             { DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone() };
@@ -959,7 +1053,8 @@ namespace Ink_Canvas
                             stroke = new Stroke(point)
                             { DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone() };
                             strokes.Add(stroke.Clone());
-                            if (drawingShapeMode == 25) {
+                            if (drawingShapeMode == 25)
+                            {
                                 //画焦点
                                 c = Math.Sqrt(a * a + b * b);
                                 stylusPoint = isHyperbolaFocalPointOnXAxis
@@ -968,7 +1063,7 @@ namespace Ink_Canvas
                                 point = new StylusPointCollection();
                                 point.Add(stylusPoint);
                                 stroke = new Stroke(point)
-                                    { DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone() };
+                                { DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone() };
                                 strokes.Add(stroke.Clone());
                                 stylusPoint = isHyperbolaFocalPointOnXAxis
                                     ? new StylusPoint(iniP.X - c, iniP.Y, (float)1.0)
@@ -976,24 +1071,27 @@ namespace Ink_Canvas
                                 point = new StylusPointCollection();
                                 point.Add(stylusPoint);
                                 stroke = new Stroke(point)
-                                    { DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone() };
+                                { DrawingAttributes = inkCanvas.DefaultDrawingAttributes.Clone() };
                                 strokes.Add(stroke.Clone());
                             }
                         }
-                        catch {
+                        catch
+                        {
                             return;
                         }
                     }
 
-                    try {
+                    try
+                    {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
 
-                        lastTempStrokeCollection = strokes;
-                        inkCanvas.Strokes.Add(strokes);
+                    lastTempStrokeCollection = strokes;
+                    inkCanvas.Strokes.Add(strokes);
                     break;
                 case 20:
                     _currentCommitType = CommitReason.ShapeDrawing;
@@ -1657,8 +1755,10 @@ namespace Ink_Canvas
             ViewboxFloatingBar.IsHitTestVisible = true;
             BlackboardUIGridForInkReplay.IsHitTestVisible = true;
 
-            if (drawingShapeMode == 5) {
-                if (lastTempStroke != null) {
+            if (drawingShapeMode == 5)
+            {
+                if (lastTempStroke != null)
+                {
                     var circle = new Circle(new Point(), 0, lastTempStroke);
                     circle.R = GetDistance(circle.Stroke.StylusPoints[0].ToPoint(),
                         circle.Stroke.StylusPoints[circle.Stroke.StylusPoints.Count / 2].ToPoint()) / 2;
@@ -1670,25 +1770,31 @@ namespace Ink_Canvas
                     circles.Add(circle);
                 }
 
-                if (lastIsInMultiTouchMode) {
+                if (lastIsInMultiTouchMode)
+                {
                     ToggleSwitchEnableMultiTouchMode.IsOn = true;
                     lastIsInMultiTouchMode = false;
                 }
             }
 
-            if (drawingShapeMode != 9 && drawingShapeMode != 0 && drawingShapeMode != 24 && drawingShapeMode != 25) {
+            if (drawingShapeMode != 9 && drawingShapeMode != 0 && drawingShapeMode != 24 && drawingShapeMode != 25)
+            {
                 if (isLongPressSelected) { }
-                else {
+                else
+                {
                     BtnPen_Click(null, null); //画完一次还原到笔模式
-                    if (lastIsInMultiTouchMode) {
+                    if (lastIsInMultiTouchMode)
+                    {
                         ToggleSwitchEnableMultiTouchMode.IsOn = true;
                         lastIsInMultiTouchMode = false;
                     }
                 }
             }
 
-            if (drawingShapeMode == 9) {
-                if (isFirstTouchCuboid) {
+            if (drawingShapeMode == 9)
+            {
+                if (isFirstTouchCuboid)
+                {
                     if (CuboidStrokeCollection == null) CuboidStrokeCollection = new StrokeCollection();
                     isFirstTouchCuboid = false;
                     var newIniP = new Point(Math.Min(CuboidFrontRectIniP.X, CuboidFrontRectEndP.X),
@@ -1697,25 +1803,32 @@ namespace Ink_Canvas
                         Math.Max(CuboidFrontRectIniP.Y, CuboidFrontRectEndP.Y));
                     CuboidFrontRectIniP = newIniP;
                     CuboidFrontRectEndP = newEndP;
-                    try {
+                    try
+                    {
                         CuboidStrokeCollection.Add(lastTempStrokeCollection);
                     }
-                    catch {
+                    catch
+                    {
                         Trace.WriteLine("lastTempStrokeCollection failed.");
                     }
                 }
-                else {
+                else
+                {
                     BtnPen_Click(null, null); //画完还原到笔模式
-                    if (lastIsInMultiTouchMode) {
+                    if (lastIsInMultiTouchMode)
+                    {
                         ToggleSwitchEnableMultiTouchMode.IsOn = true;
                         lastIsInMultiTouchMode = false;
                     }
 
-                    if (_currentCommitType == CommitReason.ShapeDrawing) {
-                        try {
+                    if (_currentCommitType == CommitReason.ShapeDrawing)
+                    {
+                        try
+                        {
                             CuboidStrokeCollection.Add(lastTempStrokeCollection);
                         }
-                        catch {
+                        catch
+                        {
                             Trace.WriteLine("lastTempStrokeCollection failed.");
                         }
 
@@ -1726,15 +1839,20 @@ namespace Ink_Canvas
                 }
             }
 
-            if (drawingShapeMode == 24 || drawingShapeMode == 25) {
-                if (drawMultiStepShapeCurrentStep == 0) {
+            if (drawingShapeMode == 24 || drawingShapeMode == 25)
+            {
+                if (drawMultiStepShapeCurrentStep == 0)
+                {
                     drawMultiStepShapeCurrentStep = 1;
                 }
-                else {
+                else
+                {
                     drawMultiStepShapeCurrentStep = 0;
-                    if (drawMultiStepShapeSpecialStrokeCollection != null) {
+                    if (drawMultiStepShapeSpecialStrokeCollection != null)
+                    {
                         var opFlag = false;
-                        switch (Settings.Canvas.HyperbolaAsymptoteOption) {
+                        switch (Settings.Canvas.HyperbolaAsymptoteOption)
+                        {
                             case OptionalOperation.Yes:
                                 opFlag = true;
                                 break;
@@ -1752,7 +1870,8 @@ namespace Ink_Canvas
                     }
 
                     BtnPen_Click(null, null); //画完还原到笔模式
-                    if (lastIsInMultiTouchMode) {
+                    if (lastIsInMultiTouchMode)
+                    {
                         ToggleSwitchEnableMultiTouchMode.IsOn = true;
                         lastIsInMultiTouchMode = false;
                     }
@@ -1852,10 +1971,14 @@ namespace Ink_Canvas
                 Debug.WriteLine($"绘制圆心标记失败: {ex.Message}");
             }
         }
-        private void MainWindow_OnMouseMove(object sender, MouseEventArgs e) {
-            if (e.StylusDevice == null) {
+        private void MainWindow_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.StylusDevice == null)
+            {
                 System.Windows.Forms.Cursor.Show();
-            } else {
+            }
+            else
+            {
                 System.Windows.Forms.Cursor.Hide();
             }
         }

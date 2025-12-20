@@ -1,3 +1,5 @@
+using iNKORE.UI.WPF.Modern;
+using Microsoft.Win32;
 using System;
 using System.Timers;
 using System.Windows;
@@ -5,8 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Microsoft.Win32;
-using iNKORE.UI.WPF.Modern;
 
 namespace Ink_Canvas.Windows
 {
@@ -21,36 +21,36 @@ namespace Ink_Canvas.Windows
         public MinimizedTimerControl()
         {
             InitializeComponent();
-            
+
             updateTimer = new System.Timers.Timer(100);
             updateTimer.Elapsed += UpdateTimer_Elapsed;
             updateTimer.Start();
-            
+
             ApplyTheme();
-            
+
             // 监听主题变化事件
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
-            
+
             Unloaded += MinimizedTimerControl_Unloaded;
         }
-        
+
         private void MinimizedTimerControl_Unloaded(object sender, RoutedEventArgs e)
         {
             // 取消订阅主题变化事件
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
-            
+
             if (parentControl != null)
             {
                 parentControl.TimerCompleted -= ParentControl_TimerCompleted;
             }
-            
+
             if (updateTimer != null)
             {
                 updateTimer.Stop();
                 updateTimer.Dispose();
             }
         }
-        
+
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             // 当主题变化时，重新应用主题
@@ -59,7 +59,7 @@ namespace Ink_Canvas.Windows
                 RefreshTheme();
             });
         }
-        
+
         /// <summary>
         /// 刷新主题
         /// </summary>
@@ -69,7 +69,7 @@ namespace Ink_Canvas.Windows
             {
                 // 重新应用主题
                 ApplyTheme();
-                
+
                 // 强制刷新UI
                 InvalidateVisual();
             }
@@ -85,9 +85,9 @@ namespace Ink_Canvas.Windows
             {
                 parentControl.TimerCompleted -= ParentControl_TimerCompleted;
             }
-            
+
             parentControl = parent;
-            
+
             if (parentControl != null)
             {
                 parentControl.TimerCompleted += ParentControl_TimerCompleted;
@@ -105,7 +105,7 @@ namespace Ink_Canvas.Windows
                     {
                         return;
                     }
-                    
+
                     if (ShouldHide())
                     {
                         this.Visibility = Visibility.Collapsed;
@@ -116,34 +116,34 @@ namespace Ink_Canvas.Windows
                         }
                         return;
                     }
-                    
+
                     UpdateTimeDisplay();
                 });
             }
         }
-        
+
         private bool ShouldHide()
         {
             if (parentControl == null) return true;
-            
+
             if (parentControl.IsFullscreenWindowOpen)
             {
                 return true;
             }
-            
+
             if (MainWindow.Settings.RandSettings?.EnableOvertimeCountUp == true)
             {
                 if (parentControl.IsTimerRunning)
                 {
                     return false;
                 }
-                
+
                 var remainingTime = parentControl.GetRemainingTime();
                 if (remainingTime.HasValue && remainingTime.Value.TotalSeconds < 0)
                 {
                     return false;
                 }
-                
+
                 return true;
             }
             else
@@ -201,17 +201,17 @@ namespace Ink_Canvas.Windows
 
                 SetDigitDisplay("MinHour1Display", Math.Abs(hours / 10) % 10, shouldShowRed);
                 SetDigitDisplay("MinHour2Display", (hours % 10 + 10) % 10, shouldShowRed);
-                
+
                 SetDigitDisplay("MinMinute1Display", minutes / 10, shouldShowRed);
                 SetDigitDisplay("MinMinute2Display", minutes % 10, shouldShowRed);
-                
+
                 SetDigitDisplay("MinSecond1Display", seconds / 10, shouldShowRed);
                 SetDigitDisplay("MinSecond2Display", seconds % 10, shouldShowRed);
-                
+
                 SetColonDisplay(shouldShowRed);
             }
         }
-        
+
         private void ParentControl_TimerCompleted(object sender, EventArgs e)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -231,7 +231,7 @@ namespace Ink_Canvas.Windows
                 {
                     path.Data = geometry;
                 }
-                
+
                 if (isRed)
                 {
                     path.Fill = Brushes.Red;
@@ -256,7 +256,7 @@ namespace Ink_Canvas.Windows
         {
             var colon1 = this.FindName("MinColon1Display") as TextBlock;
             var colon2 = this.FindName("MinColon2Display") as TextBlock;
-            
+
             if (colon1 != null)
             {
                 if (isRed)
@@ -277,7 +277,7 @@ namespace Ink_Canvas.Windows
                     }
                 }
             }
-            
+
             if (colon2 != null)
             {
                 if (isRed)
@@ -322,7 +322,7 @@ namespace Ink_Canvas.Windows
                 System.Diagnostics.Debug.WriteLine($"应用主题时出错: {ex.Message}");
             }
         }
-        
+
         private void ApplyTheme(Settings settings)
         {
             try
@@ -349,7 +349,7 @@ namespace Ink_Canvas.Windows
                         SetDarkThemeBorder();
                     }
                 }
-                
+
                 // 刷新数字和冒号显示的颜色
                 if (parentControl != null)
                 {
@@ -361,7 +361,7 @@ namespace Ink_Canvas.Windows
                 System.Diagnostics.Debug.WriteLine($"应用最小化计时器窗口主题出错: {ex.Message}");
             }
         }
-        
+
         private bool IsSystemThemeLight()
         {
             var light = false;
@@ -432,13 +432,13 @@ namespace Ink_Canvas.Windows
             }
             Visibility = Visibility.Collapsed;
         }
-        
+
         private bool isDragging = false;
         private bool isDragStarted = false;
         private Point dragStartPoint;
         private Point containerStartPosition;
         private const double DragThreshold = 5.0; // 拖动阈值，像素
-        
+
         private void MainBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
@@ -447,13 +447,13 @@ namespace Ink_Canvas.Windows
                 if (parentControl != null)
                 {
                     parentControl.UpdateActivityTime();
-                    
+
                     var mainWindow = Application.Current.MainWindow as MainWindow;
                     if (mainWindow != null)
                     {
                         var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                         var minimizedContainer = mainWindow.FindName("MinimizedTimerContainer") as FrameworkElement;
-                        
+
                         if (timerContainer != null && minimizedContainer != null)
                         {
                             timerContainer.Visibility = Visibility.Visible;
@@ -474,18 +474,18 @@ namespace Ink_Canvas.Windows
                     {
                         var point = e.GetPosition(minimizedContainer);
                         var mainWindowPoint = minimizedContainer.TransformToAncestor(mainWindow).Transform(point);
-                        
+
                         // 初始化拖动状态，但不立即开始拖动
                         isDragging = false;
                         isDragStarted = false;
                         dragStartPoint = mainWindowPoint;
-                        
+
                         var margin = minimizedContainer.Margin;
                         containerStartPosition = new Point(margin.Left, margin.Top);
-                        
+
                         if (double.IsNaN(containerStartPosition.X) || containerStartPosition.X < 0) containerStartPosition.X = 0;
                         if (double.IsNaN(containerStartPosition.Y) || containerStartPosition.Y < 0) containerStartPosition.Y = 0;
-                        
+
                         // 捕获鼠标并订阅事件，等待判断是拖动还是点击
                         minimizedContainer.CaptureMouse();
                         minimizedContainer.MouseMove += MinimizedContainer_MouseMove;
@@ -495,42 +495,42 @@ namespace Ink_Canvas.Windows
                 }
             }
         }
-        
+
         private void MinimizedContainer_MouseMove(object sender, MouseEventArgs e)
         {
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow == null) return;
-            
+
             var minimizedContainer = mainWindow.FindName("MinimizedTimerContainer") as FrameworkElement;
             if (minimizedContainer == null) return;
-            
+
             var currentPoint = e.GetPosition(mainWindow);
             var deltaX = currentPoint.X - dragStartPoint.X;
             var deltaY = currentPoint.Y - dragStartPoint.Y;
             var distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
-            
+
             // 如果移动距离超过阈值，开始拖动
             if (!isDragStarted && distance > DragThreshold)
             {
                 isDragStarted = true;
                 isDragging = true;
             }
-            
+
             // 如果已经开始拖动，更新位置
             if (isDragging)
             {
                 var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
-                
+
                 var newX = containerStartPosition.X + deltaX;
                 var newY = containerStartPosition.Y + deltaY;
-                
+
                 if (newX < 0) newX = 0;
                 if (newY < 0) newY = 0;
-                
+
                 minimizedContainer.Margin = new Thickness(newX, newY, 0, 0);
                 minimizedContainer.HorizontalAlignment = HorizontalAlignment.Left;
                 minimizedContainer.VerticalAlignment = VerticalAlignment.Top;
-                
+
                 if (timerContainer != null)
                 {
                     timerContainer.Margin = new Thickness(newX, newY, 0, 0);
@@ -539,12 +539,12 @@ namespace Ink_Canvas.Windows
                 }
             }
         }
-        
+
         private void MinimizedContainer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow == null) return;
-            
+
             var minimizedContainer = mainWindow.FindName("MinimizedTimerContainer") as FrameworkElement;
             if (minimizedContainer != null)
             {
@@ -552,14 +552,14 @@ namespace Ink_Canvas.Windows
                 minimizedContainer.MouseMove -= MinimizedContainer_MouseMove;
                 minimizedContainer.MouseLeftButtonUp -= MinimizedContainer_MouseLeftButtonUp;
             }
-            
+
             // 如果没有开始拖动（移动距离小于阈值），则视为单击，恢复主窗口
             if (!isDragStarted)
             {
                 if (parentControl != null)
                 {
                     parentControl.UpdateActivityTime();
-                    
+
                     var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                     if (timerContainer != null && minimizedContainer != null)
                     {
@@ -568,7 +568,7 @@ namespace Ink_Canvas.Windows
                     }
                 }
             }
-            
+
             isDragging = false;
             isDragStarted = false;
         }

@@ -1,8 +1,10 @@
 using Ink_Canvas.Helpers;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,8 +12,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Newtonsoft.Json;
-using System.Runtime.InteropServices;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 
 namespace Ink_Canvas
@@ -48,7 +48,7 @@ namespace Ink_Canvas
 
             InitializeUI();
             ApplyTheme(MainWindow.Settings);
-            
+
             // 初始化点名相关变量
             InitializeRollCallData();
         }
@@ -63,10 +63,10 @@ namespace Ink_Canvas
 
             InitializeUI();
             ApplyTheme(MainWindow.Settings);
-            
+
             // 初始化点名相关变量
             InitializeRollCallData();
-            
+
             if (isSingleDrawMode)
             {
                 if (ControlOptionsGrid != null)
@@ -85,7 +85,7 @@ namespace Ink_Canvas
                     ResetBtn.IsEnabled = false;
                 }
             }
-            
+
             // 单次抽模式：自动开始抽选
             if (isSingleDrawMode)
             {
@@ -108,19 +108,19 @@ namespace Ink_Canvas
 
             // 保存设置
             this.settings = settings;
-            
+
             // 设置单次抽模式
             isSingleDrawMode = isSingleDraw;
 
             InitializeUI();
             ApplyTheme(settings);
-            
+
             // 初始化设置
             InitializeSettings();
-            
+
             // 初始化点名相关变量
             InitializeRollCallData();
-            
+
             // 单次抽模式：禁用控制面板，阻止用户点击按钮
             if (isSingleDrawMode)
             {
@@ -141,7 +141,7 @@ namespace Ink_Canvas
                     ResetBtn.IsEnabled = false;
                 }
             }
-            
+
             // 单次抽模式：自动开始抽选
             if (isSingleDrawMode)
             {
@@ -165,43 +165,43 @@ namespace Ink_Canvas
         private Timer rollCallTimer;
         private Random random = new Random();
         private DateTime lastActivityTime = DateTime.Now;
-        
+
         // 机器学习相关
         private static RollCallHistoryData historyData = null;
         private static readonly object historyLock = new object();
         private static int maxRecentHistory = 20;
-        private static double avoidanceWeight = 0.8; 
-        private const double FREQUENCY_WEIGHT = 0.2; 
-        
+        private static double avoidanceWeight = 0.8;
+        private const double FREQUENCY_WEIGHT = 0.2;
+
         // 概率相关
-        private const double DEFAULT_PROBABILITY = 1.0; 
-        private const double BASE_PROBABILITY_DECAY_FACTOR = 0.5; 
-        private const double MIN_PROBABILITY = 0.01; 
-        private const double PROBABILITY_RECOVERY_RATE = 0.2; 
-        private const double FREQUENCY_BOOST_FACTOR = 2.0; 
-        
+        private const double DEFAULT_PROBABILITY = 1.0;
+        private const double BASE_PROBABILITY_DECAY_FACTOR = 0.5;
+        private const double MIN_PROBABILITY = 0.01;
+        private const double PROBABILITY_RECOVERY_RATE = 0.2;
+        private const double FREQUENCY_BOOST_FACTOR = 2.0;
+
         // 单次抽相关
         private bool isSingleDrawMode = false;
         private Random singleDrawRandom = new Random();
-        
+
         // 设置相关
         private Settings settings;
         private int autoCloseWaitTime = 2500; // 自动关闭等待时间（毫秒）
-        
+
         // 点名模式
         private string selectedRollCallMode = "Random"; // 默认随机点名
-        
+
         // 外部点名相关
         private string selectedExternalCaller = "ClassIsland";
-        
+
         // 开始点名按钮的数据
         private string originalStartBtnIconData = "M5 7C5 8.06087 5.42143 9.07828 6.17157 9.82843C6.92172 10.5786 7.93913 11 9 11C10.0609 11 11.0783 10.5786 11.8284 9.82843C12.5786 9.07828 13 8.06087 13 7C13 5.93913 12.5786 4.92172 11.8284 4.17157C11.0783 3.42143 10.0609 3 9 3C7.93913 3 6.92172 3.42143 6.17157 4.17157C5.42143 4.92172 5 5.93913 5 7Z M3 21V19C3 17.9391 3.42143 16.9217 4.17157 16.1716C4.92172 15.4214 5.93913 15 7 15H11C12.0609 15 13.0783 15.4214 13.8284 16.1716C14.5786 16.9217 15 17.9391 15 19V21 M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88 M21 21V19C20.9949 18.1172 20.6979 17.2608 20.1553 16.5644C19.6126 15.868 18.8548 15.3707 18 15.15";
         private string originalStartBtnText = "开始点名";
-        
+
         // 外部点名按钮的数据
         private string externalCallerBtnIconData = "M9 15L15 9 M11 6L11.463 5.464C12.4008 4.52633 13.6727 3.9996 14.9989 3.99969C16.325 3.99979 17.5968 4.52669 18.5345 5.4645C19.4722 6.40231 19.9989 7.67419 19.9988 9.00035C19.9987 10.3265 19.4718 11.5983 18.534 12.536L18 13 M13.0001 18L12.6031 18.534C11.6544 19.4722 10.3739 19.9984 9.03964 19.9984C7.70535 19.9984 6.42489 19.4722 5.47614 18.534C5.0085 18.0716 4.63724 17.521 4.38385 16.9141C4.13047 16.3073 4 15.6561 4 14.9985C4 14.3408 4.13047 13.6897 4.38385 13.0829C4.63724 12.476 5.0085 11.9254 5.47614 11.463L6.00014 11";
         private string externalCallerBtnText = "外部点名";
-        
+
         // JSON文件路径
         private static readonly string ConfigsFolder = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs");
         private static readonly string RollCallHistoryJsonPath = System.IO.Path.Combine(ConfigsFolder, "RollCallHistory.json");
@@ -211,7 +211,7 @@ namespace Ink_Canvas
         private void InitializeUI()
         {
             UpdateCountDisplay();
-            LoadNamesFromFile(); 
+            LoadNamesFromFile();
             UpdateListCountDisplay();
             LoadRollCallHistory();
             LoadSettings();
@@ -308,7 +308,7 @@ namespace Ink_Canvas
         private void InitializeRollCallData()
         {
             // 初始化点名定时器
-            rollCallTimer = new Timer(100); 
+            rollCallTimer = new Timer(100);
             rollCallTimer.Elapsed += RollCallTimer_Elapsed;
         }
 
@@ -375,7 +375,7 @@ namespace Ink_Canvas
             {
                 // 更新窗口资源
                 var resources = this.Resources;
-                
+
                 if (theme == "Light")
                 {
                     // 应用浅色主题资源
@@ -459,10 +459,10 @@ namespace Ink_Canvas
         private List<string> SelectNamesSequentially(List<string> availableNames, int count)
         {
             if (availableNames.Count == 0) return new List<string>();
-            
+
             var selectedNames = new List<string>();
             int startIndex = 0;
-            
+
             // 从历史记录中找到上次选择的位置
             if (historyData.History != null && historyData.History.Count > 0)
             {
@@ -476,13 +476,13 @@ namespace Ink_Canvas
                     }
                 }
             }
-            
+
             for (int i = 0; i < count && i < availableNames.Count; i++)
             {
                 int index = (startIndex + i) % availableNames.Count;
                 selectedNames.Add(availableNames[index]);
             }
-            
+
             return selectedNames;
         }
 
@@ -492,15 +492,15 @@ namespace Ink_Canvas
         private List<string> SelectNamesInGroups(List<string> availableNames, int count)
         {
             if (availableNames.Count == 0) return new List<string>();
-            
+
             var selectedNames = new List<string>();
             int groupSize = Math.Max(1, availableNames.Count / count);
-            
+
             for (int i = 0; i < count && i * groupSize < availableNames.Count; i++)
             {
                 int startIndex = i * groupSize;
                 int endIndex = Math.Min(startIndex + groupSize, availableNames.Count);
-                
+
                 // 从当前组中随机选择一个人
                 var group = availableNames.GetRange(startIndex, endIndex - startIndex);
                 if (group.Count > 0)
@@ -509,7 +509,7 @@ namespace Ink_Canvas
                     selectedNames.Add(group[randomIndex]);
                 }
             }
-            
+
             return selectedNames;
         }
         #endregion
@@ -646,12 +646,12 @@ namespace Ink_Canvas
             {
                 // 获取基础概率
                 double baseProbability = GetNameProbability(name);
-                
+
                 // 根据最近历史记录调整概率
                 double adjustedProbability = AdjustProbabilityByRecentHistory(name, baseProbability);
-                
+
                 double finalProbability = AdjustProbabilityByFrequency(name, adjustedProbability);
-                
+
                 nameProbabilities[name] = finalProbability;
             }
 
@@ -692,13 +692,13 @@ namespace Ink_Canvas
             int recentCount = recentHistory.Count(n => n == name);
 
             if (recentCount == 0)
-                return baseProbability; 
+                return baseProbability;
 
             double recentFrequency = (double)recentCount / Math.Min(recentHistory.Count, maxRecentHistory);
-            
+
             double reductionFactor = 1.0 - (recentFrequency * avoidanceWeight);
             reductionFactor = Math.Max(reductionFactor, MIN_PROBABILITY / DEFAULT_PROBABILITY); // 确保不会降得太低
-            
+
             return baseProbability * reductionFactor;
         }
 
@@ -732,20 +732,20 @@ namespace Ink_Canvas
                 double frequencyRatio = nameFrequency / averageFrequency;
 
                 double frequencyGap = 1.0 - frequencyRatio;
-                double boostFactor = FREQUENCY_BOOST_FACTOR * frequencyGap * frequencyGap; 
-                
+                double boostFactor = FREQUENCY_BOOST_FACTOR * frequencyGap * frequencyGap;
+
                 // 增加概率
                 double boostedProbability = baseProbability * (1.0 + boostFactor);
-                
+
                 return Math.Min(boostedProbability, DEFAULT_PROBABILITY * 10.0);
             }
             else if (nameFrequency > averageFrequency)
             {
                 double frequencyRatio = nameFrequency / averageFrequency;
-                
-                double reductionFactor = 1.0 - (frequencyRatio - 1.0) * 0.3; 
+
+                double reductionFactor = 1.0 - (frequencyRatio - 1.0) * 0.3;
                 reductionFactor = Math.Max(reductionFactor, MIN_PROBABILITY / DEFAULT_PROBABILITY);
-                
+
                 return baseProbability * reductionFactor;
             }
 
@@ -782,8 +782,8 @@ namespace Ink_Canvas
                 int nameCount = kvp.Value;
 
                 // 获取当前保存的概率（如果不存在则使用默认值）
-                double currentProbability = historyData.NameProbabilities.ContainsKey(name) 
-                    ? historyData.NameProbabilities[name] 
+                double currentProbability = historyData.NameProbabilities.ContainsKey(name)
+                    ? historyData.NameProbabilities[name]
                     : DEFAULT_PROBABILITY;
 
                 // 计算该名字的选中频率
@@ -795,24 +795,24 @@ namespace Ink_Canvas
                     // 计算频率差异比例
                     double frequencyRatio = nameFrequency / averageFrequency;
                     double frequencyGap = 1.0 - frequencyRatio;
-                    double boostFactor = FREQUENCY_BOOST_FACTOR * frequencyGap * frequencyGap; 
-                    
+                    double boostFactor = FREQUENCY_BOOST_FACTOR * frequencyGap * frequencyGap;
+
                     // 增加概率
                     double boostedProbability = currentProbability * (1.0 + boostFactor);
-                    
+
                     // 限制最大概率，避免过高
                     boostedProbability = Math.Min(boostedProbability, DEFAULT_PROBABILITY * 10.0);
-                    
+
                     // 保存更新后的概率
                     historyData.NameProbabilities[name] = boostedProbability;
                 }
                 else if (nameFrequency > averageFrequency)
                 {
                     double frequencyRatio = nameFrequency / averageFrequency;
-                    
-                    double reductionFactor = 1.0 - (frequencyRatio - 1.0) * 0.3; 
+
+                    double reductionFactor = 1.0 - (frequencyRatio - 1.0) * 0.3;
                     reductionFactor = Math.Max(reductionFactor, MIN_PROBABILITY / DEFAULT_PROBABILITY);
-                    
+
                     double reducedProbability = currentProbability * reductionFactor;
                     historyData.NameProbabilities[name] = reducedProbability;
                 }
@@ -963,19 +963,19 @@ namespace Ink_Canvas
                             {
                                 double nameFrequency = (double)historyData.NameFrequency[name] / totalSelections;
                                 double averageFrequency = 1.0 / uniqueNamesCount;
-                                
+
                                 if (nameFrequency > averageFrequency)
                                 {
                                     double frequencyRatio = nameFrequency / averageFrequency;
-                                    frequencyBasedDecay = 1.0 - (frequencyRatio - 1.0) * 0.2; 
+                                    frequencyBasedDecay = 1.0 - (frequencyRatio - 1.0) * 0.2;
                                 }
                             }
                         }
                     }
-                    
+
                     double decayFactor = BASE_PROBABILITY_DECAY_FACTOR * (1.0 + avoidanceWeight) * frequencyBasedDecay;
-                    decayFactor = Math.Min(decayFactor, 0.85); 
-                    
+                    decayFactor = Math.Min(decayFactor, 0.85);
+
                     double newProbability = currentProbability * decayFactor;
                     newProbability = Math.Max(newProbability, MIN_PROBABILITY); // 确保不低于最小概率
                     historyData.NameProbabilities[name] = newProbability;
@@ -1120,7 +1120,7 @@ namespace Ink_Canvas
                 MainResultDisplay.Text = "";
                 MainResultDisplay.Visibility = Visibility.Collapsed;
                 MultiResultScrollViewer.Visibility = Visibility.Visible;
-                
+
                 // 显示所有结果（最多20个）
                 Result1Display.Text = results.Count > 0 ? results[0] : "";
                 Result2Display.Text = results.Count > 1 ? results[1] : "";
@@ -1150,10 +1150,10 @@ namespace Ink_Canvas
         private void CountPlus_Click(object sender, RoutedEventArgs e)
         {
             if (isRollCalling) return;
-            
+
             // 获取老点名UI的设置
             int maxPeopleLimit = settings?.RandSettings?.RandWindowOnceMaxStudents ?? 10;
-            
+
             if (isSingleDrawMode)
             {
                 // 单次抽模式：最多选择60个数字，但受设置限制
@@ -1176,7 +1176,7 @@ namespace Ink_Canvas
                 }
                 currentCount = Math.Min(currentCount + 1, maxCount);
             }
-            
+
             UpdateCountDisplay();
         }
 
@@ -1194,7 +1194,7 @@ namespace Ink_Canvas
                 // 打开名单导入窗口，与老点名UI保持一致
                 var namesInputWindow = new NamesInputWindow();
                 namesInputWindow.ShowDialog();
-                
+
                 // 重新加载名单
                 LoadNamesFromFile();
                 UpdateListCountDisplay();
@@ -1260,7 +1260,7 @@ namespace Ink_Canvas
             {
                 // 存储选择的模式
                 selectedRollCallMode = mode;
-                
+
                 // 重置所有按钮状态
                 RandomModeText.FontWeight = FontWeights.Normal;
                 RandomModeText.Opacity = 0.6;
@@ -1271,7 +1271,7 @@ namespace Ink_Canvas
                 GroupModeText.FontWeight = FontWeights.Normal;
                 GroupModeText.Opacity = 0.6;
                 GroupModeText.Foreground = new SolidColorBrush(Color.FromRgb(102, 102, 102));
-                
+
                 // 重置外部点名模式按钮状态
                 ExternalCallerModeText.FontWeight = FontWeights.Normal;
                 ExternalCallerModeText.Opacity = 0.6;
@@ -1288,13 +1288,13 @@ namespace Ink_Canvas
                         RandomModeText.Foreground = new SolidColorBrush(Colors.White);
                         SegmentedIndicator.HorizontalAlignment = HorizontalAlignment.Left;
                         SegmentedIndicator.CornerRadius = new CornerRadius(7.5, 0, 0, 7.5);
-                        
+
                         // 添加动画效果
                         var randomAnimation = new System.Windows.Media.Animation.ThicknessAnimation(
                             new Thickness(0, 0, 0, 0),
                             TimeSpan.FromMilliseconds(200));
                         SegmentedIndicator.BeginAnimation(Border.MarginProperty, randomAnimation);
-                        
+
                         // 恢复开始点名按钮的原始图标和文字
                         RestoreStartRollCallButton();
                         UpdateStatusDisplay("已选择点名模式: 随机点名");
@@ -1305,13 +1305,13 @@ namespace Ink_Canvas
                         SequentialModeText.Foreground = new SolidColorBrush(Colors.White);
                         SegmentedIndicator.HorizontalAlignment = HorizontalAlignment.Left;
                         SegmentedIndicator.CornerRadius = new CornerRadius(0, 0, 0, 0);
-                        
+
                         // 添加动画效果 - 移动到中间位置
                         var sequentialAnimation = new System.Windows.Media.Animation.ThicknessAnimation(
                             new Thickness(100, 0, 0, 0),
                             TimeSpan.FromMilliseconds(200));
                         SegmentedIndicator.BeginAnimation(Border.MarginProperty, sequentialAnimation);
-                        
+
                         // 恢复开始点名按钮的原始图标和文字
                         RestoreStartRollCallButton();
                         UpdateStatusDisplay("已选择点名模式: 顺序点名");
@@ -1322,13 +1322,13 @@ namespace Ink_Canvas
                         GroupModeText.Foreground = new SolidColorBrush(Colors.White);
                         SegmentedIndicator.HorizontalAlignment = HorizontalAlignment.Left;
                         SegmentedIndicator.CornerRadius = new CornerRadius(0, 7.5, 7.5, 0);
-                        
+
                         // 添加动画效果 - 移动到右侧位置
                         var groupAnimation = new System.Windows.Media.Animation.ThicknessAnimation(
                             new Thickness(200, 0, 0, 0),
                             TimeSpan.FromMilliseconds(200));
                         SegmentedIndicator.BeginAnimation(Border.MarginProperty, groupAnimation);
-                        
+
                         // 恢复开始点名按钮的原始图标和文字
                         RestoreStartRollCallButton();
                         UpdateStatusDisplay("已选择点名模式: 分组点名");
@@ -1339,10 +1339,10 @@ namespace Ink_Canvas
                         ExternalCallerModeText.Opacity = 1.0;
                         ExternalCallerModeText.Foreground = new SolidColorBrush(Colors.White);
                         ExternalCallerModeIndicator.Visibility = Visibility.Visible;
-                        
+
                         // 隐藏其他模式的指示器
                         SegmentedIndicator.Visibility = Visibility.Collapsed;
-                        
+
                         // 切换到外部点名按钮的图标和文字
                         UpdateStartRollCallButtonForExternal();
                         UpdateStatusDisplay($"已选择点名模式: 外部点名 ({selectedExternalCaller})");
@@ -1354,7 +1354,7 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"设置点名模式选择时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
-        
+
         /// <summary>
         /// 更新开始点名按钮为外部点名样式
         /// </summary>
@@ -1369,14 +1369,14 @@ namespace Ink_Canvas
                     // 外部点名使用按钮前景色而不是主按钮前景色
                     StartRollCallBtnIcon.Stroke = (Brush)FindResource("NewRollCallWindowButtonForeground");
                 }
-                
+
                 // 更新文字
                 if (StartRollCallBtnText != null)
                 {
                     StartRollCallBtnText.Text = externalCallerBtnText;
                     StartRollCallBtnText.Foreground = (Brush)FindResource("NewRollCallWindowButtonForeground");
                 }
-                
+
                 // 更新按钮背景色为普通按钮背景
                 StartRollCallBtn.Background = (Brush)FindResource("NewRollCallWindowButtonBackground");
             }
@@ -1385,7 +1385,7 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"更新开始点名按钮为外部点名样式时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
-        
+
         /// <summary>
         /// 恢复开始点名按钮的原始样式
         /// </summary>
@@ -1399,14 +1399,14 @@ namespace Ink_Canvas
                     StartRollCallBtnIcon.Data = Geometry.Parse(originalStartBtnIconData);
                     StartRollCallBtnIcon.Stroke = (Brush)FindResource("NewRollCallWindowPrimaryButtonForeground");
                 }
-                
+
                 // 恢复文字
                 if (StartRollCallBtnText != null)
                 {
                     StartRollCallBtnText.Text = originalStartBtnText;
                     StartRollCallBtnText.Foreground = (Brush)FindResource("NewRollCallWindowPrimaryButtonForeground");
                 }
-                
+
                 // 恢复按钮背景色为主按钮背景
                 StartRollCallBtn.Background = (Brush)FindResource("NewRollCallWindowPrimaryButtonBackground");
             }
@@ -1443,7 +1443,7 @@ namespace Ink_Canvas
                 if (ExternalCallerTypeComboBox.SelectedItem is ComboBoxItem selectedItem)
                 {
                     selectedExternalCaller = selectedItem.Content.ToString();
-                    
+
                     if (selectedRollCallMode == "External")
                     {
                         UpdateStatusDisplay($"已选择外部点名: {selectedExternalCaller}");
@@ -1456,7 +1456,7 @@ namespace Ink_Canvas
             }
         }
 
-        private static bool isExternalCallerFirstClick = true; 
+        private static bool isExternalCallerFirstClick = true;
 
         private void ExternalCaller_Click(object sender, RoutedEventArgs e)
         {
@@ -1513,7 +1513,7 @@ namespace Ink_Canvas
                 ExternalCaller_Click(sender, e);
                 return;
             }
-            
+
             if (isSingleDrawMode)
             {
                 // 单次抽模式：直接开始抽选
@@ -1576,18 +1576,18 @@ namespace Ink_Canvas
         {
             const int animationTimes = 100; // 动画次数
             const int sleepTime = 5; // 每次动画间隔（毫秒）
-            
+
             new System.Threading.Thread(() =>
             {
                 List<string> usedNames = new List<string>();
-                
+
                 // 确保动画期间主显示区域可见
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MainResultDisplay.Visibility = Visibility.Visible;
                     MultiResultScrollViewer.Visibility = Visibility.Collapsed;
                 });
-                
+
                 for (int i = 0; i < animationTimes; i++)
                 {
                     // 随机选择一个名字进行动画显示
@@ -1595,7 +1595,7 @@ namespace Ink_Canvas
                     {
                         int randomIndex = new Random().Next(0, nameList.Count);
                         string displayName = nameList[randomIndex];
-                        
+
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             // 确保主显示区域在动画期间保持可见
@@ -1603,16 +1603,16 @@ namespace Ink_Canvas
                             MainResultDisplay.Text = displayName;
                         });
                     }
-                    
+
                     System.Threading.Thread.Sleep(sleepTime);
                 }
-                
+
                 // 动画结束，显示最终结果
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     // 根据选择的模式进行不同的点名逻辑
                     var selectedNames = SelectNamesByMode(nameList, currentCount);
-                    
+
                     // 更新历史记录
                     UpdateRollCallHistory(selectedNames);
 
@@ -1646,40 +1646,40 @@ namespace Ink_Canvas
         {
             const int animationTimes = 100; // 动画次数
             const int sleepTime = 5; // 每次动画间隔（毫秒）
-            
+
             new System.Threading.Thread(() =>
             {
                 List<int> usedNumbers = new List<int>();
-                
+
                 // 确保动画期间主显示区域可见
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MainResultDisplay.Visibility = Visibility.Visible;
                     MultiResultScrollViewer.Visibility = Visibility.Collapsed;
                 });
-                
+
                 for (int i = 0; i < animationTimes; i++)
                 {
                     // 随机选择一个数字进行动画显示
                     int randomNumber = new Random().Next(1, 61); // 1-60
-                    
+
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         // 确保主显示区域在动画期间保持可见
                         MainResultDisplay.Visibility = Visibility.Visible;
                         MainResultDisplay.Text = randomNumber.ToString();
                     });
-                    
+
                     System.Threading.Thread.Sleep(sleepTime);
                 }
-                
+
                 // 动画结束，显示最终结果
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     // 根据选择的模式进行不同的抽选逻辑
                     var numberList = Enumerable.Range(1, 60).Select(n => n.ToString()).ToList();
                     var selectedNumbers = SelectNamesByMode(numberList, currentCount);
-                    
+
                     // 更新历史记录
                     UpdateRollCallHistory(selectedNumbers);
 
@@ -1724,7 +1724,7 @@ namespace Ink_Canvas
         {
             const int animationTimes = 100; // 动画次数
             const int sleepTime = 5; // 每次动画间隔（毫秒），参考老点名窗口
-            
+
             new System.Threading.Thread(() =>
             {
                 if (nameList.Count > 0)
@@ -1746,7 +1746,7 @@ namespace Ink_Canvas
         private void StartSingleDrawNameAnimation(int animationTimes, int sleepTime)
         {
             List<string> usedNames = new List<string>();
-            
+
             for (int i = 0; i < animationTimes; i++)
             {
                 // 随机选择一个名字进行动画显示，避免立即重复
@@ -1755,23 +1755,23 @@ namespace Ink_Canvas
                 {
                     randomName = nameList[singleDrawRandom.Next(0, nameList.Count)];
                 } while (usedNames.Count > 0 && usedNames[usedNames.Count - 1] == randomName);
-                
+
                 usedNames.Add(randomName);
-                
+
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MainResultDisplay.Text = randomName;
                 });
-                
+
                 System.Threading.Thread.Sleep(sleepTime);
             }
-            
+
             // 动画结束，显示最终结果
             Application.Current.Dispatcher.Invoke(() =>
             {
                 // 根据选择的模式进行不同的抽选逻辑
                 var selectedNames = SelectNamesByMode(nameList, currentCount);
-                
+
                 // 更新历史记录
                 UpdateRollCallHistory(selectedNames);
 
@@ -1783,7 +1783,7 @@ namespace Ink_Canvas
                 isRollCalling = false;
                 StartRollCallBtn.Visibility = Visibility.Visible;
                 StopRollCallBtn.Visibility = Visibility.Collapsed;
-                
+
                 if (isSingleDrawMode)
                 {
                     new System.Threading.Thread(() =>
@@ -1819,7 +1819,7 @@ namespace Ink_Canvas
         private void StartSingleDrawNumberAnimation(int animationTimes, int sleepTime)
         {
             List<int> usedNumbers = new List<int>();
-            
+
             for (int i = 0; i < animationTimes; i++)
             {
                 // 随机选择一个数字进行动画显示，避免立即重复
@@ -1828,27 +1828,27 @@ namespace Ink_Canvas
                 {
                     randomNumber = singleDrawRandom.Next(1, 61); // 1-60
                 } while (usedNumbers.Count > 0 && usedNumbers[usedNumbers.Count - 1] == randomNumber);
-                
+
                 usedNumbers.Add(randomNumber);
-                
+
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     MainResultDisplay.Text = randomNumber.ToString();
                 });
-                
+
                 System.Threading.Thread.Sleep(sleepTime);
             }
-            
+
             // 动画结束，显示最终结果
             Application.Current.Dispatcher.Invoke(() =>
             {
                 // 根据选择的模式进行不同的抽选逻辑
                 var numberList = Enumerable.Range(1, 60).Select(n => n.ToString()).ToList();
                 var selectedNumbers = SelectNamesByMode(numberList, currentCount);
-                
+
                 // 更新历史记录
                 UpdateRollCallHistory(selectedNumbers);
-                
+
                 if (selectedNumbers.Count == 1)
                 {
                     MainResultDisplay.Text = selectedNumbers[0];
@@ -1858,19 +1858,19 @@ namespace Ink_Canvas
                 {
                     MainResultDisplay.Text = "抽选结果";
                     MultiResultPanel.Visibility = Visibility.Visible;
-                    
+
                     Result1Display.Text = selectedNumbers.Count > 0 ? selectedNumbers[0] : "";
                     Result2Display.Text = selectedNumbers.Count > 1 ? selectedNumbers[1] : "";
                     Result3Display.Text = selectedNumbers.Count > 2 ? selectedNumbers[2] : "";
-                    
+
                     UpdateStatusDisplay($"抽选完成，共选择 {selectedNumbers.Count} 个数字");
                 }
-                
+
                 // 停止点名状态
                 isRollCalling = false;
                 StartRollCallBtn.Visibility = Visibility.Visible;
                 StopRollCallBtn.Visibility = Visibility.Collapsed;
-                
+
                 if (isSingleDrawMode)
                 {
                     new System.Threading.Thread(() =>
@@ -1908,21 +1908,21 @@ namespace Ink_Canvas
         {
             var selectedNumbers = new List<string>();
             var usedNumbers = new List<int>();
-            
+
             for (int i = 0; i < count && usedNumbers.Count < 60; i++)
             {
                 int randomNumber = singleDrawRandom.Next(1, 61); // 1-60
-                
+
                 // 避免重复选择
                 while (usedNumbers.Contains(randomNumber))
                 {
                     randomNumber = singleDrawRandom.Next(1, 61);
                 }
-                
+
                 usedNumbers.Add(randomNumber);
                 selectedNumbers.Add(randomNumber.ToString());
             }
-            
+
             return selectedNumbers;
         }
 

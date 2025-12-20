@@ -107,7 +107,7 @@ namespace Ink_Canvas.Helpers
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
-                            
+
                             _mainWindow.isFullScreenApplied = true; // 标记已应用全屏处理
                         }
                     }
@@ -129,7 +129,7 @@ namespace Ink_Canvas.Helpers
                                     workingArea.X, workingArea.Y,
                                     workingArea.Width, workingArea.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
-                            
+
                             _mainWindow.isFullScreenApplied = false; // 标记全屏处理已还原
                         }
                     }

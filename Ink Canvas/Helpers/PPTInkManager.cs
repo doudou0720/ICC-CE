@@ -299,7 +299,7 @@ namespace Ink_Canvas.Helpers
                         {
                             positionToSave = _lastSwitchSlideIndex;
                         }
-                        
+
                         if (positionToSave > 0)
                         {
                             File.WriteAllText(Path.Combine(folderPath, "Position"), positionToSave.ToString());
