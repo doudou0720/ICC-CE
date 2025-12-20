@@ -67,6 +67,9 @@ namespace Ink_Canvas
         // 设置面板相关状态
         private bool userChangedNoFocusModeInSettings;
         private bool isTemporarilyDisablingNoFocusMode = false;
+        
+        // 全屏处理状态标志
+        public bool isFullScreenApplied = false;
 
 
 
