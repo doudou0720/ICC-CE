@@ -19,6 +19,12 @@ namespace Ink_Canvas.Helpers
         {
             Visual = visual;
             AddVisualChild(visual);
+            
+            CacheMode = new BitmapCache();
+            
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.LowQuality); 
+            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased); 
+            RenderOptions.SetCachingHint(this, CachingHint.Cache); 
         }
 
         public DrawingVisual Visual { get; }
@@ -47,17 +53,16 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
-        ///     创建显示笔迹的类
+        /// 创建显示笔迹的类
         /// </summary>
         /// <param name="drawingAttributes"></param>
         public StrokeVisual(DrawingAttributes drawingAttributes)
         {
             _drawingAttributes = drawingAttributes;
 
-            // 启用硬件加速
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
-            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-            RenderOptions.SetCachingHint(this, CachingHint.Cache);
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.LowQuality); 
+            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased); 
+            RenderOptions.SetCachingHint(this, CachingHint.Cache); 
         }
 
         /// <summary>
