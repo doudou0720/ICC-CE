@@ -1,6 +1,9 @@
 name: Pre-release and Changelog
 
 on:
+  push:
+    tags:
+      - '*'
   workflow_dispatch:
     inputs:
       version_type:
@@ -19,293 +22,550 @@ on:
         default: true
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: true
+
 jobs:
-  prerelease:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
+  prepare:
     runs-on: windows-latest
-    permissions:
-      contents: write
+    outputs:
+      tag_name: ${{ steps.get_tag.outputs.tag_name }}
+      version: ${{ steps.get_tag.outputs.version }}
+      is_prerelease: ${{ steps.release_type.outputs.is_prerelease }}
+      changelog: ${{ steps.read_changelog.outputs.changelog }}
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4.2.2
-      with:
-        fetch-depth: 0  # 获取所有历史记录用于生成changelog
-        
-    - name: Setup MSbuild
-      uses: microsoft/setup-msbuild@v2
-      
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v2.0.1
-      
-    - name: Restore NuGet Packages
-      run: nuget restore "Ink Canvas.sln"
-      
-    - name: Get current version from Git tag
-      id: get_version
-      run: |
-        # 获取最新的tag
-        $latestTag = git describe --tags --abbrev=0 2>$null
-        if ($latestTag) {
-          # 移除v前缀（如果有的话）
-          $version = $latestTag -replace "^v", ""
-          echo "Found latest tag: $latestTag"
-        } else {
-          # 如果没有tag，使用默认版本
-          $version = "1.0.0.0"
-          echo "No tags found, using default version"
-        }
-        echo "current_version=$version" >> $env:GITHUB_OUTPUT
-        echo "Current version: $version"
-        
-    - name: Calculate new version
-      id: calc_version
-      run: |
-        $currentVersion = "${{ steps.get_version.outputs.current_version }}"
-        $versionParts = $currentVersion.Split('.')
-        
-        # 确保版本号格式正确（支持4部分）
-        if ($versionParts.Length -ge 3) {
-          $major = [int]$versionParts[0]
-          $minor = [int]$versionParts[1]
-          $patch = [int]$versionParts[2]
-          $build = [int]$versionParts[3]
-        } else {
-          # 如果版本号格式不正确，使用默认值
-          $major = 1
-          $minor = 0
-          $patch = 0
-          $build = 0
-        }
-        
-        $versionType = "${{ github.event.inputs.version_type }}"
-        
-        switch ($versionType) {
-          "major" { 
-            $major++
-            $minor = 0
-            $patch = 0
-            $build = 0
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # ========== 获取当前版本 ==========
+      - name: Get current version from Git tag
+        id: get_version
+        run: |
+          # 获取最新的tag
+          $latestTag = git describe --tags --abbrev=0 2>$null
+          if ($latestTag) {
+            # 移除v/b前缀
+            $version = $latestTag -replace "^[vb]", ""
+            echo "Found latest tag: $latestTag"
+          } else {
+            # 如果没有tag，使用默认值
+            $version = "1.0.0.0"
+            echo "No tag found, using default version: $version"
           }
-          "minor" { 
-            $minor++
-            $patch = 0
-            $build = 0
-          }
-          "patch" { 
-            $patch++
-            $build = 0
-          }
-          "build" { 
-            $build++
-          }
-        }
-        
-        # 生成新版本号（4位格式，如1.7.18.0）
-        $newVersion = "$major.$minor.$patch.$build"
-        echo "new_version=$newVersion" >> $env:GITHUB_OUTPUT
-        echo "New version: $newVersion"
-        
-    - name: Generate Changelog
-      id: changelog
-      run: |
-        # 获取上次tag到现在的所有commit
-        $lastTag = git describe --tags --abbrev=0 2>$null
-        if ($lastTag) {
-          $commits = git log --pretty=format:"%h|%s|%an|%ad" --date=short "$lastTag..HEAD"
-        } else {
-          $commits = git log --pretty=format:"%h|%s|%an|%ad" --date=short
-        }
-        
-        # 初始化分类数组
-        $fixes = @()
-        $improvements = @()
-        $additions = @()
-        $deletions = @()
-        $versionChanges = @()
-        $others = @()
-        
-        # 解析每个commit
-        foreach ($commit in $commits) {
-          if ($commit -match "^([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)$") {
-            $hash = $matches[1]
-            $message = $matches[2]
-            $author = $matches[3]
-            $date = $matches[4]
+          echo "current_version=$version" >> $env:GITHUB_OUTPUT
+          echo "Current version: $version"
+
+      # ========== 处理版本号和标签名 ==========
+      - name: Get tag name and version
+        id: get_tag
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            # 从 push tag 事件获取原始标签名
+            $tagName = "${{ github.ref }}".Replace("refs/tags/", "")
+            # 移除 v/b 前缀获取纯版本号
+            $cleanVersion = $tagName -replace "^[vb]", ""
             
-            $commitInfo = @{
-              Hash = $hash
-              Message = $message
-              Author = $author
-              Date = $date
-            }
+            echo "tag_name=$tagName" >> $env:GITHUB_OUTPUT
+            echo "version=$cleanVersion" >> $env:GITHUB_OUTPUT
+            echo "Using pushed tag: $tagName, version: $cleanVersion"
+          } else {
+            # 从 workflow_dispatch 计算新版本（4位格式）
+            $currentVersion = "${{ steps.get_version.outputs.current_version }}"
+            $versionParts = $currentVersion.Split('.')
             
-            # 根据commit消息分类
-            if ($message -match "^(fix|修复)") {
-              $fixes += $commitInfo
-            } elseif ($message -match "^(improve|改进|优化)") {
-              $improvements += $commitInfo
-            } elseif ($message -match "^(add|新增|添加)") {
-              $additions += $commitInfo
-            } elseif ($message -match "^(delete|删除|移除)") {
-              $deletions += $commitInfo
-            } elseif ($message -match "(版本|version|更新版本号)") {
-              $versionChanges += $commitInfo
+            # 确保版本号格式正确（至少4部分）
+            if ($versionParts.Length -ge 4) {
+              $major = [int]$versionParts[0]
+              $minor = [int]$versionParts[1]
+              $patch = [int]$versionParts[2]
+              $build = [int]$versionParts[3]
             } else {
-              $others += $commitInfo
+              # 如果版本号格式不正确，补充为4位
+              if ($versionParts.Length -ge 3) {
+                $major = [int]$versionParts[0]
+                $minor = [int]$versionParts[1]
+                $patch = [int]$versionParts[2]
+                $build = 0
+              } else {
+                # 如果版本号格式不正确，抛出错误
+                echo "Error: Invalid version format. Expected format: x.y.z.w (e.g., 1.7.18.0)"
+                exit 1
+              }
             }
+            
+            $versionType = "${{ github.event.inputs.version_type }}"
+            $isPrerelease = "${{ github.event.inputs.prerelease }}" -eq "true"
+            
+            switch ($versionType) {
+              "major" { 
+                $major++
+                $minor = 0
+                $patch = 0
+                $build = 0
+              }
+              "minor" { 
+                $minor++
+                $patch = 0
+                $build = 0
+              }
+              "patch" { 
+                $patch++
+                $build = 0
+              }
+              "build" { 
+                $build++
+              }
+            }
+            
+            # 生成新版本号（4位格式，如1.7.18.0）
+            $newVersion = "$major.$minor.$patch.$build"
+            
+            # 根据是否为预发布决定标签前缀
+            if ($isPrerelease) {
+              $tagName = "b$newVersion"
+            } else {
+              $tagName = "v$newVersion"
+            }
+            
+            echo "tag_name=$tagName" >> $env:GITHUB_OUTPUT
+            echo "version=$newVersion" >> $env:GITHUB_OUTPUT
+            echo "New tag: $tagName, version: $newVersion"
           }
-        }
-        
-        # 生成changelog内容
-        $version = "${{ steps.calc_version.outputs.new_version }}"
-        $changelog = "# ICC CE $version 更新日志`n`n## 修复 (Fixes)"
-        
-        if ($fixes.Count -gt 0) {
-          foreach ($fix in $fixes) {
-            $changelog += "`n- $($fix.Message) ($($fix.Author), $($fix.Date))"
+
+      - name: Determine release type
+        id: release_type
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            # 根据 tag 名称前缀确定是否为预发布版本
+            $tagName = "${{ steps.get_tag.outputs.tag_name }}"
+            if ($tagName -and $tagName.StartsWith("b")) {
+              echo "is_prerelease=true" >> $env:GITHUB_OUTPUT
+              echo "This is a pre-release (beta)"
+            } else {
+              echo "is_prerelease=false" >> $env:GITHUB_OUTPUT
+              echo "This is a release"
+            }
+          } else {
+            # workflow_dispatch 方式
+            echo "is_prerelease=${{ github.event.inputs.prerelease }}" >> $env:GITHUB_OUTPUT
           }
-        } else {
-          $changelog += "`n- 无"
-        }
-        
-        $changelog += "`n`n## 改进 (Improvements)"
-        
-        if ($improvements.Count -gt 0) {
-          foreach ($improvement in $improvements) {
-            $changelog += "`n- $($improvement.Message) ($($improvement.Author), $($improvement.Date))"
-          }
-        } else {
-          $changelog += "`n- 无"
-        }
-        
-        $changelog += "`n`n## 新增功能 (New Features)"
-        
-        if ($additions.Count -gt 0) {
-          foreach ($addition in $additions) {
-            $changelog += "`n- $($addition.Message) ($($addition.Author), $($addition.Date))"
-          }
-        } else {
-          $changelog += "`n- 无"
-        }
-        
-        $changelog += "`n`n## 删除功能 (Removed Features)"
-        
-        if ($deletions.Count -gt 0) {
-          foreach ($deletion in $deletions) {
-            $changelog += "`n- $($deletion.Message) ($($deletion.Author), $($deletion.Date))"
-          }
-        } else {
-          $changelog += "`n- 无"
-        }
-        
-        $changelog += "`n`n## 版本更新 (Version Updates)"
-        
-        if ($versionChanges.Count -gt 0) {
-          foreach ($versionChange in $versionChanges) {
-            $changelog += "`n- $($versionChange.Message) ($($versionChange.Author), $($versionChange.Date))"
-          }
-        } else {
-          $changelog += "`n- 无"
-        }
-        
-        $changelog += "`n`n## 其他更改 (Other Changes)"
-        
-        if ($others.Count -gt 0) {
-          foreach ($other in $others) {
-            $changelog += "`n- $($other.Message) ($($other.Author), $($other.Date))"
-          }
-        } else {
-          $changelog += "`n- 无"
-        }
-        
-        $changelog += "`n`n---`n*此更新日志由GitHub Actions自动生成*"
-        
-        # 保存changelog到文件
-        $changelog | Out-File -FilePath "CHANGELOG_${{ steps.calc_version.outputs.new_version }}.md" -Encoding UTF8
-        
-        # 输出changelog内容到步骤输出
-        echo "changelog<<EOF" >> $env:GITHUB_OUTPUT
-        echo $changelog >> $env:GITHUB_OUTPUT
-        echo "EOF" >> $env:GITHUB_OUTPUT
-        
-        echo "Changelog generated successfully"
-        
-    - name: Display version info
-      run: |
-        echo "Current version: ${{ steps.get_version.outputs.current_version }}"
-        echo "New version: ${{ steps.calc_version.outputs.new_version }}"
-        echo "Note: Version will not be automatically updated in repository files"
-        
-    - name: Build the Solution
-      run: |
-        msbuild -t:restore /p:GitFlow="Github Action"
-        msbuild /p:platform="AnyCPU" /p:configuration="Release" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj"
-        
-    - name: Create Release Archive
-      run: |
-        $version = "${{ steps.calc_version.outputs.new_version }}"
-        $archiveName = "InkCanvasForClass.CE.$version.zip"
-        
-        # 创建发布目录
-        New-Item -ItemType Directory -Path "release" -Force
-        
-        # 复制发布文件
-        Copy-Item "Ink Canvas\bin\Release\net472\*" "release\" -Recurse -Force
-        
-        # 创建压缩包
-        Compress-Archive -Path "release\*" -DestinationPath $archiveName -Force
-        
-        echo "archive_name=$archiveName" >> $env:GITHUB_OUTPUT
-        
-    - name: Upload Release Assets
-      uses: actions/upload-artifact@v4.5.0
-      with:
-        name: release-files-${{ steps.calc_version.outputs.new_version }}
-        path: |
-          InkCanvasForClass.CE.${{ steps.calc_version.outputs.new_version }}.zip
-          CHANGELOG_${{ steps.calc_version.outputs.new_version }}.md
+
+      # ========== 使用 git-cliff 生成变更日志 ==========
+      - name: Generate changelog with git-cliff (for pushed tag)
+        if: github.event_name == 'push'
+        id: git_cliff_tag
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: build/cliff.toml  # 使用项目build目录的 cliff.toml 配置
+          args: --latest --tag ${{ steps.get_tag.outputs.tag_name }} --output CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate changelog with git-cliff (for workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        id: git_cliff_unreleased
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: build/cliff.toml
+          args: --unreleased --tag ${{ steps.get_tag.outputs.tag_name }} --output CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read changelog content
+        id: read_changelog
+        run: |
+          $changelogContent = Get-Content -Path CHANGELOG.md -Raw
+          echo "changelog<<EOF" >> $env:GITHUB_OUTPUT
+          echo $changelogContent >> $env:GITHUB_OUTPUT
+          echo "EOF" >> $env:GITHUB_OUTPUT
+
+  build:
+    needs: prepare
+    if: success()
+    runs-on: windows-latest
+    outputs:
+      archive_name: ${{ steps.create_archive.outputs.archive_name }}
+      zip_size: ${{ steps.calculate_size.outputs.zip_size }}
+      zip_hash: ${{ steps.calculate_size.outputs.zip_hash }}
+      installer_size: ${{ steps.calculate_installer_size.outputs.installer_size }}
+      installer_hash: ${{ steps.calculate_installer_size.outputs.installer_hash }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2.0.1
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install Inno Setup Unofficial Language Files
+        run: |
+          # 创建临时目录用于下载文件
+          New-Item -ItemType Directory -Path "temp_lang" -Force
           
-    - name: Prepare Release Info
-      run: |
-        $version = "${{ steps.calc_version.outputs.new_version }}"
-        echo "Preparing release for version: $version"
-        
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ steps.calc_version.outputs.new_version }}
-        name: ICC CE ${{ steps.calc_version.outputs.new_version }}
-        body: |
-          ${{ steps.changelog.outputs.changelog }}
-        draft: false
-        prerelease: ${{ github.event.inputs.prerelease }}
-        files: |
-          InkCanvasForClass.CE.${{ steps.calc_version.outputs.new_version }}.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Generate UpdateLog preview
-      run: |
-        $version = "${{ steps.calc_version.outputs.new_version }}"
-        $changelogFile = "CHANGELOG_$version.md"
-        
-        # 读取生成的changelog
-        $changelogContent = Get-Content $changelogFile -Raw
-        
-        # 生成预览内容
-        $previewContent = "ICC CE $version 更新日志`n" + $changelogContent
-        
-        echo "UpdateLog preview generated (not written to file):"
-        echo $previewContent
-        
-    - name: Display Summary
-      run: |
-        echo "=== Release Summary ==="
-        echo "Version: ${{ steps.calc_version.outputs.new_version }}"
-        echo "Pre-release: ${{ github.event.inputs.prerelease }}"
-        echo "Changelog: Generated and attached to release"
-        echo "Archive: ICC_CE_${{ steps.calc_version.outputs.new_version }}.zip"
-        echo ""
-        echo "Note: No repository files were modified"
-        echo "You can manually update version numbers and changelog as needed"
+          # 下载英语英国版语言文件
+          Invoke-WebRequest -Uri "https://github.com/jrsoftware/issrc/raw/refs/heads/main/Files/Languages/Unofficial/EnglishBritish.isl" -OutFile "temp_lang\EnglishBritish.isl"
+          
+          # 下载简体中文版语言文件
+          Invoke-WebRequest -Uri "https://github.com/jrsoftware/issrc/raw/refs/heads/main/Files/Languages/Unofficial/ChineseSimplified.isl" -OutFile "temp_lang\ChineseSimplified.isl"
+          
+          # 将文件移动到 Inno Setup 的语言目录
+          Move-Item -Path "temp_lang\EnglishBritish.isl" -Destination "C:\Program Files (x86)\Inno Setup 6\Languages\EnglishBritish.isl" -Force
+          Move-Item -Path "temp_lang\ChineseSimplified.isl" -Destination "C:\Program Files (x86)\Inno Setup 6\Languages\ChineseSimplified.isl" -Force
+          
+          # 清理临时目录
+          Remove-Item -Path "temp_lang" -Recurse -Force
+          
+          Write-Host "✅ Inno Setup unofficial language files installed successfully" -ForegroundColor Green
+
+      - name: Cache NuGet packages and obj files
+        id: cache-nuget
+        uses: actions/cache@v4
+        with:
+          path: |
+            # NuGet 全局包缓存（已下载的包）
+            ~/.nuget/packages
+            # NuGet 缓存目录（包索引）
+            ~\AppData\Local\NuGet\Cache
+            # 项目 obj 目录（包含 project.assets.json）
+            Ink Canvas/obj/
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.config', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore NuGet packages (if cache missed)
+        if: steps.cache-nuget.outputs.cache-hit != 'true'
+        run: |
+          Write-Host "📥 缓存未命中，正在恢复 NuGet 包..." -ForegroundColor Yellow
+          
+          # 恢复解决方案级别的包
+          nuget restore "Ink Canvas.sln" -Verbosity minimal
+          
+          # 恢复项目级别的包
+          msbuild -t:restore "Ink Canvas/InkCanvasForClass.csproj" /p:GitFlow="Github Action" /p:RestorePackagesConfig=true /verbosity:minimal
+          
+          Write-Host "✅ NuGet 包恢复完成" -ForegroundColor Green
+
+      - name: Display version info
+        run: |
+          echo "Building version: ${{ needs.prepare.outputs.version }}"
+          echo "Tag: ${{ needs.prepare.outputs.tag_name }}"
+          echo "Release type: ${{ needs.prepare.outputs.is_prerelease == 'true' && 'Pre-release' || 'Release' }}"
+          
+      - name: Build the Solution
+        run: |
+          Write-Host "🔨 正在构建项目..." -ForegroundColor Cyan
+          msbuild /p:platform="AnyCPU" /p:configuration="Release" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal
+          
+          Write-Host "🏗️ 构建命令执行完成" -ForegroundColor Cyan
+          
+      - name: Create Release Archive
+        id: create_archive
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $archiveName = "InkCanvasForClass.CE.$version.zip"
+          
+          # 创建发布目录
+          New-Item -ItemType Directory -Path "release" -Force
+          
+          # 复制发布文件
+          Copy-Item "Ink Canvas\bin\Release\net472\*" "release\" -Recurse -Force
+          
+          # 创建压缩包
+          Compress-Archive -Path "release\*" -DestinationPath $archiveName -Force
+          
+          echo "archive_name=$archiveName" >> $env:GITHUB_OUTPUT
+          
+      - name: Prepare Inno Setup script
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          
+          # 更新 ISS 文件中的版本信息
+          $issPath = "build\InkCanvasForClass CE.iss"
+          $issContent = Get-Content -Path $issPath -Raw
+          
+          # 替换版本信息
+          $issContent = $issContent -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
+          
+          # 替换源文件路径为相对路径（考虑到ISS文件在build目录下，需要返回上级目录）
+          $issContent = $issContent -replace 'Source: ".*\\{#MyAppExeName}";', 'Source: "..\release\{#MyAppExeName}";'
+          $issContent = $issContent -replace 'Source: ".*\\InkCanvasForClass.exe.config";', 'Source: "..\release\InkCanvasForClass.exe.config";'
+          
+          # 更新输出目录为当前目录
+          $issContent = $issContent -replace 'OutputDir=.*', 'OutputDir=.'
+          
+          # 更新默认安装目录
+          $issContent = $issContent -replace 'DefaultDirName=.*', 'DefaultDirName={autopf}\{#MyAppName}'
+          
+          # 更新许可证文件路径为相对路径（考虑到ISS文件在build目录下，需要返回上级目录）
+          $issContent = $issContent -replace 'LicenseFile=.*', 'LicenseFile=..\LICENSE'
+          
+          # 保存修改后的 ISS 文件
+          $issContent | Set-Content -Path $issPath -Encoding UTF8
+          
+          # 显示修改后的 ISS 文件内容
+          Write-Host "Modified ISS file content:"
+          Write-Host $issContent
+          
+      - name: Build MSI installer with Inno Setup
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: build\InkCanvasForClass CE.iss
+          options: /O.
+          
+      - name: Rename installer file
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $setupFile = "InkCanvasForClass CE Setup.exe"
+          $newSetupName = "InkCanvasForClass.CE.$version.Setup.exe"
+          
+          if (Test-Path $setupFile) {
+            Rename-Item -Path $setupFile -NewName $newSetupName
+            Write-Host "Renamed setup file to: $newSetupName"
+          } else {
+            Write-Host "Setup file not found: $setupFile"
+          }
+          
+      - name: Calculate archive size and hash
+        id: calculate_size
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $archiveName = "InkCanvasForClass.CE.$version.zip"
+          
+          # 获取文件大小（字节）
+          $fileSize = (Get-Item $archiveName).Length
+          
+          # 计算SHA256哈希
+          $hash = (Get-FileHash $archiveName -Algorithm SHA256).Hash
+          
+          echo "zip_size=$fileSize" >> $env:GITHUB_OUTPUT
+          echo "zip_hash=$hash" >> $env:GITHUB_OUTPUT
+          
+          echo "Archive size: $fileSize bytes"
+          echo "SHA256 hash: $hash"
+          
+      - name: Calculate installer size and hash
+        id: calculate_installer_size
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $installerName = "InkCanvasForClass.CE.$version.Setup.exe"
+          
+          if (Test-Path $installerName) {
+            # 获取文件大小（字节）
+            $fileSize = (Get-Item $installerName).Length
+            
+            # 计算SHA256哈希
+            $hash = (Get-FileHash $installerName -Algorithm SHA256).Hash
+            
+            echo "installer_size=$fileSize" >> $env:GITHUB_OUTPUT
+            echo "installer_hash=$hash" >> $env:GITHUB_OUTPUT
+            
+            echo "Installer size: $fileSize bytes"
+            echo "SHA256 hash: $hash"
+          } else {
+            echo "Installer file not found: $installerName"
+          }
+          
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files-${{ needs.prepare.outputs.version }}
+          path: |
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe
+
+  sign:
+    needs: [prepare, build]
+    if: success()
+    runs-on: ubuntu-latest  # 改为 Ubuntu 以使用 Python 签名工具
+    outputs:
+      signatures_created: ${{ steps.sign_artifacts.outputs.signatures_created }}
+      zip_sigstore_file: "InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json"
+      installer_sigstore_file: "InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe.sigstore.json"
+      zip_sigstore_hash: ${{ steps.calculate_zip_sig_hash.outputs.sigstore_hash }}
+      installer_sigstore_hash: ${{ steps.calculate_installer_sig_hash.outputs.sigstore_hash }}
+    permissions:
+      contents: write
+      id-token: write  # 需要这个权限来验证签名
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files-${{ needs.prepare.outputs.version }}
+          
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Sign release artifacts with sigstore-python
+        id: sign_artifacts
+        uses: sigstore/gh-action-sigstore-python@v3.2.0
+        with:
+          inputs: |
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe
+          release-signing-artifacts: true
+          upload-signing-artifacts: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Check generated signature files
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          echo "Checking for generated signature files..."
+          ls -la *.sig* || true
+          echo "Current directory contents:"
+          pwd
+          ls -la
+          
+      - name: Calculate ZIP signature hash
+        id: calculate_zip_sig_hash
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          sigstoreFile="InkCanvasForClass.CE.$version.zip.sigstore.json"
+          
+          if [ -f "$sigstoreFile" ]; then
+            # 计算SHA256哈希
+            sigstoreHash=$(sha256sum "$sigstoreFile" | cut -d' ' -f1)
+            
+            echo "sigstore_hash=$sigstoreHash" >> $GITHUB_OUTPUT
+            echo "Sigstore JSON file hash: $sigstoreHash"
+            echo "Sigstore file size: $(stat -c%s "$sigstoreFile") bytes"
+          else
+            echo "Warning: Sigstore file not found: $sigstoreFile"
+            echo "sigstore_hash=" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Calculate Installer signature hash
+        id: calculate_installer_sig_hash
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          sigstoreFile="InkCanvasForClass.CE.$version.Setup.exe.sigstore.json"
+          
+          if [ -f "$sigstoreFile" ]; then
+            # 计算SHA256哈希
+            sigstoreHash=$(sha256sum "$sigstoreFile" | cut -d' ' -f1)
+            
+            echo "sigstore_hash=$sigstoreHash" >> $GITHUB_OUTPUT
+            echo "Sigstore JSON file hash: $sigstoreHash"
+            echo "Sigstore file size: $(stat -c%s "$sigstoreFile") bytes"
+          else
+            echo "Warning: Sigstore file not found: $sigstoreFile"
+            echo "sigstore_hash=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Signed Artifacts
+        if: steps.calculate_zip_sig_hash.outputs.sigstore_hash != '' || steps.calculate_installer_sig_hash.outputs.sigstore_hash != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-files-${{ needs.prepare.outputs.version }}
+          path: |
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe.sigstore.json
+
+  release:
+    needs: [prepare, build, sign]
+    if: success()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files-${{ needs.prepare.outputs.version }}
+          
+      - name: Download Signed Artifacts (if exists)
+        uses: actions/download-artifact@v4
+        with:
+          name: signed-files-${{ needs.prepare.outputs.version }}
+        continue-on-error: true
+          
+          
+      - name: Create enhanced changelog with file table
+        id: enhanced_changelog
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          
+          # 读取git-cliff生成的changelog内容
+          originalChangelog="${{ needs.prepare.outputs.changelog }}"
+          
+          # 构建文件信息表格
+          fileTable=$'\n## 文件信息 (File Information)\n'
+          fileTable+=$'| 文件名 | 大小 | SHA256 哈希 |\n'
+          fileTable+=$'|--------|------|-------------|\n'
+          
+          # ZIP 文件信息
+          fileTable+=$'| InkCanvasForClass.CE.'"$version"
+          fileTable+=$'.zip | ${{ needs.build.outputs.zip_size }} bytes | ${{ needs.build.outputs.zip_hash }} |\n'
+          
+          # 安装包文件信息
+          installerSize="${{ needs.build.outputs.installer_size }}"
+          installerHash="${{ needs.build.outputs.installer_hash }}"
+          if [ -n "$installerSize" ] && [ -n "$installerHash" ]; then
+            fileTable+=$'| InkCanvasForClass.CE.'"$version"'.Setup.exe | '"$installerSize"' bytes | '"$installerHash"
+            fileTable+=$' |\n'
+          fi
+          
+          # 检查是否有签名文件
+          if [ -f "InkCanvasForClass.CE.$version.zip.sigstore.json" ]; then
+            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.zip.sigstore.json")
+            sigstoreHash=$(sha256sum "InkCanvasForClass.CE.$version.zip.sigstore.json" | cut -d' ' -f1)
+            fileTable+=$'| InkCanvasForClass.CE.'"$version"'.zip.sigstore.json | '"$sigstoreSize"' bytes | '"$sigstoreHash"
+            fileTable+=$' |\n'
+          fi
+          
+          # 检查安装程序签名文件
+          if [ -f "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json" ]; then
+            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json")
+            sigstoreHash=$(sha256sum "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json" | cut -d' ' -f1)
+            fileTable+=$'| InkCanvasForClass.CE.'"$version"'.Setup.exe.sigstore.json | '"$sigstoreSize"' bytes | '"$sigstoreHash"
+            fileTable+=$' |\n'
+          fi
+          
+          fileTable+=$'\n*文件哈希和大小信息由GitHub Actions自动生成*\n'
+          
+          # 将表格附加到原始changelog
+          enhancedChangelog="${originalChangelog}${fileTable}"
+          
+          # 输出增强版changelog内容
+          echo "enhanced_changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$enhancedChangelog" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "Enhanced changelog created with file information table"
+          
+      - name: Display Release Info
+        run: |
+          echo "=== Creating Release ==="
+          echo "Version: ${{ needs.prepare.outputs.version }}"
+          echo "Tag: ${{ needs.prepare.outputs.tag_name }}"
+          echo "Pre-release: ${{ needs.prepare.outputs.is_prerelease }}"
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag_name }}
+          name: ICC CE ${{ needs.prepare.outputs.version }}
+          body: |
+            ${{ steps.enhanced_changelog.outputs.enhanced_changelog }}
+          draft: false
+          prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
+          files: |
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe.sigstore.json
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
