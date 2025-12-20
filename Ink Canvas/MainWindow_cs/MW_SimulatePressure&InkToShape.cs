@@ -847,7 +847,7 @@ namespace Ink_Canvas
             if (stroke.StylusPoints.Count >= 10)
             {
                 List<Point> checkPoints;
-                
+
                 // 使用采样点进行更准确的判断
                 if (Settings.Canvas.HighPrecisionLineStraighten)
                 {
@@ -890,7 +890,7 @@ namespace Ink_Canvas
                     double quickRelativeThreshold = lineLength * quickThreshold;
 
                     // 使用平均偏差和最大偏差的综合判断
-                    double deviationThreshold = Settings.Canvas.HighPrecisionLineStraighten 
+                    double deviationThreshold = Settings.Canvas.HighPrecisionLineStraighten
                         ? Math.Max(avgDeviation, maxDeviation * 0.7) // 高精度模式更严格
                         : maxDeviation;
 
@@ -1310,7 +1310,7 @@ namespace Ink_Canvas
             Point end = stroke.StylusPoints.Last().ToPoint();
             double lineLength = GetDistance(start, end);
             double adaptiveThreshold = Settings.Canvas.AutoStraightenLineThreshold * GetResolutionScale();
-            
+
             // 如果线条太短，不进行拉直处理
             if (lineLength < adaptiveThreshold)
             {
@@ -1327,7 +1327,7 @@ namespace Ink_Canvas
 
             Point endpoint1, endpoint2;
             bool shouldStraighten = TryGetStraightLineEndpoints(stroke, out endpoint1, out endpoint2);
-            
+
             if (shouldStraighten)
             {
                 Debug.WriteLine($"接受拉直：判断为直线，解释方差比例满足阈值");
@@ -1559,7 +1559,7 @@ namespace Ink_Canvas
                 Point p1 = stroke.StylusPoints[0].ToPoint();
                 Point p2 = stroke.StylusPoints[1].ToPoint();
                 double lineLength = GetDistance(p1, p2);
-                
+
                 if (lineLength < 10)
                     return false;
 

@@ -887,20 +887,20 @@ namespace Ink_Canvas
                 ToggleSwitchUseLegacyTimerUI.IsOn = Settings.RandSettings.UseLegacyTimerUI;
                 ToggleSwitchUseNewStyleUI.IsOn = Settings.RandSettings.UseNewStyleUI;
                 ToggleSwitchEnableOvertimeCountUp.IsOn = Settings.RandSettings.EnableOvertimeCountUp;
-                
+
                 // 新点名UI设置
                 ToggleSwitchUseNewRollCallUI.IsOn = Settings.RandSettings.UseNewRollCallUI;
                 ToggleSwitchEnableMLAvoidance.IsOn = Settings.RandSettings.EnableMLAvoidance;
                 MLAvoidanceHistorySlider.Value = Settings.RandSettings.MLAvoidanceHistoryCount;
                 MLAvoidanceWeightSlider.Value = Settings.RandSettings.MLAvoidanceWeight;
-                
+
                 bool canEnableRedText = Settings.RandSettings.EnableOvertimeCountUp && Settings.RandSettings.EnableOvertimeRedText;
                 ToggleSwitchEnableOvertimeRedText.IsOn = canEnableRedText;
                 if (!canEnableRedText)
                 {
                     Settings.RandSettings.EnableOvertimeRedText = false;
                 }
-                
+
                 TimerVolumeSlider.Value = Settings.RandSettings.TimerVolume;
 
                 // 渐进提醒设置
@@ -929,16 +929,16 @@ namespace Ink_Canvas
                 ToggleSwitchUseLegacyTimerUI.IsOn = Settings.RandSettings.UseLegacyTimerUI;
                 ToggleSwitchUseNewStyleUI.IsOn = Settings.RandSettings.UseNewStyleUI;
                 ToggleSwitchEnableOvertimeCountUp.IsOn = Settings.RandSettings.EnableOvertimeCountUp;
-                
+
                 bool canEnableRedText = Settings.RandSettings.EnableOvertimeCountUp && Settings.RandSettings.EnableOvertimeRedText;
                 ToggleSwitchEnableOvertimeRedText.IsOn = canEnableRedText;
                 if (!canEnableRedText)
                 {
                     Settings.RandSettings.EnableOvertimeRedText = false;
                 }
-                
+
                 TimerVolumeSlider.Value = Settings.RandSettings.TimerVolume;
-                
+
                 // 渐进提醒设置
                 ToggleSwitchEnableProgressiveReminder.IsOn = Settings.RandSettings.EnableProgressiveReminder;
                 ProgressiveReminderVolumeSlider.Value = Settings.RandSettings.ProgressiveReminderVolume;

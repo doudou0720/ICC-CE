@@ -1,4 +1,6 @@
 using Ink_Canvas.Helpers;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Media;
@@ -7,10 +9,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
-using Newtonsoft.Json;
-using System.Windows.Threading;
-using Microsoft.Win32;
 namespace Ink_Canvas.Windows
 {
     /// <summary>
@@ -41,25 +39,25 @@ namespace Ink_Canvas.Windows
 
             // 应用主题
             ApplyTheme();
-            
+
             // 初始化隐藏定时器
             hideTimer = new Timer(1000); // 每秒检查一次
             hideTimer.Elapsed += HideTimer_Elapsed;
             lastActivityTime = DateTime.Now;
-            
+
             // 监听主题变化事件
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
-            
+
             // 监听卸载事件，清理资源
             Unloaded += TimerControl_Unloaded;
         }
-        
+
         private void TimerControl_Unloaded(object sender, RoutedEventArgs e)
         {
             // 取消订阅主题变化事件
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
         }
-        
+
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             // 当主题变化时，重新应用主题
@@ -68,7 +66,7 @@ namespace Ink_Canvas.Windows
                 RefreshTheme();
             });
         }
-        
+
         /// <summary>
         /// 刷新主题
         /// </summary>
@@ -78,7 +76,7 @@ namespace Ink_Canvas.Windows
             {
                 // 重新应用主题
                 ApplyTheme();
-                
+
                 // 强制刷新UI
                 InvalidateVisual();
             }
@@ -87,23 +85,23 @@ namespace Ink_Canvas.Windows
                 LogHelper.WriteLogToFile($"刷新计时器窗口主题出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
-        
+
         #region 事件定义
         /// <summary>
         /// 计时器完成事件
         /// </summary>
         public event EventHandler TimerCompleted;
-        
+
         /// <summary>
         /// 关闭事件 - 通知主窗口隐藏容器
         /// </summary>
         public event EventHandler CloseRequested;
-        
+
         /// <summary>
         /// 显示最小化视图事件
         /// </summary>
         public event EventHandler ShowMinimizedRequested;
-        
+
         /// <summary>
         /// 隐藏最小化视图事件
         /// </summary>
@@ -129,7 +127,7 @@ namespace Ink_Canvas.Windows
                 {
                     TimeSpan leftTimeSpan = totalTimeSpan - timeSpan;
                     if (leftTimeSpan.Milliseconds > 0) leftTimeSpan += new TimeSpan(0, 0, 1);
-                    
+
                     int totalHours = (int)leftTimeSpan.TotalHours;
                     int displayHours = totalHours;
 
@@ -141,10 +139,10 @@ namespace Ink_Canvas.Windows
                     SetDigitDisplay("Digit4Display", leftTimeSpan.Minutes % 10);
                     SetDigitDisplay("Digit5Display", leftTimeSpan.Seconds / 10);
                     SetDigitDisplay("Digit6Display", leftTimeSpan.Seconds % 10);
-                    
+
                     SetColonDisplay(false);
-                    
-                    if (leftTimeSpan.TotalSeconds <= 6 && leftTimeSpan.TotalSeconds > 0 && 
+
+                    if (leftTimeSpan.TotalSeconds <= 6 && leftTimeSpan.TotalSeconds > 0 &&
                         MainWindow.Settings.RandSettings?.EnableProgressiveReminder == true &&
                         !hasPlayedProgressiveReminder)
                     {
@@ -165,19 +163,19 @@ namespace Ink_Canvas.Windows
                         SetDigitDisplay("Digit4Display", 0);
                         SetDigitDisplay("Digit5Display", 0);
                         SetDigitDisplay("Digit6Display", 0);
-                        
+
                         SetColonDisplay(false);
                         timer.Stop();
                         isTimerRunning = false;
                         StartPauseIcon.Data = Geometry.Parse(PlayIconData);
                         PlayTimerSound();
-                        
+
                         // 禁用全屏按钮
                         if (FullscreenBtn != null)
                         {
                             FullscreenBtn.IsEnabled = false;
                         }
-                        
+
                         TimerCompleted?.Invoke(this, EventArgs.Empty);
                         HandleTimerCompletion();
                     }
@@ -206,7 +204,7 @@ namespace Ink_Canvas.Windows
                     SetDigitDisplay("Digit4Display", minutesOnes, shouldShowRed);
                     SetDigitDisplay("Digit5Display", secondsTens, shouldShowRed);
                     SetDigitDisplay("Digit6Display", secondsOnes, shouldShowRed);
-                    
+
                     SetColonDisplay(shouldShowRed);
                 }
             });
@@ -224,22 +222,22 @@ namespace Ink_Canvas.Windows
 
         bool isTimerRunning = false;
         bool isPaused = false;
-        bool isOvertimeMode = false; 
+        bool isOvertimeMode = false;
         TimeSpan remainingTime = TimeSpan.Zero;
-        bool hasPlayedProgressiveReminder = false; 
-        
+        bool hasPlayedProgressiveReminder = false;
+
         Timer timer = new Timer();
         private Timer hideTimer;
-        private DateTime lastActivityTime;        
+        private DateTime lastActivityTime;
         public TimeSpan? GetTotalTimeSpan()
         {
             return new TimeSpan(hour, minute, second);
         }
-        
+
         public TimeSpan? GetElapsedTime()
         {
             if (isPaused) return null;
-            
+
             return DateTime.Now - startTime;
         }
 
@@ -336,7 +334,7 @@ namespace Ink_Canvas.Windows
                         SetDarkThemeBorder();
                     }
                 }
-                
+
                 // 刷新数字和冒号显示的颜色
                 UpdateDigitDisplays();
             }
@@ -379,7 +377,7 @@ namespace Ink_Canvas.Windows
             SetDigitDisplay("Digit4Display", minute % 10);
             SetDigitDisplay("Digit5Display", second / 10);
             SetDigitDisplay("Digit6Display", second % 10);
-            
+
             SetColonDisplay(false);
         }
 
@@ -394,10 +392,10 @@ namespace Ink_Canvas.Windows
                 {
                     // 计算已经过去的时间
                     TimeSpan elapsedTime = DateTime.Now - startTime;
-                    
+
                     // 计算新的总时间
                     TimeSpan newTotalTime = new TimeSpan(hour, minute, second);
-                    
+
                     // 如果新设置的时间小于已经过去的时间，则设置为0
                     if (newTotalTime <= elapsedTime)
                     {
@@ -428,10 +426,10 @@ namespace Ink_Canvas.Windows
                 {
                     // 计算已经过去的时间
                     TimeSpan elapsedTime = DateTime.Now - startTime;
-                    
+
                     // 计算新的总时间
                     TimeSpan newTotalTime = new TimeSpan(newHour, newMinute, newSecond);
-                    
+
                     // 如果新设置的时间小于已经过去的时间，则设置为0
                     if (newTotalTime <= elapsedTime)
                     {
@@ -456,13 +454,13 @@ namespace Ink_Canvas.Windows
         public TimeSpan? GetRemainingTime()
         {
             if (isPaused) return null;
-            
+
             var elapsed = DateTime.Now - startTime;
             var totalTimeSpan = new TimeSpan(hour, minute, second);
             var leftTimeSpan = totalTimeSpan - elapsed;
-            
+
             if (leftTimeSpan.Milliseconds > 0) leftTimeSpan += new TimeSpan(0, 0, 1);
-            
+
             return leftTimeSpan;
         }
 
@@ -486,14 +484,14 @@ namespace Ink_Canvas.Windows
             if (path != null)
             {
                 digit = Math.Max(0, Math.Min(9, digit));
-                
+
                 string resourceKey = $"Digit{digit}";
                 var geometry = this.FindResource(resourceKey) as Geometry;
                 if (geometry != null)
                 {
                     path.Data = geometry;
                 }
-                
+
                 if (isRed)
                 {
                     path.Fill = Brushes.Red;
@@ -521,7 +519,7 @@ namespace Ink_Canvas.Windows
         {
             var colon1 = this.FindName("Colon1Display") as TextBlock;
             var colon2 = this.FindName("Colon2Display") as TextBlock;
-            
+
             if (colon1 != null)
             {
                 if (isRed)
@@ -541,7 +539,7 @@ namespace Ink_Canvas.Windows
                     }
                 }
             }
-            
+
             if (colon2 != null)
             {
                 if (isRed)
@@ -816,15 +814,15 @@ namespace Ink_Canvas.Windows
                 isPaused = false;
                 isTimerRunning = true;
                 isOvertimeMode = false;
-                hasPlayedProgressiveReminder = false; 
+                hasPlayedProgressiveReminder = false;
                 timer.Start();
-                
+
                 // 启动隐藏定时器
                 hideTimer.Start();
 
                 // 保存到最近计时记录
                 SaveRecentTimer();
-                
+
                 // 启用全屏按钮
                 if (FullscreenBtn != null)
                 {
@@ -836,31 +834,31 @@ namespace Ink_Canvas.Windows
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
             UpdateActivityTime();
-            
+
             if (isTimerRunning)
             {
                 // 停止计时器
                 timer.Stop();
                 isTimerRunning = false;
                 isPaused = false;
-                
+
                 if (hideTimer != null)
                 {
                     hideTimer.Stop();
                 }
             }
-            
+
             UpdateDigitDisplays();
             SetColonDisplay(false);
-            
+
             if (StartPauseIcon != null)
             {
                 StartPauseIcon.Data = Geometry.Parse(PlayIconData);
             }
-            
+
             isOvertimeMode = false;
             hasPlayedProgressiveReminder = false;
-            
+
             // 禁用全屏按钮
             if (FullscreenBtn != null)
             {
@@ -1146,10 +1144,10 @@ namespace Ink_Canvas.Windows
             {
                 // 如果存在重复，将其移到最前面
                 string duplicateTimer = GetRecentTimerByIndex(existingIndex);
-                
+
                 // 移除重复项
                 RemoveRecentTimerByIndex(existingIndex);
-                
+
                 // 将重复项添加到最前面
                 recentTimer6 = recentTimer5;
                 recentTimer5 = recentTimer4;
@@ -1354,9 +1352,9 @@ namespace Ink_Canvas.Windows
         }
 
         private FullscreenTimerWindow fullscreenWindow;
-        
+
         public bool IsFullscreenWindowOpen => fullscreenWindow != null && fullscreenWindow.IsVisible;
-        
+
         private void Fullscreen_Click(object sender, RoutedEventArgs e)
         {
             if (fullscreenWindow != null && fullscreenWindow.IsVisible)
@@ -1365,7 +1363,7 @@ namespace Ink_Canvas.Windows
                 fullscreenWindow = null;
                 return;
             }
-            
+
             if (isTimerRunning && !isPaused)
             {
                 fullscreenWindow = new FullscreenTimerWindow(this);
@@ -1374,7 +1372,7 @@ namespace Ink_Canvas.Windows
                 HideMinimizedRequested?.Invoke(this, EventArgs.Empty);
             }
         }
-        
+
         private void MainBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             UpdateActivityTime();
@@ -1393,7 +1391,7 @@ namespace Ink_Canvas.Windows
                 }
             }
         }
-        
+
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             UpdateActivityTime();
@@ -1412,25 +1410,25 @@ namespace Ink_Canvas.Windows
                 }
             }
         }
-        
+
         private bool isDragging = false;
         private Point dragStartPoint;
         private Point containerStartPosition;
-        
+
         private void DragTimerContainer(MainWindow mainWindow, Point startPoint, MouseButtonEventArgs e)
         {
             var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
             if (timerContainer == null) return;
-            
+
             isDragging = true;
             dragStartPoint = startPoint;
-            
-            if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center || 
+
+            if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center ||
                 timerContainer.VerticalAlignment == VerticalAlignment.Center)
             {
                 var timerPoint = timerContainer.TransformToAncestor(mainWindow).Transform(new Point(0, 0));
                 containerStartPosition = new Point(timerPoint.X, timerPoint.Y);
-                
+
                 timerContainer.Margin = new Thickness(containerStartPosition.X, containerStartPosition.Y, 0, 0);
                 timerContainer.HorizontalAlignment = HorizontalAlignment.Left;
                 timerContainer.VerticalAlignment = VerticalAlignment.Top;
@@ -1439,44 +1437,44 @@ namespace Ink_Canvas.Windows
             {
                 var margin = timerContainer.Margin;
                 containerStartPosition = new Point(margin.Left, margin.Top);
-                
+
                 if (double.IsNaN(containerStartPosition.X) || containerStartPosition.X < 0) containerStartPosition.X = 0;
                 if (double.IsNaN(containerStartPosition.Y) || containerStartPosition.Y < 0) containerStartPosition.Y = 0;
             }
-            
+
             timerContainer.CaptureMouse();
             timerContainer.MouseMove += TimerContainer_MouseMove;
             timerContainer.MouseLeftButtonUp += TimerContainer_MouseLeftButtonUp;
             e.Handled = true;
         }
-        
+
         private void TimerContainer_MouseMove(object sender, MouseEventArgs e)
         {
             if (!isDragging) return;
-            
+
             UpdateActivityTime();
-            
+
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow == null) return;
-            
+
             var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
             var minimizedContainer = mainWindow.FindName("MinimizedTimerContainer") as FrameworkElement;
             if (timerContainer == null) return;
-            
+
             var currentPoint = e.GetPosition(mainWindow);
             var deltaX = currentPoint.X - dragStartPoint.X;
             var deltaY = currentPoint.Y - dragStartPoint.Y;
-            
+
             var newX = containerStartPosition.X + deltaX;
             var newY = containerStartPosition.Y + deltaY;
-            
+
             if (newX < 0) newX = 0;
             if (newY < 0) newY = 0;
-            
+
             timerContainer.Margin = new Thickness(newX, newY, 0, 0);
             timerContainer.HorizontalAlignment = HorizontalAlignment.Left;
             timerContainer.VerticalAlignment = VerticalAlignment.Top;
-            
+
             if (minimizedContainer != null && minimizedContainer.Visibility == Visibility.Visible)
             {
                 minimizedContainer.Margin = new Thickness(newX, newY, 0, 0);
@@ -1484,16 +1482,16 @@ namespace Ink_Canvas.Windows
                 minimizedContainer.VerticalAlignment = VerticalAlignment.Top;
             }
         }
-        
+
         private void TimerContainer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (!isDragging) return;
-            
+
             isDragging = false;
-            
+
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow == null) return;
-            
+
             var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
             if (timerContainer != null)
             {
@@ -1502,7 +1500,7 @@ namespace Ink_Canvas.Windows
                 timerContainer.MouseLeftButtonUp -= TimerContainer_MouseLeftButtonUp;
             }
         }
-        
+
         private void HandleTimerCompletion()
         {
             // 计时器结束时，如果显示的是最小化视图，恢复到主窗口视图
@@ -1513,7 +1511,7 @@ namespace Ink_Canvas.Windows
                 {
                     var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                     var minimizedContainer = mainWindow.FindName("MinimizedTimerContainer") as FrameworkElement;
-                    
+
                     // 如果最小化视图可见，恢复到主窗口视图
                     if (minimizedContainer != null && minimizedContainer.Visibility == Visibility.Visible)
                     {
@@ -1521,11 +1519,11 @@ namespace Ink_Canvas.Windows
                     }
                 }
             });
-            
+
             // 重置计时器状态
             ResetTimerState();
         }
-        
+
         /// <summary>
         /// 重置计时器状态
         /// </summary>
@@ -1539,32 +1537,32 @@ namespace Ink_Canvas.Windows
                     timer.Stop();
                     isTimerRunning = false;
                     isPaused = false;
-                    
+
                     if (hideTimer != null)
                     {
                         hideTimer.Stop();
                     }
                 }
-                
+
                 // 重置时间到默认值
                 hour = 0;
                 minute = 5;
                 second = 0;
-                
+
                 // 更新显示
                 UpdateDigitDisplays();
                 SetColonDisplay(false);
-                
+
                 // 重置图标
                 if (StartPauseIcon != null)
                 {
                     StartPauseIcon.Data = Geometry.Parse(PlayIconData);
                 }
-                
+
                 // 重置状态标志
                 isOvertimeMode = false;
                 hasPlayedProgressiveReminder = false;
-                
+
                 // 禁用全屏按钮
                 if (FullscreenBtn != null)
                 {
@@ -1572,15 +1570,15 @@ namespace Ink_Canvas.Windows
                 }
             });
         }
-        
+
         private void HideTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (!isTimerRunning || isPaused) return;
-            
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 var timeSinceLastActivity = DateTime.Now - lastActivityTime;
-                
+
                 if (timeSinceLastActivity.TotalSeconds >= 5)
                 {
                     var mainWindow = Application.Current.MainWindow as MainWindow;
@@ -1595,17 +1593,17 @@ namespace Ink_Canvas.Windows
                 }
             });
         }
-        
+
         public void UpdateActivityTime()
         {
             lastActivityTime = DateTime.Now;
-            
+
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow != null)
             {
                 var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                 var minimizedContainer = mainWindow.FindName("MinimizedTimerContainer") as FrameworkElement;
-                
+
                 if (timerContainer != null && minimizedContainer != null)
                 {
                     if (timerContainer.Visibility == Visibility.Collapsed && minimizedContainer.Visibility == Visibility.Visible)

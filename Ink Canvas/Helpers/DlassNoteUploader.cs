@@ -1,4 +1,3 @@
-using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -19,7 +18,7 @@ namespace Ink_Canvas.Helpers
         private const string APP_SECRET = "o7dx5b5ASGUMcM72PCpmRQYAhSijqaOVHoGyBK0IxbA";
         private const int BATCH_SIZE = 10; // 批量上传大小
         private const int MAX_RETRY_COUNT = 3; // 最大重试次数
-        private const string QUEUE_FILE_NAME = "DlassUploadQueue.json"; 
+        private const string QUEUE_FILE_NAME = "DlassUploadQueue.json";
 
         /// <summary>
         /// 上传队列项
@@ -189,7 +188,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 var queueData = new List<UploadQueueItemData>();
-                
+
                 // 将队列转换为可序列化的格式
                 foreach (var item in _uploadQueue)
                 {
@@ -202,7 +201,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var queueFilePath = GetQueueFilePath();
-                
+
                 // 如果队列为空，清空文件
                 if (queueData.Count == 0)
                 {
@@ -211,17 +210,17 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var jsonContent = JsonConvert.SerializeObject(queueData, Formatting.Indented);
-                
+
                 // 使用临时文件写入，然后替换，确保原子性
                 var tempFilePath = queueFilePath + ".tmp";
                 File.WriteAllText(tempFilePath, jsonContent);
-                
+
                 // 如果原文件存在，先删除
                 if (File.Exists(queueFilePath))
                 {
                     File.Delete(queueFilePath);
                 }
-                
+
                 // 重命名临时文件
                 File.Move(tempFilePath, queueFilePath);
             }
@@ -431,7 +430,7 @@ namespace Ink_Canvas.Helpers
                 WhiteboardInfo sharedWhiteboard = null;
                 string apiBaseUrl = null;
                 string userToken = null;
-                
+
                 try
                 {
                     var selectedClassName = MainWindow.Settings?.Dlass?.SelectedClassName;
@@ -538,11 +537,11 @@ namespace Ink_Canvas.Helpers
                     {
                         // 检查是否是可重试的错误（超时、网络错误等）
                         var errorMessage = ex.Message.ToLower();
-                        bool isRetryable = errorMessage.Contains("超时") || 
+                        bool isRetryable = errorMessage.Contains("超时") ||
                                           errorMessage.Contains("timeout") ||
                                           errorMessage.Contains("网络错误") ||
                                           errorMessage.Contains("network");
-                        
+
                         if (isRetryable && IsRetryableError(item.FilePath))
                         {
                             // 检查重试次数
