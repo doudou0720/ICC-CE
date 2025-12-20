@@ -1294,7 +1294,7 @@ namespace Ink_Canvas.Windows
                     recentTimer6 = "--:--";
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 recentTimer1 = "--:--";
                 recentTimer2 = "--:--";
