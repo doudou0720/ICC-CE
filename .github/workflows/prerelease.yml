@@ -46,7 +46,7 @@ jobs:
       - name: Get current version from Git tag
         id: get_version
         run: |
-          # 获取最新的tag（tag就是版本号，不带前缀）
+          # 获取最新的tag
           $latestTag = git describe --tags --abbrev=0 2>$null
           if ($latestTag) {
             $version = $latestTag
@@ -64,7 +64,7 @@ jobs:
         id: get_tag
         run: |
           if ("${{ github.event_name }}" -eq "push") {
-            # 从 push tag 事件获取原始标签名（tag就是版本号，不带前缀）
+            # 从 push tag 事件获取原始标签名
             $tagName = "${{ github.ref }}".Replace("refs/tags/", "")
             $cleanVersion = $tagName
             
