@@ -630,6 +630,7 @@ namespace Ink_Canvas
             if (dec.Count == 0)
             {
                 isSingleFingerDragMode = false;
+                isWaitUntilNextTouchDown = false;
                 if (drawingShapeMode == 0
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke

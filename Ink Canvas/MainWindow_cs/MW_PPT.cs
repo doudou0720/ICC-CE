@@ -100,7 +100,6 @@ namespace Ink_Canvas
         // 页面切换防抖机制
         private DateTime _lastSlideSwitchTime = DateTime.MinValue;
         private int _pendingSlideIndex = -1;
-        private System.Timers.Timer _slideSwitchDebounceTimer;
         private const int SlideSwitchDebounceMs = 150;
         private bool _isInkClearedByButton = false;
         #endregion

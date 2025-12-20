@@ -1,5 +1,6 @@
 using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -201,7 +202,83 @@ namespace Ink_Canvas
         private async void RollbackButton_Click(object sender, RoutedEventArgs e)
         {
             if (selectedItem == null) return;
-            LogHelper.WriteLogToFile($"HistoryRollback | 用户点击回滚，目标版本: {selectedItem.Version}");
+
+            var dialog = new ContentDialog
+            {
+                Title = "暂停自动更新",
+                PrimaryButtonText = "确定",
+                SecondaryButtonText = "取消"
+            };
+
+            var panel = new iNKORE.UI.WPF.Modern.Controls.SimpleStackPanel
+            {
+                Spacing = 16,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = "请选择在回滚后多久不再接收自动更新：",
+                FontSize = 14,
+                Foreground = (Brush)Resources["TextPrimaryBrush"]
+            };
+
+            var daysComboBox = new ComboBox
+            {
+                Width = 200,
+                Height = 36,
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+
+            for (int i = 0; i <= 7; i++)
+            {
+                daysComboBox.Items.Add(new ComboBoxItem
+                {
+                    Content = $"{i} 天",
+                    Tag = i
+                });
+            }
+
+            daysComboBox.SelectedIndex = 0;
+
+            panel.Children.Add(textBlock);
+            panel.Children.Add(daysComboBox);
+            dialog.Content = panel;
+
+            var dialogResult = await dialog.ShowAsync();
+
+            if (dialogResult == ContentDialogResult.Primary)
+            {
+                int days = 1;
+                if (daysComboBox.SelectedItem is ComboBoxItem selectedItemCombo &&
+                    selectedItemCombo.Tag != null &&
+                    int.TryParse(selectedItemCombo.Tag.ToString(), out int selectedDays))
+                {
+                    days = selectedDays;
+                }
+
+                if (days == 0)
+                {
+                    MainWindow.Settings.Startup.AutoUpdatePauseUntilDate = "";
+                }
+                else
+                {
+                    DateTime pauseUntilDate = DateTime.Now.AddDays(days);
+                    MainWindow.Settings.Startup.AutoUpdatePauseUntilDate = pauseUntilDate.ToString("yyyy-MM-dd");
+                    LogHelper.WriteLogToFile($"HistoryRollback | 用户选择暂停自动更新 {days} 天，截止日期: {pauseUntilDate:yyyy-MM-dd}");
+                }
+
+                MainWindow.SaveSettingsToFile();
+
+                LogHelper.WriteLogToFile($"HistoryRollback | 用户选择暂停自动更新 {days} 天");
+            }
+            else
+            {
+                LogHelper.WriteLogToFile("HistoryRollback | 用户取消了回滚操作");
+                return;
+            }
+
+            LogHelper.WriteLogToFile($"HistoryRollback | 用户确认回滚，目标版本: {selectedItem.Version}");
             RollbackButton.IsEnabled = false;
             VersionComboBox.IsEnabled = false;
             DownloadProgressPanel.Visibility = Visibility.Visible;

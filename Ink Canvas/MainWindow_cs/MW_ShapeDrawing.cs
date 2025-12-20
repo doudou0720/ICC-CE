@@ -154,8 +154,11 @@ namespace Ink_Canvas
             if (isLongPressSelected)
             {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
-                var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
-                ImageDrawLine.BeginAnimation(OpacityProperty, dA);
+                if (sender is UIElement ui)
+                {
+                    var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
+                    ui.BeginAnimation(OpacityProperty, dA);
+                }
             }
 
             DrawShapePromptToPen();
@@ -177,8 +180,11 @@ namespace Ink_Canvas
             if (isLongPressSelected)
             {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
-                var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
-                ImageDrawDashedLine.BeginAnimation(OpacityProperty, dA);
+                if (sender is UIElement ui)
+                {
+                    var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
+                    ui.BeginAnimation(OpacityProperty, dA);
+                }
             }
 
             DrawShapePromptToPen();
@@ -200,8 +206,11 @@ namespace Ink_Canvas
             if (isLongPressSelected)
             {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
-                var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
-                ImageDrawDotLine.BeginAnimation(OpacityProperty, dA);
+                if (sender is UIElement ui)
+                {
+                    var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
+                    ui.BeginAnimation(OpacityProperty, dA);
+                }
             }
 
             DrawShapePromptToPen();
@@ -223,8 +232,11 @@ namespace Ink_Canvas
             if (isLongPressSelected)
             {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
-                var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
-                ImageDrawArrow.BeginAnimation(OpacityProperty, dA);
+                if (sender is UIElement ui)
+                {
+                    var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
+                    ui.BeginAnimation(OpacityProperty, dA);
+                }
             }
 
             DrawShapePromptToPen();
@@ -246,8 +258,11 @@ namespace Ink_Canvas
             if (isLongPressSelected)
             {
                 if (ToggleSwitchDrawShapeBorderAutoHide.IsOn) CollapseBorderDrawShape();
-                var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
-                ImageDrawParallelLine.BeginAnimation(OpacityProperty, dA);
+                if (sender is UIElement ui)
+                {
+                    var dA = new DoubleAnimation(1, 1, new Duration(TimeSpan.FromMilliseconds(0)));
+                    ui.BeginAnimation(OpacityProperty, dA);
+                }
             }
 
             DrawShapePromptToPen();

@@ -1249,9 +1249,29 @@ namespace Ink_Canvas
 
         private void ClearList_Click(object sender, RoutedEventArgs e)
         {
-            nameList.Clear();
-            UpdateListCountDisplay();
-            UpdateStatusDisplay("名单已清空");
+            try
+            {
+                // 清空名单
+                nameList.Clear();
+                UpdateListCountDisplay();
+                
+                // 清空点名历史记录
+                lock (historyLock)
+                {
+                    // 重置历史记录数据
+                    historyData = new RollCallHistoryData();
+                    
+                    // 保存到文件
+                    SaveRollCallHistory();
+                }
+                
+                UpdateStatusDisplay("名单和历史记录已清空");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"清空名单和历史记录失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogHelper.WriteLogToFile($"清空名单和历史记录失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         private void SetModeSelection(string mode)

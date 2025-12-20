@@ -98,6 +98,7 @@ jobs:
             echo "<!-- event-type: ${{ github.event.action }} -->"
             echo "<!-- pr-head-sha: $PR_HEAD_SHA -->"
             echo "<!-- merge-sha: ${{ github.sha }} -->"
+            echo ""
             echo "🤖 构建完成后，状态将自动更新"
           } > preview_comment.txt
           
@@ -311,12 +312,16 @@ jobs:
                 echo ""
                 echo "## 🎉 审查建议"
                 echo "- ✅ 构建验证通过，代码可以正常编译"
+                echo "- 🔍 请进行代码审查"
+                echo "- 🧪 建议测试构建产物功能"
               fi
             else
               if [ "$READY_FOR_REVIEW" = "true" ]; then
                 echo ""
                 echo "## ⚠️ 审查阻塞"
                 echo "- ❌ 构建失败，需要修复后才能继续审查"
+                echo "- 🔧 请检查构建错误并修复"
+                echo "- 📝 修复后重新标记为准备审查"
               fi
             fi
             
@@ -327,7 +332,8 @@ jobs:
             echo "<!-- event-type: ${{ github.event.action }} -->"
             echo "<!-- pr-head-sha: $PR_HEAD_SHA -->"
             echo "<!-- merge-sha: ${{ github.sha }} -->"
-            echo "<sub>GitHub Actions 自动生成 • 最后更新: $(date -u +'%Y-%m-%d %H:%M:%S UTC')</sub>"
+            echo ""
+            echo "<sub>🤖 GitHub Actions 自动生成 • 最后更新: $(date -u +'%Y-%m-%d %H:%M:%S UTC')</sub>"
           } > final_comment.txt
           
           # 输出多行内容
