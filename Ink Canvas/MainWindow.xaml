@@ -2244,7 +2244,7 @@
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold" />
                                     </ui:SimpleStackPanel>
                                     <TextBlock TextWrapping="Wrap" Foreground="#a1a1aa"
-                                               Text="# 避免画布全屏，重启icc后生效。" />
+                                               Text="# 避免画布全屏，可解决开启dock栏软件后浮动工具栏偏高的问题（但是进入批准也仍然会偏高），重启icc后生效。" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     
                                         <TextBlock Foreground="#fafafa" Text="启用EdgeGestureUtil"
