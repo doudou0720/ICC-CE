@@ -36,8 +36,8 @@ SolidCompression=yes
 WizardStyle=modern
 
 [Languages]
-Name: "chinesesimp"; MessagesFile: "compiler:Default.isl"
-Name: "english"; MessagesFile: "compiler:Languages\English.isl"
+Name: "chinesesimp"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+Name: "english"; MessagesFile: "compiler:Languages\EnglishBritish.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
