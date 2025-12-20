@@ -1,12 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using System.Timers;
 
 namespace Ink_Canvas.Windows
 {
@@ -23,23 +23,23 @@ namespace Ink_Canvas.Windows
         {
             InitializeComponent();
             parentControl = parent;
-            
+
             this.Left = 0;
             this.Top = 0;
             this.Width = SystemParameters.PrimaryScreenWidth;
             this.Height = SystemParameters.PrimaryScreenHeight;
-            
-            updateTimer = new System.Timers.Timer(100); 
+
+            updateTimer = new System.Timers.Timer(100);
             updateTimer.Elapsed += UpdateTimer_Elapsed;
             updateTimer.Start();
-            
+
             parentControl.TimerCompleted += ParentWindow_TimerCompleted;
-            
+
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow != null)
             {
                 mainWindow.PauseTopmostMaintenance();
-                
+
                 var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                 if (timerContainer != null)
                 {
@@ -47,11 +47,11 @@ namespace Ink_Canvas.Windows
                     timerContainer.Visibility = Visibility.Collapsed;
                 }
             }
-            
+
             // 确保窗口置顶
             Loaded += FullscreenTimerWindow_Loaded;
         }
-        
+
         private void FullscreenTimerWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // 使用延迟确保窗口完全加载后再应用置顶
@@ -60,7 +60,7 @@ namespace Ink_Canvas.Windows
                 ApplyTopmost();
             }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
-        
+
         #region Win32 API 声明和置顶管理
         [DllImport("user32.dll")]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -118,29 +118,29 @@ namespace Ink_Canvas.Windows
                         this.Close();
                         return;
                     }
-                    
+
                     UpdateTimeDisplay();
                 });
             }
         }
-        
+
         private bool ShouldCloseWindow()
         {
             if (parentControl == null) return true;
-            
+
             if (MainWindow.Settings.RandSettings?.EnableOvertimeCountUp == true)
             {
                 if (parentControl.IsTimerRunning)
                 {
                     return false;
                 }
-                
+
                 var remainingTime = parentControl.GetRemainingTime();
                 if (remainingTime.HasValue && remainingTime.Value.TotalSeconds < 0)
                 {
                     return false;
                 }
-                
+
                 return true;
             }
             else
@@ -198,17 +198,17 @@ namespace Ink_Canvas.Windows
 
                 SetDigitDisplay("FullHour1Display", Math.Abs(hours / 10) % 10, shouldShowRed);
                 SetDigitDisplay("FullHour2Display", (hours % 10 + 10) % 10, shouldShowRed);
-                
+
                 SetDigitDisplay("FullMinute1Display", minutes / 10, shouldShowRed);
                 SetDigitDisplay("FullMinute2Display", minutes % 10, shouldShowRed);
-                
+
                 SetDigitDisplay("FullSecond1Display", seconds / 10, shouldShowRed);
                 SetDigitDisplay("FullSecond2Display", seconds % 10, shouldShowRed);
-                
+
                 SetColonDisplay(shouldShowRed);
             }
         }
-        
+
         private void ParentWindow_TimerCompleted(object sender, EventArgs e)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -228,7 +228,7 @@ namespace Ink_Canvas.Windows
                 {
                     path.Data = geometry;
                 }
-                
+
                 // 设置颜色
                 if (isRed)
                 {
@@ -249,7 +249,7 @@ namespace Ink_Canvas.Windows
         {
             var colon1 = this.FindName("FullColon1Display") as TextBlock;
             var colon2 = this.FindName("FullColon2Display") as TextBlock;
-            
+
             if (colon1 != null)
             {
                 if (isRed)
@@ -261,7 +261,7 @@ namespace Ink_Canvas.Windows
                     colon1.Foreground = Brushes.White;
                 }
             }
-            
+
             if (colon2 != null)
             {
                 if (isRed)
@@ -301,12 +301,12 @@ namespace Ink_Canvas.Windows
             if (mainWindow != null)
             {
                 mainWindow.ResumeTopmostMaintenance();
-                
+
                 var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                 if (timerContainer != null && previousTimerContainerVisibility == Visibility.Visible)
                 {
                     timerContainer.Visibility = Visibility.Visible;
-                    
+
                     // 重置5秒最小化计时
                     if (parentControl != null)
                     {
@@ -314,12 +314,12 @@ namespace Ink_Canvas.Windows
                     }
                 }
             }
-            
+
             if (parentControl != null)
             {
                 parentControl.TimerCompleted -= ParentWindow_TimerCompleted;
             }
-            
+
             // 清理资源
             if (updateTimer != null)
             {

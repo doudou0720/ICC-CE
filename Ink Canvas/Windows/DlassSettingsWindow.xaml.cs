@@ -25,25 +25,25 @@ namespace Ink_Canvas.Windows
         public DlassSettingsWindow(MainWindow mainWindow = null)
         {
             InitializeComponent();
-            
+
             // 初始化班级下拉框
             CmbClassSelection.Items.Clear();
             CmbClassSelection.Items.Add("（等待连接）");
             CmbClassSelection.SelectedIndex = 0;
             CmbClassSelection.IsEnabled = false;
-            
+
             // 加载保存的token
             LoadUserToken();
-            
+
             // 加载自动上传设置
             LoadAutoUploadSettings();
-            
+
             // 初始化API客户端（优先使用用户token）
             InitializeApiClient();
-            
+
             // 窗口关闭时释放资源
             Closed += (s, e) => _apiClient?.Dispose();
-            
+
             // 测试连接
             _ = TestConnectionAsync();
         }
@@ -55,7 +55,7 @@ namespace Ink_Canvas.Windows
         {
             var userToken = GetUserToken();
             var apiBaseUrl = MainWindow.Settings?.Dlass?.ApiBaseUrl;
-            
+
             if (string.IsNullOrEmpty(apiBaseUrl) || apiBaseUrl.Contains("api.dlass.tech"))
             {
                 apiBaseUrl = "https://dlass.tech";
@@ -65,7 +65,7 @@ namespace Ink_Canvas.Windows
                     MainWindow.SaveSettingsToFile();
                 }
             }
-            
+
             if (!string.IsNullOrEmpty(userToken))
             {
                 _apiClient = new DlassApiClient(APP_ID, APP_SECRET, baseUrl: apiBaseUrl, userToken: userToken);
@@ -107,7 +107,7 @@ namespace Ink_Canvas.Windows
         {
             var savedTokens = GetSavedTokens();
             var currentToken = GetUserToken();
-            
+
             CmbSavedTokens.Items.Clear();
             if (savedTokens.Count > 0)
             {
@@ -138,9 +138,9 @@ namespace Ink_Canvas.Windows
                 CmbSavedTokens.SelectedIndex = 0;
                 CmbSavedTokens.IsEnabled = false;
             }
-            
+
             TxtNewToken.Text = string.Empty;
-            
+
             if (!string.IsNullOrEmpty(currentToken))
             {
                 TxtTokenStatus.Text = "已选择Token";
@@ -176,7 +176,7 @@ namespace Ink_Canvas.Windows
                 {
                     MainWindow.Settings.Dlass.SavedTokens = new List<string>();
                 }
-                
+
                 if (!string.IsNullOrEmpty(token) && !MainWindow.Settings.Dlass.SavedTokens.Contains(token))
                 {
                     MainWindow.Settings.Dlass.SavedTokens.Add(token);
@@ -203,7 +203,7 @@ namespace Ink_Canvas.Windows
         private void LoadClasses(List<WhiteboardInfo> whiteboards, UserInfo user = null)
         {
             CmbClassSelection.Items.Clear();
-            
+
             if (whiteboards != null && whiteboards.Count > 0)
             {
                 var teacherName = user?.Username ?? "未知教师";
@@ -212,7 +212,7 @@ namespace Ink_Canvas.Windows
                     .GroupBy(w => w.ClassName)
                     .OrderBy(g => g.Key)
                     .ToList();
-                
+
                 foreach (var group in classGroups)
                 {
                     var className = group.Key;
@@ -224,7 +224,7 @@ namespace Ink_Canvas.Windows
                         TeacherName = teacherName
                     });
                 }
-                
+
                 var savedClassName = MainWindow.Settings?.Dlass?.SelectedClassName ?? string.Empty;
                 if (!string.IsNullOrEmpty(savedClassName))
                 {
@@ -243,7 +243,7 @@ namespace Ink_Canvas.Windows
                 {
                     CmbClassSelection.SelectedIndex = 0;
                 }
-                
+
                 CmbClassSelection.IsEnabled = true;
             }
             else
@@ -339,7 +339,7 @@ namespace Ink_Canvas.Windows
                         delayMinutes = 60;
                         TxtUploadDelayMinutes.Text = "60";
                     }
-                    
+
                     MainWindow.Settings.Dlass.AutoUploadDelayMinutes = delayMinutes;
                     MainWindow.SaveSettingsToFile();
                 }
@@ -398,13 +398,13 @@ namespace Ink_Canvas.Windows
                 {
                     var selectedToken = CmbSavedTokens.SelectedItem.ToString();
                     SaveUserToken(selectedToken);
-                    
+
                     _apiClient?.Dispose();
                     InitializeApiClient();
-                    
+
                     TxtTokenStatus.Text = "已选择Token";
                     TxtTokenStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(34, 197, 94));
-                    
+
                     _ = TestConnectionAsync();
                 }
             }
@@ -430,14 +430,14 @@ namespace Ink_Canvas.Windows
 
                 AddTokenToList(token);
                 SaveUserToken(token);
-                
+
                 _apiClient?.Dispose();
                 InitializeApiClient();
-                
+
                 LoadUserToken();
-                
+
                 MessageBox.Show("Token已成功保存并已选择", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
-                
+
                 _ = TestConnectionAsync();
             }
             catch (Exception ex)
@@ -465,24 +465,24 @@ namespace Ink_Canvas.Windows
                 if (result == MessageBoxResult.Yes)
                 {
                     RemoveTokenFromList(selectedToken);
-                    
+
                     if (GetUserToken() == selectedToken)
                     {
                         SaveUserToken(string.Empty);
                     }
-                    
+
                     _apiClient?.Dispose();
                     InitializeApiClient();
-                    
+
                     LoadUserToken();
-                    
+
                     CmbClassSelection.Items.Clear();
                     CmbClassSelection.Items.Add("（等待连接）");
                     CmbClassSelection.SelectedIndex = 0;
                     CmbClassSelection.IsEnabled = false;
                     _currentWhiteboards.Clear();
                     _currentUser = null;
-                    
+
                     TxtConnectionStatus.Text = "未连接";
                     TxtConnectionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(161, 161, 170));
                 }
@@ -513,7 +513,7 @@ namespace Ink_Canvas.Windows
                 // 示例：保存设置到服务器
                 // var settings = new { ... };
                 // await _apiClient.PostAsync<ApiResponse>("/api/settings", settings);
-                
+
                 MessageBox.Show("设置已保存", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 Close();
             }
@@ -566,21 +566,21 @@ namespace Ink_Canvas.Windows
                         app_secret = APP_SECRET,
                         user_token = userToken
                     };
-                    
+
                     var result = await _apiClient.PostAsync<AuthWithTokenResponse>("/api/whiteboard/framework/auth-with-token", authData, requireAuth: false);
-                    
+
                     if (result != null && result.Success)
                     {
                         var whiteboards = result.Whiteboards ?? new List<WhiteboardInfo>();
                         _currentWhiteboards = whiteboards;
                         _currentUser = result.User;
                         var whiteboardCount = whiteboards.Count;
-                        
+
                         Dispatcher.Invoke(() =>
                         {
                             TxtConnectionStatus.Text = $"已连接 (找到 {whiteboardCount} 个白板)";
                             TxtConnectionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(34, 197, 94));
-                            
+
                             // 加载班级列表
                             LoadClasses(whiteboards, result.User);
                         });
@@ -596,11 +596,11 @@ namespace Ink_Canvas.Windows
                     {
                         throw new Exception("Token格式可能不正确（长度过短，至少需要10个字符）");
                     }
-                    
+
                     LogHelper.WriteLogToFile($"Token验证失败: {ex.Message}", LogHelper.LogType.Error);
                     throw;
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -609,7 +609,7 @@ namespace Ink_Canvas.Windows
                 {
                     TxtConnectionStatus.Text = "连接失败";
                     TxtConnectionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(239, 68, 68));
-                    
+
                     // 清空班级列表
                     CmbClassSelection.Items.Clear();
                     CmbClassSelection.Items.Add("（无可用班级）");
@@ -620,9 +620,9 @@ namespace Ink_Canvas.Windows
             }
         }
     }
-    
+
     #region API响应模型
-    
+
     /// <summary>
     /// auth-with-token接口响应模型
     /// </summary>
@@ -630,17 +630,17 @@ namespace Ink_Canvas.Windows
     {
         [Newtonsoft.Json.JsonProperty("success")]
         public bool Success { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("whiteboards")]
         public List<WhiteboardInfo> Whiteboards { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("count")]
         public int Count { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("user")]
         public UserInfo User { get; set; }
     }
-    
+
     /// <summary>
     /// 白板信息模型
     /// </summary>
@@ -648,32 +648,32 @@ namespace Ink_Canvas.Windows
     {
         [Newtonsoft.Json.JsonProperty("id")]
         public int Id { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("name")]
         public string Name { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("board_id")]
         public string BoardId { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("secret_key")]
         public string SecretKey { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("class_name")]
         public string ClassName { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("class_id")]
         public int ClassId { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("is_online")]
         public bool IsOnline { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("last_heartbeat")]
         public string LastHeartbeat { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("created_at")]
         public string CreatedAt { get; set; }
     }
-    
+
     /// <summary>
     /// 用户信息模型
     /// </summary>
@@ -681,14 +681,14 @@ namespace Ink_Canvas.Windows
     {
         [Newtonsoft.Json.JsonProperty("id")]
         public int Id { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("username")]
         public string Username { get; set; }
-        
+
         [Newtonsoft.Json.JsonProperty("email")]
         public string Email { get; set; }
     }
-    
+
     /// <summary>
     /// 班级选择项
     /// </summary>
@@ -697,13 +697,13 @@ namespace Ink_Canvas.Windows
         public string DisplayText { get; set; }
         public string ClassName { get; set; }
         public string TeacherName { get; set; }
-        
+
         public override string ToString()
         {
             return DisplayText;
         }
     }
-    
+
     #endregion
 }
 

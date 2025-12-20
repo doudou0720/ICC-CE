@@ -73,35 +73,40 @@ namespace Ink_Canvas
         /// <summary>
         /// 用於更新浮動工具欄的"手勢"按鈕和白板工具欄的"手勢"按鈕的樣式（開啟和關閉狀態）
         /// </summary>
-        private void CheckEnableTwoFingerGestureBtnColorPrompt() {
+        private void CheckEnableTwoFingerGestureBtnColorPrompt()
+        {
             // 根据主题选择手势图标和颜色
             bool isDarkTheme = Settings.Appearance.Theme == 1 ||
                                (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
             bool isLightTheme = !isDarkTheme;
             string gestureIconPath = isLightTheme ? "/Resources/new-icons/gesture.png" : "/Resources/new-icons/gesture_white.png";
-            
+
             // 根据主题设置白板模式下的颜色
             Color boardBgColor, boardIconColor, boardTextColor, boardBorderColor;
-            if (isLightTheme) {
+            if (isLightTheme)
+            {
                 // 浅色主题
                 boardBgColor = Color.FromRgb(244, 244, 245);
                 boardIconColor = Color.FromRgb(24, 24, 27);
                 boardTextColor = Color.FromRgb(24, 24, 27);
                 boardBorderColor = Color.FromRgb(161, 161, 170);
-            } else {
+            }
+            else
+            {
                 // 深色主题
                 boardBgColor = Color.FromRgb(39, 39, 42);
                 boardIconColor = Color.FromRgb(244, 244, 245);
                 boardTextColor = Color.FromRgb(244, 244, 245);
                 boardBorderColor = Color.FromRgb(113, 113, 122);
             }
-            
-            if (ToggleSwitchEnableMultiTouchMode.IsOn) {
+
+            if (ToggleSwitchEnableMultiTouchMode.IsOn)
+            {
                 TwoFingerGestureSimpleStackPanel.Opacity = 0.5;
                 TwoFingerGestureSimpleStackPanel.IsHitTestVisible = false;
                 EnableTwoFingerGestureBtn.Source =
                     new BitmapImage(new Uri(gestureIconPath, UriKind.Relative));
-                
+
                 BoardGesture.Background = new SolidColorBrush(boardBgColor);
                 BoardGestureGeometry.Brush = new SolidColorBrush(boardIconColor);
                 BoardGestureGeometry2.Brush = new SolidColorBrush(boardIconColor);
@@ -110,25 +115,28 @@ namespace Ink_Canvas
                 BoardGestureGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.DisabledGestureIcon);
                 BoardGestureGeometry2.Geometry = Geometry.Parse("F0 M24,24z M0,0z");
             }
-            else {
+            else
+            {
                 TwoFingerGestureSimpleStackPanel.Opacity = 1;
                 TwoFingerGestureSimpleStackPanel.IsHitTestVisible = true;
-                if (Settings.Gesture.IsEnableTwoFingerGesture) {
+                if (Settings.Gesture.IsEnableTwoFingerGesture)
+                {
                     EnableTwoFingerGestureBtn.Source =
                         new BitmapImage(new Uri("/Resources/new-icons/gesture-enabled.png", UriKind.Relative));
-                    
+
                     BoardGesture.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
                     BoardGestureGeometry.Brush = new SolidColorBrush(Colors.GhostWhite);
                     BoardGestureGeometry2.Brush = new SolidColorBrush(Colors.GhostWhite);
                     BoardGestureLabel.Foreground = new SolidColorBrush(Colors.GhostWhite);
                     BoardGesture.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
                     BoardGestureGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.EnabledGestureIcon);
-                    BoardGestureGeometry2.Geometry = Geometry.Parse("F0 M24,24z M0,0z "+XamlGraphicsIconGeometries.EnabledGestureIconBadgeCheck);
+                    BoardGestureGeometry2.Geometry = Geometry.Parse("F0 M24,24z M0,0z " + XamlGraphicsIconGeometries.EnabledGestureIconBadgeCheck);
                 }
-                else {
+                else
+                {
                     EnableTwoFingerGestureBtn.Source =
                         new BitmapImage(new Uri(gestureIconPath, UriKind.Relative));
-                    
+
                     BoardGesture.Background = new SolidColorBrush(boardBgColor);
                     BoardGestureGeometry.Brush = new SolidColorBrush(boardIconColor);
                     BoardGestureGeometry2.Brush = new SolidColorBrush(boardIconColor);
@@ -474,7 +482,7 @@ namespace Ink_Canvas
                 }
 
                 bool useLegacyUI = Settings.Appearance.UseLegacyFloatingBarUI;
-                
+
                 switch (mode)
                 {
                     case "pen":
@@ -1958,7 +1966,7 @@ namespace Ink_Canvas
             if (Settings.ModeSettings.IsPPTOnlyMode && !isRetry)
             {
                 await Task.Delay(2000); // 等待动画完成后再检查
-                
+
                 bool isFloatingBarVisible = false;
                 await Dispatcher.InvokeAsync(() =>
                 {
@@ -2039,6 +2047,10 @@ namespace Ink_Canvas
             GridTransparencyFakeBackground.Background = Brushes.Transparent;
 
             GridBackgroundCoverHolder.Visibility = Visibility.Collapsed;
+
+            // 点击鼠标按钮退出批注模式时的全屏还原
+            RestoreFullScreenOnExitAnnotationMode();
+
             inkCanvas.Select(new StrokeCollection());
             GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
 
@@ -2151,6 +2163,21 @@ namespace Ink_Canvas
                 }
 
                 BtnHideInkCanvas.Content = "隐藏\n画板";
+
+                // 进入批注模式时的全屏处理（仅当未应用过全屏处理时）
+                if (Settings.Advanced.IsEnableAvoidFullScreenHelper && !isFullScreenApplied)
+                {
+                    // 设置为画板模式，允许全屏操作
+                    AvoidFullScreenHelper.SetBoardMode(true);
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        MainWindow.MoveWindow(new WindowInteropHelper(this).Handle, 0, 0,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
+                    }), DispatcherPriority.ApplicationIdle);
+
+                    isFullScreenApplied = true; // 标记已应用全屏处理
+                }
 
                 StackPanelCanvasControls.Visibility = Visibility.Visible;
                 //AnimationsHelper.ShowWithSlideFromLeftAndFade(StackPanelCanvasControls);
@@ -2993,6 +3020,30 @@ namespace Ink_Canvas
 
         private int currentMode;
 
+        // 退出批注模式时的全屏还原处理
+        private void RestoreFullScreenOnExitAnnotationMode()
+        {
+            if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
+                isFullScreenApplied &&
+                currentMode == 0 && // 不在白板模式
+                BtnPPTSlideShowEnd.Visibility != Visibility.Visible) // 不在PPT放映模式
+            {
+                // 恢复为非画板模式，重新启用全屏限制
+                AvoidFullScreenHelper.SetBoardMode(false);
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // 退出批注模式，恢复到工作区域大小
+                    var workingArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+                    MainWindow.MoveWindow(new WindowInteropHelper(this).Handle,
+                        workingArea.Left, workingArea.Top,
+                        workingArea.Width, workingArea.Height, true);
+                }), DispatcherPriority.ApplicationIdle);
+
+                isFullScreenApplied = false; // 标记全屏处理已还原
+            }
+        }
+
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)
@@ -3061,8 +3112,9 @@ namespace Ink_Canvas
                         ClearStrokes(true);
                         RestoreStrokes(true);
 
-                        // 退出白板模式时取消全屏
-                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper)
+                        // 退出白板模式时取消全屏（仅在非PPT模式下）
+                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
+                            BtnPPTSlideShowEnd.Visibility != Visibility.Visible) // 不在PPT放映模式
                         {
                             // 恢复为非画板模式，重新启用全屏限制
                             AvoidFullScreenHelper.SetBoardMode(false);
@@ -3071,10 +3123,12 @@ namespace Ink_Canvas
                             {
                                 // 退出白板模式，恢复到工作区域大小
                                 var workingArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
-                                MainWindow.MoveWindow(new WindowInteropHelper(this).Handle, 
+                                MainWindow.MoveWindow(new WindowInteropHelper(this).Handle,
                                     workingArea.Left, workingArea.Top,
                                     workingArea.Width, workingArea.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
+
+                            isFullScreenApplied = false; // 标记全屏处理已还原
                         }
 
                         // 在屏幕模式下恢复基础浮动栏的显示
@@ -3133,8 +3187,9 @@ namespace Ink_Canvas
 
                         RestoreStrokes();
 
-                        // 进入白板模式时全屏
-                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper)
+                        // 进入白板模式时全屏（仅在非PPT模式下）
+                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
+                            BtnPPTSlideShowEnd.Visibility != Visibility.Visible) // 不在PPT放映模式
                         {
                             // 设置为画板模式，允许全屏操作
                             AvoidFullScreenHelper.SetBoardMode(true);
@@ -3144,6 +3199,8 @@ namespace Ink_Canvas
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
+
+                            isFullScreenApplied = true; // 标记已应用全屏处理
                         }
 
                         ViewboxFloatingBar.Visibility = Visibility.Collapsed;
@@ -3181,7 +3238,7 @@ namespace Ink_Canvas
                         }
 
                         StackPanelPPTButtons.Visibility = Visibility.Collapsed;
-                        
+
                         if (Settings.Advanced.EnableUIAccessTopMost)
                         {
                             Topmost = true;
@@ -3201,6 +3258,7 @@ namespace Ink_Canvas
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)
             {
+                // 进入批注模式
                 GridTransparencyFakeBackground.Opacity = 1;
                 GridTransparencyFakeBackground.Background = new SolidColorBrush(StringToColor("#01FFFFFF"));
                 inkCanvas.IsHitTestVisible = true;
@@ -3225,6 +3283,21 @@ namespace Ink_Canvas
                 }
 
                 BtnHideInkCanvas.Content = "隐藏\n画板";
+
+                // 进入批注模式时的全屏处理（仅当未应用过全屏处理时）
+                if (Settings.Advanced.IsEnableAvoidFullScreenHelper && !isFullScreenApplied)
+                {
+                    // 设置为画板模式，允许全屏操作
+                    AvoidFullScreenHelper.SetBoardMode(true);
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        MainWindow.MoveWindow(new WindowInteropHelper(this).Handle, 0, 0,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
+                    }), DispatcherPriority.ApplicationIdle);
+
+                    isFullScreenApplied = true; // 标记已应用全屏处理
+                }
             }
             else
             {
@@ -3274,6 +3347,9 @@ namespace Ink_Canvas
                 GridTransparencyFakeBackground.Background = Brushes.Transparent;
 
                 GridBackgroundCoverHolder.Visibility = Visibility.Collapsed;
+
+                // 退出批注模式时的全屏还原
+                RestoreFullScreenOnExitAnnotationMode();
 
                 if (currentMode != 0)
                 {

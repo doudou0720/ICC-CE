@@ -342,13 +342,13 @@ namespace Ink_Canvas
             try
             {
                 var exception = e.ExceptionObject as Exception;
-                
+
                 if (exception is InvalidOperationException invalidOpEx)
                 {
                     string exceptionMessage = invalidOpEx.Message ?? "";
                     string exceptionStackTrace = invalidOpEx.StackTrace ?? "";
-                        
-                    if (exceptionMessage.Contains("调用线程无法访问此对象") || 
+
+                    if (exceptionMessage.Contains("调用线程无法访问此对象") ||
                         exceptionMessage.Contains("because another thread owns it") ||
                         exceptionStackTrace.Contains("DynamicRenderer") ||
                         exceptionStackTrace.Contains("CompositionTarget.get_RootVisual"))
@@ -360,7 +360,7 @@ namespace Ink_Canvas
                         return;
                     }
                 }
-                
+
                 string errorMessage = exception?.ToString() ?? "未知异常";
                 lastErrorMessage = errorMessage;
 
@@ -376,8 +376,8 @@ namespace Ink_Canvas
                 // 尝试在最后时刻记录错误
                 try
                 {
-                    string timeStr = (appStartTime != default(DateTime) && appStartTime != DateTime.MinValue) 
-                        ? appStartTime.ToString("yyyy-MM-dd-HH-mm-ss") 
+                    string timeStr = (appStartTime != default(DateTime) && appStartTime != DateTime.MinValue)
+                        ? appStartTime.ToString("yyyy-MM-dd-HH-mm-ss")
                         : DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
                     File.AppendAllText(
                         Path.Combine(crashLogFile, $"Crash_{timeStr}.txt"),
@@ -518,8 +518,8 @@ namespace Ink_Canvas
                     Directory.CreateDirectory(crashLogFile);
                 }
 
-                string appStartTimeStr = (appStartTime != default(DateTime) && appStartTime != DateTime.MinValue) 
-                    ? appStartTime.ToString("yyyy-MM-dd-HH-mm-ss") 
+                string appStartTimeStr = (appStartTime != default(DateTime) && appStartTime != DateTime.MinValue)
+                    ? appStartTime.ToString("yyyy-MM-dd-HH-mm-ss")
                     : DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
                 string logFileName = Path.Combine(crashLogFile, $"Crash_{appStartTimeStr}.txt");
 
@@ -575,9 +575,9 @@ namespace Ink_Canvas
             {
                 string exceptionMessage = invalidOpEx.Message ?? "";
                 string exceptionStackTrace = invalidOpEx.StackTrace ?? "";
-                
+
                 // 检查是否是DynamicRenderer相关的线程访问问题
-                if (exceptionMessage.Contains("调用线程无法访问此对象") || 
+                if (exceptionMessage.Contains("调用线程无法访问此对象") ||
                     exceptionMessage.Contains("because another thread owns it") ||
                     exceptionStackTrace.Contains("DynamicRenderer") ||
                     exceptionStackTrace.Contains("CompositionTarget.get_RootVisual"))
@@ -588,13 +588,13 @@ namespace Ink_Canvas
                         $"检测到DynamicRenderer线程访问异常（已安全处理）: {invalidOpEx.Message}",
                         LogHelper.LogType.Warning
                     );
-                    
+
                     // 标记为已处理，不显示错误消息，不触发重启
                     e.Handled = true;
                     return;
                 }
             }
-            
+
             Ink_Canvas.MainWindow.ShowNewMessage("抱歉，出现未预期的异常，可能导致 InkCanvasForClass 运行不稳定。\n建议保存墨迹后重启应用。");
             LogHelper.NewLog(e.Exception.ToString());
 
@@ -1133,12 +1133,12 @@ namespace Ink_Canvas
                     }
                     // 主进程异常退出，自动重启前判断崩溃后操作
                     SyncCrashActionFromSettings(); // 同步设置
-                    
+
                     if (IsUIAccessTopMostEnabled)
                     {
                         Environment.Exit(0);
                     }
-                    
+
                     if (CrashAction == CrashActionType.SilentRestart)
                     {
                         StartupCount.Increment();

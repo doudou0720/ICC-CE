@@ -149,7 +149,7 @@ namespace Ink_Canvas
                         {
                         }
                     });
-                    
+
                     // 保存元素信息
                     var elementInfos = new List<CanvasElementInfo>();
                     foreach (var child in inkCanvas.Children)
