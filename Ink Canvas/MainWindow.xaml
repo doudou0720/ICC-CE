@@ -1215,6 +1215,7 @@
                                             <ComboBoxItem Content="osu!玩家语录" FontFamily="Microsoft YaHei UI" />
                                             <ComboBoxItem Content="励志立志的名言警句" FontFamily="Microsoft YaHei UI" />
                                             <ComboBoxItem Content="高考祝福语" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="一言（Hitokoto API）" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"

@@ -702,21 +702,7 @@ namespace Ink_Canvas
                     BlackBoardWaterMark.Visibility = Visibility.Collapsed;
                 }
 
-                if (Settings.Appearance.ChickenSoupSource == 0)
-                {
-                    int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
-                    BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
-                }
-                else if (Settings.Appearance.ChickenSoupSource == 1)
-                {
-                    int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
-                    BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
-                }
-                else if (Settings.Appearance.ChickenSoupSource == 2)
-                {
-                    int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
-                    BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
-                }
+                _ = UpdateChickenSoupTextAsync();
 
                 if (Settings.Canvas.UsingWhiteboard)
                 {
