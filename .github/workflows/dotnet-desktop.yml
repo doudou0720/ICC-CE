@@ -63,6 +63,8 @@ jobs:
     needs: find-or-create-pr-comment
     permissions:
       pull-requests: write
+    outputs:
+      comment_id: ${{ steps.create-preview-comment.outputs.comment-id }}
     steps:
       - name: Prepare Preview Comment
         id: prepare-preview
@@ -254,7 +256,7 @@ jobs:
 
   pr-check-comment:
     name: PR Check & Comment (Final)
-    needs: [build-and-package, find-or-create-pr-comment]
+    needs: [build-and-package, pr-preview-comment]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -355,7 +357,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ needs.find-or-create-pr-comment.outputs.comment_id }}
+          comment-id: ${{ needs.pr-preview-comment.outputs.comment_id }}
           body: ${{ steps.prepare-final-comment.outputs.final_body }}
           edit-mode: replace
 
