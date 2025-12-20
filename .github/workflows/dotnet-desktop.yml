@@ -133,7 +133,7 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Cache NuGet packages and obj files
+      - name: Cache NuGet global packages
         id: cache-nuget
         uses: actions/cache@v4
         with:
@@ -142,23 +142,38 @@ jobs:
             ~/.nuget/packages
             # NuGet 缓存目录（包索引）
             ~\AppData\Local\NuGet\Cache
-            # 项目 obj 目录（包含 project.assets.json）
-            Ink Canvas/obj/
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.config', '**/*.sln') }}
+          key: ${{ runner.os }}-nuget-v2-${{ hashFiles('**/*.csproj', '**/packages.config', '**/*.sln', '**/nuget.config') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-v2-
 
-      - name: Restore NuGet packages (if cache missed)
-        if: steps.cache-nuget.outputs.cache-hit != 'true'
+      - name: Cache obj/ folders
+        id: cache-obj
+        uses: actions/cache@v4
+        with:
+          path: |
+            # MSBuild 生成的 obj/ 文件夹
+            Ink Canvas/obj
+          key: ${{ runner.os }}-obj-v2-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-obj-v2-
+
+      - name: "Cache debug: show cache hit status"
         run: |
-          Write-Host "📥 缓存未命中，正在恢复 NuGet 包..." -ForegroundColor Yellow
-          
+          echo "NuGet cache hit: ${{ steps.cache-nuget.outputs.cache-hit }}"
+          echo "Obj cache hit: ${{ steps.cache-obj.outputs.cache-hit }}"
+
+      # Removed caching of obj/ folders to avoid cross-version incremental build issues
+      # NuGet packages will still be cached; always run restore to ensure packages are present
+      - name: Restore NuGet packages
+        run: |
+          Write-Host "📥 正在恢复 NuGet 包（始终运行以确保依赖可用）..." -ForegroundColor Yellow
+
           # 恢复解决方案级别的包
           nuget restore "Ink Canvas.sln" -Verbosity minimal
-          
-          # 恢复项目级别的包
+
+          # 恢复项目级别的包（兼容 packages.config）
           msbuild -t:restore "Ink Canvas/InkCanvasForClass.csproj" /p:GitFlow="Github Action" /p:RestorePackagesConfig=true /verbosity:minimal
-          
+
           Write-Host "✅ NuGet 包恢复完成" -ForegroundColor Green
 
       - name: Build the Solution
@@ -296,16 +311,12 @@ jobs:
                 echo ""
                 echo "## 🎉 审查建议"
                 echo "- ✅ 构建验证通过，代码可以正常编译"
-                echo "- 🔍 请进行代码审查"
-                echo "- 🧪 建议测试构建产物功能"
               fi
             else
               if [ "$READY_FOR_REVIEW" = "true" ]; then
                 echo ""
                 echo "## ⚠️ 审查阻塞"
                 echo "- ❌ 构建失败，需要修复后才能继续审查"
-                echo "- 🔧 请检查构建错误并修复"
-                echo "- 📝 修复后重新标记为准备审查"
               fi
             fi
             
@@ -316,7 +327,7 @@ jobs:
             echo "<!-- event-type: ${{ github.event.action }} -->"
             echo "<!-- pr-head-sha: $PR_HEAD_SHA -->"
             echo "<!-- merge-sha: ${{ github.sha }} -->"
-            echo "<sub>🤖 GitHub Actions 自动生成 • 最后更新: $(date -u +'%Y-%m-%d %H:%M:%S UTC')</sub>"
+            echo "<sub>GitHub Actions 自动生成 • 最后更新: $(date -u +'%Y-%m-%d %H:%M:%S UTC')</sub>"
           } > final_comment.txt
           
           # 输出多行内容
