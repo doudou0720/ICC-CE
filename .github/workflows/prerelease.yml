@@ -46,11 +46,10 @@ jobs:
       - name: Get current version from Git tag
         id: get_version
         run: |
-          # 获取最新的tag
+          # 获取最新的tag（tag就是版本号，不带前缀）
           $latestTag = git describe --tags --abbrev=0 2>$null
           if ($latestTag) {
-            # 移除v/b前缀
-            $version = $latestTag -replace "^[vb]", ""
+            $version = $latestTag
             echo "Found latest tag: $latestTag"
           } else {
             # 如果没有tag，使用默认值
@@ -65,10 +64,9 @@ jobs:
         id: get_tag
         run: |
           if ("${{ github.event_name }}" -eq "push") {
-            # 从 push tag 事件获取原始标签名
+            # 从 push tag 事件获取原始标签名（tag就是版本号，不带前缀）
             $tagName = "${{ github.ref }}".Replace("refs/tags/", "")
-            # 移除 v/b 前缀获取纯版本号
-            $cleanVersion = $tagName -replace "^[vb]", ""
+            $cleanVersion = $tagName
             
             echo "tag_name=$tagName" >> $env:GITHUB_OUTPUT
             echo "version=$cleanVersion" >> $env:GITHUB_OUTPUT
@@ -125,12 +123,13 @@ jobs:
             # 生成新版本号（4位格式，如1.7.18.0）
             $newVersion = "$major.$minor.$patch.$build"
             
-            # 根据是否为预发布决定标签前缀
-            if ($isPrerelease) {
-              $tagName = "b$newVersion"
-            } else {
-              $tagName = "v$newVersion"
+            # 根据是否为预发布决定版本号最后一位
+            # 如果是预发布，确保最后一位不为0（使用1）
+            if ($isPrerelease -and $build -eq 0) {
+              $build = 1
+              $newVersion = "$major.$minor.$patch.$build"
             }
+            $tagName = $newVersion
             
             echo "tag_name=$tagName" >> $env:GITHUB_OUTPUT
             echo "version=$newVersion" >> $env:GITHUB_OUTPUT
@@ -141,14 +140,22 @@ jobs:
         id: release_type
         run: |
           if ("${{ github.event_name }}" -eq "push") {
-            # 根据 tag 名称前缀确定是否为预发布版本
-            $tagName = "${{ steps.get_tag.outputs.tag_name }}"
-            if ($tagName -and $tagName.StartsWith("b")) {
-              echo "is_prerelease=true" >> $env:GITHUB_OUTPUT
-              echo "This is a pre-release (beta)"
+            # 根据版本号最后一位确定是否为预发布版本
+            # 最后一位为0表示正式版本，非0表示预发布版本
+            $version = "${{ steps.get_tag.outputs.version }}"
+            $versionParts = $version.Split('.')
+            if ($versionParts.Length -ge 4) {
+              $build = [int]$versionParts[3]
+              if ($build -eq 0) {
+                echo "is_prerelease=false" >> $env:GITHUB_OUTPUT
+                echo "This is a release"
+              } else {
+                echo "is_prerelease=true" >> $env:GITHUB_OUTPUT
+                echo "This is a pre-release (beta)"
+              }
             } else {
               echo "is_prerelease=false" >> $env:GITHUB_OUTPUT
-              echo "This is a release"
+              echo "This is a release (invalid version format)"
             }
           } else {
             # workflow_dispatch 方式
