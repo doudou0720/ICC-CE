@@ -163,7 +163,7 @@ jobs:
         id: git_cliff_tag
         uses: orhun/git-cliff-action@v4
         with:
-          config: cliff.toml  # 使用项目根目录的 cliff.toml 配置
+          config: build/cliff.toml  # 使用项目build目录的 cliff.toml 配置
           args: --latest --tag ${{ steps.get_tag.outputs.tag_name }} --output CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -173,7 +173,7 @@ jobs:
         id: git_cliff_unreleased
         uses: orhun/git-cliff-action@v4
         with:
-          config: cliff.toml
+          config: build/cliff.toml
           args: --unreleased --tag ${{ steps.get_tag.outputs.tag_name }} --output CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -194,6 +194,8 @@ jobs:
       archive_name: ${{ steps.create_archive.outputs.archive_name }}
       zip_size: ${{ steps.calculate_size.outputs.zip_size }}
       zip_hash: ${{ steps.calculate_size.outputs.zip_hash }}
+      installer_size: ${{ steps.calculate_installer_size.outputs.installer_size }}
+      installer_hash: ${{ steps.calculate_installer_size.outputs.installer_hash }}
     
     steps:
       - name: Checkout code
@@ -266,6 +268,56 @@ jobs:
           
           echo "archive_name=$archiveName" >> $env:GITHUB_OUTPUT
           
+      - name: Prepare Inno Setup script
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          
+          # 更新 ISS 文件中的版本信息
+          $issPath = "build\InkCanvasForClass CE.iss"
+          $issContent = Get-Content -Path $issPath -Raw
+          
+          # 替换版本信息
+          $issContent = $issContent -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
+          
+          # 替换源文件路径为相对路径
+          $issContent = $issContent -replace 'Source: ".*\\{#MyAppExeName}";', 'Source: "release\{#MyAppExeName}";'
+          $issContent = $issContent -replace 'Source: ".*\\InkCanvasForClass.exe.config";', 'Source: "release\InkCanvasForClass.exe.config";'
+          
+          # 更新输出目录为当前目录
+          $issContent = $issContent -replace 'OutputDir=.*', 'OutputDir=.'
+          
+          # 更新默认安装目录
+          $issContent = $issContent -replace 'DefaultDirName=.*', 'DefaultDirName={autopf}\{#MyAppName}'
+          
+          # 更新许可证文件路径
+          $issContent = $issContent -replace 'LicenseFile=.*', 'LicenseFile=LICENSE'
+          
+          # 保存修改后的 ISS 文件
+          $issContent | Set-Content -Path $issPath -Encoding UTF8
+          
+          # 显示修改后的 ISS 文件内容
+          Write-Host "Modified ISS file content:"
+          Write-Host $issContent
+          
+      - name: Build MSI installer with Inno Setup
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: build\InkCanvasForClass CE.iss
+          options: /O.
+          
+      - name: Rename installer file
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $setupFile = "InkCanvasForClass CE Setup.exe"
+          $newSetupName = "InkCanvasForClass.CE.$version.Setup.exe"
+          
+          if (Test-Path $setupFile) {
+            Rename-Item -Path $setupFile -NewName $newSetupName
+            Write-Host "Renamed setup file to: $newSetupName"
+          } else {
+            Write-Host "Setup file not found: $setupFile"
+          }
+          
       - name: Calculate archive size and hash
         id: calculate_size
         run: |
@@ -284,12 +336,35 @@ jobs:
           echo "Archive size: $fileSize bytes"
           echo "SHA256 hash: $hash"
           
+      - name: Calculate installer size and hash
+        id: calculate_installer_size
+        run: |
+          $version = "${{ needs.prepare.outputs.version }}"
+          $installerName = "InkCanvasForClass.CE.$version.Setup.exe"
+          
+          if (Test-Path $installerName) {
+            # 获取文件大小（字节）
+            $fileSize = (Get-Item $installerName).Length
+            
+            # 计算SHA256哈希
+            $hash = (Get-FileHash $installerName -Algorithm SHA256).Hash
+            
+            echo "installer_size=$fileSize" >> $env:GITHUB_OUTPUT
+            echo "installer_hash=$hash" >> $env:GITHUB_OUTPUT
+            
+            echo "Installer size: $fileSize bytes"
+            echo "SHA256 hash: $hash"
+          } else {
+            echo "Installer file not found: $installerName"
+          }
+          
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           path: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe
 
   sign:
     needs: [prepare, build]
@@ -297,8 +372,10 @@ jobs:
     runs-on: ubuntu-latest  # 改为 Ubuntu 以使用 Python 签名工具
     outputs:
       signatures_created: ${{ steps.sign_artifacts.outputs.signatures_created }}
-      sigstore_file: "InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json"
-      sigstore_hash: ${{ steps.calculate_sig_hash.outputs.sigstore_hash }}
+      zip_sigstore_file: "InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json"
+      installer_sigstore_file: "InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe.sigstore.json"
+      zip_sigstore_hash: ${{ steps.calculate_zip_sig_hash.outputs.sigstore_hash }}
+      installer_sigstore_hash: ${{ steps.calculate_installer_sig_hash.outputs.sigstore_hash }}
     permissions:
       contents: write
       id-token: write  # 需要这个权限来验证签名
@@ -319,6 +396,7 @@ jobs:
         with:
           inputs: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe
           release-signing-artifacts: true
           upload-signing-artifacts: true
         env:
@@ -333,8 +411,8 @@ jobs:
           pwd
           ls -la
           
-      - name: Calculate signature hash
-        id: calculate_sig_hash
+      - name: Calculate ZIP signature hash
+        id: calculate_zip_sig_hash
         run: |
           version="${{ needs.prepare.outputs.version }}"
           sigstoreFile="InkCanvasForClass.CE.$version.zip.sigstore.json"
@@ -351,13 +429,32 @@ jobs:
             echo "sigstore_hash=" >> $GITHUB_OUTPUT
           fi
           
+      - name: Calculate Installer signature hash
+        id: calculate_installer_sig_hash
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          sigstoreFile="InkCanvasForClass.CE.$version.Setup.exe.sigstore.json"
+          
+          if [ -f "$sigstoreFile" ]; then
+            # 计算SHA256哈希
+            sigstoreHash=$(sha256sum "$sigstoreFile" | cut -d' ' -f1)
+            
+            echo "sigstore_hash=$sigstoreHash" >> $GITHUB_OUTPUT
+            echo "Sigstore JSON file hash: $sigstoreHash"
+            echo "Sigstore file size: $(stat -c%s "$sigstoreFile") bytes"
+          else
+            echo "Warning: Sigstore file not found: $sigstoreFile"
+            echo "sigstore_hash=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload Signed Artifacts
-        if: steps.calculate_sig_hash.outputs.sigstore_hash != ''
+        if: steps.calculate_zip_sig_hash.outputs.sigstore_hash != '' || steps.calculate_installer_sig_hash.outputs.sigstore_hash != ''
         uses: actions/upload-artifact@v4
         with:
           name: signed-files-${{ needs.prepare.outputs.version }}
           path: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe.sigstore.json
 
   release:
     needs: [prepare, build, sign]
@@ -394,11 +491,27 @@ jobs:
           fileTable+=$'| InkCanvasForClass.CE.'"$version"
           fileTable+=$'.zip | ${{ needs.build.outputs.zip_size }} bytes | ${{ needs.build.outputs.zip_hash }} |\n'
           
+          # 安装包文件信息
+          installerSize="${{ needs.build.outputs.installer_size }}"
+          installerHash="${{ needs.build.outputs.installer_hash }}"
+          if [ -n "$installerSize" ] && [ -n "$installerHash" ]; then
+            fileTable+=$'| InkCanvasForClass.CE.'"$version"'.Setup.exe | '"$installerSize"' bytes | '"$installerHash"
+            fileTable+=$' |\n'
+          fi
+          
           # 检查是否有签名文件
           if [ -f "InkCanvasForClass.CE.$version.zip.sigstore.json" ]; then
             sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.zip.sigstore.json")
             sigstoreHash=$(sha256sum "InkCanvasForClass.CE.$version.zip.sigstore.json" | cut -d' ' -f1)
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'.zip.sigstore.json | '"$sigstoreSize"' bytes | '"$sigstoreHash"
+            fileTable+=$' |\n'
+          fi
+          
+          # 检查安装程序签名文件
+          if [ -f "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json" ]; then
+            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json")
+            sigstoreHash=$(sha256sum "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json" | cut -d' ' -f1)
+            fileTable+=$'| InkCanvasForClass.CE.'"$version"'.Setup.exe.sigstore.json | '"$sigstoreSize"' bytes | '"$sigstoreHash"
             fileTable+=$' |\n'
           fi
           
@@ -432,7 +545,9 @@ jobs:
           prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
           files: |
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip.sigstore.json
+            InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.Setup.exe.sigstore.json
           fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
