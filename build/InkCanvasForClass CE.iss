@@ -21,16 +21,16 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName=D:\{#MyAppName}
+DefaultDirName={autopf}\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ChangesAssociations=yes
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-LicenseFile=E:\ICC CE\ICC CE main\community\LICENSE
+LicenseFile=LICENSE
 ; 取消注释以下行以在非管理员安装模式下运行 (仅为当前用户安装)。
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=E:\ICC CE
+OutputDir=.
 OutputBaseFilename=InkCanvasForClass CE Setup
 SolidCompression=yes
 WizardStyle=modern
@@ -43,8 +43,8 @@ Name: "english"; MessagesFile: "compiler:Languages\English.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "E:\ICC CE\InkCanvasForClass CE\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "E:\ICC CE\InkCanvasForClass CE\InkCanvasForClass.exe.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "release\InkCanvasForClass.exe.config"; DestDir: "{app}"; Flags: ignoreversion
 ; 注意：不要在任何共享系统文件上使用 "Flags: ignoreversion" 
 
 [Registry]
@@ -61,4 +61,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-

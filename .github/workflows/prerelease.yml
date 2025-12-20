@@ -289,7 +289,7 @@ jobs:
           # 更新默认安装目录
           $issContent = $issContent -replace 'DefaultDirName=.*', 'DefaultDirName={autopf}\{#MyAppName}'
           
-          # 更新许可证文件路径
+          # 更新许可证文件路径为相对路径
           $issContent = $issContent -replace 'LicenseFile=.*', 'LicenseFile=LICENSE'
           
           # 保存修改后的 ISS 文件
