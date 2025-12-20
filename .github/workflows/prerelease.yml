@@ -478,6 +478,8 @@ jobs:
     needs: [prepare, build, sign]
     if: success()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Download Build Artifacts
