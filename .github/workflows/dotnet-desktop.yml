@@ -63,6 +63,8 @@ jobs:
     needs: find-or-create-pr-comment
     permissions:
       pull-requests: write
+    outputs:
+      comment_id: ${{ steps.create-preview-comment.outputs.comment-id }}
     steps:
       - name: Prepare Preview Comment
         id: prepare-preview
@@ -122,6 +124,7 @@ jobs:
     outputs:
       archive_name: ${{ steps.create-archive.outputs.archive_name }}
       build_result: ${{ steps.check-exe.outputs.build_success }}
+      artifact_url: ${{ steps.upload-artifact.outputs.artifact-url }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -244,6 +247,7 @@ jobs:
           Write-Host "✅ 已创建归档包: $archiveName" -ForegroundColor Green
       
       - name: Upload Artifact (if build succeeded)
+        id: upload-artifact
         if: steps.check-exe.outputs.build_success == 'true'
         uses: actions/upload-artifact@v4.5.0
         with:
@@ -252,7 +256,7 @@ jobs:
 
   pr-check-comment:
     name: PR Check & Comment (Final)
-    needs: [build-and-package, find-or-create-pr-comment]
+    needs: [build-and-package, pr-preview-comment]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -263,6 +267,7 @@ jobs:
         run: |
           # 从构建作业获取构建结果
           BUILD_SUCCESS="${{ needs.build-and-package.outputs.build_result }}"
+          ARTIFACT_URL="${{ needs.build-and-package.outputs.artifact_url }}"
           
           # 使用 PR 分支的实际提交哈希
           PR_HEAD_SHA="${{ github.event.pull_request.head.sha }}"
@@ -304,10 +309,16 @@ jobs:
             
             # 如果有构建产物，显示下载链接
             if [ "$BUILD_SUCCESS" = "true" ]; then
+              NIGHTLY_LINK="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/app-package.zip"
               echo ""
               echo "## 构建产物"
-              echo "- 📦 [下载构建产物](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-              
+              if [ -n "$ARTIFACT_URL" ]; then
+                echo "- 📦 [下载构建产物]($ARTIFACT_URL)"
+              else
+                echo "- 📦 [下载构建产物](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              fi
+              echo "- 🌙 [直链下载 (nightly.link)]($NIGHTLY_LINK)"
+                              
               if [ "$READY_FOR_REVIEW" = "true" ]; then
                 echo ""
                 echo "## 🎉 审查建议"
@@ -348,7 +359,7 @@ jobs:
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-id: ${{ needs.find-or-create-pr-comment.outputs.comment_id }}
+          comment-id: ${{ needs.pr-preview-comment.outputs.comment_id }}
           body: ${{ steps.prepare-final-comment.outputs.final_body }}
           edit-mode: replace
 
@@ -382,3 +393,7 @@ jobs:
           echo "**运行编号:** #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[📦 下载构建产物](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**直链下载 (nightly.link):**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[🌙 nightly.link 下载链接](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/app-package.zip)" >> $GITHUB_STEP_SUMMARY
