@@ -279,9 +279,9 @@ jobs:
           # 替换版本信息
           $issContent = $issContent -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
           
-          # 替换源文件路径为相对路径
-          $issContent = $issContent -replace 'Source: ".*\\{#MyAppExeName}";', 'Source: "release\{#MyAppExeName}";'
-          $issContent = $issContent -replace 'Source: ".*\\InkCanvasForClass.exe.config";', 'Source: "release\InkCanvasForClass.exe.config";'
+          # 替换源文件路径为相对路径（考虑到ISS文件在build目录下，需要返回上级目录）
+          $issContent = $issContent -replace 'Source: ".*\\{#MyAppExeName}";', 'Source: "..\release\{#MyAppExeName}";'
+          $issContent = $issContent -replace 'Source: ".*\\InkCanvasForClass.exe.config";', 'Source: "..\release\InkCanvasForClass.exe.config";'
           
           # 更新输出目录为当前目录
           $issContent = $issContent -replace 'OutputDir=.*', 'OutputDir=.'
@@ -289,8 +289,8 @@ jobs:
           # 更新默认安装目录
           $issContent = $issContent -replace 'DefaultDirName=.*', 'DefaultDirName={autopf}\{#MyAppName}'
           
-          # 更新许可证文件路径为相对路径
-          $issContent = $issContent -replace 'LicenseFile=.*', 'LicenseFile=LICENSE'
+          # 更新许可证文件路径为相对路径（考虑到ISS文件在build目录下，需要返回上级目录）
+          $issContent = $issContent -replace 'LicenseFile=.*', 'LicenseFile=..\LICENSE'
           
           # 保存修改后的 ISS 文件
           $issContent | Set-Content -Path $issPath -Encoding UTF8
