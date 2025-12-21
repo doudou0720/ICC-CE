@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Ink;
@@ -24,7 +24,7 @@ namespace Ink_Canvas.Helpers
         {
             CacheMode = new BitmapCache();
             
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.LowQuality); 
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality); 
             RenderOptions.SetEdgeMode(this, EdgeMode.Aliased); 
             RenderOptions.SetCachingHint(this, CachingHint.Cache); 
         }
@@ -122,7 +122,7 @@ namespace Ink_Canvas.Helpers
             // 创建新的DrawingVisual用于绘制这个点段
             var segmentVisual = new DrawingVisual();
             
-            RenderOptions.SetBitmapScalingMode(segmentVisual, BitmapScalingMode.LowQuality);
+            RenderOptions.SetBitmapScalingMode(segmentVisual, BitmapScalingMode.HighQuality);
             RenderOptions.SetEdgeMode(segmentVisual, EdgeMode.Aliased);
             RenderOptions.SetCachingHint(segmentVisual, CachingHint.Cache);
 
