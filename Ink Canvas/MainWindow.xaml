@@ -4264,10 +4264,7 @@
                        SelectionChanged="inkCanvas_SelectionChanged"
                        StrokeCollected="inkCanvas_StrokeCollected" 
                        ClipToBounds="False" 
-                       Background="Transparent"
-                       RenderOptions.BitmapScalingMode="LowQuality"
-                       RenderOptions.EdgeMode="Aliased"
-                       RenderOptions.CachingHint="Cache" />
+                       Background="Transparent" />
             
             <Canvas x:Name="EraserOverlayCanvas" 
                     Background="Transparent" 
