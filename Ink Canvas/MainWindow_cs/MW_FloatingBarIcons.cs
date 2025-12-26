@@ -621,6 +621,16 @@ namespace Ink_Canvas
         //private bool Not_Enter_Blackboard_fir_Mouse_Click = true;
         private bool isDisplayingOrHidingBlackboard;
 
+        /// <summary>
+        /// Toggles entering or exiting whiteboard mode and updates all related UI elements, gesture states, tool highlights, PPT navigation panels, watermarks, and persistence behavior.
+        /// </summary>
+        /// <remarks>
+        /// When entering whiteboard mode this method updates visibility of PPT navigation, floating bar, watermarks, and gesture settings and may start auxiliary UI animations.
+        /// When exiting whiteboard mode it restores navigation panels according to PPT state and user settings, may save a screenshot of strokes if configured, and restores the floating bar and tool highlight state.
+        /// The method also updates the current tool mode to match the InkCanvas editing mode and applies the dark application theme.
+        /// </remarks>
+        /// <param name="sender">The element that raised the mouse-up event.</param>
+        /// <param name="e">Mouse button event data.</param>
         internal void ImageBlackboard_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -1798,6 +1808,10 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// Animates and positions the floating toolbar centered near the bottom of the screen when in PPT mode.
+        /// </summary>
+        /// <param name="isRetry">Set to true when this call is a retry attempt to avoid scheduling further automatic retries.</param>
         public async void PureViewboxFloatingBarMarginAnimationInPPTMode(bool isRetry = false)
         {
             // 新增：在白板模式下不执行浮动栏动画
@@ -1915,6 +1929,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Switches the application to the cursor tool and updates UI, canvas, and interaction state accordingly.
+        /// </summary>
+        /// <remarks>
+        /// Performs the following observable actions:
+        /// - Disables the advanced eraser overlay and sets the current tool mode to cursor.
+        /// - If the stroke count exceeds the configured automation threshold, saves a screenshot (includes PPT slide context when in slideshow mode).
+        /// - Adjusts ink canvas visibility and hit testing according to PPT and canvas settings, clears any current selection, and collapses selection overlays.
+        /// - Restores fullscreen state when exiting annotation mode.
+        /// - Saves and restores strokes if needed, updates theme/board toggle text, and shows PPT controls.
+        /// - Hides quick color palettes and other subpanels, then, when the floating bar is expanded, triggers the floating bar margin animation appropriate for PPT or normal mode.
+        /// </remarks>
         internal async void CursorIcon_Click(object sender, RoutedEventArgs e)
         {
             if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
@@ -2026,6 +2052,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Switches the UI and input state to pen (annotation) mode and updates related UI, palettes, and drawing attributes.
+        /// </summary>
+        /// <remarks>
+        /// - Unselects any selected element and disables the advanced eraser overlay.
+        /// - Updates the floating-bar highlight and internal current-tool cache to "pen".
+        /// - Makes the ink canvas visible and interactive, shows/hides related control panels and quick color palettes according to user settings, and preserves or restores highlighter/pen attributes as appropriate.
+        /// - If configured (Settings.Advanced.IsEnableAvoidFullScreenHelper) and not already applied, enters a fullscreen board mode via AvoidFullScreenHelper and records that fullscreen was applied.
+        /// - Hides or shows subpanels and palettes depending on current state (including handling transitions from eraser modes) and resets temporary force flags and shape mode state.
+        /// </remarks>
         internal void PenIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2952,7 +2988,17 @@ namespace Ink_Canvas
 
         private int currentMode;
 
-        // 退出批注模式时的全屏还原处理
+        /// <summary>
+        /// Restores the window from the annotation fullscreen adjustments back to the normal working-area size.
+        /// </summary>
+        /// <remarks>
+        /// This method returns the app to non-board mode, moves the main window to the primary screen working area,
+        /// and clears the internal fullscreen-applied flag when all of the following are true:
+        /// - AvoidFullScreenHelper is enabled in settings,
+        /// - a fullscreen adjustment was previously applied,
+        /// - the app is not in board (whiteboard) mode,
+        /// - the PPT slide-show end control is not visible (not in slideshow).
+        /// </remarks>
         private void RestoreFullScreenOnExitAnnotationMode()
         {
             if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
@@ -2976,6 +3022,15 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Toggles the application display mode between screen, whiteboard, and blackboard states and updates the UI accordingly.
+        /// </summary>
+        /// <remarks>
+        /// Switches visual modes, updates theme and Topmost state, shows or hides mode-specific panels and floating controls,
+        /// saves/clears/restores ink strokes as required, manages two-finger gesture controls, and applies or restores fullscreen behavior
+        /// when the AvoidFullScreenHelper setting is enabled (skipping changes during PPT slide show). Also triggers automatic folding
+        /// of the floating bar when exiting whiteboard mode if configured.
+        /// </remarks>
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)
@@ -3186,6 +3241,14 @@ namespace Ink_Canvas
 
         private int BoundsWidth = 5;
 
+        /// <summary>
+        /// Toggles annotation (ink) mode on and off, updating ink canvas visibility, related UI panels, fullscreen handling, and stroke persistence.
+        /// </summary>
+        /// <remarks>
+        /// When entering annotation mode this method makes the ink canvas interactive and visible, shows overlay controls, and (if enabled and not already applied) expands the main window to fullscreen for annotation.  
+        /// When exiting annotation mode it restores the overlay and fullscreen state, optionally saves or clears strokes according to automation and PowerPoint settings, and restores previously saved strokes if applicable.  
+        /// The method also updates theme-related labels, PPT control visibility, two-finger gesture visibility, and floating-bar/panel states to reflect the new mode.
+        /// </remarks>
         private void BtnHideInkCanvas_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)

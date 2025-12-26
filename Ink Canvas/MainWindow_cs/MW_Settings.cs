@@ -265,6 +265,14 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// Applies the selected unfold-button image style when the combo box selection changes.
+        /// </summary>
+        /// <remarks>
+        /// Persists the selected index to Settings.Appearance.UnFoldButtonImageType and saves settings.
+        /// If the window is not yet loaded, the handler returns without making changes.
+        /// Updates the left and right unfold button image sources, their sizes, and render transforms to match the selected style.
+        /// </remarks>
         private void ComboBoxUnFoldBtnImg_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -300,6 +308,10 @@ namespace Ink_Canvas
 
         private static readonly HttpClient HitokotoHttpClient = CreateHitokotoClient();
 
+        /// <summary>
+        /// Create an HttpClient preconfigured for requests to the Hitokoto quote service.
+        /// </summary>
+        /// <returns>An HttpClient instance with a 5-second timeout and the User-Agent header set to "InkCanvas-Hitokoto/1.0" when header parsing succeeds.</returns>
         private static HttpClient CreateHitokotoClient()
         {
             var client = new HttpClient
@@ -316,6 +328,13 @@ namespace Ink_Canvas
             return client;
         }
 
+        /// <summary>
+        /// Updates the whiteboard's "chicken soup" watermark text according to the configured source and settings.
+        /// </summary>
+        /// <remarks>
+        /// If chicken-soup display is disabled, the method returns without changes. For local sources it selects a random entry;
+        /// for the Hitokoto source it fetches a quote from the remote API. Failures are logged and a user-facing fallback message is set.
+        /// </remarks>
         private async Task UpdateChickenSoupTextAsync()
         {
             try
@@ -372,6 +391,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Handle changes to the chicken-soup source selection, persist the new source, and refresh the displayed quote.
+        /// </summary>
+        /// <param name="sender">The control that raised the selection changed event.</param>
+        /// <param name="e">Event data for the selection change.</param>
         private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -380,6 +404,12 @@ namespace Ink_Canvas
             await UpdateChickenSoupTextAsync();
         }
 
+        /// <summary>
+        /// Handle the toggle that enables or disables the viewbox blackboard scale transform.
+        /// </summary>
+        /// <remarks>
+        /// Updates Settings.Appearance.EnableViewboxBlackBoardScaleTransform, saves settings to file, and reloads settings.
+        /// </remarks>
         private void ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -632,6 +662,9 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// Enables or disables page turning by long-pressing the PowerPoint floating-bar buttons and persists the setting.
+        /// </summary>
         private void ToggleSwitchEnablePPTButtonLongPressPageTurn_OnToggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -639,6 +672,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// Update the PowerPoint setting to skip animations when advancing to the next slide based on the toggle state.
+        /// </summary>
+        /// <remarks>
+        /// Persists the changed setting to the application's settings file. Does nothing if the UI has not finished loading.
+        /// </remarks>
         private void ToggleSwitchSkipAnimationsWhenGoNext_OnToggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -646,6 +685,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// Update the left-bottom PPT button display option from the checkbox state and apply the change to persistent settings and the UI.
+        /// </summary>
+        /// <remarks>
+        /// If the window is not fully loaded, the method returns without making changes. This updates Settings.PowerPointSettings.PPTButtonsDisplayOption, saves settings to file, updates the PPT UI manager's visibility when available, and refreshes the PPT button preview.
+        /// </remarks>
         private void CheckboxEnableLBPPTButton_IsCheckChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;

@@ -1,4 +1,4 @@
-﻿using Microsoft.Office.Interop.PowerPoint;
+using Microsoft.Office.Interop.PowerPoint;
 using Microsoft.Office.Core;
 using System;
 using System.Collections.Generic;
@@ -675,6 +675,14 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Navigates the current presentation or active slide show to the specified slide number.
+        /// </summary>
+        /// <param name="slideNumber">One-based index of the slide to navigate to.</param>
+        /// <returns>`true` if navigation succeeded, `false` otherwise.</returns>
+        /// <remarks>
+        /// If the PowerPoint/WPS COM object is invalid (specific COM HRESULTs), the method will trigger a disconnect from the application and return `false`.
+        /// </remarks>
         public bool TryNavigateToSlide(int slideNumber)
         {
             try
@@ -719,6 +727,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// Advances the active slide show to the next slide.
+        /// </summary>
+        /// <param name="skipAnimations">If true, attempts to jump directly to the next slide to bypass transition animations when possible; falls back to the normal advance behavior if jumping fails or is not applicable.</param>
+        /// <returns>`true` if the slide show was advanced, `false` otherwise.</returns>
         public bool TryNavigateNext(bool skipAnimations = false)
         {
             try
