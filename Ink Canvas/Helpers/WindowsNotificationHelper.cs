@@ -9,6 +9,10 @@ namespace Ink_Canvas.Helpers
     {
         private const string APP_ID = "InkCanvasForClass.CE";
 
+        /// <summary>
+        /// Dispatches a user notification announcing a new application version appropriate for the current Windows release.
+        /// </summary>
+        /// <param name="version">The version label to display in the notification.</param>
         public static void ShowNewVersionToast(string version)
         {
             try
@@ -29,6 +33,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// Displays a Windows 7–style taskbar balloon notification announcing a new version.
+        /// </summary>
+        /// <param name="version">The version string to display in the notification message.</param>
+        /// <remarks>
+        /// The notification is invoked on the application's UI dispatcher. If the "TaskbarTrayIcon" resource is not present, no notification is shown.
+        /// </remarks>
         private static void ShowBalloonForWin7(string version)
         {
             Application.Current?.Dispatcher.Invoke(() =>
@@ -51,6 +62,10 @@ namespace Ink_Canvas.Helpers
             });
         }
 
+        /// <summary>
+        /// Displays a modern Windows toast notification announcing a new application version.
+        /// </summary>
+        /// <param name="version">The version string to show in the notification.</param>
         private static void ShowToastForModernWindows(string version)
         {
             new ToastContentBuilder()

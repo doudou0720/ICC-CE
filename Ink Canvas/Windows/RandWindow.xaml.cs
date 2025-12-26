@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.VisualBasic;
 using System;
@@ -207,6 +207,14 @@ namespace Ink_Canvas
         public int RandMaxPeopleOneTime = 10;
         public int RandDoneAutoCloseWaitTime = 2500;
 
+        /// <summary>
+        /// Starts a randomized selection sequence: animates rolling picks, then selects unique entries and displays them in the output labels.
+        /// </summary>
+        /// <remarks>
+        /// The method performs two phases on background threads: a repeated animation phase that briefly shows non-repeating random items, and a selection phase that chooses up to <see cref="TotalCount"/> unique items from the available <see cref="PeopleCount"/>. If a names list is present, displayed and returned values are names; otherwise numeric indices are used. Results are distributed across LabelOutput, LabelOutput2 and LabelOutput3 depending on the number of selections. If <see cref="isAutoClose"/> is true, the window will re-enable controls and close after <see cref="RandDoneAutoCloseWaitTime"/> milliseconds.
+        /// </remarks>
+        /// <param name="sender">Event source.</param>
+        /// <param name="e">Mouse button event data.</param>
         private void BorderBtnRand_MouseUp(object sender, MouseButtonEventArgs e)
         {
             Random random = new Random();// randSeed + DateTime.Now.Millisecond / 10 % 10);

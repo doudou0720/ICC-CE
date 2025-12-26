@@ -234,7 +234,14 @@ namespace Ink_Canvas.Helpers
             return availableGroups.Count > 0 ? availableGroups[0] : null;
         }
 
-        // 获取所有可用线路组，按延迟排序
+        /// <summary>
+        /// Finds available update line groups for the specified channel and returns them ordered by measured network latency (lowest first).
+        /// </summary>
+        /// <param name="channel">The update channel whose line groups will be tested.</param>
+        /// <returns>
+        /// A list of available <see cref="UpdateLineGroup"/> objects ordered by latency (smallest first). 
+        /// Groups that lack a usable test URL or fail the latency check are excluded. If a group named "inkeys" is present it is moved to the front of the returned list as a priority; an empty list is returned if no groups are available.
+        /// </returns>
         public static async Task<List<UpdateLineGroup>> GetAvailableLineGroupsOrdered(UpdateChannel channel)
         {
             var groups = ChannelLineGroups[channel];
@@ -324,6 +331,11 @@ namespace Ink_Canvas.Helpers
             return orderedGroups;
         }
 
+        /// <summary>
+        /// Measures the network latency to the specified URL by performing an HTTP HEAD request.
+        /// </summary>
+        /// <param name="url">The URL whose responsiveness will be measured.</param>
+        /// <returns>The elapsed time in milliseconds for the HEAD request if successful, or -1 if the request fails.</returns>
         private static async Task<long> GetDownloadUrlDelay(string url)
         {
             try
@@ -365,7 +377,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 获取远程版本号
+        /// <summary>
+        /// Retrieves a version string from the specified remote URL, handling Windows 7 TLS differences and HTML fallback parsing.
+        /// </summary>
+        /// <param name="fileUrl">The URL to request for the version information (may return plain text or an HTML page containing a version table).</param>
+        /// <returns>The trimmed version string extracted from the response, or `null` if the request failed, timed out, or no version could be extracted.</returns>
         private static async Task<string> GetRemoteVersion(string fileUrl)
         {
             // 检测是否为Windows 7
@@ -765,7 +781,13 @@ namespace Ink_Canvas.Helpers
             return null;
         }
 
-        // 使用多线路组下载新版（支持自动切换）
+        /// <summary>
+        /// Downloads the setup ZIP for the specified version using multiple update line groups and automatically falls back between them.
+        /// </summary>
+        /// <param name="version">The version string to download (used to format each group's download URL).</param>
+        /// <param name="groups">Ordered list of update line groups to try; the method will prioritize the group named "inkeys" by moving it to the front if present.</param>
+        /// <param name="progressCallback">Optional callback invoked with download progress percentage (0–100) and a status message.</param>
+        /// <returns>`true` if the file was successfully downloaded, `false` otherwise.</returns>
         public static async Task<bool> DownloadSetupFileWithFallback(string version, List<UpdateLineGroup> groups, Action<double, string> progressCallback = null)
         {
             try

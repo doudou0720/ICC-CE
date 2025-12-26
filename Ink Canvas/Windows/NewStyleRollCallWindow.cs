@@ -521,7 +521,13 @@ namespace Ink_Canvas
         /// <param name="availableNames">可用名单</param>
         /// <param name="count">需要选择的人数</param>
         /// <param name="random">随机数生成器</param>
-        /// <returns>选择的人员名单</returns>
+        /// <summary>
+        /// Selects a set of names from the provided pool, using ML-based avoidance when enabled and falling back to non-replacement random selection when disabled.
+        /// </summary>
+        /// <param name="availableNames">The pool of candidate names to choose from.</param>
+        /// <param name="count">The desired number of names to select; if greater than or equal to the pool size, all names are returned.</param>
+        /// <param name="random">The random number generator to use for any non-deterministic selection steps.</param>
+        /// <returns>A list of distinct selected names, containing up to <paramref name="count"/> entries (or all candidates if <paramref name="count"/> is >= the pool size).</returns>
         public static List<string> SelectNamesWithML(List<string> availableNames, int count, Random random)
         {
             if (availableNames == null || availableNames.Count == 0)
@@ -573,7 +579,13 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 简单不放回随机选择点名人员
+        /// <summary>
+        /// Selects up to the requested number of distinct names by uniform random sampling without replacement from the provided list.
         /// </summary>
+        /// <param name="availableNames">The source list of candidate names.</param>
+        /// <param name="count">The maximum number of names to select.</param>
+        /// <param name="random">The random number generator used for sampling.</param>
+        /// <returns>A list of selected names; returns all names if <paramref name="count"/> is greater than or equal to the number of available names, or an empty list if <paramref name="availableNames"/> is null or empty.</returns>
         private static List<string> SelectNamesRandomly(List<string> availableNames, int count, Random random)
         {
             if (availableNames == null || availableNames.Count == 0)
@@ -607,7 +619,13 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 使用概率算法选择单个人员
+        /// <summary>
+        /// Selects a single name from the provided candidate pool while avoiding already selected names and applying historical avoidance and frequency-based adjustments.
         /// </summary>
+        /// <param name="candidatePool">The list of available candidate names to choose from (may be modified by callers).</param>
+        /// <param name="alreadySelected">Names that must be excluded from selection for this draw.</param>
+        /// <param name="random">Random number generator used for any non-deterministic choice.</param>
+        /// <returns>The chosen name, or <c>null</c> if no valid candidate exists.</returns>
         private static string SelectSingleNameWithMLWithoutReplacement(List<string> candidatePool, List<string> alreadySelected, Random random)
         {
             if (candidatePool.Count == 0) return null;
@@ -890,7 +908,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 计算频率平衡权重
+        /// <summary>
+        /// Computes a selection weight inversely proportional to the historical draw frequency for the given name.
         /// </summary>
+        /// <param name="name">The name whose frequency-based weight will be calculated.</param>
+        /// <returns>A double weight in the range [0,1] where lower historical frequency yields a higher weight; returns 0.5 when no frequency data is available.</returns>
         private static double CalculateFrequencyWeight(string name)
         {
             if (historyData == null || historyData.NameFrequency == null || !historyData.NameFrequency.ContainsKey(name))
@@ -2094,4 +2116,3 @@ namespace Ink_Canvas
         #endregion
     }
 }
-
