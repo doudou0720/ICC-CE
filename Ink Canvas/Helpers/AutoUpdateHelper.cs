@@ -234,14 +234,7 @@ namespace Ink_Canvas.Helpers
             return availableGroups.Count > 0 ? availableGroups[0] : null;
         }
 
-        /// <summary>
-        /// Finds available update line groups for the specified channel and returns them ordered by measured network latency (lowest first).
-        /// </summary>
-        /// <param name="channel">The update channel whose line groups will be tested.</param>
-        /// <returns>
-        /// A list of available <see cref="UpdateLineGroup"/> objects ordered by latency (smallest first). 
-        /// Groups that lack a usable test URL or fail the latency check are excluded. If a group named "inkeys" is present it is moved to the front of the returned list as a priority; an empty list is returned if no groups are available.
-        /// </returns>
+        // 获取所有可用线路组，按延迟排序
         public static async Task<List<UpdateLineGroup>> GetAvailableLineGroupsOrdered(UpdateChannel channel)
         {
             var groups = ChannelLineGroups[channel];
@@ -251,45 +244,14 @@ namespace Ink_Canvas.Helpers
 
             foreach (var group in groups)
             {
-                string testUrl = null;
+                // 跳过"智教联盟"和"inkeys"线路组，不参与延迟检测和排序
                 if (group.GroupName == "智教联盟" || group.GroupName == "inkeys")
                 {
-                    try
-                    {
-                        if (!string.IsNullOrEmpty(group.DownloadUrlFormat))
-                        {
-                            testUrl = group.DownloadUrlFormat.Replace("{0}", "test");
-                        }
-                    }
-                    catch
-                    {
-                        testUrl = null;
-                    }
-                }
-                else
-                {
-                    testUrl = group.VersionUrl;
-                }
-
-                if (string.IsNullOrEmpty(testUrl))
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | 线路组 {group.GroupName} 缺少可用测速地址，跳过", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"AutoUpdate | 跳过{group.GroupName}线路组延迟检测");
                     continue;
                 }
-
-                LogHelper.WriteLogToFile($"AutoUpdate | 检测线路组: {group.GroupName} ({testUrl})");
-
-                long delay;
-
-                if (group.GroupName == "智教联盟" || group.GroupName == "inkeys")
-                {
-                    delay = await GetDownloadUrlDelay(testUrl);
-                }
-                else
-                {
-                    delay = await GetUrlDelay(testUrl);
-                }
-
+                LogHelper.WriteLogToFile($"AutoUpdate | 检测线路组: {group.GroupName} ({group.VersionUrl})");
+                var delay = await GetUrlDelay(group.VersionUrl);
                 if (delay >= 0)
                 {
                     LogHelper.WriteLogToFile($"AutoUpdate | 线路组 {group.GroupName} 延迟: {delay}ms");
@@ -307,12 +269,20 @@ namespace Ink_Canvas.Helpers
                 .Select(x => x.group)
                 .ToList();
 
-            var inkeysGroup = orderedGroups.FirstOrDefault(g => g.GroupName == "inkeys");
+            // 将"inkeys"线路组插入到最前面（如果存在）
+            var inkeysGroup = groups.FirstOrDefault(g => g.GroupName == "inkeys");
             if (inkeysGroup != null)
             {
-                orderedGroups.Remove(inkeysGroup);
                 orderedGroups.Insert(0, inkeysGroup);
-                LogHelper.WriteLogToFile("AutoUpdate | inkeys线路组已默认优先");
+                LogHelper.WriteLogToFile("AutoUpdate | inkeys线路组已插入到首位");
+            }
+
+            // 将"智教联盟"线路组插入到第二位（如果存在）
+            var zhiJiaoGroup = groups.FirstOrDefault(g => g.GroupName == "智教联盟");
+            if (zhiJiaoGroup != null)
+            {
+                orderedGroups.Insert(1, zhiJiaoGroup);
+                LogHelper.WriteLogToFile("AutoUpdate | 智教联盟线路组已插入到第二位");
             }
 
             if (orderedGroups.Count > 0)
@@ -331,57 +301,7 @@ namespace Ink_Canvas.Helpers
             return orderedGroups;
         }
 
-        /// <summary>
-        /// Measures the network latency to the specified URL by performing an HTTP HEAD request.
-        /// </summary>
-        /// <param name="url">The URL whose responsiveness will be measured.</param>
-        /// <returns>The elapsed time in milliseconds for the HEAD request if successful, or -1 if the request fails.</returns>
-        private static async Task<long> GetDownloadUrlDelay(string url)
-        {
-            try
-            {
-                var osVersion = Environment.OSVersion;
-                bool isWindows7 = osVersion.Version.Major == 6 && osVersion.Version.Minor == 1;
-
-                if (isWindows7)
-                {
-                    using (var handler = new HttpClientHandler())
-                    {
-                        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
-                        using (var client = new HttpClient(handler))
-                        {
-                            client.Timeout = TimeSpan.FromSeconds(5);
-                            var sw = Stopwatch.StartNew();
-                            var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
-                            sw.Stop();
-                            return sw.ElapsedMilliseconds;
-                        }
-                    }
-                }
-                else
-                {
-                    using (var client = new HttpClient())
-                    {
-                        client.Timeout = TimeSpan.FromSeconds(5);
-                        var sw = Stopwatch.StartNew();
-                        var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
-                        sw.Stop();
-                        return sw.ElapsedMilliseconds;
-                    }
-                }
-            }
-            catch
-            {
-                return -1;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves a version string from the specified remote URL, handling Windows 7 TLS differences and HTML fallback parsing.
-        /// </summary>
-        /// <param name="fileUrl">The URL to request for the version information (may return plain text or an HTML page containing a version table).</param>
-        /// <returns>The trimmed version string extracted from the response, or `null` if the request failed, timed out, or no version could be extracted.</returns>
+        // 获取远程版本号
         private static async Task<string> GetRemoteVersion(string fileUrl)
         {
             // 检测是否为Windows 7
@@ -781,13 +701,7 @@ namespace Ink_Canvas.Helpers
             return null;
         }
 
-        /// <summary>
-        /// Downloads the setup ZIP for the specified version using multiple update line groups and automatically falls back between them.
-        /// </summary>
-        /// <param name="version">The version string to download (used to format each group's download URL).</param>
-        /// <param name="groups">Ordered list of update line groups to try; the method will prioritize the group named "inkeys" by moving it to the front if present.</param>
-        /// <param name="progressCallback">Optional callback invoked with download progress percentage (0–100) and a status message.</param>
-        /// <returns>`true` if the file was successfully downloaded, `false` otherwise.</returns>
+        // 使用多线路组下载新版（支持自动切换）
         public static async Task<bool> DownloadSetupFileWithFallback(string version, List<UpdateLineGroup> groups, Action<double, string> progressCallback = null)
         {
             try
@@ -813,13 +727,23 @@ namespace Ink_Canvas.Helpers
 
                 SaveDownloadStatus(false);
 
-                // 优先尝试"inkeys"线路组
+                // 优先尝试"inkeys"线路组和"智教联盟"线路组
+                var zhiJiaoGroup = groups.FirstOrDefault(g => g.GroupName == "智教联盟");
                 var inkeysGroup = groups.FirstOrDefault(g => g.GroupName == "inkeys");
-                if (inkeysGroup != null)
+                if (inkeysGroup != null || zhiJiaoGroup != null)
                 {
-                    groups.Remove(inkeysGroup);
-                    groups.Insert(0, inkeysGroup);
-                    LogHelper.WriteLogToFile("AutoUpdate | 下载时优先尝试inkeys线路组");
+                    var priorityGroups = new List<UpdateLineGroup>();
+                    if (inkeysGroup != null)
+                    {
+                        priorityGroups.Add(inkeysGroup);
+                        LogHelper.WriteLogToFile("AutoUpdate | 下载时优先尝试inkeys线路组");
+                    }
+                    if (zhiJiaoGroup != null)
+                    {
+                        priorityGroups.Add(zhiJiaoGroup);
+                        LogHelper.WriteLogToFile("AutoUpdate | 下载时优先尝试智教联盟线路组");
+                    }
+                    groups = priorityGroups.Concat(groups.Where(g => g.GroupName != "智教联盟" && g.GroupName != "inkeys")).ToList();
                 }
 
                 // 依次尝试每个线路组

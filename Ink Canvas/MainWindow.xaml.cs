@@ -968,16 +968,6 @@ namespace Ink_Canvas
             }
         }
 
-        /// <summary>
-        /// Checks for available application updates and handles download, user prompting, and installation actions according to user settings.
-        /// </summary>
-        /// <remarks>
-        /// Respects a configured pause-until date, queries the configured update channel, and, if a newer version is found, notifies the user and proceeds according to settings:
-        /// - When silent auto-update is enabled, downloads the update in the background and schedules installation when appropriate.
-        /// - Otherwise, presents an update dialog and handles the user's choice to update now, update later (download and install on next close), or skip the detected version.
-        /// The method updates persisted startup settings (skip/version flags and auto-update flags), starts or stops internal retry and silent-install timers as needed, shows user-facing dialogs/notifications, and may initiate application shutdown to perform installation.
-        /// If no update is available it manages retry logic; if update check fails it starts a retry timer and cleans up temporary update artifacts.
-        /// </remarks>
         private async void AutoUpdate()
         {
             if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
@@ -1020,9 +1010,6 @@ namespace Ink_Canvas
 
                 // 检测到新版本
                 LogHelper.WriteLogToFile($"AutoUpdate | New version available: {AvailableLatestVersion}");
-
-                // 通过 Windows 系统通知提示有新版本
-                WindowsNotificationHelper.ShowNewVersionToast(AvailableLatestVersion);
 
                 // 检查是否是用户选择跳过的版本
                 if (!string.IsNullOrEmpty(Settings.Startup.SkippedVersion) &&
