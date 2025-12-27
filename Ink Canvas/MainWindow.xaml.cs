@@ -977,7 +977,7 @@ namespace Ink_Canvas
                     if (DateTime.Now < pauseUntilDate)
                     {
                         LogHelper.WriteLogToFile($"AutoUpdate | 自动更新已暂停，直到 {pauseUntilDate:yyyy-MM-dd}");
-                        return; 
+                        return;
                     }
                     else
                     {

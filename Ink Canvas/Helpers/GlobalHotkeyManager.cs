@@ -454,7 +454,7 @@ namespace Ink_Canvas.Helpers
                     {
                         // 如果设置允许，则在鼠标模式下也启用快捷键
                         EnableHotkeyRegistration();
-                        
+
                         if (_hotkeysShouldBeRegistered && _registeredHotkeys.Count == 0)
                         {
                             LoadHotkeysFromSettings();
@@ -470,7 +470,7 @@ namespace Ink_Canvas.Helpers
                 {
                     // 非鼠标模式下启用快捷键
                     EnableHotkeyRegistration();
-                    
+
                     if (_hotkeysShouldBeRegistered && _registeredHotkeys.Count == 0)
                     {
                         LoadHotkeysFromSettings();

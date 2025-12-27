@@ -1,5 +1,5 @@
-﻿using Microsoft.Office.Interop.PowerPoint;
-using Microsoft.Office.Core;
+﻿using Microsoft.Office.Core;
+using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

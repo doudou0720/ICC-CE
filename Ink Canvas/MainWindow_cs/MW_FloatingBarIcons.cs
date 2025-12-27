@@ -73,35 +73,40 @@ namespace Ink_Canvas
         /// <summary>
         /// 用於更新浮動工具欄的"手勢"按鈕和白板工具欄的"手勢"按鈕的樣式（開啟和關閉狀態）
         /// </summary>
-        private void CheckEnableTwoFingerGestureBtnColorPrompt() {
+        private void CheckEnableTwoFingerGestureBtnColorPrompt()
+        {
             // 根据主题选择手势图标和颜色
             bool isDarkTheme = Settings.Appearance.Theme == 1 ||
                                (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
             bool isLightTheme = !isDarkTheme;
             string gestureIconPath = isLightTheme ? "/Resources/new-icons/gesture.png" : "/Resources/new-icons/gesture_white.png";
-            
+
             // 根据主题设置白板模式下的颜色
             Color boardBgColor, boardIconColor, boardTextColor, boardBorderColor;
-            if (isLightTheme) {
+            if (isLightTheme)
+            {
                 // 浅色主题
                 boardBgColor = Color.FromRgb(244, 244, 245);
                 boardIconColor = Color.FromRgb(24, 24, 27);
                 boardTextColor = Color.FromRgb(24, 24, 27);
                 boardBorderColor = Color.FromRgb(161, 161, 170);
-            } else {
+            }
+            else
+            {
                 // 深色主题
                 boardBgColor = Color.FromRgb(39, 39, 42);
                 boardIconColor = Color.FromRgb(244, 244, 245);
                 boardTextColor = Color.FromRgb(244, 244, 245);
                 boardBorderColor = Color.FromRgb(113, 113, 122);
             }
-            
-            if (ToggleSwitchEnableMultiTouchMode.IsOn) {
+
+            if (ToggleSwitchEnableMultiTouchMode.IsOn)
+            {
                 TwoFingerGestureSimpleStackPanel.Opacity = 0.5;
                 TwoFingerGestureSimpleStackPanel.IsHitTestVisible = false;
                 EnableTwoFingerGestureBtn.Source =
                     new BitmapImage(new Uri(gestureIconPath, UriKind.Relative));
-                
+
                 BoardGesture.Background = new SolidColorBrush(boardBgColor);
                 BoardGestureGeometry.Brush = new SolidColorBrush(boardIconColor);
                 BoardGestureGeometry2.Brush = new SolidColorBrush(boardIconColor);
@@ -110,25 +115,28 @@ namespace Ink_Canvas
                 BoardGestureGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.DisabledGestureIcon);
                 BoardGestureGeometry2.Geometry = Geometry.Parse("F0 M24,24z M0,0z");
             }
-            else {
+            else
+            {
                 TwoFingerGestureSimpleStackPanel.Opacity = 1;
                 TwoFingerGestureSimpleStackPanel.IsHitTestVisible = true;
-                if (Settings.Gesture.IsEnableTwoFingerGesture) {
+                if (Settings.Gesture.IsEnableTwoFingerGesture)
+                {
                     EnableTwoFingerGestureBtn.Source =
                         new BitmapImage(new Uri("/Resources/new-icons/gesture-enabled.png", UriKind.Relative));
-                    
+
                     BoardGesture.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
                     BoardGestureGeometry.Brush = new SolidColorBrush(Colors.GhostWhite);
                     BoardGestureGeometry2.Brush = new SolidColorBrush(Colors.GhostWhite);
                     BoardGestureLabel.Foreground = new SolidColorBrush(Colors.GhostWhite);
                     BoardGesture.BorderBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
                     BoardGestureGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.EnabledGestureIcon);
-                    BoardGestureGeometry2.Geometry = Geometry.Parse("F0 M24,24z M0,0z "+XamlGraphicsIconGeometries.EnabledGestureIconBadgeCheck);
+                    BoardGestureGeometry2.Geometry = Geometry.Parse("F0 M24,24z M0,0z " + XamlGraphicsIconGeometries.EnabledGestureIconBadgeCheck);
                 }
-                else {
+                else
+                {
                     EnableTwoFingerGestureBtn.Source =
                         new BitmapImage(new Uri(gestureIconPath, UriKind.Relative));
-                    
+
                     BoardGesture.Background = new SolidColorBrush(boardBgColor);
                     BoardGestureGeometry.Brush = new SolidColorBrush(boardIconColor);
                     BoardGestureGeometry2.Brush = new SolidColorBrush(boardIconColor);

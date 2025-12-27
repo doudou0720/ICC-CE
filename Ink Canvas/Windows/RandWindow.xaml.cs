@@ -107,8 +107,7 @@ namespace Ink_Canvas
                 if (settings.RandSettings.SelectedBackgroundIndex <= 0)
                 {
                     // 没有自定义背景时，使用主题背景色
-                    var backgroundBrush = Application.Current.FindResource("RandWindowBackground") as SolidColorBrush;
-                    if (backgroundBrush != null)
+                    if (Application.Current.FindResource("RandWindowBackground") is SolidColorBrush backgroundBrush)
                     {
                         MainBorder.Background = backgroundBrush;
                     }
@@ -238,7 +237,7 @@ namespace Ink_Canvas
 
                     int randomIndex = random.Next(0, animationPool.Count);
                     int selectedNumber = animationPool[randomIndex];
-                    
+
                     int lastIndex = animationPool.Count - 1;
                     if (randomIndex != lastIndex)
                     {
@@ -273,7 +272,7 @@ namespace Ink_Canvas
                     {
                         int randomIndex = random.Next(0, candidatePool.Count);
                         int selectedNumber = candidatePool[randomIndex];
-                        
+
                         int lastIndex = candidatePool.Count - 1;
                         if (randomIndex != lastIndex)
                         {

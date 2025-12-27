@@ -591,9 +591,9 @@ namespace Ink_Canvas
             for (int i = 0; i < count && candidatePool.Count > 0; i++)
             {
                 int randomIndex = random.Next(0, candidatePool.Count);
-                
+
                 selectedNames.Add(candidatePool[randomIndex]);
-                
+
                 int lastIndex = candidatePool.Count - 1;
                 if (randomIndex != lastIndex)
                 {
@@ -1258,17 +1258,17 @@ namespace Ink_Canvas
                 // 清空名单
                 nameList.Clear();
                 UpdateListCountDisplay();
-                
+
                 // 清空点名历史记录
                 lock (historyLock)
                 {
                     // 重置历史记录数据
                     historyData = new RollCallHistoryData();
-                    
+
                     // 保存到文件
                     SaveRollCallHistory();
                 }
-                
+
                 UpdateStatusDisplay("名单和历史记录已清空");
             }
             catch (Exception ex)

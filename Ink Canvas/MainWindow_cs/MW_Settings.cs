@@ -5,8 +5,8 @@ using OSVersionExtension;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
@@ -1031,7 +1031,7 @@ namespace Ink_Canvas
             bool isHalfOpacity = (bool)((CheckBox)sender).IsChecked;
             c[1] = isHalfOpacity ? '2' : '1';
             Settings.PowerPointSettings.PPTSButtonsOption = int.Parse(new string(c));
-            
+
             // 如果开启半透明选项，设置默认透明度为0.5；否则为1.0
             if (isHalfOpacity)
             {
@@ -1051,7 +1051,7 @@ namespace Ink_Canvas
                 PPTLSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLSButtonOpacity;
                 PPTRSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRSButtonOpacity;
             }
-            
+
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
             if (_pptUIManager != null && BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
@@ -1106,7 +1106,7 @@ namespace Ink_Canvas
             bool isHalfOpacity = (bool)((CheckBox)sender).IsChecked;
             c[1] = isHalfOpacity ? '2' : '1';
             Settings.PowerPointSettings.PPTBButtonsOption = int.Parse(new string(c));
-            
+
             // 如果开启半透明选项，设置默认透明度为0.5；否则为1.0
             if (isHalfOpacity)
             {
@@ -1126,7 +1126,7 @@ namespace Ink_Canvas
                 PPTLBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLBButtonOpacity;
                 PPTRBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRBButtonOpacity;
             }
-            
+
             SaveSettingsToFile();
             UpdatePPTUIManagerSettings();
             UpdatePPTBtnPreview();

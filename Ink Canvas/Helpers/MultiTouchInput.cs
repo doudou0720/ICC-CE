@@ -23,10 +23,10 @@ namespace Ink_Canvas.Helpers
         public VisualCanvas()
         {
             CacheMode = new BitmapCache();
-            
-            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality); 
-            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased); 
-            RenderOptions.SetCachingHint(this, CachingHint.Cache); 
+
+            RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
+            RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
+            RenderOptions.SetCachingHint(this, CachingHint.Cache);
         }
 
         public void AddVisual(DrawingVisual visual)
@@ -52,9 +52,9 @@ namespace Ink_Canvas.Helpers
     /// </summary>
     public class StrokeVisual
     {
-        private int _lastDrawnPointCount = 0; 
-        private const int INCREMENTAL_DRAW_THRESHOLD = 2; 
-        private VisualCanvas _visualCanvas; 
+        private int _lastDrawnPointCount = 0;
+        private const int INCREMENTAL_DRAW_THRESHOLD = 2;
+        private VisualCanvas _visualCanvas;
 
         /// <summary>
         ///     创建显示笔迹的类
@@ -118,10 +118,10 @@ namespace Ink_Canvas.Helpers
 
             var points = Stroke.StylusPoints;
             var drawingAttributes = Stroke.DrawingAttributes;
-            
+
             // 创建新的DrawingVisual用于绘制这个点段
             var segmentVisual = new DrawingVisual();
-            
+
             RenderOptions.SetBitmapScalingMode(segmentVisual, BitmapScalingMode.HighQuality);
             RenderOptions.SetEdgeMode(segmentVisual, EdgeMode.Aliased);
             RenderOptions.SetCachingHint(segmentVisual, CachingHint.Cache);
@@ -149,7 +149,7 @@ namespace Ink_Canvas.Helpers
                     // 只有一个点，绘制圆点
                     var brush = new SolidColorBrush(drawingAttributes.Color);
                     var point = points[startIndex];
-                    dc.DrawEllipse(brush, null, new Point(point.X, point.Y), 
+                    dc.DrawEllipse(brush, null, new Point(point.X, point.Y),
                         drawingAttributes.Width / 2, drawingAttributes.Height / 2);
                 }
             }
