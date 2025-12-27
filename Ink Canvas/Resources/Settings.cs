@@ -333,6 +333,10 @@ namespace Ink_Canvas
         public bool ShowGestureButtonInSlideShow { get; set; } = false;
         [JsonProperty("skipAnimationsWhenGoNext")]
         public bool SkipAnimationsWhenGoNext { get; set; } = false;
+        [JsonProperty("enablePPTTimeCapsule")]
+        public bool EnablePPTTimeCapsule { get; set; } = true;
+        [JsonProperty("pptTimeCapsulePosition")]
+        public int PPTTimeCapsulePosition { get; set; } = 1; 
     }
 
     public class Automation

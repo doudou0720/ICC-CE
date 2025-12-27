@@ -698,14 +698,30 @@ namespace Ink_Canvas
                 if (TimerControl != null && MinimizedTimerControl != null)
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
+                    
+                    // 设置PPT时间胶囊的父控件
+                    if (PPTTimeCapsule != null)
+                    {
+                        PPTTimeCapsule.SetParentControl(TimerControl);
+                    }
 
                     TimerControl.ShowMinimizedRequested += (s, args) =>
                     {
                         if (TimerContainer != null && MinimizedTimerContainer != null && MinimizedTimerControl != null)
                         {
                             TimerContainer.Visibility = Visibility.Collapsed;
-                            MinimizedTimerContainer.Visibility = Visibility.Visible;
-                            MinimizedTimerControl.Visibility = Visibility.Visible;
+                            
+                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                                PPTTimeCapsule != null)
+                            {
+                                MinimizedTimerContainer.Visibility = Visibility.Collapsed;
+                            }
+                            else
+                            {
+                                MinimizedTimerContainer.Visibility = Visibility.Visible;
+                                MinimizedTimerControl.Visibility = Visibility.Visible;
+                            }
                         }
                     };
 
@@ -715,6 +731,24 @@ namespace Ink_Canvas
                         {
                             MinimizedTimerContainer.Visibility = Visibility.Collapsed;
                             MinimizedTimerControl.Visibility = Visibility.Collapsed;
+                        }
+                        
+                        // 如果启用了PPT时间胶囊，停止倒计时显示
+                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && PPTTimeCapsule != null)
+                        {
+                            PPTTimeCapsule.StopCountdown();
+                        }
+                    };
+                    
+                    // 监听计时器完成事件
+                    TimerControl.TimerCompleted += (s, args) =>
+                    {
+                        // 如果启用了PPT时间胶囊且在PPT模式下，触发完成动画
+                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                            PPTTimeCapsule != null)
+                        {
+                            PPTTimeCapsule.OnTimerCompleted();
                         }
                     };
                 }
@@ -2580,6 +2614,54 @@ namespace Ink_Canvas
             }
         }
 
+        private void ToggleSwitchEnablePPTTimeCapsule_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                var toggle = sender as ToggleSwitch;
+                Settings.PowerPointSettings.EnablePPTTimeCapsule = toggle != null && toggle.IsOn;
+                SaveSettingsToFile();
+
+                // 如果当前在PPT放映模式，需要立即更新时间胶囊的显示状态
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    UpdatePPTTimeCapsuleVisibility();
+                }
+
+                LogHelper.WriteLogToFile($"PPT时间显示胶囊已{(Settings.PowerPointSettings.EnablePPTTimeCapsule ? "启用" : "禁用")}", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换PPT时间显示胶囊时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ComboBoxPPTTimeCapsulePosition_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (ComboBoxPPTTimeCapsulePosition != null)
+                {
+                    Settings.PowerPointSettings.PPTTimeCapsulePosition = ComboBoxPPTTimeCapsulePosition.SelectedIndex;
+                    SaveSettingsToFile();
+
+                    // 如果当前在PPT放映模式，需要立即更新时间胶囊的位置
+                    if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                    {
+                        UpdatePPTTimeCapsulePosition();
+                    }
+
+                    LogHelper.WriteLogToFile($"PPT时间胶囊位置已更改为: {ComboBoxPPTTimeCapsulePosition.SelectedIndex}", LogHelper.LogType.Event);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更改PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         /// <summary>
         /// 更新PPT模式下手势按钮的显示状态
         /// </summary>
@@ -2603,6 +2685,69 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"更新PPT模式下手势按钮显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
+
+        /// <summary>
+        /// 更新PPT时间胶囊的显示状态
+        /// </summary>
+        public void UpdatePPTTimeCapsuleVisibility()
+        {
+            try
+            {
+                if (PPTTimeCapsuleContainer == null || PPTTimeCapsule == null) return;
+
+                if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    PPTTimeCapsuleContainer.Visibility = Visibility.Visible;
+                    UpdatePPTTimeCapsulePosition();
+                }
+                else
+                {
+                    PPTTimeCapsuleContainer.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT时间胶囊显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新PPT时间胶囊的位置
+        /// </summary>
+        private void UpdatePPTTimeCapsulePosition()
+        {
+            try
+            {
+                if (PPTTimeCapsuleContainer == null) return;
+
+                int position = Settings.PowerPointSettings.PPTTimeCapsulePosition;
+                // 0-左上角, 1-右上角, 2-顶部居中
+                switch (position)
+                {
+                    case 0: // 左上角
+                        PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Left;
+                        PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
+                        PPTTimeCapsuleContainer.Margin = new Thickness(20, 20, 0, 0);
+                        break;
+                    case 1: // 右上角
+                        PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Right;
+                        PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
+                        PPTTimeCapsuleContainer.Margin = new Thickness(0, 20, 20, 0);
+                        break;
+                    case 2: // 顶部居中
+                        PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Center;
+                        PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
+                        PPTTimeCapsuleContainer.Margin = new Thickness(0, 20, 0, 0);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         #endregion
 
 

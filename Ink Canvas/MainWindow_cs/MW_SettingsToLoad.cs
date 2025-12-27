@@ -480,6 +480,21 @@ namespace Ink_Canvas
 
                 ToggleSwitchNotifyPreviousPage.IsOn = Settings.PowerPointSettings.IsNotifyPreviousPage;
 
+                // PPT时间显示胶囊设置
+                if (ToggleSwitchEnablePPTTimeCapsule != null)
+                {
+                    ToggleSwitchEnablePPTTimeCapsule.IsOn = Settings.PowerPointSettings.EnablePPTTimeCapsule;
+                }
+                if (ComboBoxPPTTimeCapsulePosition != null)
+                {
+                    int position = Settings.PowerPointSettings.PPTTimeCapsulePosition;
+                    if (position < 0 || position > 2)
+                    {
+                        position = 1; // 默认右上角
+                    }
+                    ComboBoxPPTTimeCapsulePosition.SelectedIndex = position;
+                }
+
                 // -- new --
                 ToggleSwitchShowPPTButton.IsOn = Settings.PowerPointSettings.ShowPPTButton;
 

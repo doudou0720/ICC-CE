@@ -101,6 +101,7 @@ namespace Ink_Canvas.Helpers
 
                         UpdateNavigationPanelsVisibility();
                         UpdateNavigationButtonStyles();
+                        _mainWindow.UpdatePPTTimeCapsuleVisibility();
                         if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper)
                         {
                             // 设置为画板模式，允许全屏操作
@@ -120,6 +121,7 @@ namespace Ink_Canvas.Helpers
                         _mainWindow.BtnPPTSlideShow.Visibility = Visibility.Visible;
                         _mainWindow.BtnPPTSlideShowEnd.Visibility = Visibility.Collapsed;
                         HideAllNavigationPanels();
+                        _mainWindow.UpdatePPTTimeCapsuleVisibility();
                         if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper)
                         {
                             // 恢复为非画板模式，重新启用全屏限制

@@ -2323,6 +2323,27 @@
                                     </ui:SimpleStackPanel>
                                     <TextBlock Text="# 开启后在 PPT 放映模式下也显示手势按钮" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="PPT时间显示胶囊" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent=""
+                                                         Name="ToggleSwitchEnablePPTTimeCapsule" IsOn="True"
+                                                         FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchEnablePPTTimeCapsule_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 开启后在 PPT 放映模式下显示时间胶囊，可替代最小化计时器窗口" TextWrapping="Wrap"
+                                               Foreground="#a1a1aa" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                        <TextBlock Foreground="#fafafa" Text="时间胶囊位置：" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ComboBox Name="ComboBoxPPTTimeCapsulePosition" 
+                                                  Width="150"
+                                                  SelectionChanged="ComboBoxPPTTimeCapsulePosition_SelectionChanged">
+                                            <ComboBoxItem Content="左上角" />
+                                            <ComboBoxItem Content="右上角" />
+                                            <ComboBoxItem Content="顶部居中" />
+                                        </ComboBox>
+                                    </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -10297,6 +10318,15 @@
                 Width="600"
                 Height="200">
             <Windows:MinimizedTimerControl x:Name="MinimizedTimerControl"/>
+        </Border>
+        
+        <Border x:Name="PPTTimeCapsuleContainer" 
+                Visibility="Collapsed"
+                Panel.ZIndex="999"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,20,20,0">
+            <Windows:PPTTimeCapsule x:Name="PPTTimeCapsule"/>
         </Border>
     </Grid>
 </Window>
