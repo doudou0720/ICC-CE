@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Interop.PowerPoint;
+using Microsoft.Office.Interop.PowerPoint;
+using Microsoft.Office.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -674,6 +675,14 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Navigates the current presentation or active slide show to the specified slide number.
+        /// </summary>
+        /// <param name="slideNumber">One-based index of the slide to navigate to.</param>
+        /// <returns>`true` if navigation succeeded, `false` otherwise.</returns>
+        /// <remarks>
+        /// If the PowerPoint/WPS COM object is invalid (specific COM HRESULTs), the method will trigger a disconnect from the application and return `false`.
+        /// </remarks>
         public bool TryNavigateToSlide(int slideNumber)
         {
             try
@@ -718,7 +727,12 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        public bool TryNavigateNext()
+        /// <summary>
+        /// Advances the active slide show to the next slide.
+        /// </summary>
+        /// <param name="skipAnimations">If true, attempts to jump directly to the next slide to bypass transition animations when possible; falls back to the normal advance behavior if jumping fails or is not applicable.</param>
+        /// <returns>`true` if the slide show was advanced, `false` otherwise.</returns>
+        public bool TryNavigateNext(bool skipAnimations = false)
         {
             try
             {
@@ -729,8 +743,54 @@ namespace Ink_Canvas.Helpers
                 if (slideShowWindow?.View != null)
                 {
                     slideShowWindow.Activate();
-                    slideShowWindow.View.Next();
-                    return true;
+
+                    var view = slideShowWindow.View;
+                    var currentPosition = 0;
+                    var totalSlides = 0;
+
+                    try
+                    {
+                        currentPosition = view.CurrentShowPosition;
+                        totalSlides = slideShowWindow.Presentation?.Slides?.Count ?? 0;
+                    }
+                    catch
+                    {
+                    }
+
+                    if (skipAnimations && currentPosition > 0 && totalSlides > 0 && currentPosition < totalSlides)
+                    {
+                        try
+                        {
+                            view.GotoSlide(currentPosition + 1, MsoTriState.msoFalse);
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"跳过转场动画跳转到下一页失败: {ex}", LogHelper.LogType.Warning);
+                            try
+                            {
+                                view.Next();
+                                return true;
+                            }
+                            catch
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            view.Next();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"调用下一页失败: {ex}", LogHelper.LogType.Warning);
+                            return false;
+                        }
+                    }
                 }
                 return false;
             }

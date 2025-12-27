@@ -621,6 +621,16 @@ namespace Ink_Canvas
         //private bool Not_Enter_Blackboard_fir_Mouse_Click = true;
         private bool isDisplayingOrHidingBlackboard;
 
+        /// <summary>
+        /// Toggles entering or exiting whiteboard mode and updates all related UI elements, gesture states, tool highlights, PPT navigation panels, watermarks, and persistence behavior.
+        /// </summary>
+        /// <remarks>
+        /// When entering whiteboard mode this method updates visibility of PPT navigation, floating bar, watermarks, and gesture settings and may start auxiliary UI animations.
+        /// When exiting whiteboard mode it restores navigation panels according to PPT state and user settings, may save a screenshot of strokes if configured, and restores the floating bar and tool highlight state.
+        /// The method also updates the current tool mode to match the InkCanvas editing mode and applies the dark application theme.
+        /// </remarks>
+        /// <param name="sender">The element that raised the mouse-up event.</param>
+        /// <param name="e">Mouse button event data.</param>
         internal void ImageBlackboard_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -702,21 +712,7 @@ namespace Ink_Canvas
                     BlackBoardWaterMark.Visibility = Visibility.Collapsed;
                 }
 
-                if (Settings.Appearance.ChickenSoupSource == 0)
-                {
-                    int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
-                    BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
-                }
-                else if (Settings.Appearance.ChickenSoupSource == 1)
-                {
-                    int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
-                    BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
-                }
-                else if (Settings.Appearance.ChickenSoupSource == 2)
-                {
-                    int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
-                    BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
-                }
+                _ = UpdateChickenSoupTextAsync();
 
                 if (Settings.Canvas.UsingWhiteboard)
                 {
@@ -1812,6 +1808,10 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// Animates and positions the floating toolbar centered near the bottom of the screen when in PPT mode.
+        /// </summary>
+        /// <param name="isRetry">Set to true when this call is a retry attempt to avoid scheduling further automatic retries.</param>
         public async void PureViewboxFloatingBarMarginAnimationInPPTMode(bool isRetry = false)
         {
             // 新增：在白板模式下不执行浮动栏动画
@@ -1912,7 +1912,7 @@ namespace Ink_Canvas
             if (Settings.ModeSettings.IsPPTOnlyMode && !isRetry)
             {
                 await Task.Delay(2000); // 等待动画完成后再检查
-                
+
                 bool isFloatingBarVisible = false;
                 await Dispatcher.InvokeAsync(() =>
                 {
@@ -1929,6 +1929,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Switches the application to the cursor tool and updates UI, canvas, and interaction state accordingly.
+        /// </summary>
+        /// <remarks>
+        /// Performs the following observable actions:
+        /// - Disables the advanced eraser overlay and sets the current tool mode to cursor.
+        /// - If the stroke count exceeds the configured automation threshold, saves a screenshot (includes PPT slide context when in slideshow mode).
+        /// - Adjusts ink canvas visibility and hit testing according to PPT and canvas settings, clears any current selection, and collapses selection overlays.
+        /// - Restores fullscreen state when exiting annotation mode.
+        /// - Saves and restores strokes if needed, updates theme/board toggle text, and shows PPT controls.
+        /// - Hides quick color palettes and other subpanels, then, when the floating bar is expanded, triggers the floating bar margin animation appropriate for PPT or normal mode.
+        /// </remarks>
         internal async void CursorIcon_Click(object sender, RoutedEventArgs e)
         {
             if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
@@ -1993,6 +2005,10 @@ namespace Ink_Canvas
             GridTransparencyFakeBackground.Background = Brushes.Transparent;
 
             GridBackgroundCoverHolder.Visibility = Visibility.Collapsed;
+
+            // 点击鼠标按钮退出批注模式时的全屏还原
+            RestoreFullScreenOnExitAnnotationMode();
+
             inkCanvas.Select(new StrokeCollection());
             GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
 
@@ -2036,6 +2052,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Switches the UI and input state to pen (annotation) mode and updates related UI, palettes, and drawing attributes.
+        /// </summary>
+        /// <remarks>
+        /// - Unselects any selected element and disables the advanced eraser overlay.
+        /// - Updates the floating-bar highlight and internal current-tool cache to "pen".
+        /// - Makes the ink canvas visible and interactive, shows/hides related control panels and quick color palettes according to user settings, and preserves or restores highlighter/pen attributes as appropriate.
+        /// - If configured (Settings.Advanced.IsEnableAvoidFullScreenHelper) and not already applied, enters a fullscreen board mode via AvoidFullScreenHelper and records that fullscreen was applied.
+        /// - Hides or shows subpanels and palettes depending on current state (including handling transitions from eraser modes) and resets temporary force flags and shape mode state.
+        /// </remarks>
         internal void PenIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2105,6 +2131,21 @@ namespace Ink_Canvas
                 }
 
                 BtnHideInkCanvas.Content = "隐藏\n画板";
+
+                // 进入批注模式时的全屏处理（仅当未应用过全屏处理时）
+                if (Settings.Advanced.IsEnableAvoidFullScreenHelper && !isFullScreenApplied)
+                {
+                    // 设置为画板模式，允许全屏操作
+                    AvoidFullScreenHelper.SetBoardMode(true);
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        MainWindow.MoveWindow(new WindowInteropHelper(this).Handle, 0, 0,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
+                    }), DispatcherPriority.ApplicationIdle);
+
+                    isFullScreenApplied = true; // 标记已应用全屏处理
+                }
 
                 StackPanelCanvasControls.Visibility = Visibility.Visible;
                 //AnimationsHelper.ShowWithSlideFromLeftAndFade(StackPanelCanvasControls);
@@ -2947,6 +2988,49 @@ namespace Ink_Canvas
 
         private int currentMode;
 
+        /// <summary>
+        /// Restores the window from the annotation fullscreen adjustments back to the normal working-area size.
+        /// </summary>
+        /// <remarks>
+        /// This method returns the app to non-board mode, moves the main window to the primary screen working area,
+        /// and clears the internal fullscreen-applied flag when all of the following are true:
+        /// - AvoidFullScreenHelper is enabled in settings,
+        /// - a fullscreen adjustment was previously applied,
+        /// - the app is not in board (whiteboard) mode,
+        /// - the PPT slide-show end control is not visible (not in slideshow).
+        /// </remarks>
+        private void RestoreFullScreenOnExitAnnotationMode()
+        {
+            if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
+                isFullScreenApplied &&
+                currentMode == 0 && // 不在白板模式
+                BtnPPTSlideShowEnd.Visibility != Visibility.Visible) // 不在PPT放映模式
+            {
+                // 恢复为非画板模式，重新启用全屏限制
+                AvoidFullScreenHelper.SetBoardMode(false);
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    // 退出批注模式，恢复到工作区域大小
+                    var workingArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+                    MainWindow.MoveWindow(new WindowInteropHelper(this).Handle,
+                        workingArea.Left, workingArea.Top,
+                        workingArea.Width, workingArea.Height, true);
+                }), DispatcherPriority.ApplicationIdle);
+
+                isFullScreenApplied = false; // 标记全屏处理已还原
+            }
+        }
+
+        /// <summary>
+        /// Toggles the application display mode between screen, whiteboard, and blackboard states and updates the UI accordingly.
+        /// </summary>
+        /// <remarks>
+        /// Switches visual modes, updates theme and Topmost state, shows or hides mode-specific panels and floating controls,
+        /// saves/clears/restores ink strokes as required, manages two-finger gesture controls, and applies or restores fullscreen behavior
+        /// when the AvoidFullScreenHelper setting is enabled (skipping changes during PPT slide show). Also triggers automatic folding
+        /// of the floating bar when exiting whiteboard mode if configured.
+        /// </remarks>
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)
@@ -3015,8 +3099,9 @@ namespace Ink_Canvas
                         ClearStrokes(true);
                         RestoreStrokes(true);
 
-                        // 退出白板模式时取消全屏
-                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper)
+                        // 退出白板模式时取消全屏（仅在非PPT模式下）
+                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
+                            BtnPPTSlideShowEnd.Visibility != Visibility.Visible) // 不在PPT放映模式
                         {
                             // 恢复为非画板模式，重新启用全屏限制
                             AvoidFullScreenHelper.SetBoardMode(false);
@@ -3025,10 +3110,12 @@ namespace Ink_Canvas
                             {
                                 // 退出白板模式，恢复到工作区域大小
                                 var workingArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
-                                MainWindow.MoveWindow(new WindowInteropHelper(this).Handle, 
+                                MainWindow.MoveWindow(new WindowInteropHelper(this).Handle,
                                     workingArea.Left, workingArea.Top,
                                     workingArea.Width, workingArea.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
+
+                            isFullScreenApplied = false; // 标记全屏处理已还原
                         }
 
                         // 在屏幕模式下恢复基础浮动栏的显示
@@ -3087,8 +3174,9 @@ namespace Ink_Canvas
 
                         RestoreStrokes();
 
-                        // 进入白板模式时全屏
-                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper)
+                        // 进入白板模式时全屏（仅在非PPT模式下）
+                        if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
+                            BtnPPTSlideShowEnd.Visibility != Visibility.Visible) // 不在PPT放映模式
                         {
                             // 设置为画板模式，允许全屏操作
                             AvoidFullScreenHelper.SetBoardMode(true);
@@ -3098,6 +3186,8 @@ namespace Ink_Canvas
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
+
+                            isFullScreenApplied = true; // 标记已应用全屏处理
                         }
 
                         ViewboxFloatingBar.Visibility = Visibility.Collapsed;
@@ -3135,7 +3225,7 @@ namespace Ink_Canvas
                         }
 
                         StackPanelPPTButtons.Visibility = Visibility.Collapsed;
-                        
+
                         if (Settings.Advanced.EnableUIAccessTopMost)
                         {
                             Topmost = true;
@@ -3151,10 +3241,19 @@ namespace Ink_Canvas
 
         private int BoundsWidth = 5;
 
+        /// <summary>
+        /// Toggles annotation (ink) mode on and off, updating ink canvas visibility, related UI panels, fullscreen handling, and stroke persistence.
+        /// </summary>
+        /// <remarks>
+        /// When entering annotation mode this method makes the ink canvas interactive and visible, shows overlay controls, and (if enabled and not already applied) expands the main window to fullscreen for annotation.  
+        /// When exiting annotation mode it restores the overlay and fullscreen state, optionally saves or clears strokes according to automation and PowerPoint settings, and restores previously saved strokes if applicable.  
+        /// The method also updates theme-related labels, PPT control visibility, two-finger gesture visibility, and floating-bar/panel states to reflect the new mode.
+        /// </remarks>
         private void BtnHideInkCanvas_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)
             {
+                // 进入批注模式
                 GridTransparencyFakeBackground.Opacity = 1;
                 GridTransparencyFakeBackground.Background = new SolidColorBrush(StringToColor("#01FFFFFF"));
                 inkCanvas.IsHitTestVisible = true;
@@ -3179,6 +3278,21 @@ namespace Ink_Canvas
                 }
 
                 BtnHideInkCanvas.Content = "隐藏\n画板";
+
+                // 进入批注模式时的全屏处理（仅当未应用过全屏处理时）
+                if (Settings.Advanced.IsEnableAvoidFullScreenHelper && !isFullScreenApplied)
+                {
+                    // 设置为画板模式，允许全屏操作
+                    AvoidFullScreenHelper.SetBoardMode(true);
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        MainWindow.MoveWindow(new WindowInteropHelper(this).Handle, 0, 0,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
+                            System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
+                    }), DispatcherPriority.ApplicationIdle);
+
+                    isFullScreenApplied = true; // 标记已应用全屏处理
+                }
             }
             else
             {
@@ -3228,6 +3342,9 @@ namespace Ink_Canvas
                 GridTransparencyFakeBackground.Background = Brushes.Transparent;
 
                 GridBackgroundCoverHolder.Visibility = Visibility.Collapsed;
+
+                // 退出批注模式时的全屏还原
+                RestoreFullScreenOnExitAnnotationMode();
 
                 if (currentMode != 0)
                 {

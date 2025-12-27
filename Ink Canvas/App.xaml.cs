@@ -59,8 +59,30 @@ namespace Ink_Canvas
         private static SplashScreen _splashScreen;
         private static bool _isSplashScreenShown = false;
 
+        /// <summary>
+        /// Sets the explicit Application User Model ID (AppUserModelID) for the current process.
+        /// </summary>
+        /// <param name="appId">The AppUserModelID to assign to the current process (e.g., "Company.Product.SubProduct").</param>
+        /// <returns>The HRESULT result code from the native call: `0` indicates success; non-zero indicates failure.</returns>
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
+
+        /// <summary>
+        /// Initializes application-wide state and runtime monitoring, and registers lifecycle and exception handlers.
+        /// </summary>
+        /// <remarks>
+        /// Sets an explicit AppUserModelID and configures TLS for older Windows. Synchronizes crash-restart settings, starts the heartbeat monitor, and initializes global crash and process-exit listeners. Subscribes to startup and dispatcher-unhandled-exception events and registers an exit handler. If launched with the watchdog argument, enters the watchdog loop and exits the main process; otherwise, conditionally starts a separate watchdog process based on the configured crash action and update/final-app startup flags.
+        /// </remarks>
         public App()
         {
+            try
+            {
+                SetCurrentProcessExplicitAppUserModelID("InkCanvasForClass.CE");
+            }
+            catch
+            {
+            }
+
             // 配置TLS协议以支持Windows 7
             ConfigureTlsForWindows7();
 

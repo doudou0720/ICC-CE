@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.VisualBasic;
 using System;
@@ -207,64 +207,97 @@ namespace Ink_Canvas
         public int RandMaxPeopleOneTime = 10;
         public int RandDoneAutoCloseWaitTime = 2500;
 
+        /// <summary>
+        /// Starts a randomized selection sequence: animates rolling picks, then selects unique entries and displays them in the output labels.
+        /// </summary>
+        /// <remarks>
+        /// The method performs two phases on background threads: a repeated animation phase that briefly shows non-repeating random items, and a selection phase that chooses up to <see cref="TotalCount"/> unique items from the available <see cref="PeopleCount"/>. If a names list is present, displayed and returned values are names; otherwise numeric indices are used. Results are distributed across LabelOutput, LabelOutput2 and LabelOutput3 depending on the number of selections. If <see cref="isAutoClose"/> is true, the window will re-enable controls and close after <see cref="RandDoneAutoCloseWaitTime"/> milliseconds.
+        /// </remarks>
+        /// <param name="sender">Event source.</param>
+        /// <param name="e">Mouse button event data.</param>
         private void BorderBtnRand_MouseUp(object sender, MouseButtonEventArgs e)
         {
             Random random = new Random();// randSeed + DateTime.Now.Millisecond / 10 % 10);
             string outputString = "";
             List<string> outputs = new List<string>();
-            List<int> rands = new List<int>();
 
             LabelOutput2.Visibility = Visibility.Collapsed;
             LabelOutput3.Visibility = Visibility.Collapsed;
 
             new Thread(() =>
             {
+                var animationPool = new List<int>();
+                for (int num = 1; num <= PeopleCount; num++)
+                {
+                    animationPool.Add(num);
+                }
+                int lastDisplayedIndex = -1;
+
                 for (int i = 0; i < RandWaitingTimes; i++)
                 {
-                    int rand = random.Next(1, PeopleCount + 1);
-                    while (rands.Contains(rand))
+                    if (animationPool.Count == 0)
                     {
-                        rand = random.Next(1, PeopleCount + 1);
+                        animationPool.Clear();
+                        for (int num = 1; num <= PeopleCount; num++)
+                        {
+                            animationPool.Add(num);
+                        }
                     }
-                    rands.Add(rand);
-                    if (rands.Count >= PeopleCount) rands = new List<int>();
+
+                    int randomIndex = random.Next(0, animationPool.Count);
+                    int selectedNumber = animationPool[randomIndex];
+                    
+                    int lastIndex = animationPool.Count - 1;
+                    if (randomIndex != lastIndex)
+                    {
+                        animationPool[randomIndex] = animationPool[lastIndex];
+                    }
+                    animationPool.RemoveAt(lastIndex);
+
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         if (Names.Count != 0)
                         {
-                            LabelOutput.Content = Names[rand - 1];
+                            LabelOutput.Content = Names[selectedNumber - 1];
                         }
                         else
                         {
-                            LabelOutput.Content = rand.ToString();
+                            LabelOutput.Content = selectedNumber.ToString();
                         }
                     });
 
                     Thread.Sleep(RandWaitingThreadSleepTime);
                 }
 
-                rands = new List<int>();
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    for (int i = 0; i < TotalCount; i++)
+                    var candidatePool = new List<int>();
+                    for (int num = 1; num <= PeopleCount; num++)
                     {
-                        int rand = random.Next(1, PeopleCount + 1);
-                        while (rands.Contains(rand))
+                        candidatePool.Add(num);
+                    }
+
+                    for (int i = 0; i < TotalCount && candidatePool.Count > 0; i++)
+                    {
+                        int randomIndex = random.Next(0, candidatePool.Count);
+                        int selectedNumber = candidatePool[randomIndex];
+                        
+                        int lastIndex = candidatePool.Count - 1;
+                        if (randomIndex != lastIndex)
                         {
-                            rand = random.Next(1, PeopleCount + 1);
+                            candidatePool[randomIndex] = candidatePool[lastIndex];
                         }
-                        rands.Add(rand);
-                        if (rands.Count >= PeopleCount) rands = new List<int>();
+                        candidatePool.RemoveAt(lastIndex);
 
                         if (Names.Count != 0)
                         {
-                            outputs.Add(Names[rand - 1]);
-                            outputString += Names[rand - 1] + Environment.NewLine;
+                            outputs.Add(Names[selectedNumber - 1]);
+                            outputString += Names[selectedNumber - 1] + Environment.NewLine;
                         }
                         else
                         {
-                            outputs.Add(rand.ToString());
-                            outputString += rand + Environment.NewLine;
+                            outputs.Add(selectedNumber.ToString());
+                            outputString += selectedNumber + Environment.NewLine;
                         }
                     }
                     if (TotalCount <= 5)

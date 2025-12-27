@@ -520,10 +520,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Initialize ink state and UI when a PowerPoint presentation is opened.
+        /// </summary>
+        /// <param name="pres">The opened PowerPoint Presentation instance to initialize ink management for and to inspect for hidden/auto-play settings.</param>
         private void OnPPTPresentationOpen(Presentation pres)
         {
             try
             {
+                bool isInSlideShowWhenOpened = _pptManager?.IsInSlideShow == true;
+
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     // 在初始化墨迹管理器之前，先清理画布上的所有墨迹
@@ -546,8 +552,7 @@ namespace Ink_Canvas
                         CheckAndNotifyHiddenSlides(pres);
                     }
 
-                    // 检查自动播放设置
-                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation)
+                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation && !isInSlideShowWhenOpened)
                     {
                         CheckAndNotifyAutoPlaySettings(pres);
                     }
@@ -1012,6 +1017,10 @@ namespace Ink_Canvas
         #endregion
 
         #region Helper Methods
+        /// <summary>
+        /// Performs navigation actions after a presentation is opened: navigates to the first slide when configured or, if configured and not currently in slideshow, prompts the user about returning to the last played slide.
+        /// </summary>
+        /// <param name="pres">The presentation that was opened.</param>
         private void HandlePresentationOpenNavigation(Presentation pres)
         {
             try
@@ -1022,7 +1031,10 @@ namespace Ink_Canvas
                 }
                 else if (Settings.PowerPointSettings.IsNotifyPreviousPage)
                 {
-                    ShowPreviousPageNotification(pres);
+                    if (_pptManager?.IsInSlideShow != true)
+                    {
+                        ShowPreviousPageNotification(pres);
+                    }
                 }
             }
             catch (Exception ex)
@@ -1130,11 +1142,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// Detects whether the given presentation contains slide timings that will automatically advance slides and, if so, prompts the user to switch the presentation to manual advance mode.
+        /// </summary>
+        /// <param name="pres">The PowerPoint presentation to inspect for automatic slide timings.</param>
+        /// <remarks>
+        /// If the application is currently in slideshow mode this method returns immediately. When automatic timings are detected and no prompt is already shown, a modal confirmation is displayed; if the user confirms, the method attempts to set the presentation's advance mode to manual and logs any error. The method uses the <see cref="IsShowingAutoplaySlidesWindow"/> flag to prevent multiple simultaneous prompts.
+        /// </remarks>
         private void CheckAndNotifyAutoPlaySettings(Presentation pres)
         {
             try
             {
-                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible) return;
+                if (_pptManager?.IsInSlideShow == true) return;
 
                 bool hasSlideTimings = false;
                 if (pres?.Slides != null)
@@ -1519,6 +1538,12 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// Handle the "next slide" button click by attempting to advance the presentation, saving and clearing the current slide's ink as needed, and updating related UI and persistence state.
+        /// </summary>
+        /// <remarks>
+        /// If the current slide contains ink, a snapshot of strokes is taken; on successful navigation the canvas may be cleared and the snapshot is saved asynchronously (and an optional screenshot saved) while UI connection state and logs are updated on failure or errors.
+        /// </remarks>
         private void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -1533,7 +1558,9 @@ namespace Ink_Canvas
                         strokesToSave = inkCanvas.Strokes.Clone();
                     }
 
-                    if (_pptManager?.TryNavigateNext() == true)
+                    var skipAnimations = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
+
+                    if (_pptManager?.TryNavigateNext(skipAnimations: skipAnimations) == true)
                     {
                         var currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
 
