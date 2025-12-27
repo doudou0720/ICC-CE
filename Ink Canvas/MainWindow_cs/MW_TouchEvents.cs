@@ -95,52 +95,42 @@ namespace Ink_Canvas
                 }
                 else if (originalElement is MediaElement originalMedia)
                 {
-                    var clonedMedia = new MediaElement();
-
-                    // 复制媒体属性
-                    clonedMedia.Source = originalMedia.Source;
-                    clonedMedia.Width = originalMedia.Width;
-                    clonedMedia.Height = originalMedia.Height;
-                    clonedMedia.Name = originalMedia.Name;
-                    clonedMedia.IsHitTestVisible = originalMedia.IsHitTestVisible;
-                    clonedMedia.Focusable = originalMedia.Focusable;
+                    var clonedMedia = new MediaElement
+                    {
+                        Source = originalMedia.Source,
+                        Width = originalMedia.Width,
+                        Height = originalMedia.Height,
+                        Name = originalMedia.Name,
+                        IsHitTestVisible = originalMedia.IsHitTestVisible,
+                        Focusable = originalMedia.Focusable,
+                        RenderTransform = originalMedia.RenderTransform?.Clone()
+                    };
 
                     // 复制位置
                     InkCanvas.SetLeft(clonedMedia, InkCanvas.GetLeft(originalMedia));
                     InkCanvas.SetTop(clonedMedia, InkCanvas.GetTop(originalMedia));
 
-                    // 复制变换
-                    if (originalMedia.RenderTransform != null)
-                    {
-                        clonedMedia.RenderTransform = originalMedia.RenderTransform.Clone();
-                    }
-
                     return clonedMedia;
                 }
                 else if (originalElement is Border originalBorder)
                 {
-                    var clonedBorder = new Border();
-
-                    // 复制边框属性
-                    clonedBorder.Width = originalBorder.Width;
-                    clonedBorder.Height = originalBorder.Height;
-                    clonedBorder.Name = originalBorder.Name;
-                    clonedBorder.IsHitTestVisible = originalBorder.IsHitTestVisible;
-                    clonedBorder.Focusable = originalBorder.Focusable;
-                    clonedBorder.Background = originalBorder.Background;
-                    clonedBorder.BorderBrush = originalBorder.BorderBrush;
-                    clonedBorder.BorderThickness = originalBorder.BorderThickness;
-                    clonedBorder.CornerRadius = originalBorder.CornerRadius;
+                    var clonedBorder = new Border
+                    {
+                        Width = originalBorder.Width,
+                        Height = originalBorder.Height,
+                        Name = originalBorder.Name,
+                        IsHitTestVisible = originalBorder.IsHitTestVisible,
+                        Focusable = originalBorder.Focusable,
+                        Background = originalBorder.Background,
+                        BorderBrush = originalBorder.BorderBrush,
+                        BorderThickness = originalBorder.BorderThickness,
+                        CornerRadius = originalBorder.CornerRadius,
+                        RenderTransform = originalBorder.RenderTransform?.Clone()
+                    };
 
                     // 复制位置
                     InkCanvas.SetLeft(clonedBorder, InkCanvas.GetLeft(originalBorder));
                     InkCanvas.SetTop(clonedBorder, InkCanvas.GetTop(originalBorder));
-
-                    // 复制变换
-                    if (originalBorder.RenderTransform != null)
-                    {
-                        clonedBorder.RenderTransform = originalBorder.RenderTransform.Clone();
-                    }
 
                     return clonedBorder;
                 }
@@ -578,7 +568,7 @@ namespace Ink_Canvas
             return value;
         }
 
-        private void inkCanvas_PreviewTouchDown(object sender, TouchEventArgs e)
+        private void InkCanvas_PreviewTouchDown(object sender, TouchEventArgs e)
         {
             inkCanvas.CaptureTouch(e.TouchDevice);
             ViewboxFloatingBar.IsHitTestVisible = false;
@@ -605,11 +595,11 @@ namespace Ink_Canvas
             }
         }
 
-        private void inkCanvas_PreviewTouchMove(object sender, TouchEventArgs e)
+        private void InkCanvas_PreviewTouchMove(object sender, TouchEventArgs e)
         {
         }
 
-        private void inkCanvas_PreviewTouchUp(object sender, TouchEventArgs e)
+        private void InkCanvas_PreviewTouchUp(object sender, TouchEventArgs e)
         {
             inkCanvas.ReleaseAllTouchCaptures();
             ViewboxFloatingBar.IsHitTestVisible = true;
@@ -691,12 +681,12 @@ namespace Ink_Canvas
                 }
         }
 
-        private void inkCanvas_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
+        private void InkCanvas_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
             e.Mode = ManipulationModes.All;
         }
 
-        private void inkCanvas_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e) { }
+        private void InkCanvas_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e) { }
 
         private void Main_Grid_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
@@ -867,8 +857,7 @@ namespace Ink_Canvas
             try
             {
                 // 获取图片的RenderTransform，如果不存在则创建新的TransformGroup
-                TransformGroup transformGroup = image.RenderTransform as TransformGroup;
-                if (transformGroup == null)
+                if (!(image.RenderTransform is TransformGroup transformGroup))
                 {
                     transformGroup = new TransformGroup();
                     image.RenderTransform = transformGroup;
@@ -892,8 +881,7 @@ namespace Ink_Canvas
             try
             {
                 // 获取媒体元素的RenderTransform，如果不存在则创建新的TransformGroup
-                TransformGroup transformGroup = mediaElement.RenderTransform as TransformGroup;
-                if (transformGroup == null)
+                if (!(mediaElement.RenderTransform is TransformGroup transformGroup))
                 {
                     transformGroup = new TransformGroup();
                     mediaElement.RenderTransform = transformGroup;

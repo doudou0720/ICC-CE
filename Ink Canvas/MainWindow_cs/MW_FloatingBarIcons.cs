@@ -355,8 +355,7 @@ namespace Ink_Canvas
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
 
             // 隐藏背景设置面板
-            var bgPalette = LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") as Border;
-            if (bgPalette != null)
+            if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is Border bgPalette)
             {
                 AnimationsHelper.HideWithSlideAndFade(bgPalette);
             }
@@ -373,9 +372,9 @@ namespace Ink_Canvas
                 {
                     From = 0, // 滑动距离
                     To = BorderSettings.RenderTransform.Value.OffsetX - 490,
-                    Duration = TimeSpan.FromSeconds(0.6)
+                    Duration = TimeSpan.FromSeconds(0.6),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
                 };
-                slideAnimation.EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut };
                 Storyboard.SetTargetProperty(slideAnimation,
                     new PropertyPath("(UIElement.RenderTransform).(TranslateTransform.X)"));
 
@@ -592,8 +591,8 @@ namespace Ink_Canvas
         {
             //if (lastBorderMouseDownObject != sender) return;
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == SymbolIconUndo && lastBorderMouseDownObject != SymbolIconUndo) return;
 
             if (!BtnUndo.IsEnabled) return;
@@ -605,8 +604,8 @@ namespace Ink_Canvas
         {
             //if (lastBorderMouseDownObject != sender) return;
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == SymbolIconRedo && lastBorderMouseDownObject != SymbolIconRedo) return;
 
             if (!BtnRedo.IsEnabled) return;
@@ -624,8 +623,8 @@ namespace Ink_Canvas
         internal void ImageBlackboard_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == WhiteboardFloatingBarBtn && lastBorderMouseDownObject != WhiteboardFloatingBarBtn) return;
 
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
@@ -745,10 +744,7 @@ namespace Ink_Canvas
                 }
 
                 // 使用PPT UI管理器来正确更新翻页按钮显示状态，确保遵循用户设置
-                if (_pptUIManager != null)
-                {
-                    _pptUIManager.UpdateNavigationPanelsVisibility();
-                }
+                _pptUIManager?.UpdateNavigationPanelsVisibility();
 
                 if (Settings.Automation.IsAutoSaveStrokesAtClear &&
                     inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
@@ -854,8 +850,8 @@ namespace Ink_Canvas
         internal void SymbolIconDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == SymbolIconDelete && lastBorderMouseDownObject != SymbolIconDelete) return;
 
             if (inkCanvas.GetSelectedStrokes().Count > 0)
@@ -905,8 +901,8 @@ namespace Ink_Canvas
         internal void SymbolIconSelect_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == SymbolIconSelect && lastBorderMouseDownObject != SymbolIconSelect) return;
 
             BtnSelect_Click(null, null);
@@ -935,8 +931,7 @@ namespace Ink_Canvas
                 if (border.Name?.StartsWith("QuickColor") == true)
                 {
                     // 保存原始颜色并添加透明度
-                    var originalColor = border.Background as SolidColorBrush;
-                    if (originalColor != null)
+                    if (border.Background is SolidColorBrush originalColor)
                     {
                         border.Background = new SolidColorBrush(Color.FromArgb(180, originalColor.Color.R, originalColor.Color.G, originalColor.Color.B));
                     }
@@ -1343,8 +1338,10 @@ namespace Ink_Canvas
                                     catch { }
 
                                     stylusPoints.Add(stylusPoint);
-                                    s = new Stroke(stylusPoints.Clone());
-                                    s.DrawingAttributes = stroke.DrawingAttributes;
+                                    s = new Stroke(stylusPoints.Clone())
+                                    {
+                                        DrawingAttributes = stroke.DrawingAttributes
+                                    };
                                     InkCanvasForInkReplay.Strokes.Add(s);
                                 });
                             }
@@ -1378,8 +1375,10 @@ namespace Ink_Canvas
                                     catch { }
 
                                     stylusPoints.Add(stylusPoint);
-                                    s = new Stroke(stylusPoints.Clone());
-                                    s.DrawingAttributes = stroke.DrawingAttributes;
+                                    s = new Stroke(stylusPoints.Clone())
+                                    {
+                                        DrawingAttributes = stroke.DrawingAttributes
+                                    };
                                     InkCanvasForInkReplay.Strokes.Add(s);
                                 });
                             }
@@ -1507,8 +1506,8 @@ namespace Ink_Canvas
         private void SymbolIconTools_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == ToolsFloatingBarBtn && lastBorderMouseDownObject != ToolsFloatingBarBtn) return;
 
             if (BorderTools.Visibility == Visibility.Visible)
@@ -1679,9 +1678,9 @@ namespace Ink_Canvas
                 {
                     Duration = TimeSpan.FromSeconds(0.35),
                     From = ViewboxFloatingBar.Margin,
-                    To = new Thickness(pos.X, pos.Y, 0, -20)
+                    To = new Thickness(pos.X, pos.Y, 0, -20),
+                    EasingFunction = new CircleEase()
                 };
-                marginAnimation.EasingFunction = new CircleEase();
                 ViewboxFloatingBar.BeginAnimation(MarginProperty, marginAnimation);
             });
 
@@ -1784,9 +1783,9 @@ namespace Ink_Canvas
                 {
                     Duration = TimeSpan.FromSeconds(0.35),
                     From = ViewboxFloatingBar.Margin,
-                    To = new Thickness(pos.X, pos.Y, 0, -20)
+                    To = new Thickness(pos.X, pos.Y, 0, -20),
+                    EasingFunction = new CircleEase()
                 };
-                marginAnimation.EasingFunction = new CircleEase();
                 ViewboxFloatingBar.BeginAnimation(MarginProperty, marginAnimation);
             });
 
@@ -1882,9 +1881,9 @@ namespace Ink_Canvas
                 {
                     Duration = TimeSpan.FromSeconds(0.35),
                     From = ViewboxFloatingBar.Margin,
-                    To = new Thickness(pos.X, pos.Y, 0, -20)
+                    To = new Thickness(pos.X, pos.Y, 0, -20),
+                    EasingFunction = new CircleEase()
                 };
-                marginAnimation.EasingFunction = new CircleEase();
                 ViewboxFloatingBar.BeginAnimation(MarginProperty, marginAnimation);
             });
 
@@ -1917,8 +1916,8 @@ namespace Ink_Canvas
 
         internal async void CursorIcon_Click(object sender, RoutedEventArgs e)
         {
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == Cursor_Icon && lastBorderMouseDownObject != Cursor_Icon) return;
 
             // 禁用高级橡皮擦系统
@@ -2029,8 +2028,8 @@ namespace Ink_Canvas
         internal void PenIcon_Click(object sender, RoutedEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == Pen_Icon && lastBorderMouseDownObject != Pen_Icon) return;
 
             // 如果当前有选中的图片元素，先取消选中
@@ -2372,8 +2371,8 @@ namespace Ink_Canvas
         private void EraserIconByStrokes_Click(object sender, RoutedEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == EraserByStrokes_Icon && lastBorderMouseDownObject != EraserByStrokes_Icon) return;
 
             // 禁用高级橡皮擦系统
@@ -2404,8 +2403,8 @@ namespace Ink_Canvas
         private void CursorWithDelIcon_Click(object sender, RoutedEventArgs e)
         {
 
-            if (lastBorderMouseDownObject != null && lastBorderMouseDownObject is Panel)
-                ((Panel)lastBorderMouseDownObject).Background = new SolidColorBrush(Colors.Transparent);
+            if (lastBorderMouseDownObject is Panel panel)
+                panel.Background = new SolidColorBrush(Colors.Transparent);
             if (sender == CursorWithDelFloatingBarBtn && lastBorderMouseDownObject != CursorWithDelFloatingBarBtn) return;
 
             SymbolIconDelete_MouseUp(sender, null);
@@ -2843,9 +2842,9 @@ namespace Ink_Canvas
                 {
                     From = BorderSettings.RenderTransform.Value.OffsetX - 490, // 滑动距离
                     To = 0,
-                    Duration = TimeSpan.FromSeconds(0.6)
+                    Duration = TimeSpan.FromSeconds(0.6),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
                 };
-                slideAnimation.EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut };
                 Storyboard.SetTargetProperty(slideAnimation,
                     new PropertyPath("(UIElement.RenderTransform).(TranslateTransform.X)"));
 
