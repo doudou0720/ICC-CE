@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -580,6 +581,27 @@ namespace Ink_Canvas
             {
                 var touchPoint = e.GetTouchPoint(inkCanvas);
                 centerPoint = touchPoint.Position;
+
+                // 检查是否有选中的墨迹，如果有且触摸点在选择框外，则取消选择
+                if (inkCanvas.EditingMode == InkCanvasEditingMode.Select && inkCanvas.GetSelectedStrokes().Count > 0)
+                {
+                    var touchPosition = touchPoint.Position;
+                    var selectionBounds = inkCanvas.GetSelectionBounds();
+
+                    // 检查触摸位置是否在选择框边界外
+                    if (touchPosition.X < selectionBounds.Left ||
+                        touchPosition.X > selectionBounds.Right ||
+                        touchPosition.Y < selectionBounds.Top ||
+                        touchPosition.Y > selectionBounds.Bottom)
+                    {
+                        // 触摸在选择框外，取消选择
+                        inkCanvas.Select(new StrokeCollection());
+                        if (GridInkCanvasSelectionCover != null)
+                        {
+                            GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
+                        }
+                    }
+                }
 
                 //记录第一根手指点击时的 StrokeCollection
                 lastTouchDownStrokeCollection = inkCanvas.Strokes.Clone();
