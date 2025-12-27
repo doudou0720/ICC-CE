@@ -870,7 +870,7 @@ namespace Ink_Canvas
             try
             {
                 // PPT退出时自动收纳浮动栏
-                if (!isFloatingBarFolded)
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
                 }
@@ -974,8 +974,15 @@ namespace Ink_Canvas
                 await Task.Delay(100);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                    ViewboxFloatingBarMarginAnimation(-60);
+                    if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
+                    {
+                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                        ViewboxFloatingBarMarginAnimation(-60);
+                    }
+                    else
+                    {
+                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                    }
                 });
             }
             catch (Exception ex)
@@ -1745,8 +1752,15 @@ namespace Ink_Canvas
                 SetCurrentToolMode(InkCanvasEditingMode.None);
 
                 await Task.Delay(150);
-                // PPT退出时自动收纳，使用收纳状态的边距动画
-                ViewboxFloatingBarMarginAnimation(-60);
+
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
+                {
+                    ViewboxFloatingBarMarginAnimation(-60);
+                }
+                else
+                {
+                    ViewboxFloatingBarMarginAnimation(100, true);
+                }
             }
             catch (Exception ex)
             {
@@ -1762,9 +1776,15 @@ namespace Ink_Canvas
                 // 异常情况下也手动处理自动收纳
                 await HandleManualSlideShowEnd();
 
-                // 异常情况下也要自动收纳，使用收纳状态的边距动画
                 await Task.Delay(150);
-                ViewboxFloatingBarMarginAnimation(-60);
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
+                {
+                    ViewboxFloatingBarMarginAnimation(-60);
+                }
+                else
+                {
+                    ViewboxFloatingBarMarginAnimation(100, true);
+                }
             }
         }
 
@@ -1776,7 +1796,7 @@ namespace Ink_Canvas
             try
             {
                 // PPT退出时自动收纳浮动栏
-                if (!isFloatingBarFolded)
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
                 }
