@@ -476,19 +476,14 @@ namespace Ink_Canvas
             catch { }
         }
 
-        /// <summary>
-        /// Retrieves the StrokeVisual associated with the given device id, creating and registering one if absent.
-        /// </summary>
-        /// <param name="id">The stylus or touch device identifier used to locate the StrokeVisual.</param>
-        /// <returns>The existing or newly created StrokeVisual for the specified device id.</returns>
         private StrokeVisual GetStrokeVisual(int id)
         {
             if (StrokeVisualList.TryGetValue(id, out var visual)) return visual;
 
             var strokeVisual = new StrokeVisual(inkCanvas.DefaultDrawingAttributes.Clone());
             StrokeVisualList[id] = strokeVisual;
-            var visualCanvas = new VisualCanvas();
-            strokeVisual.SetVisualCanvas(visualCanvas);
+            StrokeVisualList[id] = strokeVisual;
+            var visualCanvas = new VisualCanvas(strokeVisual);
             VisualCanvasList[id] = visualCanvas;
             inkCanvas.Children.Add(visualCanvas);
 
@@ -915,3 +910,4 @@ namespace Ink_Canvas
         }
     }
 }
+

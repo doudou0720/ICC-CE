@@ -319,8 +319,6 @@ namespace Ink_Canvas
         public bool EnablePowerPointEnhancement { get; set; } = false;
         [JsonProperty("showGestureButtonInSlideShow")]
         public bool ShowGestureButtonInSlideShow { get; set; } = false;
-        [JsonProperty("skipAnimationsWhenGoNext")]
-        public bool SkipAnimationsWhenGoNext { get; set; } = false;
     }
 
     public class Automation
