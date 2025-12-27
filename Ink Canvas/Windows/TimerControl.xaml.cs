@@ -48,138 +48,14 @@ namespace Ink_Canvas.Windows
             // 监听主题变化事件
             SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
 
-            // 监听分辨率变化事件
-            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
-
             // 监听卸载事件，清理资源
             Unloaded += TimerControl_Unloaded;
-
-            // 监听加载事件，设置UI大小
-            Loaded += TimerControl_Loaded;
-        }
-
-        private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
-        {
-            // 分辨率变化时重新计算大小
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                UpdateTimerControlSize();
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        private void MainWindow_DpiChanged(object sender, DpiChangedEventArgs e)
-        {
-            // DPI变化时重新计算大小
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                UpdateTimerControlSize();
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        private void TimerControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            // 根据DPI和分辨率限制UI大小为屏幕的50%
-            UpdateTimerControlSize();
-
-            // 监听DPI变化事件（通过主窗口）
-            var mainWindow = Application.Current.MainWindow as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.DpiChanged += MainWindow_DpiChanged;
-            }
-        }
-
-        /// <summary>
-        /// 根据DPI和分辨率更新计时器控件大小，限制在屏幕大小的50%
-        /// </summary>
-        private void UpdateTimerControlSize()
-        {
-            try
-            {
-                // 获取主窗口
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                if (mainWindow == null) return;
-
-                // 获取DPI缩放因子
-                var source = PresentationSource.FromVisual(mainWindow);
-                double dpiScaleX = 1.0, dpiScaleY = 1.0;
-                if (source != null && source.CompositionTarget != null)
-                {
-                    var transform = source.CompositionTarget.TransformToDevice;
-                    dpiScaleX = transform.M11;
-                    dpiScaleY = transform.M22;
-                }
-
-                // 获取屏幕工作区域大小（考虑DPI）
-                double screenWidth = SystemParameters.WorkArea.Width / dpiScaleX;
-                double screenHeight = SystemParameters.WorkArea.Height / dpiScaleY;
-
-                // 计算最大尺寸（屏幕的50%）
-                double maxWidth = screenWidth * 0.5;
-                double maxHeight = screenHeight * 0.5;
-
-                // 保持宽高比（基于原始设计尺寸 900x500，宽高比约为 1.8:1）
-                double aspectRatio = 900.0 / 500.0;
-                double calculatedWidth = maxWidth;
-                double calculatedHeight = calculatedWidth / aspectRatio;
-
-                // 如果计算出的高度超过最大高度，则按高度计算
-                if (calculatedHeight > maxHeight)
-                {
-                    calculatedHeight = maxHeight;
-                    calculatedWidth = calculatedHeight * aspectRatio;
-                }
-
-                // 查找父容器（TimerContainer）
-                var parent = this.Parent as FrameworkElement;
-                if (parent == null)
-                {
-                    // 如果直接父元素不是FrameworkElement，尝试查找Border
-                    var visualParent = System.Windows.Media.VisualTreeHelper.GetParent(this);
-                    while (visualParent != null)
-                    {
-                        if (visualParent is FrameworkElement fe && fe.Name == "TimerContainer")
-                        {
-                            parent = fe;
-                            break;
-                        }
-                        visualParent = System.Windows.Media.VisualTreeHelper.GetParent(visualParent);
-                    }
-                }
-
-                if (parent != null)
-                {
-                    // 设置父容器大小
-                    parent.Width = calculatedWidth;
-                    parent.Height = calculatedHeight;
-
-                    // 更新Viewbox的MaxWidth和MaxHeight以确保内容正确缩放
-                    if (MainViewController != null)
-                    {
-                        // Viewbox会自动缩放，但我们需要确保它不会超过父容器
-                        MainViewController.MaxWidth = calculatedWidth - 40; // 减去Margin
-                        MainViewController.MaxHeight = calculatedHeight - 40;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新计时器控件大小失败: {ex.Message}", LogHelper.LogType.Error);
-            }
         }
 
         private void TimerControl_Unloaded(object sender, RoutedEventArgs e)
         {
             // 取消订阅主题变化事件
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
-            SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
-
-            // 取消订阅DPI变化事件
-            var mainWindow = Application.Current.MainWindow as MainWindow;
-            if (mainWindow != null)
-            {
-                mainWindow.DpiChanged -= MainWindow_DpiChanged;
-            }
         }
 
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
