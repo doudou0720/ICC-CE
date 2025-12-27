@@ -730,7 +730,7 @@ namespace Ink_Canvas
                     if (Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow &&
                         !Settings.Automation.IsAutoFoldInPPTSlideShow)
                     {
-                        await Task.Delay(300);
+                        await Task.Delay(600);
                         // 先进入批注模式，这会显示调色盘
                         PenIcon_Click(null, null);
                         // 然后设置颜色
@@ -771,48 +771,17 @@ namespace Ink_Canvas
                     LoadCurrentSlideInk(currentSlide);
                 });
 
+
                 if (!isFloatingBarFolded)
                 {
-                    _ = Task.Run(async () =>
+                    new Thread(() =>
                     {
-                        try
+                        Thread.Sleep(100);
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            await Task.Delay(100);
-
-                            await Application.Current.Dispatcher.InvokeAsync(() =>
-                            {
-                                ViewboxFloatingBar.UpdateLayout();
-
-                                // 如果浮动栏宽度仍未计算好，再等待一段时间
-                                if (ViewboxFloatingBar.ActualWidth <= 0)
-                                {
-                                    LogHelper.WriteLogToFile("浮动栏宽度未准备好，等待布局完成", LogHelper.LogType.Trace);
-                                }
-                            });
-
-                            await Task.Delay(100);
-
-                            await Application.Current.Dispatcher.InvokeAsync(() =>
-                            {
-                                PureViewboxFloatingBarMarginAnimationInPPTMode(false);
-                            });
-                        }
-                        catch (Exception)
-                        {
-
-                            try
-                            {
-                                await Task.Delay(100);
-                                await Application.Current.Dispatcher.InvokeAsync(() =>
-                                {
-                                    ViewboxFloatingBarMarginAnimation(60);
-                                });
-                            }
-                            catch (Exception)
-                            {
-                            }
-                        }
-                    });
+                            ViewboxFloatingBarMarginAnimation(60);
+                        });
+                    }).Start();
                 }
             }
             catch (Exception)

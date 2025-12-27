@@ -3082,10 +3082,7 @@ namespace Ink_Canvas
                                 await Task.Delay(700);
                                 await Dispatcher.InvokeAsync(() =>
                                 {
-                                    if (_pptManager?.IsInSlideShow != true)
-                                    {
-                                        FoldFloatingBar_MouseUp(new object(), null);
-                                    }
+                                    FoldFloatingBar_MouseUp(new object(), null);
                                 });
                             });
                         }
