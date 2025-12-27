@@ -1516,7 +1516,6 @@ namespace Ink_Canvas
 
             if (lastBorderMouseDownObject is Panel panel)
                 panel.Background = new SolidColorBrush(Colors.Transparent);
-            if (sender == ToolsFloatingBarBtn && lastBorderMouseDownObject != ToolsFloatingBarBtn) return;
 
             if (BorderTools.Visibility == Visibility.Visible)
             {
