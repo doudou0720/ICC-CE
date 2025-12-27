@@ -298,22 +298,36 @@ namespace Ink_Canvas
             }
         }
 
-        private static readonly HttpClient HitokotoHttpClient = CreateHitokotoClient();
+        private static readonly Lazy<object> HitokotoHttpClient = new Lazy<object>(CreateHitokotoClient, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private static HttpClient CreateHitokotoClient()
+        private static object CreateHitokotoClient()
         {
-            var client = new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(5)
-            };
             try
             {
-                client.DefaultRequestHeaders.UserAgent.ParseAdd("InkCanvas-Hitokoto/1.0");
+                var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(5)
+                };
+                try
+                {
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd("InkCanvas-Hitokoto/1.0");
+                }
+                catch
+                {
+                }
+                return client;
             }
-            catch
+            catch (Exception ex)
             {
+                try
+                {
+                    LogHelper.WriteLogToFile($"无法创建 HttpClient (System.Net.Http 可能缺失): {ex.Message}", LogHelper.LogType.Warning);
+                }
+                catch
+                {
+                }
+                return null;
             }
-            return client;
         }
 
         private async Task UpdateChickenSoupTextAsync()
@@ -346,7 +360,14 @@ namespace Ink_Canvas
 
                     try
                     {
-                        var response = await HitokotoHttpClient.GetAsync("https://v1.hitokoto.cn/?encode=text");
+                        var clientObj = HitokotoHttpClient.Value;
+                        if (clientObj == null || !(clientObj is HttpClient client))
+                        {
+                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            return;
+                        }
+
+                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text");
                         response.EnsureSuccessStatusCode();
 
                         var text = await response.Content.ReadAsStringAsync();
