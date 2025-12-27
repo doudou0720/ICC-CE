@@ -1452,36 +1452,27 @@ namespace Ink_Canvas
             if (!Settings.Canvas.EnablePressureTouchMode || Settings.Canvas.DisablePressure ||
                 Settings.InkToShape.IsInkToShapeNoFakePressureRectangle || penType == 1)
             {
-                // 使用均匀粗细（所有点压感值都是0.5f）
-                points.Add(new StylusPoint(start.X, start.Y, 0.5f));
-
-                // 可以添加一些额外的中间点使线条更平滑（均匀粗细）
-                double distance = GetDistance(start, end);
-                if (distance > 100)
+                var linePoints = GeneratePointsBetween(start, end, 0.5f, 0.5f, 8.0);
+                foreach (var pt in linePoints)
                 {
-                    // 对于较长的线条，添加几个中间点
-                    for (int i = 1; i < 3; i++)
-                    {
-                        double ratio = i / 3.0;
-                        Point midPoint = new Point(
-                            start.X + (end.X - start.X) * ratio,
-                            start.Y + (end.Y - start.Y) * ratio);
-                        points.Add(new StylusPoint(midPoint.X, midPoint.Y, 0.5f));
-                    }
+                    points.Add(pt);
                 }
-
-                points.Add(new StylusPoint(end.X, end.Y, 0.5f));
             }
             else
             {
-                // 启用了压感触屏模式，使用变化的粗细（原有行为）
-                points.Add(new StylusPoint(start.X, start.Y, 0.4f));
-
-                // 添加中点，压感值较高，使线条中间较粗
                 Point midPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
-                points.Add(new StylusPoint(midPoint.X, midPoint.Y, 0.8f));
-
-                points.Add(new StylusPoint(end.X, end.Y, 0.4f));
+                
+                var startToMid = GeneratePointsBetween(start, midPoint, 0.4f, 0.8f, 8.0);
+                foreach (var pt in startToMid)
+                {
+                    points.Add(pt);
+                }
+                
+                var midToEnd = GeneratePointsBetween(midPoint, end, 0.8f, 0.4f, 8.0);
+                for (int i = 1; i < midToEnd.Count; i++)
+                {
+                    points.Add(midToEnd[i]);
+                }
             }
 
             return points;
@@ -1727,66 +1718,199 @@ namespace Ink_Canvas
 
         public StylusPointCollection GenerateFakePressureTriangle(StylusPointCollection points)
         {
+            var newPoint = new StylusPointCollection();
+            
             if (Settings.InkToShape.IsInkToShapeNoFakePressureTriangle || penType == 1)
             {
-                var newPoint = new StylusPointCollection();
-                newPoint.Add(new StylusPoint(points[0].X, points[0].Y));
-                var cPoint = GetCenterPoint(points[0], points[1]);
-                newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y));
-                newPoint.Add(new StylusPoint(points[1].X, points[1].Y));
-                newPoint.Add(new StylusPoint(points[1].X, points[1].Y));
-                cPoint = GetCenterPoint(points[1], points[2]);
-                newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y));
-                newPoint.Add(new StylusPoint(points[2].X, points[2].Y));
-                newPoint.Add(new StylusPoint(points[2].X, points[2].Y));
-                cPoint = GetCenterPoint(points[2], points[0]);
-                newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y));
-                newPoint.Add(new StylusPoint(points[0].X, points[0].Y));
+                if (points.Count >= 3)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Point start = points[i].ToPoint();
+                        Point end = points[(i + 1) % 3].ToPoint();
+                        var edgePoints = GeneratePointsBetween(start, end, 0.5f, 0.5f, 8.0);
+                        if (i == 0)
+                        {
+                            foreach (var pt in edgePoints)
+                            {
+                                newPoint.Add(pt);
+                            }
+                        }
+                        else
+                        {
+                            for (int j = 1; j < edgePoints.Count; j++)
+                            {
+                                newPoint.Add(edgePoints[j]);
+                            }
+                        }
+                    }
+                    Point lastPoint = points[0].ToPoint();
+                    Point firstPoint = newPoint[0].ToPoint();
+                    if (GetDistance(lastPoint, firstPoint) > 1.0)
+                    {
+                        newPoint.Add(new StylusPoint(lastPoint.X, lastPoint.Y, 0.5f));
+                    }
+                }
+                else
+                {
+                    return points;
+                }
                 return newPoint;
             }
             else
             {
-                var newPoint = new StylusPointCollection();
-                newPoint.Add(new StylusPoint(points[0].X, points[0].Y, (float)0.4));
-                var cPoint = GetCenterPoint(points[0], points[1]);
-                newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-                newPoint.Add(new StylusPoint(points[1].X, points[1].Y, (float)0.4));
-                newPoint.Add(new StylusPoint(points[1].X, points[1].Y, (float)0.4));
-                cPoint = GetCenterPoint(points[1], points[2]);
-                newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-                newPoint.Add(new StylusPoint(points[2].X, points[2].Y, (float)0.4));
-                newPoint.Add(new StylusPoint(points[2].X, points[2].Y, (float)0.4));
-                cPoint = GetCenterPoint(points[2], points[0]);
-                newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-                newPoint.Add(new StylusPoint(points[0].X, points[0].Y, (float)0.4));
+                if (points.Count >= 3)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Point start = points[i].ToPoint();
+                        Point end = points[(i + 1) % 3].ToPoint();
+                        
+                        Point midPoint = GetCenterPoint(start, end);
+                        
+                        var startToMid = GeneratePointsBetween(start, midPoint, 0.4f, 0.8f, 8.0);
+                        if (i == 0)
+                        {
+                            foreach (var pt in startToMid)
+                            {
+                                newPoint.Add(pt);
+                            }
+                        }
+                        else
+                        {
+                            for (int j = 1; j < startToMid.Count; j++)
+                            {
+                                newPoint.Add(startToMid[j]);
+                            }
+                        }
+                        
+                        var midToEnd = GeneratePointsBetween(midPoint, end, 0.8f, 0.4f, 8.0);
+                        for (int j = 1; j < midToEnd.Count; j++)
+                        {
+                            newPoint.Add(midToEnd[j]);
+                        }
+                    }
+                    Point lastPoint = points[0].ToPoint();
+                    Point firstPoint = newPoint[0].ToPoint();
+                    if (GetDistance(lastPoint, firstPoint) > 1.0)
+                    {
+                        newPoint.Add(new StylusPoint(lastPoint.X, lastPoint.Y, 0.4f));
+                    }
+                }
+                else
+                {
+                    return points;
+                }
                 return newPoint;
             }
         }
 
+        /// <summary>
+        /// 在两点之间生成多个点，用于增加图形边缘的点密度
+        /// </summary>
+        private StylusPointCollection GeneratePointsBetween(Point start, Point end, float startPressure, float endPressure, double minPointInterval = 8.0)
+        {
+            var result = new StylusPointCollection();
+            double distance = GetDistance(start, end);
+            
+            if (distance < minPointInterval)
+            {
+                result.Add(new StylusPoint(start.X, start.Y, startPressure));
+                result.Add(new StylusPoint(end.X, end.Y, endPressure));
+                return result;
+            }
+            
+            int pointCount = Math.Max(2, (int)(distance / minPointInterval) + 1);
+            
+            result.Add(new StylusPoint(start.X, start.Y, startPressure));
+            
+            for (int i = 1; i < pointCount - 1; i++)
+            {
+                double ratio = (double)i / (pointCount - 1);
+                double pressure = startPressure + (endPressure - startPressure) * ratio;
+                double x = start.X + (end.X - start.X) * ratio;
+                double y = start.Y + (end.Y - start.Y) * ratio;
+                result.Add(new StylusPoint(x, y, (float)pressure));
+            }
+            
+            result.Add(new StylusPoint(end.X, end.Y, endPressure));
+            
+            return result;
+        }
+
         public StylusPointCollection GenerateFakePressureRectangle(StylusPointCollection points)
         {
+            var newPoint = new StylusPointCollection();
+            
             if (Settings.InkToShape.IsInkToShapeNoFakePressureRectangle || penType == 1)
+            {
+                if (points.Count >= 4)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        Point start = points[i].ToPoint();
+                        Point end = points[(i + 1) % 4].ToPoint();
+                        var edgePoints = GeneratePointsBetween(start, end, 0.5f, 0.5f, 8.0);
+                        if (i == 0)
+                        {
+                            foreach (var pt in edgePoints)
+                            {
+                                newPoint.Add(pt);
+                            }
+                        }
+                        else
+                        {
+                            for (int j = 1; j < edgePoints.Count; j++)
+                            {
+                                newPoint.Add(edgePoints[j]);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    return points;
+                }
+                return newPoint;
+            }
+
+            if (points.Count >= 4)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Point start = points[i].ToPoint();
+                    Point end = points[(i + 1) % 4].ToPoint();
+                    
+                    Point midPoint = GetCenterPoint(start, end);
+                    
+                    var startToMid = GeneratePointsBetween(start, midPoint, 0.4f, 0.8f, 8.0);
+                    if (i == 0)
+                    {
+                        foreach (var pt in startToMid)
+                        {
+                            newPoint.Add(pt);
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 1; j < startToMid.Count; j++)
+                        {
+                            newPoint.Add(startToMid[j]);
+                        }
+                    }
+                    
+                    var midToEnd = GeneratePointsBetween(midPoint, end, 0.8f, 0.4f, 8.0);
+                    for (int j = 1; j < midToEnd.Count; j++)
+                    {
+                        newPoint.Add(midToEnd[j]);
+                    }
+                }
+            }
+            else
             {
                 return points;
             }
-
-            var newPoint = new StylusPointCollection();
-            newPoint.Add(new StylusPoint(points[0].X, points[0].Y, (float)0.4));
-            var cPoint = GetCenterPoint(points[0], points[1]);
-            newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-            newPoint.Add(new StylusPoint(points[1].X, points[1].Y, (float)0.4));
-            newPoint.Add(new StylusPoint(points[1].X, points[1].Y, (float)0.4));
-            cPoint = GetCenterPoint(points[1], points[2]);
-            newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-            newPoint.Add(new StylusPoint(points[2].X, points[2].Y, (float)0.4));
-            newPoint.Add(new StylusPoint(points[2].X, points[2].Y, (float)0.4));
-            cPoint = GetCenterPoint(points[2], points[3]);
-            newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-            newPoint.Add(new StylusPoint(points[3].X, points[3].Y, (float)0.4));
-            newPoint.Add(new StylusPoint(points[3].X, points[3].Y, (float)0.4));
-            cPoint = GetCenterPoint(points[3], points[0]);
-            newPoint.Add(new StylusPoint(cPoint.X, cPoint.Y, (float)0.8));
-            newPoint.Add(new StylusPoint(points[0].X, points[0].Y, (float)0.4));
+            
             return newPoint;
         }
 
