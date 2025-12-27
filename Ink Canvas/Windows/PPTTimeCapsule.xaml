@@ -107,7 +107,7 @@
     <Grid>
         <!-- 主胶囊容器 -->
         <Border x:Name="MainCapsule"
-                CornerRadius="15"
+                CornerRadius="8"
                 Padding="16,8"
                 Width="120"
                 Cursor="Hand"
