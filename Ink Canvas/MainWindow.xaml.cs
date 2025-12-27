@@ -340,6 +340,66 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据DPI缩放因子调整TimerContainer的尺寸
+        /// </summary>
+        private void AdjustTimerContainerSize()
+        {
+            try
+            {
+                var timerContainer = FindName("TimerContainer") as FrameworkElement;
+                if (timerContainer == null) return;
+
+                var source = System.Windows.PresentationSource.FromVisual(this);
+                if (source != null)
+                {
+                    var dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+                    var dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+
+                    // 如果DPI缩放因子大于1.25，则适当缩小容器尺寸
+                    // 这样可以确保在高DPI屏幕上，计时器窗口的物理像素大小不会过大
+                    if (dpiScaleX > 1.25 || dpiScaleY > 1.25)
+                    {
+                        // 使用较小的缩放因子来限制最大尺寸
+                        double scaleFactor = Math.Min(dpiScaleX, dpiScaleY);
+
+                        // 计算目标物理像素大小（约1350x750物理像素）
+                        // 然后转换为逻辑像素
+                        double targetPhysicalWidth = 1350;
+                        double targetPhysicalHeight = 750;
+
+                        // 转换为逻辑像素
+                        double maxWidth = targetPhysicalWidth / scaleFactor;
+                        double maxHeight = targetPhysicalHeight / scaleFactor;
+
+                        // 确保不会小于原始尺寸的70%
+                        maxWidth = Math.Max(maxWidth, 900 * 0.7);
+                        maxHeight = Math.Max(maxHeight, 500 * 0.7);
+
+                        // 应用调整后的尺寸
+                        timerContainer.Width = maxWidth;
+                        timerContainer.Height = maxHeight;
+                    }
+                    else
+                    {
+                        // 标准DPI，使用原始尺寸
+                        timerContainer.Width = 900;
+                        timerContainer.Height = 500;
+                    }
+                }
+                else
+                {
+                    // 无法获取DPI信息，使用原始尺寸
+                    timerContainer.Width = 900;
+                    timerContainer.Height = 500;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"调整TimerContainer尺寸失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
 
 
         #endregion
@@ -786,6 +846,16 @@ namespace Ink_Canvas
             if (e.OldDpi.DpiScaleX != e.NewDpi.DpiScaleX && e.OldDpi.DpiScaleY != e.NewDpi.DpiScaleY && Settings.Advanced.IsEnableDPIChangeDetection)
             {
                 ShowNotification($"系统DPI发生变化，从 {e.OldDpi.DpiScaleX}x{e.OldDpi.DpiScaleY} 变化为 {e.NewDpi.DpiScaleX}x{e.NewDpi.DpiScaleY}");
+
+                // 如果TimerContainer可见，调整其尺寸
+                Dispatcher.Invoke(() =>
+                {
+                    var timerContainer = FindName("TimerContainer") as FrameworkElement;
+                    if (timerContainer != null && timerContainer.Visibility == Visibility.Visible)
+                    {
+                        AdjustTimerContainerSize();
+                    }
+                });
 
                 new Thread(() =>
                 {
