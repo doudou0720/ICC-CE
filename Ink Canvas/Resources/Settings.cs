@@ -481,6 +481,9 @@ namespace Ink_Canvas
         [JsonProperty("isSaveFullPageStrokes")]
         public bool IsSaveFullPageStrokes;
 
+        [JsonProperty("isSaveStrokesAsXML")]
+        public bool IsSaveStrokesAsXML { get; set; } = false;
+
         [JsonProperty("isAutoEnterAnnotationAfterKillHite")]
         public bool IsAutoEnterAnnotationAfterKillHite { get; set; }
 

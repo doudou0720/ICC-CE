@@ -1114,6 +1114,8 @@ namespace Ink_Canvas
 
                 ToggleSwitchSaveFullPageStrokes.IsOn = Settings.Automation.IsSaveFullPageStrokes;
 
+                ToggleSwitchSaveStrokesAsXML.IsOn = Settings.Automation.IsSaveStrokesAsXML;
+
                 // 加载定时保存墨迹设置
                 ToggleSwitchEnableAutoSaveStrokes.IsOn = Settings.Automation.IsEnableAutoSaveStrokes;
                 // 初始化保存间隔下拉框

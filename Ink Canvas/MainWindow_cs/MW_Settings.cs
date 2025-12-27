@@ -2349,6 +2349,13 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchSaveStrokesAsXML_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Automation.IsSaveStrokesAsXML = ToggleSwitchSaveStrokesAsXML.IsOn;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchEnableAutoSaveStrokes_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
