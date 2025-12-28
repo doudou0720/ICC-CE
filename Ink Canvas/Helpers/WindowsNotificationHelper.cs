@@ -42,7 +42,7 @@ namespace Ink_Canvas.Helpers
 
                     taskbar.ShowBalloonTip(
                         "InkCanvasForClass CE",
-                        $"有新版本：{version}",
+                        $"发现新版本！：{version}",
                         BalloonIcon.Info);
                 }
                 catch
@@ -55,7 +55,7 @@ namespace Ink_Canvas.Helpers
         {
             new ToastContentBuilder()
                 .AddText("InkCanvasForClass CE")
-                .AddText($"有新版本：{version}")
+                .AddText($"发现新版本！：{version}")
                 .Show();
         }
     }
