@@ -1,5 +1,6 @@
 using Ink_Canvas.Helpers;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +14,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using WinForms = System.Windows.Forms;
 
 namespace Ink_Canvas
 {
@@ -57,18 +59,18 @@ namespace Ink_Canvas
 
     public partial class MainWindow : Window
     {
-        private Timer timerCheckPPT = new Timer();
-        private Timer timerKillProcess = new Timer();
-        private Timer timerCheckAutoFold = new Timer();
+        private System.Timers.Timer timerCheckPPT = new System.Timers.Timer();
+        private System.Timers.Timer timerKillProcess = new System.Timers.Timer();
+        private System.Timers.Timer timerCheckAutoFold = new System.Timers.Timer();
         private string AvailableLatestVersion;
-        private Timer timerCheckAutoUpdateWithSilence = new Timer();
-        private Timer timerCheckAutoUpdateRetry = new Timer();
+        private System.Timers.Timer timerCheckAutoUpdateWithSilence = new System.Timers.Timer();
+        private System.Timers.Timer timerCheckAutoUpdateRetry = new System.Timers.Timer();
         private bool isHidingSubPanelsWhenInking; // 避免书写时触发二次关闭二级菜单导致动画不连续
         private int updateCheckRetryCount = 0;
         private const int MAX_UPDATE_CHECK_RETRIES = 6;
-        private Timer timerDisplayTime = new Timer();
-        private Timer timerDisplayDate = new Timer();
-        private Timer timerNtpSync = new Timer();
+        private System.Timers.Timer timerDisplayTime = new System.Timers.Timer();
+        private System.Timers.Timer timerDisplayDate = new System.Timers.Timer();
+        private System.Timers.Timer timerNtpSync = new System.Timers.Timer();
 
         private TimeViewModel nowTimeVM = new TimeViewModel();
         private DateTime cachedNetworkTime = DateTime.Now;
@@ -512,6 +514,14 @@ namespace Ink_Canvas
             if (isFloatingBarChangingHideMode) return;
             try
             {
+                // 优先使用窗口概览模型进行检测
+                if (_windowOverviewModel != null)
+                {
+                    CheckAutoFoldWithWindowOverviewModel();
+                    return;
+                }
+
+                // 如果窗口概览模型未初始化，回退到传统的进程检测方式
                 var windowProcessName = ForegroundWindowInfo.ProcessName();
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
                 //LogHelper.WriteLogToFile("windowTitle | " + windowTitle + " | windowProcessName | " + windowProcessName);
@@ -730,6 +740,225 @@ namespace Ink_Canvas
                 }
             }
             catch { }
+        }
+
+        /// <summary>
+        /// 检查进程是否在用户的自动收纳设置中启用
+        /// </summary>
+        private bool IsProcessInAutoFoldSettings(string processName, WindowInfo windowInfo = null)
+        {
+            // 根据进程名和窗口信息检查是否在自动收纳设置中
+            switch (processName)
+            {
+                case "EasiNote":
+                    // EasiNote需要检查版本
+                    if (windowInfo != null && !string.IsNullOrEmpty(windowInfo.ProcessPath) && windowInfo.ProcessPath != "Unknown")
+                    {
+                        try
+                        {
+                            var versionInfo = FileVersionInfo.GetVersionInfo(windowInfo.ProcessPath);
+                            string version = versionInfo.FileVersion;
+                            string prodName = versionInfo.ProductName;
+                            
+                            if (version != null && version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
+                                return true;
+                            if (version != null && version.StartsWith("3.") && Settings.Automation.IsAutoFoldInEasiNote3)
+                                return true;
+                            if (prodName != null && prodName.Contains("3C") && Settings.Automation.IsAutoFoldInEasiNote3C)
+                                return true;
+                        }
+                        catch { }
+                    }
+                    return false;
+                    
+                case "EasiCamera":
+                    return Settings.Automation.IsAutoFoldInEasiCamera;
+                    
+                case "EasiNote5C":
+                    return Settings.Automation.IsAutoFoldInEasiNote5C;
+                    
+                case "BoardService":
+                case "seewoPincoTeacher":
+                    return Settings.Automation.IsAutoFoldInSeewoPincoTeacher;
+                    
+                case "HiteCamera":
+                    return Settings.Automation.IsAutoFoldInHiteCamera;
+                    
+                case "HiteTouchPro":
+                    return Settings.Automation.IsAutoFoldInHiteTouchPro;
+                    
+                case "HiteLightBoard":
+                    return Settings.Automation.IsAutoFoldInHiteLightBoard;
+                    
+                case "WxBoardMain":
+                    return Settings.Automation.IsAutoFoldInWxBoardMain;
+                    
+                case "MicrosoftWhiteboard":
+                case "msedgewebview2":
+                    return Settings.Automation.IsAutoFoldInMSWhiteboard;
+                    
+                case "Amdox.WhiteBoard":
+                    return Settings.Automation.IsAutoFoldInAdmoxWhiteboard;
+                    
+                case "Amdox.Booth":
+                    return Settings.Automation.IsAutoFoldInAdmoxBooth;
+                    
+                case "QPoint":
+                    return Settings.Automation.IsAutoFoldInQPoint;
+                    
+                case "YiYunVisualPresenter":
+                    return Settings.Automation.IsAutoFoldInYiYunVisualPresenter;
+                    
+                case "WhiteBoard":
+                    // MaxHub需要检查窗口标题
+                    if (windowInfo != null && !string.IsNullOrEmpty(windowInfo.Title) && 
+                        windowInfo.Title.Contains("白板书写") && Settings.Automation.IsAutoFoldInMaxHubWhiteboard)
+                    {
+                        if (!string.IsNullOrEmpty(windowInfo.ProcessPath) && windowInfo.ProcessPath != "Unknown")
+                        {
+                            try
+                            {
+                                var versionInfo = FileVersionInfo.GetVersionInfo(windowInfo.ProcessPath);
+                                if (versionInfo.FileVersion != null && versionInfo.FileVersion.StartsWith("6.") && 
+                                    versionInfo.ProductName == "WhiteBoard")
+                                    return true;
+                            }
+                            catch { }
+                        }
+                    }
+                    return false;
+                    
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// 使用窗口概览模型检测是否需要自动收纳
+        /// </summary>
+        private void CheckAutoFoldWithWindowOverviewModel()
+        {
+            try
+            {
+                if (_windowOverviewModel == null) return;
+
+                // 获取浮动栏的位置和大小
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        var floatingBarMargin = ViewboxFloatingBar.Margin;
+                        var floatingBarWidth = ViewboxFloatingBar.ActualWidth;
+                        var floatingBarHeight = ViewboxFloatingBar.ActualHeight;
+
+                        // 如果浮动栏未显示或大小为0，跳过检测
+                        if (floatingBarWidth <= 0 || floatingBarHeight <= 0) return;
+
+                        // 计算浮动栏在屏幕上的位置（考虑DPI缩放）
+                        var screen = WinForms.Screen.PrimaryScreen;
+                        var dpiScaleX = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+                        var dpiScaleY = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+
+                        // 将WPF坐标转换为屏幕坐标
+                        var point = ViewboxFloatingBar.PointToScreen(new System.Windows.Point(0, 0));
+                        int left = (int)(point.X);
+                        int top = (int)(point.Y);
+                        int right = left + (int)(floatingBarWidth * dpiScaleX);
+                        int bottom = top + (int)(floatingBarHeight * dpiScaleY);
+
+                        // 创建检测区域（稍微扩大一点，确保检测到覆盖）
+                        var detectionArea = new WindowRect
+                        {
+                            Left = left - 5,
+                            Top = top - 5,
+                            Right = right + 5,
+                            Bottom = bottom + 5
+                        };
+
+                        // 排除当前应用程序的进程
+                        var excludeProcesses = new List<string> { "InkCanvasForClass", "Ink Canvas" };
+
+                        // 检查 OldZyBoard（通过窗口标题检测）
+                        bool isOldZyBoardWindowExisted = Settings.Automation.IsAutoFoldInOldZyBoard &&
+                            (WinTabWindowsChecker.IsWindowExisted("WhiteBoard - DrawingWindow") ||
+                             WinTabWindowsChecker.IsWindowExisted("InstantAnnotationWindow"));
+                        
+                        if (isOldZyBoardWindowExisted)
+                        {
+                            if (!isFloatingBarFolded)
+                            {
+                                FoldFloatingBar_MouseUp(new object(), null);
+                            }
+                        }
+                        else if (!isOldZyBoardWindowExisted && isFloatingBarFolded && !foldFloatingBarByUser)
+                        {
+                            // OldZyBoard窗口退出时，如果未开启保持收纳模式，则展开
+                            if (!Settings.Automation.KeepFoldAfterSoftwareExit)
+                            {
+                                UnFoldFloatingBar_MouseUp(new object(), null);
+                            }
+                            return; // OldZyBoard 使用特殊检测方式，处理完后直接返回
+                        }
+                        
+                        if (isOldZyBoardWindowExisted)
+                        {
+                            return; // OldZyBoard 窗口存在时，直接返回，不继续检测其他窗口
+                        }
+                        
+                        // 获取覆盖浮动栏的所有窗口
+                        var coveringWindows = _windowOverviewModel.GetCoveringWindows(detectionArea, excludeProcesses, 0.1);
+                        
+                        // 检查是否有覆盖窗口在用户的自动收纳设置中
+                        bool shouldFold = false;
+                        
+                        foreach (var window in coveringWindows)
+                        {
+                            // 检查窗口是否全屏（全屏窗口优先）
+                            bool isFullScreen = window.IsFullScreen;
+                            
+                            // 检查窗口大小是否接近全屏（用于检测二级菜单等）
+                            bool isNearFullScreen = false;
+                            try
+                            {
+                                var screenBounds = WinForms.Screen.FromHandle(window.Handle).Bounds;
+                                isNearFullScreen = window.Rect.Width >= screenBounds.Width - 16 &&
+                                                  window.Rect.Height >= screenBounds.Height - 16;
+                            }
+                            catch { }
+                            
+                            // 如果窗口是全屏或接近全屏，且进程在自动收纳设置中，则应该收纳
+                            if ((isFullScreen || isNearFullScreen) && IsProcessInAutoFoldSettings(window.ProcessName, window))
+                            {
+                                shouldFold = true;
+                                break; // 找到匹配的窗口就退出
+                            }
+                        }
+                        
+                        // 如果检测到应该收纳的窗口，且当前未收纳，则收纳
+                        if (shouldFold && !isFloatingBarFolded)
+                        {
+                            FoldFloatingBar_MouseUp(new object(), null);
+                        }
+                        // 如果未检测到应该收纳的窗口，且当前已收纳（且不是用户手动收纳），则展开
+                        else if (!shouldFold && isFloatingBarFolded && !foldFloatingBarByUser)
+                        {
+                            // 检查是否启用了软件退出后保持收纳模式
+                            if (!Settings.Automation.KeepFoldAfterSoftwareExit)
+                            {
+                                UnFoldFloatingBar_MouseUp(new object(), null);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"窗口概览模型检测失败: {ex.Message}", LogHelper.LogType.Error);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"窗口概览模型自动收纳检测异常: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         private void timerCheckAutoUpdateWithSilence_Elapsed(object sender, ElapsedEventArgs e)

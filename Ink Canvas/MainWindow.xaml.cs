@@ -62,6 +62,8 @@ namespace Ink_Canvas
         // 悬浮窗拦截管理器
         private FloatingWindowInterceptorManager _floatingWindowInterceptorManager;
 
+        // 窗口概览模型
+        private WindowOverviewModel _windowOverviewModel;
 
         // 设置面板相关状态
         private bool userChangedNoFocusModeInSettings;
@@ -591,6 +593,17 @@ namespace Ink_Canvas
                 StartPPTMonitoring();
             }
 
+            // 初始化窗口概览模型
+            try
+            {
+                _windowOverviewModel = new WindowOverviewModel();
+                LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化窗口概览模型失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
             // 如果启用PowerPoint联动增强功能，启动进程守护
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
             {
@@ -993,6 +1006,13 @@ namespace Ink_Canvas
             {
                 _floatingWindowInterceptorManager.Dispose();
                 _floatingWindowInterceptorManager = null;
+            }
+
+            // 清理窗口概览模型
+            if (_windowOverviewModel != null)
+            {
+                _windowOverviewModel.Dispose();
+                _windowOverviewModel = null;
             }
 
             // 停止置顶维护定时器
