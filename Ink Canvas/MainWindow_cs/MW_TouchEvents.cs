@@ -224,29 +224,8 @@ namespace Ink_Canvas
             }
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
-                || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke) return;
-            
-            // 处理选择模式下的触摸事件：检查是否有选中的墨迹，如果有，检查触摸点是否在选中区域外
-            if (inkCanvas.EditingMode == InkCanvasEditingMode.Select)
-            {
-                if (inkCanvas.GetSelectedStrokes().Count > 0)
-                {
-                    var touchPosition = e.GetTouchPoint(inkCanvas).Position;
-                    var selectionBounds = inkCanvas.GetSelectionBounds();
-
-                    // 检查触摸位置是否在选择框边界外
-                    if (touchPosition.X < selectionBounds.Left ||
-                        touchPosition.X > selectionBounds.Right ||
-                        touchPosition.Y < selectionBounds.Top ||
-                        touchPosition.Y > selectionBounds.Bottom)
-                    {
-                        // 触摸在选择框外，取消选择
-                        inkCanvas.Select(new StrokeCollection());
-                        GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
-                    }
-                }
-                return;
-            }
+                || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
+                || inkCanvas.EditingMode == InkCanvasEditingMode.Select) return;
 
             if (!isHidingSubPanelsWhenInking)
             {
@@ -562,26 +541,6 @@ namespace Ink_Canvas
             }
             if (inkCanvas.EditingMode == InkCanvasEditingMode.Select)
             {
-                dec.Add(e.TouchDevice.Id);
-                
-                // 检查是否有选中的墨迹，如果有，检查触摸点是否在选中区域外
-                if (dec.Count == 1 && inkCanvas.GetSelectedStrokes().Count > 0)
-                {
-                    var touchPosition = e.GetTouchPoint(inkCanvas).Position;
-                    var selectionBounds = inkCanvas.GetSelectionBounds();
-
-                    // 检查触摸位置是否在选择框边界外
-                    if (touchPosition.X < selectionBounds.Left ||
-                        touchPosition.X > selectionBounds.Right ||
-                        touchPosition.Y < selectionBounds.Top ||
-                        touchPosition.Y > selectionBounds.Bottom)
-                    {
-                        // 触摸在选择框外，取消选择
-                        inkCanvas.Select(new StrokeCollection());
-                        GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
-                    }
-                }
-                
                 return;
             }
             if (inkCanvas.EditingMode == InkCanvasEditingMode.Ink)
@@ -621,24 +580,6 @@ namespace Ink_Canvas
             {
                 var touchPoint = e.GetTouchPoint(inkCanvas);
                 centerPoint = touchPoint.Position;
-
-                // 检查是否有选中的墨迹，如果有，检查触摸点是否在选中区域外
-                if (inkCanvas.GetSelectedStrokes().Count > 0)
-                {
-                    var touchPosition = touchPoint.Position;
-                    var selectionBounds = inkCanvas.GetSelectionBounds();
-
-                    // 检查触摸位置是否在选择框边界外
-                    if (touchPosition.X < selectionBounds.Left ||
-                        touchPosition.X > selectionBounds.Right ||
-                        touchPosition.Y < selectionBounds.Top ||
-                        touchPosition.Y > selectionBounds.Bottom)
-                    {
-                        // 触摸在选择框外，取消选择
-                        inkCanvas.Select(new StrokeCollection());
-                        GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
-                    }
-                }
 
                 //记录第一根手指点击时的 StrokeCollection
                 lastTouchDownStrokeCollection = inkCanvas.Strokes.Clone();

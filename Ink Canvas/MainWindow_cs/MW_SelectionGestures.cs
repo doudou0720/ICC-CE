@@ -627,36 +627,7 @@ namespace Ink_Canvas
             {
                 var touchPoint = e.GetTouchPoint(null);
                 centerPoint = touchPoint.Position;
-                lastTouchPointOnGridInkCanvasCover = e.GetTouchPoint(inkCanvas).Position;
-
-                // 检查是否有选中的墨迹
-                if (inkCanvas.GetSelectedStrokes().Count > 0)
-                {
-                    // 获取触摸点位置
-                    var touchPosition = e.GetTouchPoint(inkCanvas).Position;
-                    var selectionBounds = inkCanvas.GetSelectionBounds();
-
-                    // 检查触摸位置是否在选择框边界内
-                    if (touchPosition.X >= selectionBounds.Left &&
-                        touchPosition.X <= selectionBounds.Right &&
-                        touchPosition.Y >= selectionBounds.Top &&
-                        touchPosition.Y <= selectionBounds.Bottom)
-                    {
-                        // 只有在选择框边界内才允许拖动
-                        // 触摸拖动状态已通过TouchMove事件处理
-                    }
-                    else
-                    {
-                        // 触摸在选择框外，取消选择
-                        inkCanvas.Select(new StrokeCollection());
-                        GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
-                        return;
-                    }
-                }
-
-
-                SetCurrentToolMode(InkCanvasEditingMode.Select);
-                inkCanvas.Select(new StrokeCollection());
+                lastTouchPointOnGridInkCanvasCover = touchPoint.Position;
             }
         }
 
@@ -664,33 +635,25 @@ namespace Ink_Canvas
         {
             dec.Remove(e.TouchDevice.Id);
             if (dec.Count >= 1) return;
-
-            // 重置触摸状态
-            lastTouchPointOnGridInkCanvasCover = new Point(0, 0);
             isProgramChangeStrokeSelection = false;
-
-            // 检查是否有点击（没有移动）
-            var currentTouchPoint = e.GetTouchPoint(null).Position;
-            if (Math.Abs(currentTouchPoint.X - centerPoint.X) < 5 && Math.Abs(currentTouchPoint.Y - centerPoint.Y) < 5)
+            
+            var touchUpPoint = e.GetTouchPoint(null).Position;
+            if (lastTouchPointOnGridInkCanvasCover == touchUpPoint)
             {
-                // 点击在选择框内，保持选择状态
-                if (inkCanvas.GetSelectedStrokes().Count > 0)
+                var touchPointInCanvas = e.GetTouchPoint(inkCanvas).Position;
+                var selectionBounds = inkCanvas.GetSelectionBounds();
+                
+                if (!(touchPointInCanvas.X < selectionBounds.Left) &&
+                    !(touchPointInCanvas.Y < selectionBounds.Top) &&
+                    !(touchPointInCanvas.X > selectionBounds.Right) &&
+                    !(touchPointInCanvas.Y > selectionBounds.Bottom))
                 {
-                    var selectionBounds = inkCanvas.GetSelectionBounds();
-                    if (currentTouchPoint.X >= selectionBounds.Left &&
-                        currentTouchPoint.X <= selectionBounds.Right &&
-                        currentTouchPoint.Y >= selectionBounds.Top &&
-                        currentTouchPoint.Y <= selectionBounds.Bottom)
-                    {
-                        // 点击在选择框内，保持选择
-                        GridInkCanvasSelectionCover.Visibility = Visibility.Visible;
-                        StrokesSelectionClone = new StrokeCollection();
-                        return;
-                    }
+                    return;
                 }
-
-                // 点击在选择框外，取消选择
+                isProgramChangeStrokeSelection = true;
                 inkCanvas.Select(new StrokeCollection());
+                GridInkCanvasSelectionCover.Visibility = Visibility.Collapsed;
+                isProgramChangeStrokeSelection = false;
                 StrokesSelectionClone = new StrokeCollection();
             }
             else if (inkCanvas.GetSelectedStrokes().Count == 0)
@@ -703,7 +666,6 @@ namespace Ink_Canvas
                 GridInkCanvasSelectionCover.Visibility = Visibility.Visible;
                 StrokesSelectionClone = new StrokeCollection();
             }
-
         }
 
         private void LassoSelect_Click(object sender, RoutedEventArgs e)
