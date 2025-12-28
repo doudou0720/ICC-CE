@@ -18,6 +18,10 @@ namespace Ink_Canvas.Windows
         public SettingsWindow()
         {
             InitializeComponent();
+            
+            // 初始化搜索面板事件
+            SearchPanelControl.NavigateToItem += SearchPanel_NavigateToItem;
+            SearchPanelControl.CloseSearch += SearchPanel_CloseSearch;
 
             // 初始化侧边栏项目
             SidebarItemsControl.ItemsSource = SidebarItems;
@@ -445,7 +449,43 @@ namespace Ink_Canvas.Windows
 
         private void SearchButton_Click(object sender, MouseButtonEventArgs e)
         {
-            // 搜索功能 - 可以显示搜索框或搜索对话框
+            // 显示搜索界面
+            SearchPane.Visibility = Visibility.Visible;
+            SearchPanelControl.FocusSearchBox();
+        }
+
+        private void SearchPanel_NavigateToItem(object sender, string itemName)
+        {
+            // 隐藏搜索界面
+            SearchPane.Visibility = Visibility.Collapsed;
+            
+            // 导航到对应的设置项
+            NavigateToSidebarItem(itemName);
+        }
+
+        private void SearchPanel_CloseSearch(object sender, EventArgs e)
+        {
+            // 隐藏搜索界面
+            SearchPane.Visibility = Visibility.Collapsed;
+        }
+
+        private void NavigateToSidebarItem(string itemName)
+        {
+            // 查找对应的侧边栏项并选中
+            foreach (var item in SidebarItems)
+            {
+                if (item.Name == itemName)
+                {
+                    SelectSidebarItem(item);
+                    break;
+                }
+            }
+        }
+
+        private void SelectSidebarItem(SidebarItem item)
+        {
+            _selectedSidebarItemName = item.Name;
+            UpdateSidebarItemsSelection();
         }
 
         private void MenuButton_Click(object sender, MouseButtonEventArgs e)
