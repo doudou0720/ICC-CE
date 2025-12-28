@@ -944,13 +944,6 @@ namespace Ink_Canvas
                 return true;
             }
 
-            // 检查是否有明显的回环或重叠
-            if (HasSignificantLoops(stroke))
-            {
-                Debug.WriteLine("检测到复杂形状：存在明显回环");
-                return true;
-            }
-
             return false;
         }
 
@@ -1029,55 +1022,6 @@ namespace Ink_Canvas
             }
 
             return changes;
-        }
-
-        /// <summary>
-        /// 检查是否有明显的回环
-        /// </summary>
-        private bool HasSignificantLoops(Stroke stroke)
-        {
-            if (stroke.StylusPoints.Count < 20) return false;
-
-            // 检查起点和终点是否接近（可能是闭合图形）
-            Point start = stroke.StylusPoints.First().ToPoint();
-            Point end = stroke.StylusPoints.Last().ToPoint();
-            double startEndDistance = GetDistance(start, end);
-
-            // 计算平均点间距
-            double totalDistance = 0;
-            for (int i = 1; i < stroke.StylusPoints.Count; i++)
-            {
-                Point p1 = stroke.StylusPoints[i - 1].ToPoint();
-                Point p2 = stroke.StylusPoints[i].ToPoint();
-                totalDistance += GetDistance(p1, p2);
-            }
-            double avgPointDistance = totalDistance / (stroke.StylusPoints.Count - 1);
-
-            // 如果起点和终点很接近，可能是闭合图形
-            if (startEndDistance < avgPointDistance * 5)
-            {
-                return true;
-            }
-
-            // 检查是否有点重复经过相似区域
-            int overlapCount = 0;
-            double overlapThreshold = avgPointDistance * 3;
-
-            for (int i = 0; i < stroke.StylusPoints.Count - 10; i += 5)
-            {
-                Point p1 = stroke.StylusPoints[i].ToPoint();
-                for (int j = i + 10; j < stroke.StylusPoints.Count; j += 5)
-                {
-                    Point p2 = stroke.StylusPoints[j].ToPoint();
-                    if (GetDistance(p1, p2) < overlapThreshold)
-                    {
-                        overlapCount++;
-                        if (overlapCount > 3) return true;
-                    }
-                }
-            }
-
-            return false;
         }
 
         /// <summary>
