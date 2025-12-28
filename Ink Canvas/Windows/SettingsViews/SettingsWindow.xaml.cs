@@ -169,19 +169,19 @@ namespace Ink_Canvas.Windows
 
             SettingsPaneScrollViewers = new ScrollViewer[] {
                 SettingsAboutPanel.AboutScrollViewerEx,
-                CanvasAndInkScrollViewerEx,
-                GesturesScrollViewerEx,
-                StartupScrollViewerEx,
-                ThemeScrollViewerEx,
-                ShortcutsScrollViewerEx,
-                CrashActionScrollViewerEx,
-                InkRecognitionScrollViewerEx,
-                AutomationScrollViewerEx,
-                PowerPointScrollViewerEx,
-                LuckyRandomScrollViewerEx,
-                StorageScrollViewerEx,
-                SnapshotScrollViewerEx,
-                AdvancedScrollViewerEx
+                CanvasAndInkPanel.ScrollViewerEx,
+                GesturesPanel.ScrollViewerEx,
+                StartupPanel.ScrollViewerEx,
+                ThemePanel.ScrollViewerEx,
+                ShortcutsPanel.ScrollViewerEx,
+                CrashActionPanel.ScrollViewerEx,
+                InkRecognitionPanel.ScrollViewerEx,
+                AutomationPanel.ScrollViewerEx,
+                PowerPointPanel.ScrollViewerEx,
+                LuckyRandomPanel.ScrollViewerEx,
+                StoragePanel.ScrollViewerEx,
+                SnapshotPanel.ScrollViewerEx,
+                AdvancedPanel.ScrollViewerEx
             };
 
             SettingsPaneTitles = new string[] {
@@ -220,6 +220,34 @@ namespace Ink_Canvas.Windows
 
             SettingsAboutPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
             SettingsAboutPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+
+            // 订阅所有UserControl的滚动事件
+            CanvasAndInkPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            CanvasAndInkPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            GesturesPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            GesturesPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            StartupPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            StartupPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            InkRecognitionPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            InkRecognitionPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            AutomationPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            AutomationPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            PowerPointPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            PowerPointPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            ThemePanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            ThemePanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            ShortcutsPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            ShortcutsPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            CrashActionPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            CrashActionPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            LuckyRandomPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            LuckyRandomPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            StoragePanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            StoragePanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            SnapshotPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            SnapshotPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            AdvancedPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            AdvancedPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
 
             _selectedSidebarItemName = "CanvasAndInkItem";
             UpdateSidebarItemsSelection();
@@ -303,19 +331,6 @@ namespace Ink_Canvas.Windows
                         sv.ScrollToTop();
                     }
                 }
-            }
-        }
-
-        private void ScrollViewerEx_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            var scrollViewer = (ScrollViewer)sender;
-            if (scrollViewer.VerticalOffset >= 10)
-            {
-                DropShadowEffectTopBar.Opacity = 0.25;
-            }
-            else
-            {
-                DropShadowEffectTopBar.Opacity = 0;
             }
         }
 

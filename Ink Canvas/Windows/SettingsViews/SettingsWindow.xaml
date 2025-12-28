@@ -560,125 +560,66 @@
 
                 <!--CanvasAndInkPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Visible" Name="CanvasAndInkPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="CanvasAndInkScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:CanvasAndInkPanel x:Name="CanvasAndInkPanel"/>
                 </Grid>
                 <!--GesturesPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="GesturesPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="GesturesScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:GesturesPanel x:Name="GesturesPanel"/>
                 </Grid>
                 <!--StartupPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StartupPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="StartupScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Orientation="Vertical">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:StartupPanel x:Name="StartupPanel"/>
                 </Grid>
                 <!--AppearancePanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AppearancePaneEx">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="AppearanceScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="0,12,0,24" HorizontalAlignment="Center" Width="524">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AppearancePane">
-                    <settingsViews:AppearancePanel/>
+                    <settingsViews:AppearancePanel x:Name="AppearancePanel"/>
                 </Grid>
                 <!--InkRecognitionPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="InkRecognitionPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="InkRecognitionScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:InkRecognitionPanel x:Name="InkRecognitionPanel"/>
                 </Grid>
                 <!--AutomationPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AutomationPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="AutomationScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:AutomationPanel x:Name="AutomationPanel"/>
                 </Grid>
                 <!--PowerPointPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="PowerPointPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="PowerPointScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:PowerPointPanel x:Name="PowerPointPanel"/>
                 </Grid>
                 
                 <!--个性化设置面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ThemePane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ThemeScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:ThemePanel x:Name="ThemePanel"/>
                 </Grid>
 
                 <!--快捷键设置面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ShortcutsPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ShortcutsScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:ShortcutsPanel x:Name="ShortcutsPanel"/>
                 </Grid>
 
                 <!--崩溃处理面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="CrashActionPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="CrashActionScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:CrashActionPanel x:Name="CrashActionPanel"/>
                 </Grid>
 
                 <!--幸运随机面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="LuckyRandomPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="LuckyRandomScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:LuckyRandomPanel x:Name="LuckyRandomPanel"/>
                 </Grid>
 
                 <!--存储面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StoragePane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="StorageScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:StoragePanel x:Name="StoragePanel"/>
                 </Grid>
 
                 <!--截图面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SnapshotPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="SnapshotScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:SnapshotPanel x:Name="SnapshotPanel"/>
                 </Grid>
 
                 <!--高级面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
-                    <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="AdvancedScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-                        <StackPanel Margin="60,12,60,24">
-                            <!-- 设置项已清空，仅保留页面框架 -->
-                        </StackPanel>
-                    </ScrollViewer>
+                    <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
                 <!--Topbar-->
