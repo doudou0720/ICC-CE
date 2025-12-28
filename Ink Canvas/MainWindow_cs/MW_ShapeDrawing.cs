@@ -1817,18 +1817,6 @@ namespace Ink_Canvas
 
         private void inkCanvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            // 检查鼠标点击是否发生在浮动栏区域，如果是则允许事件传播到浮动栏按钮
-            var mousePoint = e.GetPosition(this);
-            var floatingBarBounds = ViewboxFloatingBar.TransformToAncestor(this).TransformBounds(
-                new Rect(0, 0, ViewboxFloatingBar.ActualWidth, ViewboxFloatingBar.ActualHeight));
-
-            // 如果鼠标点击发生在浮动栏区域，不阻止事件传播，让浮动栏按钮能够接收鼠标事件
-            if (floatingBarBounds.Contains(mousePoint))
-            {
-                // 不设置 ViewboxFloatingBar.IsHitTestVisible = false，让浮动栏按钮能够接收鼠标事件
-                return;
-            }
-
             inkCanvas.CaptureMouse();
             ViewboxFloatingBar.IsHitTestVisible = false;
             BlackboardUIGridForInkReplay.IsHitTestVisible = false;

@@ -211,17 +211,6 @@ namespace Ink_Canvas
 
         private void MainWindow_TouchDown(object sender, TouchEventArgs e)
         {
-            // 检查触摸是否发生在浮动栏区域，如果是则允许事件传播到浮动栏按钮
-            var touchPoint = e.GetTouchPoint(this);
-            var floatingBarBounds = ViewboxFloatingBar.TransformToAncestor(this).TransformBounds(
-                new Rect(0, 0, ViewboxFloatingBar.ActualWidth, ViewboxFloatingBar.ActualHeight));
-
-            // 如果触摸发生在浮动栏区域，不阻止事件传播，让浮动栏按钮能够接收触摸事件
-            if (floatingBarBounds.Contains(touchPoint.Position))
-            {
-                // 不设置 ViewboxFloatingBar.IsHitTestVisible = false，让浮动栏按钮能够接收触摸事件
-                return;
-            }
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
                 || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke

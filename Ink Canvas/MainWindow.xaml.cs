@@ -265,9 +265,6 @@ namespace Ink_Canvas
             Activated += Window_Activated;
             Deactivated += Window_Deactivated;
 
-            // 为浮动栏按钮添加触摸事件支持
-            AddTouchSupportToFloatingBarButtons();
-
             // 为滑块控件添加触摸事件支持
             AddTouchSupportToSliders();
 
