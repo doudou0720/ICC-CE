@@ -37,7 +37,10 @@
       "contributions": [
         "blog",
         "doc",
-        "design"
+        "design",
+        "test",
+        "tutorial",
+        "video"
       ]
     },
     {
