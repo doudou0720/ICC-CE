@@ -583,9 +583,37 @@ namespace Ink_Canvas.Windows
         {
             try
             {
-                // 检测系统主题
-                bool isDarkTheme = IsDarkTheme();
-                
+                if (MainWindow.Settings != null)
+                {
+                    ApplyTheme(MainWindow.Settings);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"应用PPT时间胶囊主题失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ApplyTheme(Settings settings)
+        {
+            try
+            {
+                bool isDarkTheme = false;
+
+                if (settings.Appearance.Theme == 0) // 浅色主题
+                {
+                    isDarkTheme = false;
+                }
+                else if (settings.Appearance.Theme == 1) // 深色主题
+                {
+                    isDarkTheme = true;
+                }
+                else // 跟随系统主题
+                {
+                    bool isSystemLight = IsSystemThemeLight();
+                    isDarkTheme = !isSystemLight;
+                }
+
                 if (isDarkTheme)
                 {
                     // 深色主题：使用80%不透明度的深色背景
@@ -615,45 +643,29 @@ namespace Ink_Canvas.Windows
             }
         }
 
-        private bool IsDarkTheme()
+        private bool IsSystemThemeLight()
         {
+            var light = false;
             try
             {
-                string settingsPath = Path.Combine(App.RootPath, "Configs", "Settings.json");
-                if (File.Exists(settingsPath))
+                var registryKey = Microsoft.Win32.Registry.CurrentUser;
+                var themeKey = registryKey.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                if (themeKey != null)
                 {
-                    string jsonText = File.ReadAllText(settingsPath);
-                    var settings = JsonConvert.DeserializeObject<Settings>(jsonText);
-                    
-                    if (settings?.Appearance != null)
+                    var value = themeKey.GetValue("AppsUseLightTheme");
+                    if (value != null)
                     {
-                        if (settings.Appearance.Theme == 1)
-                        {
-                            return true; 
-                        }
-                        else if (settings.Appearance.Theme == 0)
-                        {
-                            return false; 
-                        }
-                        else
-                        {
-                            int systemTheme = (int)Microsoft.Win32.Registry.GetValue(
-                                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
-                                "AppsUseLightTheme", 1);
-                            return systemTheme == 0;
-                        }
+                        light = (int)value == 1;
                     }
+                    themeKey.Close();
                 }
-                
-                int fallbackTheme = (int)Microsoft.Win32.Registry.GetValue(
-                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
-                    "AppsUseLightTheme", 1);
-                return fallbackTheme == 0;
             }
             catch
             {
-                return false;
+                // 如果读取注册表失败，默认为浅色主题
+                light = true;
             }
+            return light;
         }
 
         /// <summary>
