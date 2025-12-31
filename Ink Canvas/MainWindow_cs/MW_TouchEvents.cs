@@ -289,33 +289,11 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile("保持当前线擦模式");
                 }
             }
-            SetCursorBasedOnEditingMode(inkCanvas);
-
             inkCanvas.CaptureStylus();
             ViewboxFloatingBar.IsHitTestVisible = false;
             BlackboardUIGridForInkReplay.IsHitTestVisible = false;
 
-            // 确保手写笔模式下显示光标
-            if (Settings.Canvas.IsShowCursor)
-            {
-                inkCanvas.ForceCursor = true;
-                inkCanvas.UseCustomCursor = true;
-
-                // 根据当前编辑模式设置不同的光标
-                if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint)
-                {
-                    inkCanvas.Cursor = Cursors.Arrow;
-                }
-                else if (inkCanvas.EditingMode == InkCanvasEditingMode.Ink)
-                {
-                    var sri = Application.GetResourceStream(new Uri("Resources/Cursors/Pen.cur", UriKind.Relative));
-                    if (sri != null)
-                        inkCanvas.Cursor = new Cursor(sri.Stream);
-                }
-
-                // 强制显示光标
-                System.Windows.Forms.Cursor.Show();
-            }
+            SetCursorBasedOnEditingMode(inkCanvas);
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
                 || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
@@ -416,6 +394,7 @@ namespace Ink_Canvas
             inkCanvas.ReleaseStylusCapture();
             ViewboxFloatingBar.IsHitTestVisible = true;
             BlackboardUIGridForInkReplay.IsHitTestVisible = true;
+            SetCursorBasedOnEditingMode(inkCanvas);
         }
 
         private void MainWindow_StylusMove(object sender, StylusEventArgs e)
@@ -439,13 +418,7 @@ namespace Ink_Canvas
                 }
                 catch { }
 
-                // 确保手写笔移动时光标保持可见
-                if (Settings.Canvas.IsShowCursor)
-                {
-                    inkCanvas.ForceCursor = true;
-                    inkCanvas.UseCustomCursor = true;
-                    System.Windows.Forms.Cursor.Show();
-                }
+                SetCursorBasedOnEditingMode(inkCanvas);
 
                 var strokeVisual = GetStrokeVisual(e.StylusDevice.Id);
                 var stylusPointCollection = e.GetStylusPoints(this);

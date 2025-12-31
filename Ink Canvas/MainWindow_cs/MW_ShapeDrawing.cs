@@ -1828,6 +1828,11 @@ namespace Ink_Canvas
         private void inkCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (isMouseDown) MouseTouchMove(e.GetPosition(inkCanvas));
+            
+            if (Settings.Canvas.IsShowCursor)
+            {
+                SetCursorBasedOnEditingMode(inkCanvas);
+            }
         }
 
         private void inkCanvas_MouseUp(object sender, MouseButtonEventArgs e)
@@ -2054,13 +2059,21 @@ namespace Ink_Canvas
         }
         private void MainWindow_OnMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.StylusDevice == null)
+            if (Settings.Canvas.IsShowCursor)
             {
                 System.Windows.Forms.Cursor.Show();
+                SetCursorBasedOnEditingMode(inkCanvas);
             }
             else
             {
-                System.Windows.Forms.Cursor.Hide();
+                if (e.StylusDevice == null)
+                {
+                    System.Windows.Forms.Cursor.Show();
+                }
+                else
+                {
+                    System.Windows.Forms.Cursor.Hide();
+                }
             }
         }
     }
