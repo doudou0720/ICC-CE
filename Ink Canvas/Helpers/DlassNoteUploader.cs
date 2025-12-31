@@ -314,9 +314,9 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
-        /// 异步上传笔记文件到Dlass（支持PNG、ICSTK和ZIP格式）
+        /// 异步上传笔记文件到Dlass（支持PNG、ICSTK、XML和ZIP格式）
         /// </summary>
-        /// <param name="filePath">文件路径（支持PNG、ICSTK和ZIP）</param>
+        /// <param name="filePath">文件路径（支持PNG、ICSTK、XML和ZIP）</param>
         /// <returns>是否成功加入队列（不等待实际上传完成）</returns>
         public static async Task<bool> UploadNoteFileAsync(string filePath)
         {
@@ -336,7 +336,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var fileExtension = Path.GetExtension(filePath).ToLower();
-                if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".zip")
+                if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".xml" && fileExtension != ".zip")
                 {
                     return false;
                 }
