@@ -1201,14 +1201,59 @@ namespace Ink_Canvas
                 directionY = eigenvalue1 - covXX;
                 // 归一化
                 double length = Math.Sqrt(directionX * directionX + directionY * directionY);
-                directionX /= length;
-                directionY /= length;
+                if (length > 1e-10)
+                {
+                    directionX /= length;
+                    directionY /= length;
+                }
+                else
+                {
+                    // 如果归一化失败，使用起点和终点计算方向
+                    Point start = points.First();
+                    Point end = points.Last();
+                    double dx = end.X - start.X;
+                    double dy = end.Y - start.Y;
+                    double lineLength = Math.Sqrt(dx * dx + dy * dy);
+                    if (lineLength > 1e-10)
+                    {
+                        directionX = dx / lineLength;
+                        directionY = dy / lineLength;
+                    }
+                    else
+                    {
+                        directionX = (covXX >= covYY) ? 1 : 0;
+                        directionY = (covXX >= covYY) ? 0 : 1;
+                    }
+                }
             }
             else
             {
-                // 如果协方差为 0，则是水平或垂直直线
-                directionX = (covXX >= covYY) ? 1 : 0;
-                directionY = (covXX >= covYY) ? 0 : 1;
+                Point start = points.First();
+                Point end = points.Last();
+                double dx = end.X - start.X;
+                double dy = end.Y - start.Y;
+                double lineLength = Math.Sqrt(dx * dx + dy * dy);
+                
+                if (lineLength > 1e-10)
+                {
+                    directionX = dx / lineLength;
+                    directionY = dy / lineLength;
+                }
+                else
+                {
+                    if (Math.Abs(eigenvalue1 - covXX) < Math.Abs(eigenvalue1 - covYY))
+                    {
+                        // 主要方向是 X 轴方向
+                        directionX = 1;
+                        directionY = 0;
+                    }
+                    else
+                    {
+                        // 主要方向是 Y 轴方向
+                        directionX = 0;
+                        directionY = 1;
+                    }
+                }
             }
 
             // 计算解释方差比例（拟合优度）
