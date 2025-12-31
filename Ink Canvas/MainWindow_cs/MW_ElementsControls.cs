@@ -116,6 +116,12 @@ namespace Ink_Canvas
         {
             if (sender is FrameworkElement element)
             {
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.Select)
+                {
+                    e.Handled = false;
+                    return;
+                }
+
                 // 取消之前选中的元素
                 if (currentSelectedElement != null && currentSelectedElement != element)
                 {
@@ -223,6 +229,12 @@ namespace Ink_Canvas
         {
             if (sender is FrameworkElement element)
             {
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.Select)
+                {
+                    e.Handled = false;
+                    return;
+                }
+
                 // 取消之前选中的元素
                 if (currentSelectedElement != null && currentSelectedElement != element)
                 {
