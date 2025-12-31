@@ -360,7 +360,18 @@ namespace Ink_Canvas
 
                     try
                     {
-                        var clientObj = HitokotoHttpClient.Value;
+                        object clientObj = null;
+                        try
+                        {
+                            clientObj = HitokotoHttpClient.Value;
+                        }
+                        catch (Exception initEx)
+                        {
+                            LogHelper.WriteLogToFile($"HTTP 客户端初始化失败: {initEx.Message}", LogHelper.LogType.Warning);
+                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            return;
+                        }
+
                         if (clientObj == null || !(clientObj is HttpClient client))
                         {
                             BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
