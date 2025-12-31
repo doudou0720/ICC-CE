@@ -10338,6 +10338,15 @@
                 Margin="0,20,20,0">
             <Windows:PPTTimeCapsule x:Name="PPTTimeCapsule"/>
         </Border>
+        
+        <Border x:Name="PPTQuickPanelContainer" 
+                Visibility="Collapsed"
+                Panel.ZIndex="999"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="0,50,0,0">
+            <Windows:PPTQuickPanel x:Name="PPTQuickPanel"/>
+        </Border>
     </Grid>
 </Window>
 

@@ -2710,10 +2710,11 @@ namespace Ink_Canvas
                 Settings.PowerPointSettings.EnablePPTTimeCapsule = toggle != null && toggle.IsOn;
                 SaveSettingsToFile();
 
-                // 如果当前在PPT放映模式，需要立即更新时间胶囊的显示状态
+                // 如果当前在PPT放映模式，需要立即更新时间胶囊和快捷面板的显示状态
                 if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                 {
                     UpdatePPTTimeCapsuleVisibility();
+                    UpdatePPTQuickPanelVisibility();
                 }
 
                 LogHelper.WriteLogToFile($"PPT时间显示胶囊已{(Settings.PowerPointSettings.EnablePPTTimeCapsule ? "启用" : "禁用")}", LogHelper.LogType.Event);
@@ -2796,6 +2797,33 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"更新PPT时间胶囊显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新PPT快捷面板的显示状态
+        /// </summary>
+        public void UpdatePPTQuickPanelVisibility()
+        {
+            try
+            {
+                if (PPTQuickPanelContainer == null || PPTQuickPanel == null) return;
+
+                // 仅在PPT模式下显示
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    PPTQuickPanelContainer.Visibility = Visibility.Visible;
+                    PPTQuickPanel?.UpdateVisibility(true);
+                }
+                else
+                {
+                    PPTQuickPanelContainer.Visibility = Visibility.Collapsed;
+                    PPTQuickPanel?.UpdateVisibility(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT快捷面板显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
