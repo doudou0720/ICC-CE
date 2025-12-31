@@ -70,9 +70,9 @@
             <Storyboard x:Key="CapsuleExpandAnimation" x:Name="CapsuleExpandStoryboard">
                 <DoubleAnimation Storyboard.TargetName="MainCapsule"
                                  Storyboard.TargetProperty="(FrameworkElement.Width)"
-                                 Duration="0:0:0.3">
+                                 Duration="0:0:0.6">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseOut"/>
+                        <BackEase EasingMode="EaseOut" Amplitude="0.4"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
             </Storyboard>
@@ -81,9 +81,9 @@
             <Storyboard x:Key="CapsuleShrinkAnimation" x:Name="CapsuleShrinkStoryboard">
                 <DoubleAnimation Storyboard.TargetName="MainCapsule"
                                  Storyboard.TargetProperty="(FrameworkElement.Width)"
-                                 Duration="0:0:0.3">
+                                 Duration="0:0:0.8">
                     <DoubleAnimation.EasingFunction>
-                        <CubicEase EasingMode="EaseIn"/>
+                        <BackEase EasingMode="EaseOut" Amplitude="0.2"/>
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
             </Storyboard>

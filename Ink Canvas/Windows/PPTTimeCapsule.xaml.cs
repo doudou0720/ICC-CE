@@ -22,15 +22,17 @@ namespace Ink_Canvas.Windows
     public partial class PPTTimeCapsule : UserControl
     {
         private System.Timers.Timer timeUpdateTimer;
-        private System.Timers.Timer countdownUpdateTimer; // 倒计时更新定时器（参考MinimizedTimerControl）
+        private System.Timers.Timer countdownUpdateTimer; 
         private DateTime lastTime = DateTime.MinValue;
-        private TimerControl parentControl; // 父计时器控件引用（参考MinimizedTimerControl）
-        private bool wasTimerRunning = false; // 上次检查时计时器是否运行
+        private TimerControl parentControl; 
+        private bool wasTimerRunning = false; 
         private bool isOvertime = false;
         private Storyboard capsuleExpandStoryboard;
         private Storyboard capsuleShrinkStoryboard;
         private Storyboard colonBlinkStoryboard;
         private double originalCapsuleWidth = 0;
+        private string lastCountdownText = ""; // 上次的倒计时文本，用于检测文本变化
+        private Storyboard currentWidthAnimation; // 当前正在运行的宽度动画
 
         public PPTTimeCapsule()
         {
@@ -312,7 +314,7 @@ namespace Ink_Canvas.Windows
         {
             if (parentControl == null) return;
 
-            // 检查计时器是否正在运行（参考MinimizedTimerControl）
+            // 检查计时器是否正在运行
             bool isRunning = parentControl.IsTimerRunning;
             
             // 如果状态改变，更新UI
@@ -325,6 +327,7 @@ namespace Ink_Canvas.Windows
                     CountdownPanel.Visibility = Visibility.Visible;
                     // 确保倒计时文本使用主题颜色
                     ApplyTheme();
+                    UpdateCountdownText();
                     PlayCapsuleExpandAnimation();
                 }
                 else
@@ -355,9 +358,35 @@ namespace Ink_Canvas.Windows
 
             var timeSpan = remainingTime.Value;
             bool isOvertimeMode = timeSpan.TotalSeconds < 0;
-
+            
+            // 更新倒计时文本
+            UpdateCountdownText(timeSpan, isOvertimeMode);
+            
+            // 根据文本内容动态调整胶囊宽度
+            AdjustCapsuleWidthToContent();
+        }
+        
+        /// <summary>
+        /// 更新倒计时文本内容
+        /// </summary>
+        private void UpdateCountdownText(TimeSpan? timeSpan = null, bool? isOvertimeMode = null)
+        {
+            if (CountdownText == null || parentControl == null) return;
+            
+            if (!timeSpan.HasValue)
+            {
+                var remainingTime = parentControl.GetRemainingTime();
+                if (!remainingTime.HasValue) return;
+                timeSpan = remainingTime.Value;
+            }
+            
+            if (!isOvertimeMode.HasValue)
+            {
+                isOvertimeMode = timeSpan.Value.TotalSeconds < 0;
+            }
+            
             // 处理超时状态
-            if (isOvertimeMode)
+            if (isOvertimeMode.Value)
             {
                 if (!isOvertime)
                 {
@@ -373,7 +402,7 @@ namespace Ink_Canvas.Windows
                 }
                 
                 // 显示超时时间
-                var overtimeSpan = -timeSpan;
+                var overtimeSpan = -timeSpan.Value;
                 if (overtimeSpan.TotalHours >= 1)
                 {
                     int hours = (int)overtimeSpan.TotalHours;
@@ -412,15 +441,89 @@ namespace Ink_Canvas.Windows
                     }
                 }
 
-                if (timeSpan.TotalHours >= 1)
+                if (timeSpan.Value.TotalHours >= 1)
                 {
-                    int hours = (int)timeSpan.TotalHours;
-                    CountdownText.Text = $"{hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+                    int hours = (int)timeSpan.Value.TotalHours;
+                    CountdownText.Text = $"{hours:D2}:{timeSpan.Value.Minutes:D2}:{timeSpan.Value.Seconds:D2}";
                 }
                 else
                 {
-                    CountdownText.Text = $"{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+                    CountdownText.Text = $"{timeSpan.Value.Minutes:D2}:{timeSpan.Value.Seconds:D2}";
                 }
+            }
+        }
+        
+        /// <summary>
+        /// 根据内容动态调整胶囊宽度
+        /// </summary>
+        private void AdjustCapsuleWidthToContent()
+        {
+            if (MainCapsule == null || !wasTimerRunning || CountdownText == null) return;
+            
+            try
+            {
+                // 检查文本是否改变（格式变化可能导致宽度变化）
+                string currentText = CountdownText.Text;
+                if (currentText == lastCountdownText)
+                {
+                    // 文本未改变，不需要调整
+                    return;
+                }
+                
+                lastCountdownText = currentText;
+                
+                double currentWidth = MainCapsule.ActualWidth;
+                double targetWidth = CalculateTargetWidth();
+                
+                // 如果当前宽度与目标宽度差异较大（超过2像素），则调整
+                if (Math.Abs(currentWidth - targetWidth) > 2)
+                {
+                    // 停止当前动画
+                    if (currentWidthAnimation != null)
+                    {
+                        currentWidthAnimation.Stop();
+                        currentWidthAnimation = null;
+                    }
+                    if (capsuleExpandStoryboard != null)
+                    {
+                        capsuleExpandStoryboard.Stop();
+                    }
+                    if (capsuleShrinkStoryboard != null)
+                    {
+                        capsuleShrinkStoryboard.Stop();
+                    }
+                    
+                    // 创建新的动画
+                    var animation = new DoubleAnimation
+                    {
+                        From = currentWidth,
+                        To = targetWidth,
+                        Duration = new Duration(TimeSpan.FromMilliseconds(targetWidth > currentWidth ? 600 : 800)),
+                        EasingFunction = targetWidth > currentWidth 
+                            ? new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.4 }
+                            : new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.2 }
+                    };
+                    
+                    var storyboard = new Storyboard();
+                    Storyboard.SetTarget(animation, MainCapsule);
+                    Storyboard.SetTargetProperty(animation, new PropertyPath(FrameworkElement.WidthProperty));
+                    storyboard.Children.Add(animation);
+                    currentWidthAnimation = storyboard;
+                    storyboard.Begin();
+                    
+                    storyboard.Completed += (o, args) =>
+                    {
+                        storyboard.Remove();
+                        if (currentWidthAnimation == storyboard)
+                        {
+                            currentWidthAnimation = null;
+                        }
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"调整胶囊宽度失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -436,8 +539,15 @@ namespace Ink_Canvas.Windows
                         originalCapsuleWidth = MainCapsule.ActualWidth > 0 ? MainCapsule.ActualWidth : 120;
                     }
                     
-                    // 计算目标宽度（根据倒计时文本长度估算）
-                    double targetWidth = originalCapsuleWidth + 80; // 增加约80像素用于显示倒计时
+                    // 停止当前动画
+                    if (currentWidthAnimation != null)
+                    {
+                        currentWidthAnimation.Stop();
+                        currentWidthAnimation = null;
+                    }
+                    
+                    // 根据倒计时文本的实际宽度动态计算目标宽度
+                    double targetWidth = CalculateTargetWidth();
                     
                     if (capsuleExpandStoryboard == null)
                     {
@@ -450,7 +560,7 @@ namespace Ink_Canvas.Windows
                         var animation = capsuleExpandStoryboard.Children[0] as DoubleAnimation;
                         if (animation != null)
                         {
-                            animation.From = originalCapsuleWidth;
+                            animation.From = MainCapsule.ActualWidth;
                             animation.To = targetWidth;
                         }
                         
@@ -464,12 +574,52 @@ namespace Ink_Canvas.Windows
             }
         }
         
+        /// <summary>
+        /// 根据倒计时文本的实际宽度计算目标宽度
+        /// </summary>
+        private double CalculateTargetWidth()
+        {
+            if (CountdownText == null || TimeDisplayPanel == null)
+            {
+                // 如果倒计时文本不可用，使用估算值
+                return originalCapsuleWidth + 80;
+            }
+            
+            // 测量倒计时文本的实际宽度
+            CountdownText.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double countdownTextWidth = CountdownText.DesiredSize.Width;
+            
+            // 测量时间显示面板的宽度
+            TimeDisplayPanel.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double timeDisplayWidth = TimeDisplayPanel.DesiredSize.Width;
+            
+            double targetWidth = timeDisplayWidth + countdownTextWidth + 8 + 32;
+            
+            // 确保最小宽度不小于原始宽度
+            if (targetWidth < originalCapsuleWidth)
+            {
+                targetWidth = originalCapsuleWidth;
+            }
+            
+            return targetWidth;
+        }
+        
         private void PlayCapsuleShrinkAnimation()
         {
             try
             {
                 if (MainCapsule != null && originalCapsuleWidth > 0)
                 {
+                    // 停止当前动画
+                    if (currentWidthAnimation != null)
+                    {
+                        currentWidthAnimation.Stop();
+                        currentWidthAnimation = null;
+                    }
+                    
+                    // 重置文本跟踪
+                    lastCountdownText = "";
+                    
                     if (capsuleShrinkStoryboard == null)
                     {
                         capsuleShrinkStoryboard = (Storyboard)Resources["CapsuleShrinkAnimation"];
