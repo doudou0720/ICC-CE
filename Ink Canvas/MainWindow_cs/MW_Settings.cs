@@ -682,7 +682,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTLSButtonOpacityValueSlider.Value, 1);
+            PPTLSButtonOpacityValueSlider.ValueChanged -= PPTLSButtonOpacityValueSlider_ValueChanged;
             PPTLSButtonOpacityValueSlider.Value = roundedValue;
+            PPTLSButtonOpacityValueSlider.ValueChanged += PPTLSButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTLSButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -698,7 +700,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTRSButtonOpacityValueSlider.Value, 1);
+            PPTRSButtonOpacityValueSlider.ValueChanged -= PPTRSButtonOpacityValueSlider_ValueChanged;
             PPTRSButtonOpacityValueSlider.Value = roundedValue;
+            PPTRSButtonOpacityValueSlider.ValueChanged += PPTRSButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTRSButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -714,7 +718,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTLBButtonOpacityValueSlider.Value, 1);
+            PPTLBButtonOpacityValueSlider.ValueChanged -= PPTLBButtonOpacityValueSlider_ValueChanged;
             PPTLBButtonOpacityValueSlider.Value = roundedValue;
+            PPTLBButtonOpacityValueSlider.ValueChanged += PPTLBButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTLBButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -730,7 +736,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTRBButtonOpacityValueSlider.Value, 1);
+            PPTRBButtonOpacityValueSlider.ValueChanged -= PPTRBButtonOpacityValueSlider_ValueChanged;
             PPTRBButtonOpacityValueSlider.Value = roundedValue;
+            PPTRBButtonOpacityValueSlider.ValueChanged += PPTRBButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTRBButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
