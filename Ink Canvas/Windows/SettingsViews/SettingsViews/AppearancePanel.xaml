@@ -8,6 +8,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="950" d:DesignWidth="640">
     <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ComboBoxStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
         <!-- 开关样式模板 -->
         <Style x:Key="ToggleSwitchStyle" TargetType="Border">
             <Setter Property="Width" Value="48"/>
@@ -18,18 +23,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="Margin" Value="0,0,15,0"/>
-        </Style>
-        <!-- 下拉框样式模板 -->
-        <Style x:Key="ComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#e6e6e6"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#2e3436"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
