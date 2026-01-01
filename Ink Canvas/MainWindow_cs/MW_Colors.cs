@@ -16,9 +16,9 @@ namespace Ink_Canvas
     {
         private int inkColor = 1;
 
-        private void ColorSwitchCheck()
+        private void ColorSwitchCheck(bool hidePanels = true)
         {
-            if (penType != 1)
+            if (hidePanels)
             {
                 HideSubPanels("color");
             }
@@ -606,7 +606,7 @@ namespace Ink_Canvas
             drawingAttributes.IsHighlighter = true;
 
             // 确保荧光笔模式切换后正确更新颜色和快捷调色板指示器
-            ColorSwitchCheck();
+            ColorSwitchCheck(false);
         }
 
         private void BtnColorBlack_Click(object sender, RoutedEventArgs e)

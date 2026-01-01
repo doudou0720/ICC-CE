@@ -157,6 +157,8 @@ namespace Ink_Canvas
         public UpdateChannel UpdateChannel { get; set; } = UpdateChannel.Release;
         [JsonProperty("skippedVersion")]
         public string SkippedVersion { get; set; } = "";
+        [JsonProperty("autoUpdatePauseUntilDate")]
+        public string AutoUpdatePauseUntilDate { get; set; } = "";
         [JsonProperty("isEnableNibMode")]
         public bool IsEnableNibMode { get; set; }
         [JsonProperty("isFoldAtStartup")]
@@ -283,6 +285,18 @@ namespace Ink_Canvas
         [JsonProperty("enablePPTButtonLongPressPageTurn")]
         public bool EnablePPTButtonLongPressPageTurn { get; set; } = true;
 
+        [JsonProperty("pptLSButtonOpacity")]
+        public double PPTLSButtonOpacity { get; set; } = 0.5;
+
+        [JsonProperty("pptRSButtonOpacity")]
+        public double PPTRSButtonOpacity { get; set; } = 0.5;
+
+        [JsonProperty("pptLBButtonOpacity")]
+        public double PPTLBButtonOpacity { get; set; } = 0.5;
+
+        [JsonProperty("pptRBButtonOpacity")]
+        public double PPTRBButtonOpacity { get; set; } = 0.5;
+
         // -- new --
 
         [JsonProperty("powerPointSupport")]
@@ -317,6 +331,12 @@ namespace Ink_Canvas
         public bool EnablePowerPointEnhancement { get; set; } = false;
         [JsonProperty("showGestureButtonInSlideShow")]
         public bool ShowGestureButtonInSlideShow { get; set; } = false;
+        [JsonProperty("skipAnimationsWhenGoNext")]
+        public bool SkipAnimationsWhenGoNext { get; set; } = false;
+        [JsonProperty("enablePPTTimeCapsule")]
+        public bool EnablePPTTimeCapsule { get; set; } = true;
+        [JsonProperty("pptTimeCapsulePosition")]
+        public int PPTTimeCapsulePosition { get; set; } = 1; 
     }
 
     public class Automation
@@ -461,6 +481,9 @@ namespace Ink_Canvas
         [JsonProperty("isSaveFullPageStrokes")]
         public bool IsSaveFullPageStrokes;
 
+        [JsonProperty("isSaveStrokesAsXML")]
+        public bool IsSaveStrokesAsXML { get; set; } = false;
+
         [JsonProperty("isAutoEnterAnnotationAfterKillHite")]
         public bool IsAutoEnterAnnotationAfterKillHite { get; set; }
 
@@ -604,7 +627,7 @@ namespace Ink_Canvas
         public bool EnableUIAccessTopMost { get; set; } = false;
 
         [JsonProperty("windowMode")]
-        public bool WindowMode { get; set; } = true; 
+        public bool WindowMode { get; set; } = true;
     }
 
     public class InkToShape
@@ -624,7 +647,7 @@ namespace Ink_Canvas
         [JsonProperty("lineStraightenSensitivity")]
         public double LineStraightenSensitivity { get; set; } = 0.20;
         [JsonProperty("lineNormalizationThreshold")]
-        public double LineNormalizationThreshold { get; set; } = 0.5; 
+        public double LineNormalizationThreshold { get; set; } = 0.5;
     }
 
     public class RandSettings

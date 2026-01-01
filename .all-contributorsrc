@@ -16,7 +16,8 @@
       "contributions": [
         "maintenance",
         "doc",
-        "code"
+        "code",
+        "design"
       ]
     },
     {
@@ -36,7 +37,10 @@
       "contributions": [
         "blog",
         "doc",
-        "design"
+        "design",
+        "test",
+        "tutorial",
+        "video"
       ]
     },
     {
@@ -97,6 +101,15 @@
       "profile": "https://github.com/Tayasui-rainnya",
       "contributions": [
         "design"
+      ]
+    },
+    {
+      "login": "doudou0720",
+      "name": "doudou0720",
+      "avatar_url": "https://avatars.githubusercontent.com/u/98651603?v=4",
+      "profile": "https://github.com/doudou0720",
+      "contributions": [
+        "code"
       ]
     }
   ]

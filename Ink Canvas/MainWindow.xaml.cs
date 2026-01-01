@@ -28,15 +28,14 @@ using Application = System.Windows.Application;
 using Brushes = System.Windows.Media.Brushes;
 using Button = System.Windows.Controls.Button;
 using Cursor = System.Windows.Input.Cursor;
-using MouseEventArgs = System.Windows.Input.MouseEventArgs;
-using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using VerticalAlignment = System.Windows.VerticalAlignment;
 using Cursors = System.Windows.Input.Cursors;
 using DpiChangedEventArgs = System.Windows.DpiChangedEventArgs;
 using File = System.IO.File;
 using GroupBox = System.Windows.Controls.GroupBox;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Point = System.Windows.Point;
+using VerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace Ink_Canvas
 {
@@ -63,10 +62,15 @@ namespace Ink_Canvas
         // 悬浮窗拦截管理器
         private FloatingWindowInterceptorManager _floatingWindowInterceptorManager;
 
+        // 窗口概览模型
+        private WindowOverviewModel _windowOverviewModel;
 
         // 设置面板相关状态
         private bool userChangedNoFocusModeInSettings;
         private bool isTemporarilyDisablingNoFocusMode = false;
+
+        // 全屏处理状态标志
+        public bool isFullScreenApplied = false;
 
 
 
@@ -263,12 +267,9 @@ namespace Ink_Canvas
             Activated += Window_Activated;
             Deactivated += Window_Deactivated;
 
-            // 为浮动栏按钮添加触摸事件支持
-            AddTouchSupportToFloatingBarButtons();
-
             // 为滑块控件添加触摸事件支持
             AddTouchSupportToSliders();
-            
+
             // 初始化计时器控件事件
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -277,24 +278,24 @@ namespace Ink_Canvas
                     TimerControl.ShowMinimizedRequested += TimerControl_ShowMinimizedRequested;
                     TimerControl.HideMinimizedRequested += TimerControl_HideMinimizedRequested;
                 }
-                
+
                 if (MinimizedTimerControl != null && TimerControl != null)
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
                 }
             }), DispatcherPriority.Loaded);
         }
-        
+
         private void TimerControl_ShowMinimizedRequested(object sender, EventArgs e)
         {
             var timerContainer = FindName("TimerContainer") as FrameworkElement;
             var minimizedContainer = FindName("MinimizedTimerContainer") as FrameworkElement;
-            
+
             if (timerContainer != null && minimizedContainer != null)
             {
                 double x = 0, y = 0;
-                
-                if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center && 
+
+                if (timerContainer.HorizontalAlignment == HorizontalAlignment.Center &&
                     timerContainer.VerticalAlignment == VerticalAlignment.Center)
                 {
                     var timerPoint = timerContainer.TransformToAncestor(this).Transform(new Point(0, 0));
@@ -307,34 +308,94 @@ namespace Ink_Canvas
                     x = double.IsNaN(timerMargin.Left) ? 0 : timerMargin.Left;
                     y = double.IsNaN(timerMargin.Top) ? 0 : timerMargin.Top;
                 }
-                
+
                 minimizedContainer.Margin = new Thickness(x, y, 0, 0);
                 minimizedContainer.HorizontalAlignment = HorizontalAlignment.Left;
                 minimizedContainer.VerticalAlignment = VerticalAlignment.Top;
-                
+
                 timerContainer.Margin = new Thickness(x, y, 0, 0);
                 timerContainer.HorizontalAlignment = HorizontalAlignment.Left;
                 timerContainer.VerticalAlignment = VerticalAlignment.Top;
-                
+
                 timerContainer.Visibility = Visibility.Collapsed;
                 minimizedContainer.Visibility = Visibility.Visible;
             }
         }
-        
+
         private void TimerControl_HideMinimizedRequested(object sender, EventArgs e)
         {
             var timerContainer = FindName("TimerContainer") as FrameworkElement;
             var minimizedContainer = FindName("MinimizedTimerContainer") as FrameworkElement;
-            
+
             if (timerContainer != null && minimizedContainer != null)
             {
                 minimizedContainer.Visibility = Visibility.Collapsed;
                 timerContainer.Visibility = Visibility.Visible;
-                
+
                 if (TimerControl != null)
                 {
                     TimerControl.UpdateActivityTime();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 根据DPI缩放因子调整TimerContainer的尺寸
+        /// </summary>
+        private void AdjustTimerContainerSize()
+        {
+            try
+            {
+                var timerContainer = FindName("TimerContainer") as FrameworkElement;
+                if (timerContainer == null) return;
+
+                var source = System.Windows.PresentationSource.FromVisual(this);
+                if (source != null)
+                {
+                    var dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+                    var dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+
+                    // 如果DPI缩放因子大于1.25，则适当缩小容器尺寸
+                    // 这样可以确保在高DPI屏幕上，计时器窗口的物理像素大小不会过大
+                    if (dpiScaleX > 1.25 || dpiScaleY > 1.25)
+                    {
+                        // 使用较小的缩放因子来限制最大尺寸
+                        double scaleFactor = Math.Min(dpiScaleX, dpiScaleY);
+
+                        // 计算目标物理像素大小（约1350x750物理像素）
+                        // 然后转换为逻辑像素
+                        double targetPhysicalWidth = 1350;
+                        double targetPhysicalHeight = 750;
+
+                        // 转换为逻辑像素
+                        double maxWidth = targetPhysicalWidth / scaleFactor;
+                        double maxHeight = targetPhysicalHeight / scaleFactor;
+
+                        // 确保不会小于原始尺寸的70%
+                        maxWidth = Math.Max(maxWidth, 900 * 0.7);
+                        maxHeight = Math.Max(maxHeight, 500 * 0.7);
+
+                        // 应用调整后的尺寸
+                        timerContainer.Width = maxWidth;
+                        timerContainer.Height = maxHeight;
+                    }
+                    else
+                    {
+                        // 标准DPI，使用原始尺寸
+                        timerContainer.Width = 900;
+                        timerContainer.Height = 500;
+                    }
+                }
+                else
+                {
+                    // 无法获取DPI信息，使用原始尺寸
+                    timerContainer.Width = 900;
+                    timerContainer.Height = 500;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"调整TimerContainer尺寸失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -532,6 +593,17 @@ namespace Ink_Canvas
                 StartPPTMonitoring();
             }
 
+            // 初始化窗口概览模型
+            try
+            {
+                _windowOverviewModel = new WindowOverviewModel();
+                LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化窗口概览模型失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
             // 如果启用PowerPoint联动增强功能，启动进程守护
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
             {
@@ -640,7 +712,7 @@ namespace Ink_Canvas
             // 初始化UIA置顶开关
             ToggleSwitchUIAccessTopMost.IsOn = Settings.Advanced.EnableUIAccessTopMost;
             UpdateUIAccessTopMostVisibility();
-            
+
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
 
             // 初始化剪贴板监控
@@ -689,7 +761,7 @@ namespace Ink_Canvas
                     }
                 }), DispatcherPriority.Loaded);
             }
-            
+
             // 初始化计时器控件关联
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -697,22 +769,56 @@ namespace Ink_Canvas
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
                     
+                    // 设置PPT时间胶囊的父控件
+                    if (PPTTimeCapsule != null)
+                    {
+                        PPTTimeCapsule.SetParentControl(TimerControl);
+                    }
+
                     TimerControl.ShowMinimizedRequested += (s, args) =>
                     {
                         if (TimerContainer != null && MinimizedTimerContainer != null && MinimizedTimerControl != null)
                         {
                             TimerContainer.Visibility = Visibility.Collapsed;
-                            MinimizedTimerContainer.Visibility = Visibility.Visible;
-                            MinimizedTimerControl.Visibility = Visibility.Visible;
+                            
+                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                                PPTTimeCapsule != null)
+                            {
+                                MinimizedTimerContainer.Visibility = Visibility.Collapsed;
+                            }
+                            else
+                            {
+                                MinimizedTimerContainer.Visibility = Visibility.Visible;
+                                MinimizedTimerControl.Visibility = Visibility.Visible;
+                            }
                         }
                     };
-                    
+
                     TimerControl.HideMinimizedRequested += (s, args) =>
                     {
                         if (MinimizedTimerContainer != null && MinimizedTimerControl != null)
                         {
                             MinimizedTimerContainer.Visibility = Visibility.Collapsed;
                             MinimizedTimerControl.Visibility = Visibility.Collapsed;
+                        }
+                        
+                        // 如果启用了PPT时间胶囊，停止倒计时显示
+                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && PPTTimeCapsule != null)
+                        {
+                            PPTTimeCapsule.StopCountdown();
+                        }
+                    };
+                    
+                    // 监听计时器完成事件
+                    TimerControl.TimerCompleted += (s, args) =>
+                    {
+                        // 如果启用了PPT时间胶囊且在PPT模式下，触发完成动画
+                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                            PPTTimeCapsule != null)
+                        {
+                            PPTTimeCapsule.OnTimerCompleted();
                         }
                     };
                 }
@@ -750,6 +856,16 @@ namespace Ink_Canvas
             if (e.OldDpi.DpiScaleX != e.NewDpi.DpiScaleX && e.OldDpi.DpiScaleY != e.NewDpi.DpiScaleY && Settings.Advanced.IsEnableDPIChangeDetection)
             {
                 ShowNotification($"系统DPI发生变化，从 {e.OldDpi.DpiScaleX}x{e.OldDpi.DpiScaleY} 变化为 {e.NewDpi.DpiScaleX}x{e.NewDpi.DpiScaleY}");
+
+                // 如果TimerContainer可见，调整其尺寸
+                Dispatcher.Invoke(() =>
+                {
+                    var timerContainer = FindName("TimerContainer") as FrameworkElement;
+                    if (timerContainer != null && timerContainer.Visibility == Visibility.Visible)
+                    {
+                        AdjustTimerContainerSize();
+                    }
+                });
 
                 new Thread(() =>
                 {
@@ -799,7 +915,7 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"关闭快抽悬浮按钮时出错: {ex.Message}", LogHelper.LogType.Error);
             }
-            
+
             if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
             {
                 // 第一个确认对话框
@@ -892,6 +1008,13 @@ namespace Ink_Canvas
                 _floatingWindowInterceptorManager = null;
             }
 
+            // 清理窗口概览模型
+            if (_windowOverviewModel != null)
+            {
+                _windowOverviewModel.Dispose();
+                _windowOverviewModel = null;
+            }
+
             // 停止置顶维护定时器
             StopTopmostMaintenance();
 
@@ -968,6 +1091,24 @@ namespace Ink_Canvas
 
         private async void AutoUpdate()
         {
+            if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
+            {
+                if (DateTime.TryParse(Settings.Startup.AutoUpdatePauseUntilDate, out DateTime pauseUntilDate))
+                {
+                    if (DateTime.Now < pauseUntilDate)
+                    {
+                        LogHelper.WriteLogToFile($"AutoUpdate | 自动更新已暂停，直到 {pauseUntilDate:yyyy-MM-dd}");
+                        return;
+                    }
+                    else
+                    {
+                        LogHelper.WriteLogToFile($"AutoUpdate | 暂停期已过，恢复自动更新检查");
+                        Settings.Startup.AutoUpdatePauseUntilDate = "";
+                        SaveSettingsToFile();
+                    }
+                }
+            }
+
             // 清除之前的更新状态，确保使用新通道重新检查
             AvailableLatestVersion = null;
             AvailableLatestLineGroup = null;
@@ -990,6 +1131,9 @@ namespace Ink_Canvas
 
                 // 检测到新版本
                 LogHelper.WriteLogToFile($"AutoUpdate | New version available: {AvailableLatestVersion}");
+
+                // 通过 Windows 系统通知提示有新版本
+                WindowsNotificationHelper.ShowNewVersionToast(AvailableLatestVersion);
 
                 // 检查是否是用户选择跳过的版本
                 if (!string.IsNullOrEmpty(Settings.Startup.SkippedVersion) &&
@@ -1953,7 +2097,7 @@ namespace Ink_Canvas
         private static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
         [DllImport("kernel32.dll")]
         private static extern uint GetCurrentProcessId();
-        
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
 
@@ -2008,16 +2152,16 @@ namespace Ink_Canvas
         {
             if (nCode >= 0)
             {
-                if (Settings.Advanced.IsNoFocusMode && 
-                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                if (Settings.Advanced.IsNoFocusMode &&
+                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
                     currentMode == 0)
                 {
                     KBDLLHOOKSTRUCT hookStruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
                     uint vkCode = hookStruct.vkCode;
-                    
+
                     if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
                     {
-                        if (vkCode == 0x22 || vkCode == 0x28 || vkCode == 0x27 || 
+                        if (vkCode == 0x22 || vkCode == 0x28 || vkCode == 0x27 ||
                             vkCode == 0x4E || vkCode == 0x20)
                         {
                             Dispatcher.BeginInvoke(new Action(() =>
@@ -2026,7 +2170,7 @@ namespace Ink_Canvas
                             }), DispatcherPriority.Normal);
                             return (IntPtr)1;
                         }
-                        else if (vkCode == 0x21 || vkCode == 0x26 || vkCode == 0x25 || 
+                        else if (vkCode == 0x21 || vkCode == 0x26 || vkCode == 0x25 ||
                                  vkCode == 0x50)
                         {
                             Dispatcher.BeginInvoke(new Action(() =>
@@ -2069,10 +2213,10 @@ namespace Ink_Canvas
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            
-            bool shouldBeNoFocus = isTemporarilyDisablingNoFocusMode ? 
+
+            bool shouldBeNoFocus = isTemporarilyDisablingNoFocusMode ?
                 false : Settings.Advanced.IsNoFocusMode;
-            
+
             if (shouldBeNoFocus)
             {
                 SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE);
@@ -2182,8 +2326,8 @@ namespace Ink_Canvas
 
         public void ResumeTopmostMaintenance()
         {
-            if (Settings.Advanced.IsAlwaysOnTop && 
-                Settings.Advanced.IsNoFocusMode && 
+            if (Settings.Advanced.IsAlwaysOnTop &&
+                Settings.Advanced.IsNoFocusMode &&
                 !Settings.Advanced.EnableUIAccessTopMost)
             {
                 if (topmostMaintenanceTimer != null && !isTopmostMaintenanceEnabled)
@@ -2283,12 +2427,12 @@ namespace Ink_Canvas
             var toggle = sender as ToggleSwitch;
             Settings.Advanced.IsNoFocusMode = toggle != null && toggle.IsOn;
             SaveSettingsToFile();
-                
+
             if (isTemporarilyDisablingNoFocusMode)
             {
                 isTemporarilyDisablingNoFocusMode = false;
             }
-            
+
             ApplyNoFocusMode();
 
             // 如果启用了窗口置顶，需要重新应用置顶设置以处理无焦点模式的变化
@@ -2319,13 +2463,13 @@ namespace Ink_Canvas
             if (!isLoaded) return;
             var toggle = sender as ToggleSwitch;
             bool newValue = toggle != null && toggle.IsOn;
-            
+
             Settings.Advanced.EnableUIAccessTopMost = newValue;
             SaveSettingsToFile();
             ApplyUIAccessTopMost();
-            
+
             App.IsUIAccessTopMostEnabled = newValue;
-        
+
         }
 
         private void Window_Activated(object sender, EventArgs e)
@@ -2557,6 +2701,55 @@ namespace Ink_Canvas
             }
         }
 
+        private void ToggleSwitchEnablePPTTimeCapsule_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                var toggle = sender as ToggleSwitch;
+                Settings.PowerPointSettings.EnablePPTTimeCapsule = toggle != null && toggle.IsOn;
+                SaveSettingsToFile();
+
+                // 如果当前在PPT放映模式，需要立即更新时间胶囊和快捷面板的显示状态
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    UpdatePPTTimeCapsuleVisibility();
+                    UpdatePPTQuickPanelVisibility();
+                }
+
+                LogHelper.WriteLogToFile($"PPT时间显示胶囊已{(Settings.PowerPointSettings.EnablePPTTimeCapsule ? "启用" : "禁用")}", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换PPT时间显示胶囊时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ComboBoxPPTTimeCapsulePosition_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (ComboBoxPPTTimeCapsulePosition != null)
+                {
+                    Settings.PowerPointSettings.PPTTimeCapsulePosition = ComboBoxPPTTimeCapsulePosition.SelectedIndex;
+                    SaveSettingsToFile();
+
+                    // 如果当前在PPT放映模式，需要立即更新时间胶囊的位置
+                    if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                    {
+                        UpdatePPTTimeCapsulePosition();
+                    }
+
+                    LogHelper.WriteLogToFile($"PPT时间胶囊位置已更改为: {ComboBoxPPTTimeCapsulePosition.SelectedIndex}", LogHelper.LogType.Event);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更改PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         /// <summary>
         /// 更新PPT模式下手势按钮的显示状态
         /// </summary>
@@ -2580,6 +2773,96 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"更新PPT模式下手势按钮显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
+
+        /// <summary>
+        /// 更新PPT时间胶囊的显示状态
+        /// </summary>
+        public void UpdatePPTTimeCapsuleVisibility()
+        {
+            try
+            {
+                if (PPTTimeCapsuleContainer == null || PPTTimeCapsule == null) return;
+
+                if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    PPTTimeCapsuleContainer.Visibility = Visibility.Visible;
+                    UpdatePPTTimeCapsulePosition();
+                }
+                else
+                {
+                    PPTTimeCapsuleContainer.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT时间胶囊显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新PPT快捷面板的显示状态
+        /// </summary>
+        public void UpdatePPTQuickPanelVisibility()
+        {
+            try
+            {
+                if (PPTQuickPanelContainer == null || PPTQuickPanel == null) return;
+
+                // 仅在PPT模式下显示
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                {
+                    PPTQuickPanelContainer.Visibility = Visibility.Visible;
+                    PPTQuickPanel?.UpdateVisibility(true);
+                }
+                else
+                {
+                    PPTQuickPanelContainer.Visibility = Visibility.Collapsed;
+                    PPTQuickPanel?.UpdateVisibility(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT快捷面板显示状态时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新PPT时间胶囊的位置
+        /// </summary>
+        private void UpdatePPTTimeCapsulePosition()
+        {
+            try
+            {
+                if (PPTTimeCapsuleContainer == null) return;
+
+                int position = Settings.PowerPointSettings.PPTTimeCapsulePosition;
+                // 0-左上角, 1-右上角, 2-顶部居中
+                switch (position)
+                {
+                    case 0: // 左上角
+                        PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Left;
+                        PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
+                        PPTTimeCapsuleContainer.Margin = new Thickness(20, 20, 0, 0);
+                        break;
+                    case 1: // 右上角
+                        PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Right;
+                        PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
+                        PPTTimeCapsuleContainer.Margin = new Thickness(0, 20, 20, 0);
+                        break;
+                    case 2: // 顶部居中
+                        PPTTimeCapsuleContainer.HorizontalAlignment = HorizontalAlignment.Center;
+                        PPTTimeCapsuleContainer.VerticalAlignment = VerticalAlignment.Top;
+                        PPTTimeCapsuleContainer.Margin = new Thickness(0, 20, 0, 0);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新PPT时间胶囊位置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         #endregion
 
 
@@ -2708,6 +2991,10 @@ namespace Ink_Canvas
                     PPTButtonRightPositionValueSlider,
                     PPTButtonLBPositionValueSlider,
                     PPTButtonRBPositionValueSlider,
+                    PPTLSButtonOpacityValueSlider,
+                    PPTRSButtonOpacityValueSlider,
+                    PPTLBButtonOpacityValueSlider,
+                    PPTRBButtonOpacityValueSlider,
                     TouchMultiplierSlider,
                     NibModeBoundsWidthSlider,
                     FingerModeBoundsWidthSlider,
@@ -3190,12 +3477,12 @@ namespace Ink_Canvas
             try
             {
                 var visibility = Settings.Advanced.IsAlwaysOnTop ? Visibility.Visible : Visibility.Collapsed;
-                
+
                 if (UIAccessTopMostPanel != null)
                 {
                     UIAccessTopMostPanel.Visibility = visibility;
                 }
-                
+
                 if (UIAccessTopMostDescription != null)
                 {
                     UIAccessTopMostDescription.Visibility = visibility;
@@ -3219,7 +3506,7 @@ namespace Ink_Canvas
                     // 检查是否以管理员权限运行
                     var identity = WindowsIdentity.GetCurrent();
                     var principal = new WindowsPrincipal(identity);
-                    
+
                     if (principal.IsInRole(WindowsBuiltInRole.Administrator))
                     {
                         try
@@ -3230,8 +3517,8 @@ namespace Ink_Canvas
                                 App.watchdogProcess.Kill();
                                 App.watchdogProcess = null;
                             }
-        
-                            
+
+
                             // 调用UIAccess DLL
                             if (Environment.Is64BitProcess)
                             {
@@ -3241,7 +3528,7 @@ namespace Ink_Canvas
                             {
                                 PrepareUIAccessX86();
                             }
-                            
+
                             App.StartWatchdogIfNeeded();
                             timerKillProcess.Start();
                         }

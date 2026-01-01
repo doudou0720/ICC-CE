@@ -1,8 +1,10 @@
 using Hardcodet.Wpf.TaskbarNotification;
 using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OSVersionExtension;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -31,6 +33,11 @@ namespace Ink_Canvas
                         string text = File.ReadAllText(App.RootPath + settingsFileName);
                         Settings = JsonConvert.DeserializeObject<Settings>(text);
 
+                        if (Settings != null)
+                        {
+                            CleanupObsoleteSettings(text);
+                        }
+
                         // 验证设置是否成功加载
                         if (Settings == null)
                         {
@@ -42,6 +49,8 @@ namespace Ink_Canvas
                                 Settings = JsonConvert.DeserializeObject<Settings>(text);
                                 if (Settings != null)
                                 {
+                                    // 清理过期配置项
+                                    CleanupObsoleteSettings(text);
                                 }
                             }
 
@@ -67,6 +76,8 @@ namespace Ink_Canvas
                                 Settings = JsonConvert.DeserializeObject<Settings>(text);
                                 if (Settings != null)
                                 {
+                                    // 清理过期配置项
+                                    CleanupObsoleteSettings(text);
                                 }
                             }
                             catch (Exception restoreEx)
@@ -95,6 +106,8 @@ namespace Ink_Canvas
                             Settings = JsonConvert.DeserializeObject<Settings>(text);
                             if (Settings != null)
                             {
+                                // 清理过期配置项
+                                CleanupObsoleteSettings(text);
                             }
                         }
                         catch (Exception restoreEx)
@@ -195,7 +208,7 @@ namespace Ink_Canvas
                     }
                 }
 
-                // ToggleSwitchIsAutoUpdateWithSilence.Visibility = Settings.Startup.IsAutoUpdate ? Visibility.Visible : Visibility.Collapsed;
+                ToggleSwitchIsAutoUpdateWithSilence.Visibility = Settings.Startup.IsAutoUpdate ? Visibility.Visible : Visibility.Collapsed;
                 if (Settings.Startup.IsAutoUpdateWithSilence)
                 {
                     ToggleSwitchIsAutoUpdateWithSilence.IsOn = true;
@@ -467,6 +480,21 @@ namespace Ink_Canvas
 
                 ToggleSwitchNotifyPreviousPage.IsOn = Settings.PowerPointSettings.IsNotifyPreviousPage;
 
+                // PPT时间显示胶囊设置
+                if (ToggleSwitchEnablePPTTimeCapsule != null)
+                {
+                    ToggleSwitchEnablePPTTimeCapsule.IsOn = Settings.PowerPointSettings.EnablePPTTimeCapsule;
+                }
+                if (ComboBoxPPTTimeCapsulePosition != null)
+                {
+                    int position = Settings.PowerPointSettings.PPTTimeCapsulePosition;
+                    if (position < 0 || position > 2)
+                    {
+                        position = 1; // 默认右上角
+                    }
+                    ComboBoxPPTTimeCapsulePosition.SelectedIndex = position;
+                }
+
                 // -- new --
                 ToggleSwitchShowPPTButton.IsOn = Settings.PowerPointSettings.ShowPPTButton;
 
@@ -539,6 +567,38 @@ namespace Ink_Canvas
                 PPTButtonLBPositionValueSlider.Value = Settings.PowerPointSettings.PPTLBButtonPosition;
 
                 PPTButtonRBPositionValueSlider.Value = Settings.PowerPointSettings.PPTRBButtonPosition;
+
+                // 初始化PPT翻页按钮透明度滑块值，根据半透明选项设置默认值
+                // 重用之前定义的sopsc和bopsc变量
+                bool isSideHalfOpacity = sopsc.Length >= 2 && sopsc[1] == '2';
+                // 如果透明度为0或未设置，根据半透明选项设置默认值
+                if (Settings.PowerPointSettings.PPTLSButtonOpacity == 0.0 ||
+                    (Settings.PowerPointSettings.PPTLSButtonOpacity == 1.0 && isSideHalfOpacity))
+                {
+                    Settings.PowerPointSettings.PPTLSButtonOpacity = isSideHalfOpacity ? 0.5 : 1.0;
+                }
+                if (Settings.PowerPointSettings.PPTRSButtonOpacity == 0.0 ||
+                    (Settings.PowerPointSettings.PPTRSButtonOpacity == 1.0 && isSideHalfOpacity))
+                {
+                    Settings.PowerPointSettings.PPTRSButtonOpacity = isSideHalfOpacity ? 0.5 : 1.0;
+                }
+                PPTLSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                PPTRSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRSButtonOpacity;
+
+                bool isBottomHalfOpacity = bopsc.Length >= 2 && bopsc[1] == '2';
+                // 如果透明度为0或未设置，根据半透明选项设置默认值
+                if (Settings.PowerPointSettings.PPTLBButtonOpacity == 0.0 ||
+                    (Settings.PowerPointSettings.PPTLBButtonOpacity == 1.0 && isBottomHalfOpacity))
+                {
+                    Settings.PowerPointSettings.PPTLBButtonOpacity = isBottomHalfOpacity ? 0.5 : 1.0;
+                }
+                if (Settings.PowerPointSettings.PPTRBButtonOpacity == 0.0 ||
+                    (Settings.PowerPointSettings.PPTRBButtonOpacity == 1.0 && isBottomHalfOpacity))
+                {
+                    Settings.PowerPointSettings.PPTRBButtonOpacity = isBottomHalfOpacity ? 0.5 : 1.0;
+                }
+                PPTLBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                PPTRBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRBButtonOpacity;
 
                 UpdatePPTBtnSlidersStatus();
 
@@ -887,20 +947,20 @@ namespace Ink_Canvas
                 ToggleSwitchUseLegacyTimerUI.IsOn = Settings.RandSettings.UseLegacyTimerUI;
                 ToggleSwitchUseNewStyleUI.IsOn = Settings.RandSettings.UseNewStyleUI;
                 ToggleSwitchEnableOvertimeCountUp.IsOn = Settings.RandSettings.EnableOvertimeCountUp;
-                
+
                 // 新点名UI设置
                 ToggleSwitchUseNewRollCallUI.IsOn = Settings.RandSettings.UseNewRollCallUI;
                 ToggleSwitchEnableMLAvoidance.IsOn = Settings.RandSettings.EnableMLAvoidance;
                 MLAvoidanceHistorySlider.Value = Settings.RandSettings.MLAvoidanceHistoryCount;
                 MLAvoidanceWeightSlider.Value = Settings.RandSettings.MLAvoidanceWeight;
-                
+
                 bool canEnableRedText = Settings.RandSettings.EnableOvertimeCountUp && Settings.RandSettings.EnableOvertimeRedText;
                 ToggleSwitchEnableOvertimeRedText.IsOn = canEnableRedText;
                 if (!canEnableRedText)
                 {
                     Settings.RandSettings.EnableOvertimeRedText = false;
                 }
-                
+
                 TimerVolumeSlider.Value = Settings.RandSettings.TimerVolume;
 
                 // 渐进提醒设置
@@ -929,16 +989,16 @@ namespace Ink_Canvas
                 ToggleSwitchUseLegacyTimerUI.IsOn = Settings.RandSettings.UseLegacyTimerUI;
                 ToggleSwitchUseNewStyleUI.IsOn = Settings.RandSettings.UseNewStyleUI;
                 ToggleSwitchEnableOvertimeCountUp.IsOn = Settings.RandSettings.EnableOvertimeCountUp;
-                
+
                 bool canEnableRedText = Settings.RandSettings.EnableOvertimeCountUp && Settings.RandSettings.EnableOvertimeRedText;
                 ToggleSwitchEnableOvertimeRedText.IsOn = canEnableRedText;
                 if (!canEnableRedText)
                 {
                     Settings.RandSettings.EnableOvertimeRedText = false;
                 }
-                
+
                 TimerVolumeSlider.Value = Settings.RandSettings.TimerVolume;
-                
+
                 // 渐进提醒设置
                 ToggleSwitchEnableProgressiveReminder.IsOn = Settings.RandSettings.EnableProgressiveReminder;
                 ProgressiveReminderVolumeSlider.Value = Settings.RandSettings.ProgressiveReminderVolume;
@@ -1054,6 +1114,8 @@ namespace Ink_Canvas
 
                 ToggleSwitchSaveFullPageStrokes.IsOn = Settings.Automation.IsSaveFullPageStrokes;
 
+                ToggleSwitchSaveStrokesAsXML.IsOn = Settings.Automation.IsSaveStrokesAsXML;
+
                 // 加载定时保存墨迹设置
                 ToggleSwitchEnableAutoSaveStrokes.IsOn = Settings.Automation.IsEnableAutoSaveStrokes;
                 // 初始化保存间隔下拉框
@@ -1148,6 +1210,103 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"加载墨迹渐隐设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <param name="userConfigJson">用户配置的JSON字符串</param>
+        private void CleanupObsoleteSettings(string userConfigJson)
+        {
+            try
+            {
+                // 创建默认配置对象
+                Settings defaultSettings = new Settings();
+
+                // 将默认配置和用户配置都序列化为JObject
+                JObject defaultConfigObj = JObject.FromObject(defaultSettings);
+                JObject userConfigObj = JObject.Parse(userConfigJson);
+
+                // 记录是否有清理操作
+                bool hasChanges = false;
+
+                // 递归比较并删除用户配置中多余的键
+                RemoveObsoleteProperties(userConfigObj, defaultConfigObj, ref hasChanges);
+
+                // 如果有清理操作，重新反序列化并保存
+                if (hasChanges)
+                {
+                    string cleanedJson = userConfigObj.ToString(Formatting.Indented);
+                    Settings = JsonConvert.DeserializeObject<Settings>(cleanedJson);
+                    SaveSettingsToFile();
+                    LogHelper.WriteLogToFile("已清理过期配置项", LogHelper.LogType.Event);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"清理过期配置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <param name="userObj">用户配置的JObject</param>
+        /// <param name="defaultObj">默认配置的JObject</param>
+        /// <param name="hasChanges">是否有变更的引用标志</param>
+        private void RemoveObsoleteProperties(JObject userObj, JObject defaultObj, ref bool hasChanges)
+        {
+            if (userObj == null || defaultObj == null)
+                return;
+
+            // 获取需要删除的键列表（避免在遍历时修改集合）
+            List<string> keysToRemove = new List<string>();
+
+            foreach (var property in userObj.Properties())
+            {
+                string propertyName = property.Name;
+
+                // 如果默认配置中不存在该属性，标记为删除
+                if (!defaultObj.ContainsKey(propertyName))
+                {
+                    keysToRemove.Add(propertyName);
+                    continue;
+                }
+
+                // 如果两个属性都是对象类型，递归比较
+                JToken userValue = property.Value;
+                JToken defaultValue = defaultObj[propertyName];
+
+                if (userValue != null && defaultValue != null)
+                {
+                    if (userValue.Type == JTokenType.Object && defaultValue.Type == JTokenType.Object)
+                    {
+                        RemoveObsoleteProperties(userValue as JObject, defaultValue as JObject, ref hasChanges);
+                    }
+                    // 处理数组中的对象（如自定义图标列表等）
+                    else if (userValue.Type == JTokenType.Array && defaultValue.Type == JTokenType.Array)
+                    {
+                        JArray userArray = userValue as JArray;
+                        JArray defaultArray = defaultValue as JArray;
+
+                        if (userArray != null && defaultArray != null && userArray.Count > 0 && defaultArray.Count > 0)
+                        {
+                            // 如果数组元素是对象，比较第一个元素的属性结构
+                            if (userArray[0].Type == JTokenType.Object && defaultArray[0].Type == JTokenType.Object)
+                            {
+                                for (int i = 0; i < userArray.Count; i++)
+                                {
+                                    if (userArray[i] is JObject userItemObj && defaultArray[0] is JObject defaultItemObj)
+                                    {
+                                        RemoveObsoleteProperties(userItemObj, defaultItemObj, ref hasChanges);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 删除标记的键
+            foreach (string key in keysToRemove)
+            {
+                userObj.Remove(key);
+                hasChanges = true;
             }
         }
     }

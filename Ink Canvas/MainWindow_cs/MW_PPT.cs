@@ -77,7 +77,7 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT State Management
-        private bool isEnteredSlideShowEndEvent; 
+        private bool isEnteredSlideShowEndEvent;
         private bool isPresentationHaveBlackSpace;
 
         // 长按翻页相关字段
@@ -93,15 +93,14 @@ namespace Ink_Canvas
         // 上次播放位置相关字段
         private int _lastPlaybackPage = 0;
         private bool _shouldNavigateToLastPage = false;
-        
+
         // 当前播放页码跟踪
         private int _currentSlideShowPosition = 0;
 
         // 页面切换防抖机制
         private DateTime _lastSlideSwitchTime = DateTime.MinValue;
         private int _pendingSlideIndex = -1;
-        private System.Timers.Timer _slideSwitchDebounceTimer;
-        private const int SlideSwitchDebounceMs = 150; 
+        private const int SlideSwitchDebounceMs = 150;
         private bool _isInkClearedByButton = false;
         #endregion
 
@@ -153,6 +152,10 @@ namespace Ink_Canvas
                 _pptUIManager.PPTRBButtonPosition = Settings.PowerPointSettings.PPTRBButtonPosition;
                 _pptUIManager.EnablePPTButtonPageClickable = Settings.PowerPointSettings.EnablePPTButtonPageClickable;
                 _pptUIManager.EnablePPTButtonLongPressPageTurn = Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn;
+                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
+                _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
 
                 LogHelper.WriteLogToFile("PPT管理器初始化完成", LogHelper.LogType.Event);
             }
@@ -525,6 +528,8 @@ namespace Ink_Canvas
         {
             try
             {
+                bool isInSlideShowWhenOpened = _pptManager?.IsInSlideShow == true;
+
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     // 在初始化墨迹管理器之前，先清理画布上的所有墨迹
@@ -547,8 +552,7 @@ namespace Ink_Canvas
                         CheckAndNotifyHiddenSlides(pres);
                     }
 
-                    // 检查自动播放设置
-                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation)
+                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation && !isInSlideShowWhenOpened)
                     {
                         CheckAndNotifyAutoPlaySettings(pres);
                     }
@@ -726,7 +730,7 @@ namespace Ink_Canvas
                     if (Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow &&
                         !Settings.Automation.IsAutoFoldInPPTSlideShow)
                     {
-                        await Task.Delay(300);
+                        await Task.Delay(600);
                         // 先进入批注模式，这会显示调色盘
                         PenIcon_Click(null, null);
                         // 然后设置颜色
@@ -767,48 +771,17 @@ namespace Ink_Canvas
                     LoadCurrentSlideInk(currentSlide);
                 });
 
+
                 if (!isFloatingBarFolded)
                 {
-                    _ = Task.Run(async () =>
+                    new Thread(() =>
                     {
-                        try
+                        Thread.Sleep(100);
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            await Task.Delay(100);
-                            
-                            await Application.Current.Dispatcher.InvokeAsync(() =>
-                            {
-                                ViewboxFloatingBar.UpdateLayout();
-                                
-                                // 如果浮动栏宽度仍未计算好，再等待一段时间
-                                if (ViewboxFloatingBar.ActualWidth <= 0)
-                                {
-                                    LogHelper.WriteLogToFile("浮动栏宽度未准备好，等待布局完成", LogHelper.LogType.Trace);
-                                }
-                            });
-                            
-                            await Task.Delay(100);
-                            
-                            await Application.Current.Dispatcher.InvokeAsync(() =>
-                            {
-                                PureViewboxFloatingBarMarginAnimationInPPTMode(false);
-                            });
-                        }
-                        catch (Exception)
-                        {
-                            
-                            try
-                            {
-                                await Task.Delay(100);
-                                await Application.Current.Dispatcher.InvokeAsync(() =>
-                                {
-                                    ViewboxFloatingBarMarginAnimation(60);
-                                });
-                            }
-                            catch (Exception)
-                            {
-                            }
-                        }
-                    });
+                            ViewboxFloatingBarMarginAnimation(60);
+                        });
+                    }).Start();
                 }
             }
             catch (Exception)
@@ -832,7 +805,7 @@ namespace Ink_Canvas
                     var totalSlides = activePresentation.Slides.Count;
 
                     // 获取之前的页码（用于保存墨迹）
-                    var previousSlide = _currentSlideShowPosition > 0 ? _currentSlideShowPosition : 
+                    var previousSlide = _currentSlideShowPosition > 0 ? _currentSlideShowPosition :
                                        (_pptManager?.GetCurrentSlideNumber() ?? 0);
 
                     if (_isInkClearedByButton)
@@ -897,7 +870,7 @@ namespace Ink_Canvas
             try
             {
                 // PPT退出时自动收纳浮动栏
-                if (!isFloatingBarFolded)
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
                 }
@@ -988,7 +961,7 @@ namespace Ink_Canvas
                         if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
                             BtnHideInkCanvas_Click(BtnHideInkCanvas, null);
                         SetCurrentToolMode(InkCanvasEditingMode.None);
-                        
+
                         UpdateCurrentToolMode("cursor");
                         SetFloatingBarHighlightPosition("cursor");
                     }
@@ -1001,8 +974,15 @@ namespace Ink_Canvas
                 await Task.Delay(100);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                    ViewboxFloatingBarMarginAnimation(-60);
+                    if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
+                    {
+                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                        ViewboxFloatingBarMarginAnimation(-60);
+                    }
+                    else
+                    {
+                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                    }
                 });
             }
             catch (Exception ex)
@@ -1023,7 +1003,10 @@ namespace Ink_Canvas
                 }
                 else if (Settings.PowerPointSettings.IsNotifyPreviousPage)
                 {
-                    ShowPreviousPageNotification(pres);
+                    if (_pptManager?.IsInSlideShow != true)
+                    {
+                        ShowPreviousPageNotification(pres);
+                    }
                 }
             }
             catch (Exception ex)
@@ -1135,7 +1118,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible) return;
+                if (_pptManager?.IsInSlideShow == true) return;
 
                 bool hasSlideTimings = false;
                 if (pres?.Slides != null)
@@ -1237,7 +1220,7 @@ namespace Ink_Canvas
                 // 重置上次播放位置相关字段
                 _lastPlaybackPage = 0;
                 _shouldNavigateToLastPage = false;
-                
+
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
 
@@ -1289,7 +1272,7 @@ namespace Ink_Canvas
                 if (currentSlideIndex > 0 && currentSlideIndex != newSlideIndex)
                 {
                     bool canWrite = _singlePPTInkManager?.CanWriteInk(currentSlideIndex) == true;
-                    
+
                     if (canWrite && inkCanvas.Strokes.Count > 0)
                     {
                         _singlePPTInkManager?.SaveCurrentSlideStrokes(currentSlideIndex, inkCanvas.Strokes);
@@ -1304,7 +1287,7 @@ namespace Ink_Canvas
 
                 // 加载新页面的墨迹
                 StrokeCollection newStrokes = _singlePPTInkManager?.SwitchToSlide(newSlideIndex, null);
-                
+
                 if (newStrokes != null && newStrokes.Count > 0)
                 {
                     inkCanvas.Strokes.Add(newStrokes);
@@ -1440,7 +1423,7 @@ namespace Ink_Canvas
                 try
                 {
                     var previousSlideBeforeNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                    
+
                     StrokeCollection strokesToSave = null;
                     if (previousSlideBeforeNavigate > 0 && inkCanvas.Strokes.Count > 0)
                     {
@@ -1450,13 +1433,13 @@ namespace Ink_Canvas
                     if (_pptManager?.TryNavigatePrevious() == true)
                     {
                         var currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        
+
                         if (previousSlideBeforeNavigate == currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
                         {
                             Thread.Sleep(50);
                             currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         }
-                        
+
                         if (previousSlideBeforeNavigate != currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
                         {
                             if (inkCanvas.Strokes.Count > 0)
@@ -1527,23 +1510,25 @@ namespace Ink_Canvas
                 try
                 {
                     var previousSlideBeforeNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                    
+
                     StrokeCollection strokesToSave = null;
                     if (previousSlideBeforeNavigate > 0 && inkCanvas.Strokes.Count > 0)
                     {
                         strokesToSave = inkCanvas.Strokes.Clone();
                     }
 
-                    if (_pptManager?.TryNavigateNext() == true)
+                    var skipAnimations = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
+
+                    if (_pptManager?.TryNavigateNext(skipAnimations: skipAnimations) == true)
                     {
                         var currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        
+
                         if (previousSlideBeforeNavigate == currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
                         {
                             Thread.Sleep(50);
                             currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         }
-                        
+
                         if (previousSlideBeforeNavigate != currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
                         {
                             if (inkCanvas.Strokes.Count > 0)
@@ -1767,8 +1752,15 @@ namespace Ink_Canvas
                 SetCurrentToolMode(InkCanvasEditingMode.None);
 
                 await Task.Delay(150);
-                // PPT退出时自动收纳，使用收纳状态的边距动画
-                ViewboxFloatingBarMarginAnimation(-60);
+
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
+                {
+                    ViewboxFloatingBarMarginAnimation(-60);
+                }
+                else
+                {
+                    ViewboxFloatingBarMarginAnimation(100, true);
+                }
             }
             catch (Exception ex)
             {
@@ -1784,9 +1776,15 @@ namespace Ink_Canvas
                 // 异常情况下也手动处理自动收纳
                 await HandleManualSlideShowEnd();
 
-                // 异常情况下也要自动收纳，使用收纳状态的边距动画
                 await Task.Delay(150);
-                ViewboxFloatingBarMarginAnimation(-60);
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
+                {
+                    ViewboxFloatingBarMarginAnimation(-60);
+                }
+                else
+                {
+                    ViewboxFloatingBarMarginAnimation(100, true);
+                }
             }
         }
 
@@ -1798,7 +1796,7 @@ namespace Ink_Canvas
             try
             {
                 // PPT退出时自动收纳浮动栏
-                if (!isFloatingBarFolded)
+                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
                 }

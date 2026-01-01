@@ -11,6 +11,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/InkCanvasForClass/community)
 ![GitHub forks](https://img.shields.io/github/forks/InkCanvasForClass/community)
 [![All Contributors](https://img.shields.io/github/all-contributors/InkCanvasForClass/community?color=ee8449)](#贡献者)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/InkCanvasForClass/community)
 
 [![Discord](https://img.shields.io/discord/1383039050184917053?label=Discord&logo=discord)](https://discord.gg/ahj7eJWhEG)
 [![QQ](https://img.shields.io/badge/-1054377349-white?logo=qq&label=QQ)](https://qm.qq.com/q/qo32AclNh6)
@@ -75,9 +76,9 @@
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/CJKmkp"><img src="https://avatars.githubusercontent.com/u/113243675?v=4?s=100" width="100px;" alt="CJK_mkp"/><br /><sub><b>CJK_mkp</b></sub></a><br /><a href="#maintenance-CJKmkp" title="Maintenance">🚧</a> <a href="#doc-CJKmkp" title="Documentation">📖</a> <a href="#code-CJKmkp" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/CJKmkp"><img src="https://avatars.githubusercontent.com/u/113243675?v=4?s=100" width="100px;" alt="CJK_mkp"/><br /><sub><b>CJK_mkp</b></sub></a><br /><a href="#maintenance-CJKmkp" title="Maintenance">🚧</a> <a href="#doc-CJKmkp" title="Documentation">📖</a> <a href="#code-CJKmkp" title="Code">💻</a> <a href="#design-CJKmkp" title="Design">🎨</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/CreeperAWA"><img src="https://avatars.githubusercontent.com/u/134939494?v=4?s=100" width="100px;" alt="CreeperAWA"/><br /><sub><b>CreeperAWA</b></sub></a><br /><a href="#code-CreeperAWA" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/2-2-3-trimethylpentane"><img src="https://avatars.githubusercontent.com/u/141403762?v=4?s=100" width="100px;" alt="2,2,3-三甲基戊烷"/><br /><sub><b>2,2,3-三甲基戊烷</b></sub></a><br /><a href="#blog-2-2-3-trimethylpentane" title="Blogposts">📝</a> <a href="#doc-2-2-3-trimethylpentane" title="Documentation">📖</a> <a href="#design-2-2-3-trimethylpentane" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/2-2-3-trimethylpentane"><img src="https://avatars.githubusercontent.com/u/141403762?v=4?s=100" width="100px;" alt="2,2,3-三甲基戊烷"/><br /><sub><b>2,2,3-三甲基戊烷</b></sub></a><br /><a href="#blog-2-2-3-trimethylpentane" title="Blogposts">📝</a> <a href="#doc-2-2-3-trimethylpentane" title="Documentation">📖</a> <a href="#design-2-2-3-trimethylpentane" title="Design">🎨</a> <a href="#test-2-2-3-trimethylpentane" title="Tests">⚠️</a> <a href="#tutorial-2-2-3-trimethylpentane" title="Tutorials">✅</a> <a href="#video-2-2-3-trimethylpentane" title="Videos">📹</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Alan-CRL"><img src="https://avatars.githubusercontent.com/u/92425617?v=4?s=100" width="100px;" alt="Alan-CRL"/><br /><sub><b>Alan-CRL</b></sub></a><br /><a href="#code-Alan-CRL" title="Code">💻</a> <a href="#infra-Alan-CRL" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#doc-Alan-CRL" title="Documentation">📖</a> <a href="#financial-Alan-CRL" title="Financial">💵</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/MKStoler1024"><img src="https://avatars.githubusercontent.com/u/158786854?v=4?s=100" width="100px;" alt="MKStoler1024"/><br /><sub><b>MKStoler1024</b></sub></a><br /><a href="#doc-MKStoler1024" title="Documentation">📖</a> <a href="#code-MKStoler1024" title="Code">💻</a> <a href="#design-MKStoler1024" title="Design">🎨</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/awesome-iwb"><img src="https://avatars.githubusercontent.com/u/184760810?v=4?s=100" width="100px;" alt="Awesome Iwb"/><br /><sub><b>Awesome Iwb</b></sub></a><br /><a href="#doc-awesome-iwb" title="Documentation">📖</a></td>
@@ -86,6 +87,7 @@
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://blog.jursin.top"><img src="https://avatars.githubusercontent.com/u/127487914?v=4?s=100" width="100px;" alt="Jursin"/><br /><sub><b>Jursin</b></sub></a><br /><a href="#design-Jursin" title="Design">🎨</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Tayasui-rainnya"><img src="https://avatars.githubusercontent.com/u/156585442?v=4?s=100" width="100px;" alt="tayasui rainnya!"/><br /><sub><b>tayasui rainnya!</b></sub></a><br /><a href="#design-Tayasui-rainnya" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/doudou0720"><img src="https://avatars.githubusercontent.com/u/98651603?v=4?s=100" width="100px;" alt="doudou0720"/><br /><sub><b>doudou0720</b></sub></a><br /><a href="#code-doudou0720" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

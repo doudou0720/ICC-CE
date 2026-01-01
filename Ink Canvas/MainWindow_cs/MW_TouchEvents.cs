@@ -96,52 +96,42 @@ namespace Ink_Canvas
                 }
                 else if (originalElement is MediaElement originalMedia)
                 {
-                    var clonedMedia = new MediaElement();
-
-                    // 复制媒体属性
-                    clonedMedia.Source = originalMedia.Source;
-                    clonedMedia.Width = originalMedia.Width;
-                    clonedMedia.Height = originalMedia.Height;
-                    clonedMedia.Name = originalMedia.Name;
-                    clonedMedia.IsHitTestVisible = originalMedia.IsHitTestVisible;
-                    clonedMedia.Focusable = originalMedia.Focusable;
+                    var clonedMedia = new MediaElement
+                    {
+                        Source = originalMedia.Source,
+                        Width = originalMedia.Width,
+                        Height = originalMedia.Height,
+                        Name = originalMedia.Name,
+                        IsHitTestVisible = originalMedia.IsHitTestVisible,
+                        Focusable = originalMedia.Focusable,
+                        RenderTransform = originalMedia.RenderTransform?.Clone()
+                    };
 
                     // 复制位置
                     InkCanvas.SetLeft(clonedMedia, InkCanvas.GetLeft(originalMedia));
                     InkCanvas.SetTop(clonedMedia, InkCanvas.GetTop(originalMedia));
 
-                    // 复制变换
-                    if (originalMedia.RenderTransform != null)
-                    {
-                        clonedMedia.RenderTransform = originalMedia.RenderTransform.Clone();
-                    }
-
                     return clonedMedia;
                 }
                 else if (originalElement is Border originalBorder)
                 {
-                    var clonedBorder = new Border();
-
-                    // 复制边框属性
-                    clonedBorder.Width = originalBorder.Width;
-                    clonedBorder.Height = originalBorder.Height;
-                    clonedBorder.Name = originalBorder.Name;
-                    clonedBorder.IsHitTestVisible = originalBorder.IsHitTestVisible;
-                    clonedBorder.Focusable = originalBorder.Focusable;
-                    clonedBorder.Background = originalBorder.Background;
-                    clonedBorder.BorderBrush = originalBorder.BorderBrush;
-                    clonedBorder.BorderThickness = originalBorder.BorderThickness;
-                    clonedBorder.CornerRadius = originalBorder.CornerRadius;
+                    var clonedBorder = new Border
+                    {
+                        Width = originalBorder.Width,
+                        Height = originalBorder.Height,
+                        Name = originalBorder.Name,
+                        IsHitTestVisible = originalBorder.IsHitTestVisible,
+                        Focusable = originalBorder.Focusable,
+                        Background = originalBorder.Background,
+                        BorderBrush = originalBorder.BorderBrush,
+                        BorderThickness = originalBorder.BorderThickness,
+                        CornerRadius = originalBorder.CornerRadius,
+                        RenderTransform = originalBorder.RenderTransform?.Clone()
+                    };
 
                     // 复制位置
                     InkCanvas.SetLeft(clonedBorder, InkCanvas.GetLeft(originalBorder));
                     InkCanvas.SetTop(clonedBorder, InkCanvas.GetTop(originalBorder));
-
-                    // 复制变换
-                    if (originalBorder.RenderTransform != null)
-                    {
-                        clonedBorder.RenderTransform = originalBorder.RenderTransform.Clone();
-                    }
 
                     return clonedBorder;
                 }
@@ -221,17 +211,6 @@ namespace Ink_Canvas
 
         private void MainWindow_TouchDown(object sender, TouchEventArgs e)
         {
-            // 检查触摸是否发生在浮动栏区域，如果是则允许事件传播到浮动栏按钮
-            var touchPoint = e.GetTouchPoint(this);
-            var floatingBarBounds = ViewboxFloatingBar.TransformToAncestor(this).TransformBounds(
-                new Rect(0, 0, ViewboxFloatingBar.ActualWidth, ViewboxFloatingBar.ActualHeight));
-
-            // 如果触摸发生在浮动栏区域，不阻止事件传播，让浮动栏按钮能够接收触摸事件
-            if (floatingBarBounds.Contains(touchPoint.Position))
-            {
-                // 不设置 ViewboxFloatingBar.IsHitTestVisible = false，让浮动栏按钮能够接收触摸事件
-                return;
-            }
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
                 || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
@@ -310,33 +289,11 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile("保持当前线擦模式");
                 }
             }
-            SetCursorBasedOnEditingMode(inkCanvas);
-
             inkCanvas.CaptureStylus();
             ViewboxFloatingBar.IsHitTestVisible = false;
             BlackboardUIGridForInkReplay.IsHitTestVisible = false;
 
-            // 确保手写笔模式下显示光标
-            if (Settings.Canvas.IsShowCursor)
-            {
-                inkCanvas.ForceCursor = true;
-                inkCanvas.UseCustomCursor = true;
-
-                // 根据当前编辑模式设置不同的光标
-                if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint)
-                {
-                    inkCanvas.Cursor = Cursors.Arrow;
-                }
-                else if (inkCanvas.EditingMode == InkCanvasEditingMode.Ink)
-                {
-                    var sri = Application.GetResourceStream(new Uri("Resources/Cursors/Pen.cur", UriKind.Relative));
-                    if (sri != null)
-                        inkCanvas.Cursor = new Cursor(sri.Stream);
-                }
-
-                // 强制显示光标
-                System.Windows.Forms.Cursor.Show();
-            }
+            SetCursorBasedOnEditingMode(inkCanvas);
 
             if (inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint
                 || inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke
@@ -437,6 +394,7 @@ namespace Ink_Canvas
             inkCanvas.ReleaseStylusCapture();
             ViewboxFloatingBar.IsHitTestVisible = true;
             BlackboardUIGridForInkReplay.IsHitTestVisible = true;
+            SetCursorBasedOnEditingMode(inkCanvas);
         }
 
         private void MainWindow_StylusMove(object sender, StylusEventArgs e)
@@ -460,13 +418,7 @@ namespace Ink_Canvas
                 }
                 catch { }
 
-                // 确保手写笔移动时光标保持可见
-                if (Settings.Canvas.IsShowCursor)
-                {
-                    inkCanvas.ForceCursor = true;
-                    inkCanvas.UseCustomCursor = true;
-                    System.Windows.Forms.Cursor.Show();
-                }
+                SetCursorBasedOnEditingMode(inkCanvas);
 
                 var strokeVisual = GetStrokeVisual(e.StylusDevice.Id);
                 var stylusPointCollection = e.GetStylusPoints(this);
@@ -483,8 +435,8 @@ namespace Ink_Canvas
 
             var strokeVisual = new StrokeVisual(inkCanvas.DefaultDrawingAttributes.Clone());
             StrokeVisualList[id] = strokeVisual;
-            StrokeVisualList[id] = strokeVisual;
-            var visualCanvas = new VisualCanvas(strokeVisual);
+            var visualCanvas = new VisualCanvas();
+            strokeVisual.SetVisualCanvas(visualCanvas);
             VisualCanvasList[id] = visualCanvas;
             inkCanvas.Children.Add(visualCanvas);
 
@@ -551,7 +503,6 @@ namespace Ink_Canvas
             }
             if (inkCanvas.EditingMode == InkCanvasEditingMode.Select)
             {
-                dec.Add(e.TouchDevice.Id);
                 return;
             }
             if (inkCanvas.EditingMode == InkCanvasEditingMode.Ink)
@@ -579,7 +530,7 @@ namespace Ink_Canvas
             return value;
         }
 
-        private void inkCanvas_PreviewTouchDown(object sender, TouchEventArgs e)
+        private void InkCanvas_PreviewTouchDown(object sender, TouchEventArgs e)
         {
             inkCanvas.CaptureTouch(e.TouchDevice);
             ViewboxFloatingBar.IsHitTestVisible = false;
@@ -606,11 +557,11 @@ namespace Ink_Canvas
             }
         }
 
-        private void inkCanvas_PreviewTouchMove(object sender, TouchEventArgs e)
+        private void InkCanvas_PreviewTouchMove(object sender, TouchEventArgs e)
         {
         }
 
-        private void inkCanvas_PreviewTouchUp(object sender, TouchEventArgs e)
+        private void InkCanvas_PreviewTouchUp(object sender, TouchEventArgs e)
         {
             inkCanvas.ReleaseAllTouchCaptures();
             ViewboxFloatingBar.IsHitTestVisible = true;
@@ -631,6 +582,7 @@ namespace Ink_Canvas
             if (dec.Count == 0)
             {
                 isSingleFingerDragMode = false;
+                isWaitUntilNextTouchDown = false;
                 if (drawingShapeMode == 0
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke
@@ -691,12 +643,12 @@ namespace Ink_Canvas
                 }
         }
 
-        private void inkCanvas_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
+        private void InkCanvas_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
             e.Mode = ManipulationModes.All;
         }
 
-        private void inkCanvas_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e) { }
+        private void InkCanvas_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e) { }
 
         private void Main_Grid_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
@@ -707,7 +659,7 @@ namespace Ink_Canvas
                     dec.Clear();
                 }
                 isSingleFingerDragMode = false;
-                
+
                 if (drawingShapeMode == 0
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint
                     && inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke
@@ -722,14 +674,14 @@ namespace Ink_Canvas
         private void Main_Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
             if (isInMultiTouchMode || !Settings.Gesture.IsEnableTwoFingerGesture) return;
-            
+
             bool hasMultipleManipulators = e.Manipulators.Count() >= 2;
-            bool shouldUseTwoFingerGesture = (dec.Count >= 2 && hasMultipleManipulators && 
+            bool shouldUseTwoFingerGesture = (dec.Count >= 2 && hasMultipleManipulators &&
                                              (Settings.PowerPointSettings.IsEnableTwoFingerGestureInPresentationMode ||
                                               StackPanelPPTControls.Visibility != Visibility.Visible ||
                                               StackPanelPPTButtons.Visibility == Visibility.Collapsed)) ||
                                             isSingleFingerDragMode;
-            
+
             if (shouldUseTwoFingerGesture)
             {
                 var md = e.DeltaManipulation;
@@ -867,8 +819,7 @@ namespace Ink_Canvas
             try
             {
                 // 获取图片的RenderTransform，如果不存在则创建新的TransformGroup
-                TransformGroup transformGroup = image.RenderTransform as TransformGroup;
-                if (transformGroup == null)
+                if (!(image.RenderTransform is TransformGroup transformGroup))
                 {
                     transformGroup = new TransformGroup();
                     image.RenderTransform = transformGroup;
@@ -892,8 +843,7 @@ namespace Ink_Canvas
             try
             {
                 // 获取媒体元素的RenderTransform，如果不存在则创建新的TransformGroup
-                TransformGroup transformGroup = mediaElement.RenderTransform as TransformGroup;
-                if (transformGroup == null)
+                if (!(mediaElement.RenderTransform is TransformGroup transformGroup))
                 {
                     transformGroup = new TransformGroup();
                     mediaElement.RenderTransform = transformGroup;

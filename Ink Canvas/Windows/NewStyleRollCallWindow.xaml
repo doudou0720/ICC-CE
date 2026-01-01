@@ -59,10 +59,12 @@
                                 <!-- 结果显示区域 -->
                                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <!-- 主结果显示 -->
-                                    <TextBlock x:Name="MainResultDisplay" Text="点击开始点名" FontSize="48" FontWeight="Bold" 
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                               Foreground="{DynamicResource NewRollCallWindowDigitForeground}" 
-                                               TextAlignment="Center" Margin="0,0,0,20"/>
+                                    <Viewbox Stretch="Uniform" MaxWidth="460" MaxHeight="120" Margin="0,0,0,20">
+                                        <TextBlock x:Name="MainResultDisplay" Text="点击开始点名" FontSize="48" FontWeight="Bold" 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource NewRollCallWindowDigitForeground}" 
+                                                   TextAlignment="Center"/>
+                                    </Viewbox>
                                     
                                     <!-- 多结果显示区域 - 支持最多20个结果 -->
                                     <ScrollViewer x:Name="MultiResultScrollViewer" MaxHeight="200" VerticalScrollBarVisibility="Auto" 

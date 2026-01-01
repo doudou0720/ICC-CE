@@ -36,6 +36,24 @@ namespace Ink_Canvas.Helpers
             public int Height => Bottom - Top;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MONITORINFO
+        {
+            public uint cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromRect(ref RECT lprc, uint dwFlags);
+
         public static string WindowTitle()
         {
             IntPtr foregroundWindowHandle = GetForegroundWindow();
@@ -106,10 +124,28 @@ namespace Ink_Canvas.Helpers
 
         public static double GetTaskbarHeight(Screen screen, double dpiScaleY)
         {
-            // 获取工作区和屏幕高度的差值
-            var workingArea = screen.WorkingArea;
-            var bounds = screen.Bounds;
-            int taskbarHeight = bounds.Height - workingArea.Height;
+            // 创建RECT结构体表示屏幕边界
+            RECT screenRect = new RECT
+            {
+                Left = screen.Bounds.Left,
+                Top = screen.Bounds.Top,
+                Right = screen.Bounds.Right,
+                Bottom = screen.Bounds.Bottom
+            };
+
+            // 获取屏幕句柄
+            const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+            IntPtr hMonitor = MonitorFromRect(ref screenRect, MONITOR_DEFAULTTONEAREST);
+
+            // 初始化MONITORINFO结构体
+            MONITORINFO monitorInfo = new MONITORINFO();
+            monitorInfo.cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO));
+
+            // 获取监视器信息
+            GetMonitorInfo(hMonitor, ref monitorInfo);
+
+            // 计算任务栏高度：monitorInfo.rcMonitor.bottom减去monitorInfo.rcWork.bottom的值
+            int taskbarHeight = monitorInfo.rcMonitor.Bottom - monitorInfo.rcWork.Bottom;
             // 考虑 DPI 缩放
             return taskbarHeight / dpiScaleY;
         }

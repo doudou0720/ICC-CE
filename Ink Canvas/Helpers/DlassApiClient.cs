@@ -1,4 +1,3 @@
-using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -14,7 +13,7 @@ namespace Ink_Canvas.Helpers
     /// </summary>
     public class DlassApiClient : IDisposable
     {
-        private const string DEFAULT_BASE_URL = "https://dlass.tech"; 
+        private const string DEFAULT_BASE_URL = "https://dlass.tech";
         private readonly string _appId;
         private readonly string _appSecret;
         private readonly string _baseUrl;
@@ -37,13 +36,13 @@ namespace Ink_Canvas.Helpers
             _appSecret = appSecret ?? throw new ArgumentNullException(nameof(appSecret));
             _userToken = userToken;
             _baseUrl = baseUrl ?? DEFAULT_BASE_URL;
-            
+
             _baseUrl = _baseUrl.TrimEnd('/');
             if (!_baseUrl.StartsWith("http://") && !_baseUrl.StartsWith("https://"))
             {
                 _baseUrl = "https://" + _baseUrl;
             }
-            
+
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri(_baseUrl),
@@ -122,7 +121,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-                
+
                 if (requireAuth && !string.IsNullOrEmpty(token))
                 {
                     if (!string.IsNullOrEmpty(_userToken))
@@ -179,7 +178,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-                
+
                 if (requireAuth && !string.IsNullOrEmpty(token))
                 {
                     if (!string.IsNullOrEmpty(_userToken))
@@ -242,7 +241,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var request = new HttpRequestMessage(HttpMethod.Put, endpoint);
-                
+
                 if (requireAuth && !string.IsNullOrEmpty(token))
                 {
                     // 如果是用户token，使用X-User-Token header
@@ -306,7 +305,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var request = new HttpRequestMessage(HttpMethod.Delete, endpoint);
-                
+
                 if (requireAuth && !string.IsNullOrEmpty(token))
                 {
                     // 如果是用户token，使用X-User-Token header
@@ -365,14 +364,14 @@ namespace Ink_Canvas.Helpers
                 }
 
                 var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-                
+
                 // 设置白板认证头
                 request.Headers.Add("X-Board-ID", boardId);
                 request.Headers.Add("X-Secret-Key", secretKey);
 
                 // 创建multipart/form-data内容
                 var content = new MultipartFormDataContent();
-                
+
                 // 添加文件
                 var fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
                 var fileName = Path.GetFileName(filePath);

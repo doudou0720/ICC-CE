@@ -43,27 +43,27 @@ namespace Ink_Canvas
             TimeSpan timeSpan = DateTime.Now - startTime;
             TimeSpan totalTimeSpan = new TimeSpan(hour, minute, second);
             double spentTimePercent = timeSpan.TotalMilliseconds / (totalSeconds * 1000.0);
-            
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 if (!isOvertimeMode)
                 {
                     TimeSpan leftTimeSpan = totalTimeSpan - timeSpan;
                     if (leftTimeSpan.Milliseconds > 0) leftTimeSpan += new TimeSpan(0, 0, 1);
-                    
+
                     ProcessBarTime.CurrentValue = 1 - spentTimePercent;
                     TextBlockHour.Text = leftTimeSpan.Hours.ToString("00");
                     TextBlockMinute.Text = leftTimeSpan.Minutes.ToString("00");
                     TextBlockSecond.Text = leftTimeSpan.Seconds.ToString("00");
                     TbCurrentTime.Text = leftTimeSpan.ToString(@"hh\:mm\:ss");
-                    
+
                     if (spentTimePercent >= 1 && MainWindow.Settings.RandSettings?.EnableOvertimeCountUp == true)
                     {
                         isOvertimeMode = true;
                         ProcessBarTime.CurrentValue = 0;
                         ProcessBarTime.Visibility = Visibility.Collapsed;
                         BorderStopTime.Visibility = Visibility.Collapsed;
-                        
+
                         // 播放提醒音
                         PlayTimerSound();
                     }
@@ -87,7 +87,7 @@ namespace Ink_Canvas
                             TextBlockHour.Foreground = new SolidColorBrush(StringToColor("#FF5B5D5F"));
                         }
                         BorderStopTime.Visibility = Visibility.Collapsed;
-                        
+
                         // 播放提醒音
                         PlayTimerSound();
                     }
@@ -99,7 +99,7 @@ namespace Ink_Canvas
                     TextBlockMinute.Text = overtimeSpan.Minutes.ToString("00");
                     TextBlockSecond.Text = overtimeSpan.Seconds.ToString("00");
                     TbCurrentTime.Text = overtimeSpan.ToString(@"hh\:mm\:ss");
-                    
+
                     if (MainWindow.Settings.RandSettings?.EnableOvertimeRedText == true)
                     {
                         TextBlockHour.Foreground = Brushes.Red;
@@ -124,7 +124,7 @@ namespace Ink_Canvas
         bool isTimerRunning = false;
         bool isPaused = false;
         bool useLegacyUI = false;
-        bool isOvertimeMode = false; 
+        bool isOvertimeMode = false;
 
         Timer timer = new Timer();
 
@@ -288,7 +288,7 @@ namespace Ink_Canvas
                     TextBlockHour.Foreground = textForeground3;
                 else
                     TextBlockHour.Foreground = new SolidColorBrush(StringToColor("#FF5B5D5F"));
-                
+
                 isOvertimeMode = false;
                 ProcessBarTime.Visibility = Visibility.Visible;
             }
@@ -311,7 +311,7 @@ namespace Ink_Canvas
                 isPaused = false;
                 ProcessBarTime.CurrentValue = 0;
                 ProcessBarTime.IsPaused = false;
-                
+
                 isOvertimeMode = false;
                 ProcessBarTime.Visibility = Visibility.Visible;
             }
@@ -416,7 +416,7 @@ namespace Ink_Canvas
 
                 isPaused = false;
                 isTimerRunning = true;
-                isOvertimeMode = false; 
+                isOvertimeMode = false;
                 ProcessBarTime.Visibility = Visibility.Visible;
                 timer.Start();
                 UpdateStopTime();

@@ -23,6 +23,10 @@ namespace Ink_Canvas.Helpers
         public int PPTRBButtonPosition { get; set; } = 0;
         public bool EnablePPTButtonPageClickable { get; set; } = true;
         public bool EnablePPTButtonLongPressPageTurn { get; set; } = true;
+        public double PPTLSButtonOpacity { get; set; } = 0.5;
+        public double PPTRSButtonOpacity { get; set; } = 0.5;
+        public double PPTLBButtonOpacity { get; set; } = 0.5;
+        public double PPTRBButtonOpacity { get; set; } = 0.5;
         #endregion
 
         #region Private Fields
@@ -97,6 +101,8 @@ namespace Ink_Canvas.Helpers
 
                         UpdateNavigationPanelsVisibility();
                         UpdateNavigationButtonStyles();
+                        _mainWindow.UpdatePPTTimeCapsuleVisibility();
+                        _mainWindow.UpdatePPTQuickPanelVisibility();
                         if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper)
                         {
                             // 设置为画板模式，允许全屏操作
@@ -107,6 +113,8 @@ namespace Ink_Canvas.Helpers
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width,
                                     System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
+
+                            _mainWindow.isFullScreenApplied = true; // 标记已应用全屏处理
                         }
                     }
                     else
@@ -114,6 +122,8 @@ namespace Ink_Canvas.Helpers
                         _mainWindow.BtnPPTSlideShow.Visibility = Visibility.Visible;
                         _mainWindow.BtnPPTSlideShowEnd.Visibility = Visibility.Collapsed;
                         HideAllNavigationPanels();
+                        _mainWindow.UpdatePPTTimeCapsuleVisibility();
+                        _mainWindow.UpdatePPTQuickPanelVisibility();
                         if (MainWindow.Settings.Advanced.IsEnableAvoidFullScreenHelper)
                         {
                             // 恢复为非画板模式，重新启用全屏限制
@@ -127,6 +137,8 @@ namespace Ink_Canvas.Helpers
                                     workingArea.X, workingArea.Y,
                                     workingArea.Width, workingArea.Height, true);
                             }), DispatcherPriority.ApplicationIdle);
+
+                            _mainWindow.isFullScreenApplied = false; // 标记全屏处理已还原
                         }
                     }
                 }
@@ -377,10 +389,9 @@ namespace Ink_Canvas.Helpers
                 _mainWindow.PPTLSPageButton.Visibility = pageButtonVisibility;
                 _mainWindow.PPTRSPageButton.Visibility = pageButtonVisibility;
 
-                // 透明度设置
-                var opacity = options[1] == '2' ? 0.5 : 1.0;
-                _mainWindow.PPTBtnLSBorder.Opacity = opacity;
-                _mainWindow.PPTBtnRSBorder.Opacity = opacity;
+                // 透明度设置 - 直接使用用户设置的透明度值
+                _mainWindow.PPTBtnLSBorder.Opacity = PPTLSButtonOpacity;
+                _mainWindow.PPTBtnRSBorder.Opacity = PPTRSButtonOpacity;
 
                 // 颜色主题
                 bool isDarkTheme = options[2] == '2';
@@ -406,10 +417,9 @@ namespace Ink_Canvas.Helpers
                 _mainWindow.PPTLBPageButton.Visibility = pageButtonVisibility;
                 _mainWindow.PPTRBPageButton.Visibility = pageButtonVisibility;
 
-                // 透明度设置
-                var opacity = options[1] == '2' ? 0.5 : 1.0;
-                _mainWindow.PPTBtnLBBorder.Opacity = opacity;
-                _mainWindow.PPTBtnRBBorder.Opacity = opacity;
+                // 透明度设置 - 直接使用用户设置的透明度值
+                _mainWindow.PPTBtnLBBorder.Opacity = PPTLBButtonOpacity;
+                _mainWindow.PPTBtnRBBorder.Opacity = PPTRBButtonOpacity;
 
                 // 颜色主题
                 bool isDarkTheme = options[2] == '2';

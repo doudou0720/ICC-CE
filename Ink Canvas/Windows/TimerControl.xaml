@@ -34,7 +34,11 @@
             <!-- 主要内容区域 -->
             <Grid>
                 <!-- 使用Viewbox自动缩放内容 -->
-                <Viewbox x:Name="MainViewController" Margin="20,20,20,20">
+                <Viewbox x:Name="MainViewController" 
+                         Margin="20,20,20,20"
+                         StretchDirection="DownOnly"
+                         MaxWidth="900"
+                         MaxHeight="500">
                     <Grid Height="400" Width="900">
                         <!-- 顶部标题栏 -->
                         <Grid Height="50" 

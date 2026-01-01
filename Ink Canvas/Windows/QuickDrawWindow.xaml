@@ -49,9 +49,11 @@
                               Stretch="Uniform" 
                               Margin="0,0,8,0"/>
                         <!-- 快抽文字 -->
-                        <TextBlock Text="快抽" FontSize="20" FontWeight="Bold" 
-                                   Foreground="{DynamicResource QuickDrawWindowTitleForeground}" 
-                                   x:Name="TitleText"/>
+                        <Viewbox Stretch="Uniform" MaxWidth="100" MaxHeight="30">
+                            <TextBlock Text="快抽" FontSize="20" FontWeight="Bold" 
+                                       Foreground="{DynamicResource QuickDrawWindowTitleForeground}" 
+                                       x:Name="TitleText"/>
+                        </Viewbox>
                     </StackPanel>
                 </Grid>
 
@@ -61,14 +63,16 @@
                     <!-- 结果显示区域 -->
                     <Grid x:Name="ResultGrid" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <!-- 主结果显示 -->
-                        <TextBlock x:Name="MainResultDisplay" 
-                                   Text="准备抽选..." 
-                                   FontSize="48" 
-                                   FontWeight="Bold" 
-                                   Foreground="{DynamicResource QuickDrawWindowDigitForeground}" 
-                                   HorizontalAlignment="Center" 
-                                   VerticalAlignment="Center" 
-                                   TextAlignment="Center"/>
+                        <Viewbox Stretch="Uniform" MaxWidth="360" MaxHeight="120">
+                            <TextBlock x:Name="MainResultDisplay" 
+                                       Text="准备抽选..." 
+                                       FontSize="48" 
+                                       FontWeight="Bold" 
+                                       Foreground="{DynamicResource QuickDrawWindowDigitForeground}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       TextAlignment="Center"/>
+                        </Viewbox>
                     </Grid>
                 </Grid>
             </Grid>

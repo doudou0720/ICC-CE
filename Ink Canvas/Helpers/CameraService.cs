@@ -283,8 +283,8 @@ namespace Ink_Canvas.Helpers
 
                                 int targetWidth = _resolutionWidth;
                                 int targetHeight = _resolutionHeight;
-                                
-                                if (_rotationAngle == 1 || _rotationAngle == 3) 
+
+                                if (_rotationAngle == 1 || _rotationAngle == 3)
                                 {
                                     targetWidth = _resolutionHeight;
                                     targetHeight = _resolutionWidth;

@@ -5,6 +5,7 @@ using OSVersionExtension;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -297,26 +298,118 @@ namespace Ink_Canvas
             }
         }
 
-        private void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
+        private static readonly Lazy<object> HitokotoHttpClient = new Lazy<object>(CreateHitokotoClient, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static object CreateHitokotoClient()
+        {
+            try
+            {
+                var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(5)
+                };
+                try
+                {
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd("InkCanvas-Hitokoto/1.0");
+                }
+                catch
+                {
+                }
+                return client;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    LogHelper.WriteLogToFile($"无法创建 HttpClient (System.Net.Http 可能缺失): {ex.Message}", LogHelper.LogType.Warning);
+                }
+                catch
+                {
+                }
+                return null;
+            }
+        }
+
+        private async Task UpdateChickenSoupTextAsync()
+        {
+            try
+            {
+                if (!Settings.Appearance.EnableChickenSoupInWhiteboardMode)
+                {
+                    return;
+                }
+
+                if (Settings.Appearance.ChickenSoupSource == 0)
+                {
+                    int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
+                    BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
+                }
+                else if (Settings.Appearance.ChickenSoupSource == 1)
+                {
+                    int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
+                    BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
+                }
+                else if (Settings.Appearance.ChickenSoupSource == 2)
+                {
+                    int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
+                    BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
+                }
+                else if (Settings.Appearance.ChickenSoupSource == 3)
+                {
+                    BlackBoardWaterMark.Text = "正在获取一言...";
+
+                    try
+                    {
+                        object clientObj = null;
+                        try
+                        {
+                            clientObj = HitokotoHttpClient.Value;
+                        }
+                        catch (Exception initEx)
+                        {
+                            LogHelper.WriteLogToFile($"HTTP 客户端初始化失败: {initEx.Message}", LogHelper.LogType.Warning);
+                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            return;
+                        }
+
+                        if (clientObj == null || !(clientObj is HttpClient client))
+                        {
+                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            return;
+                        }
+
+                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text");
+                        response.EnsureSuccessStatusCode();
+
+                        var text = await response.Content.ReadAsStringAsync();
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            BlackBoardWaterMark.Text = text.Trim();
+                        }
+                        else
+                        {
+                            BlackBoardWaterMark.Text = "一言暂时没有返回内容";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"Hitokoto API 请求失败: {ex.Message}", LogHelper.LogType.Warning);
+                        BlackBoardWaterMark.Text = "一言获取失败，请稍后重试";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新白板名言时出错: {ex.Message}", LogHelper.LogType.Warning);
+            }
+        }
+
+        private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
             Settings.Appearance.ChickenSoupSource = ComboBoxChickenSoupSource.SelectedIndex;
             SaveSettingsToFile();
-            if (Settings.Appearance.ChickenSoupSource == 0)
-            {
-                int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
-                BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
-            }
-            else if (Settings.Appearance.ChickenSoupSource == 1)
-            {
-                int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
-                BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
-            }
-            else if (Settings.Appearance.ChickenSoupSource == 2)
-            {
-                int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
-                BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
-            }
+            await UpdateChickenSoupTextAsync();
         }
 
         private void ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled(object sender, RoutedEventArgs e)
@@ -578,6 +671,305 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchSkipAnimationsWhenGoNext_OnToggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.PowerPointSettings.SkipAnimationsWhenGoNext = ToggleSwitchSkipAnimationsWhenGoNext.IsOn;
+            SaveSettingsToFile();
+        }
+
+        private void PPTLSButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            double roundedValue = Math.Round(PPTLSButtonOpacityValueSlider.Value, 1);
+            PPTLSButtonOpacityValueSlider.Value = roundedValue;
+            Settings.PowerPointSettings.PPTLSButtonOpacity = roundedValue;
+            SaveSettingsToFile();
+            // 更新PPT UI管理器设置
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLSButtonOpacity = roundedValue;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRSButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            double roundedValue = Math.Round(PPTRSButtonOpacityValueSlider.Value, 1);
+            PPTRSButtonOpacityValueSlider.Value = roundedValue;
+            Settings.PowerPointSettings.PPTRSButtonOpacity = roundedValue;
+            SaveSettingsToFile();
+            // 更新PPT UI管理器设置
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRSButtonOpacity = roundedValue;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLBButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            double roundedValue = Math.Round(PPTLBButtonOpacityValueSlider.Value, 1);
+            PPTLBButtonOpacityValueSlider.Value = roundedValue;
+            Settings.PowerPointSettings.PPTLBButtonOpacity = roundedValue;
+            SaveSettingsToFile();
+            // 更新PPT UI管理器设置
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLBButtonOpacity = roundedValue;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRBButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            double roundedValue = Math.Round(PPTRBButtonOpacityValueSlider.Value, 1);
+            PPTRBButtonOpacityValueSlider.Value = roundedValue;
+            Settings.PowerPointSettings.PPTRBButtonOpacity = roundedValue;
+            SaveSettingsToFile();
+            // 更新PPT UI管理器设置
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRBButtonOpacity = roundedValue;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        // 左侧透明度按钮
+        private void PPTLSOpacityPlusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLSButtonOpacityValueSlider.Value = Math.Min(1.0, PPTLSButtonOpacityValueSlider.Value + 0.1);
+            Settings.PowerPointSettings.PPTLSButtonOpacity = PPTLSButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLSOpacityMinusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLSButtonOpacityValueSlider.Value = Math.Max(0.1, PPTLSButtonOpacityValueSlider.Value - 0.1);
+            Settings.PowerPointSettings.PPTLSButtonOpacity = PPTLSButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLSOpacitySyncBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRSButtonOpacityValueSlider.Value = PPTLSButtonOpacityValueSlider.Value;
+            Settings.PowerPointSettings.PPTRSButtonOpacity = PPTLSButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        // 右侧透明度按钮
+        private void PPTRSOpacityPlusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRSButtonOpacityValueSlider.Value = Math.Min(1.0, PPTRSButtonOpacityValueSlider.Value + 0.1);
+            Settings.PowerPointSettings.PPTRSButtonOpacity = PPTRSButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRSOpacityMinusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRSButtonOpacityValueSlider.Value = Math.Max(0.1, PPTRSButtonOpacityValueSlider.Value - 0.1);
+            Settings.PowerPointSettings.PPTRSButtonOpacity = PPTRSButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRSOpacitySyncBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLSButtonOpacityValueSlider.Value = PPTRSButtonOpacityValueSlider.Value;
+            Settings.PowerPointSettings.PPTLSButtonOpacity = PPTRSButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        // 左下透明度按钮
+        private void PPTLBOpacityPlusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLBButtonOpacityValueSlider.Value = Math.Min(1.0, PPTLBButtonOpacityValueSlider.Value + 0.1);
+            Settings.PowerPointSettings.PPTLBButtonOpacity = PPTLBButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLBOpacityMinusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLBButtonOpacityValueSlider.Value = Math.Max(0.1, PPTLBButtonOpacityValueSlider.Value - 0.1);
+            Settings.PowerPointSettings.PPTLBButtonOpacity = PPTLBButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLBOpacitySyncBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRBButtonOpacityValueSlider.Value = PPTLBButtonOpacityValueSlider.Value;
+            Settings.PowerPointSettings.PPTRBButtonOpacity = PPTLBButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        // 右下透明度按钮
+        private void PPTRBOpacityPlusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRBButtonOpacityValueSlider.Value = Math.Min(1.0, PPTRBButtonOpacityValueSlider.Value + 0.1);
+            Settings.PowerPointSettings.PPTRBButtonOpacity = PPTRBButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRBOpacityMinusBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRBButtonOpacityValueSlider.Value = Math.Max(0.1, PPTRBButtonOpacityValueSlider.Value - 0.1);
+            Settings.PowerPointSettings.PPTRBButtonOpacity = PPTRBButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRBOpacitySyncBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLBButtonOpacityValueSlider.Value = PPTRBButtonOpacityValueSlider.Value;
+            Settings.PowerPointSettings.PPTLBButtonOpacity = PPTRBButtonOpacityValueSlider.Value;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLSOpacityResetBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLSButtonOpacityValueSlider.Value = 0.5;
+            Settings.PowerPointSettings.PPTLSButtonOpacity = 0.5;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLSButtonOpacity = 0.5;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRSOpacityResetBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRSButtonOpacityValueSlider.Value = 0.5;
+            Settings.PowerPointSettings.PPTRSButtonOpacity = 0.5;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRSButtonOpacity = 0.5;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTLBOpacityResetBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTLBButtonOpacityValueSlider.Value = 0.5;
+            Settings.PowerPointSettings.PPTLBButtonOpacity = 0.5;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTLBButtonOpacity = 0.5;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
+        private void PPTRBOpacityResetBtn_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            PPTRBButtonOpacityValueSlider.Value = 0.5;
+            Settings.PowerPointSettings.PPTRBButtonOpacity = 0.5;
+            SaveSettingsToFile();
+            if (_pptUIManager != null)
+            {
+                _pptUIManager.PPTRBButtonOpacity = 0.5;
+                _pptUIManager.UpdateNavigationButtonStyles();
+            }
+            UpdatePPTBtnPreview();
+        }
+
         private void CheckboxEnableLBPPTButton_IsCheckChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -668,13 +1060,37 @@ namespace Ink_Canvas
             if (!isLoaded) return;
             var str = Settings.PowerPointSettings.PPTSButtonsOption.ToString();
             char[] c = str.ToCharArray();
-            c[1] = (bool)((CheckBox)sender).IsChecked ? '2' : '1';
+            bool isHalfOpacity = (bool)((CheckBox)sender).IsChecked;
+            c[1] = isHalfOpacity ? '2' : '1';
             Settings.PowerPointSettings.PPTSButtonsOption = int.Parse(new string(c));
+
+            // 如果开启半透明选项，设置默认透明度为0.5；否则为1.0
+            if (isHalfOpacity)
+            {
+                if (Settings.PowerPointSettings.PPTLSButtonOpacity == 1.0)
+                    Settings.PowerPointSettings.PPTLSButtonOpacity = 0.5;
+                if (Settings.PowerPointSettings.PPTRSButtonOpacity == 1.0)
+                    Settings.PowerPointSettings.PPTRSButtonOpacity = 0.5;
+                PPTLSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                PPTRSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRSButtonOpacity;
+            }
+            else
+            {
+                if (Settings.PowerPointSettings.PPTLSButtonOpacity == 0.5)
+                    Settings.PowerPointSettings.PPTLSButtonOpacity = 1.0;
+                if (Settings.PowerPointSettings.PPTRSButtonOpacity == 0.5)
+                    Settings.PowerPointSettings.PPTRSButtonOpacity = 1.0;
+                PPTLSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                PPTRSButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRSButtonOpacity;
+            }
+
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
             if (_pptUIManager != null && BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
             {
                 _pptUIManager.PPTSButtonsOption = Settings.PowerPointSettings.PPTSButtonsOption;
+                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
                 _pptUIManager.UpdateNavigationButtonStyles();
             }
             UpdatePPTBtnPreview();
@@ -719,8 +1135,30 @@ namespace Ink_Canvas
             if (!isLoaded) return;
             var str = Settings.PowerPointSettings.PPTBButtonsOption.ToString();
             char[] c = str.ToCharArray();
-            c[1] = (bool)((CheckBox)sender).IsChecked ? '2' : '1';
+            bool isHalfOpacity = (bool)((CheckBox)sender).IsChecked;
+            c[1] = isHalfOpacity ? '2' : '1';
             Settings.PowerPointSettings.PPTBButtonsOption = int.Parse(new string(c));
+
+            // 如果开启半透明选项，设置默认透明度为0.5；否则为1.0
+            if (isHalfOpacity)
+            {
+                if (Settings.PowerPointSettings.PPTLBButtonOpacity == 1.0)
+                    Settings.PowerPointSettings.PPTLBButtonOpacity = 0.5;
+                if (Settings.PowerPointSettings.PPTRBButtonOpacity == 1.0)
+                    Settings.PowerPointSettings.PPTRBButtonOpacity = 0.5;
+                PPTLBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                PPTRBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRBButtonOpacity;
+            }
+            else
+            {
+                if (Settings.PowerPointSettings.PPTLBButtonOpacity == 0.5)
+                    Settings.PowerPointSettings.PPTLBButtonOpacity = 1.0;
+                if (Settings.PowerPointSettings.PPTRBButtonOpacity == 0.5)
+                    Settings.PowerPointSettings.PPTRBButtonOpacity = 1.0;
+                PPTLBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                PPTRBButtonOpacityValueSlider.Value = Settings.PowerPointSettings.PPTRBButtonOpacity;
+            }
+
             SaveSettingsToFile();
             UpdatePPTUIManagerSettings();
             UpdatePPTBtnPreview();
@@ -952,6 +1390,10 @@ namespace Ink_Canvas
                 _pptUIManager.PPTRBButtonPosition = Settings.PowerPointSettings.PPTRBButtonPosition;
                 _pptUIManager.EnablePPTButtonPageClickable = Settings.PowerPointSettings.EnablePPTButtonPageClickable;
                 _pptUIManager.EnablePPTButtonLongPressPageTurn = Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn;
+                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
+                _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
+                _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
                 _pptUIManager.UpdateNavigationPanelsVisibility();
                 _pptUIManager.UpdateNavigationButtonStyles();
             }
@@ -962,16 +1404,9 @@ namespace Ink_Canvas
             //new BitmapImage(new Uri("pack://application:,,,/Resources/new-icons/unfold-chevron.png"));
             var bopt = Settings.PowerPointSettings.PPTBButtonsOption.ToString();
             char[] boptc = bopt.ToCharArray();
-            if (boptc[1] == '2')
-            {
-                PPTBtnPreviewLB.Opacity = 0.5;
-                PPTBtnPreviewRB.Opacity = 0.5;
-            }
-            else
-            {
-                PPTBtnPreviewLB.Opacity = 1;
-                PPTBtnPreviewRB.Opacity = 1;
-            }
+            // 使用实际的透明度设置值
+            PPTBtnPreviewLB.Opacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
+            PPTBtnPreviewRB.Opacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
 
             if (boptc[2] == '2')
             {
@@ -992,16 +1427,8 @@ namespace Ink_Canvas
 
             var sopt = Settings.PowerPointSettings.PPTSButtonsOption.ToString();
             char[] soptc = sopt.ToCharArray();
-            if (soptc[1] == '2')
-            {
-                PPTBtnPreviewLS.Opacity = 0.5;
-                PPTBtnPreviewRS.Opacity = 0.5;
-            }
-            else
-            {
-                PPTBtnPreviewLS.Opacity = 1;
-                PPTBtnPreviewRS.Opacity = 1;
-            }
+            PPTBtnPreviewLS.Opacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
+            PPTBtnPreviewRS.Opacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
 
             if (soptc[2] == '2')
             {
@@ -1855,7 +2282,7 @@ namespace Ink_Canvas
                 // 检查是否是第一次打开（检查用户是否已设置Token）
                 bool hasToken = !string.IsNullOrEmpty(Settings?.Dlass?.UserToken?.Trim());
                 bool isFirstTime = !hasToken;
-                
+
                 if (isFirstTime)
                 {
                     // 第一次打开，询问用户是否已注册
@@ -1866,7 +2293,7 @@ namespace Ink_Canvas
                         "Dlass账号注册",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Question);
-                    
+
                     if (result == MessageBoxResult.No)
                     {
                         // 用户未注册，打开浏览器
@@ -1882,14 +2309,14 @@ namespace Ink_Canvas
                         catch (Exception ex)
                         {
                             LogHelper.WriteLogToFile($"打开浏览器时出错: {ex.Message}", LogHelper.LogType.Error);
-                            MessageBox.Show($"无法打开浏览器。请手动访问: https://dlass.tech/dashboard", 
+                            MessageBox.Show($"无法打开浏览器。请手动访问: https://dlass.tech/dashboard",
                                 "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         return; // 不打开设置窗口
                     }
                     // 如果用户选择"是"，继续打开设置窗口
                 }
-                
+
                 // 打开设置管理窗口
                 var dlassSettingsWindow = new Windows.DlassSettingsWindow();
                 dlassSettingsWindow.Owner = this;
@@ -1933,6 +2360,13 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchSaveStrokesAsXML_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Automation.IsSaveStrokesAsXML = ToggleSwitchSaveStrokesAsXML.IsOn;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchEnableAutoSaveStrokes_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1945,7 +2379,7 @@ namespace Ink_Canvas
         private void ComboBoxAutoSaveStrokesInterval_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded || ComboBoxAutoSaveStrokesInterval.SelectedItem == null) return;
-            
+
             var selectedItem = ComboBoxAutoSaveStrokesInterval.SelectedItem as System.Windows.Controls.ComboBoxItem;
             if (selectedItem?.Tag != null && int.TryParse(selectedItem.Tag.ToString(), out int intervalMinutes))
             {
@@ -2720,13 +3154,13 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.RandSettings.EnableOvertimeCountUp = ToggleSwitchEnableOvertimeCountUp.IsOn;
-            
+
             if (!ToggleSwitchEnableOvertimeCountUp.IsOn)
             {
                 ToggleSwitchEnableOvertimeRedText.IsOn = false;
                 Settings.RandSettings.EnableOvertimeRedText = false;
             }
-            
+
             SaveSettingsToFile();
         }
 
@@ -2739,7 +3173,7 @@ namespace Ink_Canvas
                 ToggleSwitchEnableOvertimeCountUp.IsOn = true;
                 Settings.RandSettings.EnableOvertimeCountUp = true;
             }
-            
+
             Settings.RandSettings.EnableOvertimeRedText = ToggleSwitchEnableOvertimeRedText.IsOn;
             SaveSettingsToFile();
         }
@@ -2865,7 +3299,7 @@ namespace Ink_Canvas
 
             // 保存设置到文件
             SaveSettingsToFile();
-            
+
             // 根据设置状态显示或隐藏快抽悬浮按钮
             ShowQuickDrawFloatingButton();
         }
@@ -2894,23 +3328,67 @@ namespace Ink_Canvas
 
         public void UpdateFloatingBarIcons()
         {
+            string currentMode = GetCurrentSelectedMode();
+
+            bool isCursorSolid = currentMode == "cursor";
+            bool isPenSolid = currentMode == "pen" || currentMode == "color";
+            bool isCircleEraserSolid = currentMode == "eraser";
+            bool isStrokeEraserSolid = currentMode == "eraserByStrokes";
+            bool isLassoSolid = currentMode == "select";
+
             if (Settings.Appearance.UseLegacyFloatingBarUI)
             {
-                // 使用老版图标
-                CursorIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LegacyLinedCursorIcon);
-                PenIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LegacyLinedPenIcon);
-                StrokeEraserIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LegacyLinedEraserStrokeIcon);
-                CircleEraserIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LegacyLinedEraserCircleIcon);
-                LassoSelectIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LegacyLinedLassoSelectIcon);
+                CursorIconGeometry.Geometry = Geometry.Parse(
+                    isCursorSolid
+                        ? XamlGraphicsIconGeometries.LegacySolidCursorIcon
+                        : XamlGraphicsIconGeometries.LegacyLinedCursorIcon);
+
+                PenIconGeometry.Geometry = Geometry.Parse(
+                    isPenSolid
+                        ? XamlGraphicsIconGeometries.LegacySolidPenIcon
+                        : XamlGraphicsIconGeometries.LegacyLinedPenIcon);
+
+                StrokeEraserIconGeometry.Geometry = Geometry.Parse(
+                    isStrokeEraserSolid
+                        ? XamlGraphicsIconGeometries.LegacySolidEraserStrokeIcon
+                        : XamlGraphicsIconGeometries.LegacyLinedEraserStrokeIcon);
+
+                CircleEraserIconGeometry.Geometry = Geometry.Parse(
+                    isCircleEraserSolid
+                        ? XamlGraphicsIconGeometries.LegacySolidEraserCircleIcon
+                        : XamlGraphicsIconGeometries.LegacyLinedEraserCircleIcon);
+
+                LassoSelectIconGeometry.Geometry = Geometry.Parse(
+                    isLassoSolid
+                        ? XamlGraphicsIconGeometries.LegacySolidLassoSelectIcon
+                        : XamlGraphicsIconGeometries.LegacyLinedLassoSelectIcon);
             }
             else
             {
-                // 使用新版图标
-                CursorIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LinedCursorIcon);
-                PenIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LinedPenIcon);
-                StrokeEraserIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LinedEraserStrokeIcon);
-                CircleEraserIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LinedEraserCircleIcon);
-                LassoSelectIconGeometry.Geometry = Geometry.Parse(XamlGraphicsIconGeometries.LinedLassoSelectIcon);
+                CursorIconGeometry.Geometry = Geometry.Parse(
+                    isCursorSolid
+                        ? XamlGraphicsIconGeometries.SolidCursorIcon
+                        : XamlGraphicsIconGeometries.LinedCursorIcon);
+
+                PenIconGeometry.Geometry = Geometry.Parse(
+                    isPenSolid
+                        ? XamlGraphicsIconGeometries.SolidPenIcon
+                        : XamlGraphicsIconGeometries.LinedPenIcon);
+
+                StrokeEraserIconGeometry.Geometry = Geometry.Parse(
+                    isStrokeEraserSolid
+                        ? XamlGraphicsIconGeometries.SolidEraserStrokeIcon
+                        : XamlGraphicsIconGeometries.LinedEraserStrokeIcon);
+
+                CircleEraserIconGeometry.Geometry = Geometry.Parse(
+                    isCircleEraserSolid
+                        ? XamlGraphicsIconGeometries.SolidEraserCircleIcon
+                        : XamlGraphicsIconGeometries.LinedEraserCircleIcon);
+
+                LassoSelectIconGeometry.Geometry = Geometry.Parse(
+                    isLassoSolid
+                        ? XamlGraphicsIconGeometries.SolidLassoSelectIcon
+                        : XamlGraphicsIconGeometries.LinedLassoSelectIcon);
             }
         }
 
