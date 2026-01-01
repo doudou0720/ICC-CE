@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
     /// <summary>
-    /// AppearancePanel.xaml 的交互逻辑
+    /// TimerPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class AppearancePanel : UserControl
+    public partial class TimerPanel : UserControl
     {
-        public AppearancePanel()
+        public TimerPanel()
         {
             InitializeComponent();
         }
@@ -31,3 +31,4 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
     }
 }
+
