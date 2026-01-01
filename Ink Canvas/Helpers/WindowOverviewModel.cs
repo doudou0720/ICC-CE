@@ -136,7 +136,25 @@ namespace Ink_Canvas.Helpers
         private List<WindowInfo> _windows = new List<WindowInfo>();
         private Timer _updateTimer;
         private bool _isDisposed = false;
-        private readonly int _updateInterval = 200; // 更新间隔（毫秒）
+        private readonly int _updateInterval = 1000; // 更新间隔（毫秒）
+        
+        private readonly Dictionary<uint, ProcessCacheInfo> _processCache = new Dictionary<uint, ProcessCacheInfo>();
+        private readonly object _processCacheLock = new object();
+        private DateTime _lastProcessCacheCleanup = DateTime.Now;
+        private const int PROCESS_CACHE_CLEANUP_INTERVAL_MS = 30000; 
+        
+        // 窗口缓存，用于增量更新
+        private readonly Dictionary<IntPtr, WindowInfo> _windowCache = new Dictionary<IntPtr, WindowInfo>();
+        
+        /// <summary>
+        /// 进程缓存信息
+        /// </summary>
+        private class ProcessCacheInfo
+        {
+            public string ProcessName { get; set; }
+            public string ProcessPath { get; set; }
+            public DateTime LastAccessTime { get; set; }
+        }
 
         /// <summary>
         /// 窗口列表更新事件
@@ -187,12 +205,98 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
+        /// 获取进程信息
+        /// </summary>
+        private (string processName, string processPath) GetProcessInfo(uint processId)
+        {
+            lock (_processCacheLock)
+            {
+                // 定期清理缓存
+                var now = DateTime.Now;
+                if ((now - _lastProcessCacheCleanup).TotalMilliseconds > PROCESS_CACHE_CLEANUP_INTERVAL_MS)
+                {
+                    var keysToRemove = _processCache
+                        .Where(kvp => (now - kvp.Value.LastAccessTime).TotalMilliseconds > PROCESS_CACHE_CLEANUP_INTERVAL_MS)
+                        .Select(kvp => kvp.Key)
+                        .ToList();
+                    
+                    foreach (var key in keysToRemove)
+                    {
+                        _processCache.Remove(key);
+                    }
+                    
+                    _lastProcessCacheCleanup = now;
+                }
+                
+                // 检查缓存
+                if (_processCache.TryGetValue(processId, out var cachedInfo))
+                {
+                    cachedInfo.LastAccessTime = now;
+                    return (cachedInfo.ProcessName, cachedInfo.ProcessPath);
+                }
+                
+                // 缓存未命中，获取进程信息
+                string processName = "Unknown";
+                string processPath = "Unknown";
+                
+                try
+                {
+                    Process process = Process.GetProcessById((int)processId);
+                    processName = process.ProcessName;
+                    try
+                    {
+                        processPath = process.MainModule?.FileName ?? "Unknown";
+                    }
+                    catch
+                    {
+                        processPath = "Unknown";
+                    }
+                }
+                catch
+                {
+                    // 进程可能已退出
+                }
+                
+                // 添加到缓存
+                _processCache[processId] = new ProcessCacheInfo
+                {
+                    ProcessName = processName,
+                    ProcessPath = processPath,
+                    LastAccessTime = now
+                };
+                
+                return (processName, processPath);
+            }
+        }
+        
+        /// <summary>
+        /// 检查窗口信息是否发生变化
+        /// </summary>
+        private bool HasWindowChanged(IntPtr hWnd, WindowRect rect, bool isMinimized, bool isMaximized, bool isFullScreen)
+        {
+            if (!_windowCache.TryGetValue(hWnd, out var cachedWindow))
+            {
+                return true; // 新窗口
+            }
+            
+            // 检查关键属性是否变化
+            return cachedWindow.Rect.Left != rect.Left ||
+                   cachedWindow.Rect.Top != rect.Top ||
+                   cachedWindow.Rect.Right != rect.Right ||
+                   cachedWindow.Rect.Bottom != rect.Bottom ||
+                   cachedWindow.IsMinimized != isMinimized ||
+                   cachedWindow.IsMaximized != isMaximized ||
+                   cachedWindow.IsFullScreen != isFullScreen;
+        }
+
+        /// <summary>
         /// 更新窗口列表
         /// </summary>
         public void UpdateWindows()
         {
             var windows = new List<WindowInfo>();
             var zOrder = 0;
+            var currentWindowHandles = new HashSet<IntPtr>();
 
             EnumWindows((hWnd, lParam) =>
             {
@@ -208,43 +312,9 @@ namespace Ink_Canvas.Helpers
                     // 获取窗口矩形
                     if (!GetWindowRect(hWnd, out WindowRect rect)) return true;
 
-                    // 过滤掉无效的窗口（太小或位置异常的窗口）
+                    // 过滤掉无效的窗口
                     if (rect.Width <= 0 || rect.Height <= 0) return true;
                     if (rect.Right < rect.Left || rect.Bottom < rect.Top) return true;
-
-                    // 获取窗口标题
-                    const int nChars = 256;
-                    StringBuilder windowTitle = new StringBuilder(nChars);
-                    GetWindowText(hWnd, windowTitle, nChars);
-                    string title = windowTitle.ToString();
-
-                    // 获取窗口类名
-                    StringBuilder className = new StringBuilder(nChars);
-                    GetClassName(hWnd, className, nChars);
-                    string classNameStr = className.ToString();
-
-                    // 获取进程信息
-                    GetWindowThreadProcessId(hWnd, out uint processId);
-                    string processName = "Unknown";
-                    string processPath = "Unknown";
-
-                    try
-                    {
-                        Process process = Process.GetProcessById((int)processId);
-                        processName = process.ProcessName;
-                        try
-                        {
-                            processPath = process.MainModule?.FileName ?? "Unknown";
-                        }
-                        catch
-                        {
-                            processPath = "Unknown";
-                        }
-                    }
-                    catch
-                    {
-                        // 进程可能已退出
-                    }
 
                     // 检查是否最大化
                     bool isMaximized = IsZoomed(hWnd);
@@ -266,29 +336,81 @@ namespace Ink_Canvas.Helpers
                         // 无法获取屏幕信息，使用默认值
                     }
 
+                    // 检查窗口是否发生变化
+                    bool windowChanged = HasWindowChanged(hWnd, rect, isMinimized, isMaximized, isFullScreen);
+                    
+                    // 获取进程信息
+                    GetWindowThreadProcessId(hWnd, out uint processId);
+                    
+                    // 使用缓存的进程信息
+                    var (processName, processPath) = GetProcessInfo(processId);
+
                     // 跳过当前应用程序的窗口（避免检测到自己）
                     if (processName == "InkCanvasForClass" || processName == "Ink Canvas")
                     {
                         return true;
                     }
 
-                    var windowInfo = new WindowInfo
+                    // 如果窗口信息未变化且已缓存，尝试重用缓存的数据
+                    WindowInfo windowInfo;
+                    if (!windowChanged && _windowCache.TryGetValue(hWnd, out var cachedInfo))
                     {
-                        Handle = hWnd,
-                        Title = title,
-                        ClassName = classNameStr,
-                        ProcessName = processName,
-                        ProcessPath = processPath,
-                        Rect = rect,
-                        IsVisible = true,
-                        IsMinimized = false,
-                        IsMaximized = isMaximized,
-                        ZOrder = zOrder++,
-                        ProcessId = processId,
-                        IsFullScreen = isFullScreen
-                    };
+                        // 重用缓存的窗口信息，只更新Z顺序和可能变化的状态
+                        windowInfo = new WindowInfo
+                        {
+                            Handle = hWnd,
+                            Title = cachedInfo.Title,
+                            ClassName = cachedInfo.ClassName,
+                            ProcessName = cachedInfo.ProcessName,
+                            ProcessPath = cachedInfo.ProcessPath,
+                            Rect = rect, // 使用最新的rect（虽然理论上应该相同）
+                            IsVisible = true,
+                            IsMinimized = false,
+                            IsMaximized = isMaximized,
+                            ZOrder = zOrder++,
+                            ProcessId = processId,
+                            IsFullScreen = isFullScreen
+                        };
+                        
+                        // 更新缓存以保持ZOrder等属性最新
+                        _windowCache[hWnd] = windowInfo;
+                    }
+                    else
+                    {
+                        // 窗口信息变化或新窗口，需要获取完整信息
+                        // 获取窗口标题
+                        const int nChars = 256;
+                        StringBuilder windowTitle = new StringBuilder(nChars);
+                        GetWindowText(hWnd, windowTitle, nChars);
+                        string title = windowTitle.ToString();
+
+                        // 获取窗口类名
+                        StringBuilder className = new StringBuilder(nChars);
+                        GetClassName(hWnd, className, nChars);
+                        string classNameStr = className.ToString();
+
+                        windowInfo = new WindowInfo
+                        {
+                            Handle = hWnd,
+                            Title = title,
+                            ClassName = classNameStr,
+                            ProcessName = processName,
+                            ProcessPath = processPath,
+                            Rect = rect,
+                            IsVisible = true,
+                            IsMinimized = false,
+                            IsMaximized = isMaximized,
+                            ZOrder = zOrder++,
+                            ProcessId = processId,
+                            IsFullScreen = isFullScreen
+                        };
+                        
+                        // 更新缓存
+                        _windowCache[hWnd] = windowInfo;
+                    }
 
                     windows.Add(windowInfo);
+                    currentWindowHandles.Add(hWnd);
                 }
                 catch
                 {
@@ -298,8 +420,13 @@ namespace Ink_Canvas.Helpers
                 return true; // 继续枚举
             }, IntPtr.Zero);
 
-            // 按Z顺序排序（从最上层到最下层）
-            // 注意：EnumWindows返回的顺序可能不是严格的Z顺序，但我们可以通过GetWindow来获取更准确的顺序
+            // 清理已关闭的窗口缓存
+            var handlesToRemove = _windowCache.Keys.Where(h => !currentWindowHandles.Contains(h)).ToList();
+            foreach (var handle in handlesToRemove)
+            {
+                _windowCache.Remove(handle);
+            }
+
             windows = windows.OrderByDescending(w => w.ZOrder).ToList();
 
             lock (_lockObject)
@@ -473,6 +600,13 @@ namespace Ink_Canvas.Helpers
             {
                 _windows.Clear();
             }
+            
+            lock (_processCacheLock)
+            {
+                _processCache.Clear();
+            }
+            
+            _windowCache.Clear();
         }
     }
 }

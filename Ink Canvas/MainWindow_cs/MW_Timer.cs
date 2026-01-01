@@ -842,8 +842,7 @@ namespace Ink_Canvas
             {
                 if (_windowOverviewModel == null) return;
 
-                // 获取浮动栏的位置和大小
-                Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
                 {
                     try
                     {
@@ -953,7 +952,7 @@ namespace Ink_Canvas
                     {
                         LogHelper.WriteLogToFile($"窗口概览模型检测失败: {ex.Message}", LogHelper.LogType.Error);
                     }
-                });
+                }));
             }
             catch (Exception ex)
             {
