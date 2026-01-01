@@ -19,7 +19,7 @@ namespace Ink_Canvas.Windows
     /// <summary>
     /// PPT时间显示胶囊控件
     /// </summary>
-    public partial class PPTTimeCapsule : UserControl
+    public partial class PPTTimeCapsule : UserControl, IDisposable
     {
         private System.Timers.Timer timeUpdateTimer;
         private System.Timers.Timer countdownUpdateTimer; 
@@ -69,14 +69,18 @@ namespace Ink_Canvas.Windows
 
         private void PPTTimeCapsule_Unloaded(object sender, RoutedEventArgs e)
         {
+            Dispose();
+        }
+
+        /// <summary>
+        /// 实现 IDisposable
+        /// </summary>
+        public void Dispose()
+        {
             StopTimeUpdate();
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
-            
-            if (countdownUpdateTimer != null)
-            {
-                countdownUpdateTimer.Stop();
-                countdownUpdateTimer.Dispose();
-            }
+            timeUpdateTimer?.Dispose();
+            countdownUpdateTimer?.Dispose();
         }
 
         private void InitializeTimers()
@@ -86,7 +90,7 @@ namespace Ink_Canvas.Windows
             timeUpdateTimer.Elapsed += TimeUpdateTimer_Elapsed;
             
             // 倒计时更新定时器
-            countdownUpdateTimer = new System.Timers.Timer(100);
+            countdownUpdateTimer = new System.Timers.Timer(250);
             countdownUpdateTimer.Elapsed += CountdownUpdateTimer_Elapsed;
         }
 
