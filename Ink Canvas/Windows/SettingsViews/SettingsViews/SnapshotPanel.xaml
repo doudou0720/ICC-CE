@@ -8,29 +8,22 @@
              mc:Ignorable="d" 
              d:DesignHeight="950" d:DesignWidth="640">
     <UserControl.Resources>
-        <!-- 开关样式模板 -->
-        <Style x:Key="ToggleSwitchStyle" TargetType="Border">
-            <Setter Property="Width" Value="48"/>
-            <Setter Property="Height" Value="25"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="3,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="Margin" Value="0,0,15,0"/>
-        </Style>
-        <!-- 下拉框样式模板 -->
-        <Style x:Key="ComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#e6e6e6"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="FontFamily" Value="Microsoft YaHei UI"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="#2e3436"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ComboBoxStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <!-- 开关样式模板 -->
+            <Style x:Key="ToggleSwitchStyle" TargetType="Border">
+                <Setter Property="Width" Value="48"/>
+                <Setter Property="Height" Value="25"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Padding" Value="3,0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+                <Setter Property="Margin" Value="0,0,15,0"/>
+            </Style>
+        </ResourceDictionary>
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
         <StackPanel Margin="60,12,60,24">
@@ -149,35 +142,22 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="保存时长" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="设置自动删除文件的保存时长" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold1Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_1" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="1天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold3Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_3" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="3天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold5Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_5" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="5天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold7Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_7" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="7天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold15Border" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_15" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="15天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold30Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_30" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="30天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold60Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_60" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="60天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold100Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_100" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="100天"/>
-                            </Border>
-                            <Border x:Name="AutoDelSavedFilesDaysThreshold365Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoDelSavedFilesDaysThreshold_365" Margin="0,0,8,8">
-                                <TextBlock Foreground="#2e3436" FontSize="14" Text="365天"/>
-                            </Border>
-                        </WrapPanel>
+                        <ComboBox x:Name="ComboBoxAutoDelSavedFilesDaysThreshold" 
+                                  Style="{StaticResource ComboBoxStyle}"
+                                  ItemContainerStyle="{StaticResource ComboBoxItemStyle}"
+                                  HorizontalAlignment="Left"
+                                  Width="150"
+                                  SelectedIndex="4">
+                            <ComboBoxItem Content="1天" Tag="AutoDelSavedFilesDaysThreshold_1"/>
+                            <ComboBoxItem Content="3天" Tag="AutoDelSavedFilesDaysThreshold_3"/>
+                            <ComboBoxItem Content="5天" Tag="AutoDelSavedFilesDaysThreshold_5"/>
+                            <ComboBoxItem Content="7天" Tag="AutoDelSavedFilesDaysThreshold_7"/>
+                            <ComboBoxItem Content="15天" Tag="AutoDelSavedFilesDaysThreshold_15" IsSelected="True"/>
+                            <ComboBoxItem Content="30天" Tag="AutoDelSavedFilesDaysThreshold_30"/>
+                            <ComboBoxItem Content="60天" Tag="AutoDelSavedFilesDaysThreshold_60"/>
+                            <ComboBoxItem Content="100天" Tag="AutoDelSavedFilesDaysThreshold_100"/>
+                            <ComboBoxItem Content="365天" Tag="AutoDelSavedFilesDaysThreshold_365"/>
+                        </ComboBox>
                     </StackPanel>
                 </StackPanel>
             </Border>
