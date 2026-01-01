@@ -418,7 +418,6 @@ namespace Ink_Canvas
                 }
                 catch { }
 
-                SetCursorBasedOnEditingMode(inkCanvas);
 
                 var strokeVisual = GetStrokeVisual(e.StylusDevice.Id);
                 var stylusPointCollection = e.GetStylusPoints(this);
