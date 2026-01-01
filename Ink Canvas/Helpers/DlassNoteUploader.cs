@@ -124,7 +124,7 @@ namespace Ink_Canvas.Helpers
 
                     // 验证文件格式和大小
                     var fileExtension = Path.GetExtension(item.FilePath).ToLower();
-                    if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".zip")
+                    if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".xml" && fileExtension != ".zip")
                     {
                         skippedCount++;
                         continue;
@@ -594,7 +594,7 @@ namespace Ink_Canvas.Helpers
 
                 // 检查文件扩展名
                 var fileExtension = Path.GetExtension(filePath).ToLower();
-                if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".zip")
+                if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".xml" && fileExtension != ".zip")
                 {
                     return false;
                 }
@@ -676,6 +676,11 @@ namespace Ink_Canvas.Helpers
                     fileType = "墨迹文件";
                     tags = "自动上传,墨迹,icstk";
                 }
+                else if (fileExtension == ".xml")
+                {
+                    fileType = "XML文件";
+                    tags = "自动上传,xml";
+                }
                 else
                 {
                     fileType = "笔记";
@@ -728,7 +733,7 @@ namespace Ink_Canvas.Helpers
 
             // 检查文件扩展名
             var fileExtension = Path.GetExtension(filePath).ToLower();
-            if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".zip")
+            if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".xml" && fileExtension != ".zip")
             {
                 return false; // 文件格式错误，不可重试
             }
