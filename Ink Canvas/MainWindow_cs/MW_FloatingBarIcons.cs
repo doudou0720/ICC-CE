@@ -709,49 +709,48 @@ namespace Ink_Canvas
                     BlackBoardWaterMark.Visibility = Visibility.Collapsed;
                 }
 
-                try
+                _ = UpdateChickenSoupTextAsync().ContinueWith(t =>
                 {
-                    _ = UpdateChickenSoupTextAsync();
-                }
-                catch (Exception ex)
-                {
-                    try
-                    {
-                        LogHelper.WriteLogToFile($"进入白板模式时更新名言失败: {ex.Message}", LogHelper.LogType.Warning);
-                    }
-                    catch
-                    {
-                    }
-                    if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource != 3)
+                    if (t.IsFaulted)
                     {
                         try
                         {
-                            if (Settings.Appearance.ChickenSoupSource == 0)
-                            {
-                                int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
-                                BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
-                            }
-                            else if (Settings.Appearance.ChickenSoupSource == 1)
-                            {
-                                int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
-                                BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
-                            }
-                            else if (Settings.Appearance.ChickenSoupSource == 2)
-                            {
-                                int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
-                                BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
-                            }
+                            LogHelper.WriteLogToFile($"进入白板模式时更新名言失败: {t.Exception?.GetBaseException().Message}", LogHelper.LogType.Warning);
                         }
                         catch
                         {
-                            BlackBoardWaterMark.Visibility = Visibility.Collapsed;
+                        }
+                        if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource != 3)
+                        {
+                            try
+                            {
+                                if (Settings.Appearance.ChickenSoupSource == 0)
+                                {
+                                    int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
+                                    BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
+                                }
+                                else if (Settings.Appearance.ChickenSoupSource == 1)
+                                {
+                                    int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
+                                    BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
+                                }
+                                else if (Settings.Appearance.ChickenSoupSource == 2)
+                                {
+                                    int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
+                                    BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
+                                }
+                            }
+                            catch
+                            {
+                                BlackBoardWaterMark.Visibility = Visibility.Collapsed;
+                            }
+                        }
+                        else if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource == 3)
+                        {
+                            BlackBoardWaterMark.Text = "一言功能不可用";
                         }
                     }
-                    else if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource == 3)
-                    {
-                        BlackBoardWaterMark.Text = "一言功能不可用";
-                    }
-                }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
 
                 if (Settings.Canvas.UsingWhiteboard)
                 {
