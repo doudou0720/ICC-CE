@@ -29,5 +29,20 @@ namespace Ink_Canvas.Windows.SettingsViews
                 IsTopBarNeedNoShadowEffect?.Invoke(this, new RoutedEventArgs());
             }
         }
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
+        public void ApplyTheme()
+        {
+            try
+            {
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"AppearancePanel 应用主题时出错: {ex.Message}");
+            }
+        }
     }
 }

@@ -1,4 +1,6 @@
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Windows;
+using Ink_Canvas.Windows.SettingsViews;
 using iNKORE.UI.WPF.Modern;
 using System;
 using System.Diagnostics;
@@ -2874,46 +2876,64 @@ namespace Ink_Canvas
 
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
-            if (BorderSettings.Visibility == Visibility.Visible)
+            if (isOpeningOrHidingSettingsPane) return;
+            HideSubPanels();
             {
-                HideSubPanels();
+                var settingsWindow = new SettingsWindow();
+                settingsWindow.Owner = this;
+                settingsWindow.ShowDialog();
             }
-            else
+        }
+
+        /// <summary>
+        /// 显示老设置面板
+        /// </summary>
+        public void ShowOldSettingsPanel()
+        {
+            if (isOpeningOrHidingSettingsPane) return;
+            HideSubPanels();
+            
+            // 关闭新设置窗口
+            foreach (Window window in Application.Current.Windows)
             {
-                BorderSettings.Visibility = Visibility.Visible;
-                wasNoFocusModeBeforeSettings = Settings.Advanced.IsNoFocusMode;
-                userChangedNoFocusModeInSettings = false; // 重置用户修改标志
-                if (wasNoFocusModeBeforeSettings)
+                if (window is SettingsWindow)
                 {
-                    isTemporarilyDisablingNoFocusMode = true;
-                    ApplyNoFocusMode();
+                    window.Close();
+                    break;
                 }
-
-                // 设置蒙版为可点击，并添加半透明背景
+            }
+            
+            // 显示老设置面板
+            if (BorderSettings.Visibility != Visibility.Visible)
+            {
+                isOpeningOrHidingSettingsPane = true;
+                BorderSettings.Visibility = Visibility.Visible;
+                BorderSettingsMask.Visibility = Visibility.Visible;
                 BorderSettingsMask.IsHitTestVisible = true;
-                BorderSettingsMask.Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
-                SettingsPanelScrollViewer.ScrollToTop();
+                BorderSettingsMask.Background = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0));
+                
+                // 设置初始位置
+                BorderSettings.RenderTransform = new TranslateTransform(490, 0);
+                
                 var sb = new Storyboard();
-
-                // 滑动动画
                 var slideAnimation = new DoubleAnimation
                 {
-                    From = BorderSettings.RenderTransform.Value.OffsetX - 490, // 滑动距离
+                    From = 490,
                     To = 0,
                     Duration = TimeSpan.FromSeconds(0.6),
                     EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
                 };
                 Storyboard.SetTargetProperty(slideAnimation,
                     new PropertyPath("(UIElement.RenderTransform).(TranslateTransform.X)"));
-
+                Storyboard.SetTarget(slideAnimation, BorderSettings);
+                
                 sb.Children.Add(slideAnimation);
-
-                sb.Completed += (s, _) => { isOpeningOrHidingSettingsPane = false; };
-
-                BorderSettings.RenderTransform = new TranslateTransform();
-
-                isOpeningOrHidingSettingsPane = true;
-                sb.Begin(BorderSettings);
+                sb.Completed += (s, _) =>
+                {
+                    isOpeningOrHidingSettingsPane = false;
+                };
+                
+                sb.Begin();
             }
         }
 

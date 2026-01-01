@@ -35,7 +35,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进退白板模式自动开关双指移动功能" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后退出画板模式时自动关闭双指移动手势，进入白板模式时自动开启双指移动手势" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoSwitchTwoFingerGesture" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchAutoSwitchTwoFingerGesture" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="AutoSwitchTwoFingerGesture" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -49,7 +49,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="允许双指旋转与缩放选中的墨迹" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="允许选中墨迹后对墨迹进行双指或多指缩放操作" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableTwoFingerRotationOnSelection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEnableTwoFingerRotationOnSelection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableTwoFingerRotationOnSelection" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -68,7 +68,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用手掌擦" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，两个及以上触点且触摸面积较大时自动切换为橡皮擦，抬手后恢复原编辑模式" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnablePalmEraser" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchEnablePalmEraser" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnablePalmEraser" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -77,23 +77,23 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
-                    <Grid Height="54" x:Name="PalmEraserSensitivityPanel" Visibility="Collapsed">
-                        <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
-                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="手掌擦敏感度" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="低敏感度：需要更大的触摸面积和更多触摸点，减少误判；高敏感度：更容易触发手掌擦，但可能误判手指" HorizontalAlignment="Left"/>
+                    <StackPanel Orientation="Vertical" x:Name="PalmEraserSensitivityPanel" Visibility="Collapsed" Margin="0,12,0,12">
+                        <StackPanel Orientation="Vertical" Margin="18,0,0,0">
+                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="手掌擦敏感度" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,0,0,12" Text="低敏感度：需要更大的触摸面积和更多触摸点，减少误判；高敏感度：更容易触发手掌擦，但可能误判手指" HorizontalAlignment="Left" TextWrapping="Wrap"/>
                         </StackPanel>
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="PalmEraserSensitivityLowBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="PalmEraserSensitivity_Low" Margin="0,0,8,8">
+                        <WrapPanel Orientation="Horizontal" Margin="18,0,15,0">
+                            <Border x:Name="PalmEraserSensitivityLowBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="PalmEraserSensitivity_Low" Margin="0,0,8,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="低敏感度"/>
                             </Border>
-                            <Border x:Name="PalmEraserSensitivityMediumBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PalmEraserSensitivity_Medium" Margin="0,0,8,8">
+                            <Border x:Name="PalmEraserSensitivityMediumBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PalmEraserSensitivity_Medium" Margin="0,0,8,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="中敏感度"/>
                             </Border>
-                            <Border x:Name="PalmEraserSensitivityHighBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PalmEraserSensitivity_High" Margin="0,0,8,8">
+                            <Border x:Name="PalmEraserSensitivityHighBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PalmEraserSensitivity_High" Margin="0,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="高敏感度"/>
                             </Border>
                         </WrapPanel>
-                    </Grid>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </StackPanel>

@@ -43,7 +43,7 @@
                         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiNote.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃白板5" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -54,7 +54,7 @@
                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiCamera.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃展台" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInEasiCamera" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInEasiCamera" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -65,7 +65,7 @@
                         <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/HiteBoard.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="鸿合白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInHiteTouchPro" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInHiteTouchPro" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -76,7 +76,7 @@
                         <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/EasiNote3.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃白板3" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote3" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote3" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -88,7 +88,7 @@
                         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiNote3C.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃轻白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote3C" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote3C" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -99,7 +99,7 @@
                         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiNote5C.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃轻白板5C" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote5C" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInEasiNote5C" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -110,7 +110,7 @@
                         <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/SeewoPinco.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃品课" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInSeewoPincoTeacher" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInSeewoPincoTeacher" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -121,7 +121,7 @@
                         <StackPanel Grid.Row="1" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/HiteCamera.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="鸿合展台" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInHiteCamera" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInHiteCamera" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -133,7 +133,7 @@
                         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/HiteLightBoard.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="鸿合轻量白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInHiteLightBoard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInHiteLightBoard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -144,7 +144,7 @@
                         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/WenXiang.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="文香白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInWxBoardMain" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInWxBoardMain" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -155,7 +155,7 @@
                         <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/Whiteboard.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="微软白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInMSWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInMSWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -166,7 +166,7 @@
                         <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/AdmoxWhiteboard.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="安道白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInAdmoxWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInAdmoxWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -178,7 +178,7 @@
                         <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/AdmoxBooth.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="安道展台" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInAdmoxBooth" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInAdmoxBooth" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -189,7 +189,7 @@
                         <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/YiYunWhiteboard.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="艺云白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInQPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInQPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -200,7 +200,7 @@
                         <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/YiYunVisualPresenter.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="艺云展台" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInYiYunVisualPresenter" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInYiYunVisualPresenter" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -211,7 +211,7 @@
                         <StackPanel Grid.Row="3" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/MaxHubWhiteboard.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="MaxHub白板" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAutoFoldInMaxHubWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                            <Border x:Name="ToggleSwitchAutoFoldInMaxHubWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -226,7 +226,7 @@
                             <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="播放PPT时自动收纳" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoFoldInPPTSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchAutoFoldInPPTSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -240,7 +240,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="软件退出后保持收纳模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，执行自动收纳的软件在软件退出后不退出收纳模式，保持收纳状态" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchKeepFoldAfterSoftwareExit" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchKeepFoldAfterSoftwareExit" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -254,7 +254,7 @@
                             <Image Source="/Resources/Icons-png/EasiNote.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动收纳忽略桌面EN5批注窗口" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -268,7 +268,7 @@
                             <Image Source="/Resources/Icons-png/Donview.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入&quot;中原旧白板&quot;时自动收纳" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoFoldInOldZyBoard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchAutoFoldInOldZyBoard" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>

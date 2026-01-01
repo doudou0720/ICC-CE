@@ -37,7 +37,7 @@
                             <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="Microsoft PowerPoint 支持" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchSupportPowerPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchSupportPowerPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="SupportPowerPoint" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -51,7 +51,7 @@
                             <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PowerPoint 联动增强" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchPowerPointEnhancement" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchPowerPointEnhancement" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="PowerPointEnhancement" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -65,7 +65,7 @@
                             <Image Source="/Resources/Icons-png/WPS.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="WPS 支持" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchSupportWPS" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchSupportWPS" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="SupportWPS" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -79,7 +79,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="WPP进程查杀（防止WPP残留进程）" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="关闭后将不会自动查杀WPP残留进程，可能导致WPP关闭卡顿或无法彻底退出" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableWppProcessKill" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEnableWppProcessKill" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableWppProcessKill" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -160,7 +160,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="在 PPT 模式下显示翻页按钮" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在PPT放映模式下显示翻页控制按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchShowPPTButton" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchShowPPTButton" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowPPTButton" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -170,114 +170,178 @@
                     </Grid>
                     <StackPanel x:Name="PPTButtonSettingsPanel" Margin="0,12,0,0" Visibility="Visible">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
-                            <CheckBox x:Name="CheckboxEnableLBPPTButton" IsChecked="True" Content="左下" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxEnableRBPPTButton" IsChecked="True" Content="右下" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxEnableLSPPTButton" IsChecked="True" Content="左侧" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxEnableRSPPTButton" IsChecked="True" Content="右侧"/>
+                            <CheckBox x:Name="CheckboxEnableLBPPTButton" IsChecked="True" Content="左下" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxEnableRBPPTButton" IsChecked="True" Content="右下" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxEnableLSPPTButton" IsChecked="True" Content="左侧" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxEnableRSPPTButton" IsChecked="True" Content="右侧" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                         </StackPanel>
                         <Grid Height="54">
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="左侧偏移" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调大往上偏移，调小往下偏移，修改为0为不偏移，居中放置" HorizontalAlignment="Left"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                <Slider x:Name="PPTButtonLeftPositionValueSlider" Width="150" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True"/>
-                                <TextBlock x:Name="PPTButtonLeftPositionValueText" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                            </StackPanel>
+                            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="PPTButtonLeftPositionValueSlider" Grid.Column="0" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonPositionSlider_ValueChanged"/>
+                                <TextBlock x:Name="PPTButtonLeftPositionValueText" Grid.Column="1" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                            </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <Grid Height="54">
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="右侧偏移" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调大往右偏移，调小往左偏移，修改为0为不偏移，居中放置" HorizontalAlignment="Left"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                <Slider x:Name="PPTButtonRightPositionValueSlider" Width="150" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True"/>
-                                <TextBlock x:Name="PPTButtonRightPositionValueText" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                            </StackPanel>
+                            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="PPTButtonRightPositionValueSlider" Grid.Column="0" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonPositionSlider_ValueChanged"/>
+                                <TextBlock x:Name="PPTButtonRightPositionValueText" Grid.Column="1" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                            </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <Grid Height="54">
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="左下偏移" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整左下按钮的位置" HorizontalAlignment="Left"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                <Slider x:Name="PPTButtonLBPositionValueSlider" Width="150" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True"/>
-                                <TextBlock x:Name="PPTButtonLBPositionValueText" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                            </StackPanel>
+                            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="PPTButtonLBPositionValueSlider" Grid.Column="0" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonPositionSlider_ValueChanged"/>
+                                <TextBlock x:Name="PPTButtonLBPositionValueText" Grid.Column="1" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                            </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <Grid Height="54">
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="右下偏移" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整右下按钮的位置" HorizontalAlignment="Left"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                <Slider x:Name="PPTButtonRBPositionValueSlider" Width="150" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True"/>
-                                <TextBlock x:Name="PPTButtonRBPositionValueText" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                            </StackPanel>
+                            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider x:Name="PPTButtonRBPositionValueSlider" Grid.Column="0" Minimum="-500" Maximum="500" Value="0" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonPositionSlider_ValueChanged"/>
+                                <TextBlock x:Name="PPTButtonRBPositionValueText" Grid.Column="1" Text="0" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                            </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <TextBlock Text="两侧按钮设置" FontWeight="Bold" Foreground="#2e3436" FontSize="16" Margin="0,0,0,8"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-                            <CheckBox x:Name="CheckboxSPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxSPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxSPPTBlackBackground" IsChecked="True" Content="黑色背景"/>
+                            <CheckBox x:Name="CheckboxSPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxSPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxSPPTBlackBackground" IsChecked="True" Content="黑色背景" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                         </StackPanel>
                         <StackPanel x:Name="PPTLSButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
                             <Grid Height="54">
-                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="左侧按钮透明度" HorizontalAlignment="Left"/>
                                     <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整左侧翻页按钮的透明度" HorizontalAlignment="Left"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                    <Slider x:Name="PPTLSButtonOpacityValueSlider" Width="150" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
-                                    <TextBlock x:Name="PPTLSButtonOpacityValueText" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                                </StackPanel>
+                                <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="PPTLSButtonOpacityValueSlider" Grid.Column="0" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonOpacitySlider_ValueChanged"/>
+                                    <TextBlock x:Name="PPTLSButtonOpacityValueText" Grid.Column="1" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                                </Grid>
                             </Grid>
                         </StackPanel>
                         <StackPanel x:Name="PPTRSButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
                             <Grid Height="54">
-                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="右侧按钮透明度" HorizontalAlignment="Left"/>
                                     <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整右侧翻页按钮的透明度" HorizontalAlignment="Left"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                    <Slider x:Name="PPTRSButtonOpacityValueSlider" Width="150" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
-                                    <TextBlock x:Name="PPTRSButtonOpacityValueText" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                                </StackPanel>
+                                <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="PPTRSButtonOpacityValueSlider" Grid.Column="0" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonOpacitySlider_ValueChanged"/>
+                                    <TextBlock x:Name="PPTRSButtonOpacityValueText" Grid.Column="1" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                                </Grid>
                             </Grid>
                         </StackPanel>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <TextBlock Text="左下右下按钮设置" FontWeight="Bold" Foreground="#2e3436" FontSize="16" Margin="0,0,0,8"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-                            <CheckBox x:Name="CheckboxBPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxBPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,0"/>
-                            <CheckBox x:Name="CheckboxBPPTBlackBackground" IsChecked="True" Content="黑色背景"/>
+                            <CheckBox x:Name="CheckboxBPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxBPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxBPPTBlackBackground" IsChecked="True" Content="黑色背景" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                         </StackPanel>
                         <StackPanel x:Name="PPTLBButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
                             <Grid Height="54">
-                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="左下按钮透明度" HorizontalAlignment="Left"/>
                                     <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整左下翻页按钮的透明度" HorizontalAlignment="Left"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                    <Slider x:Name="PPTLBButtonOpacityValueSlider" Width="150" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
-                                    <TextBlock x:Name="PPTLBButtonOpacityValueText" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                                </StackPanel>
+                                <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="PPTLBButtonOpacityValueSlider" Grid.Column="0" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonOpacitySlider_ValueChanged"/>
+                                    <TextBlock x:Name="PPTLBButtonOpacityValueText" Grid.Column="1" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                                </Grid>
                             </Grid>
                         </StackPanel>
                         <StackPanel x:Name="PPTRBButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
                             <Grid Height="54">
-                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="右下按钮透明度" HorizontalAlignment="Left"/>
                                     <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整右下翻页按钮的透明度" HorizontalAlignment="Left"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                                    <Slider x:Name="PPTRBButtonOpacityValueSlider" Width="150" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
-                                    <TextBlock x:Name="PPTRBButtonOpacityValueText" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
-                                </StackPanel>
+                                <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="50"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider x:Name="PPTRBButtonOpacityValueSlider" Grid.Column="0" Minimum="0.1" Maximum="1.0" Value="0.5" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="PPTButtonOpacitySlider_ValueChanged"/>
+                                    <TextBlock x:Name="PPTRBButtonOpacityValueText" Grid.Column="1" Text="0.5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" TextAlignment="Left"/>
+                                </Grid>
                             </Grid>
                         </StackPanel>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
@@ -290,7 +354,7 @@
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PPT 页码按钮可点击" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后，点击页码按钮可以唤起PowerPoint自带的网格缩略图视图。WPS不支持该功能" HorizontalAlignment="Left" MaxWidth="450"/>
                             </StackPanel>
-                            <Border x:Name="ToggleSwitchEnablePPTButtonPageClickable" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0">
+                            <Border x:Name="ToggleSwitchEnablePPTButtonPageClickable" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0" Tag="EnablePPTButtonPageClickable" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -308,7 +372,7 @@
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PPT 翻页按钮长按翻页" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后，长按PPT翻页按钮可以连续翻页，提高翻页效率" HorizontalAlignment="Left" MaxWidth="450"/>
                             </StackPanel>
-                            <Border x:Name="ToggleSwitchEnablePPTButtonLongPressPageTurn" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0">
+                            <Border x:Name="ToggleSwitchEnablePPTButtonLongPressPageTurn" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0" Tag="EnablePPTButtonLongPressPageTurn" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -326,7 +390,7 @@
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="点击翻页时跳过转场动画，直接切到下一张" HorizontalAlignment="Left"/>
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后，点击下一页按钮时会跳过幻灯片之间的转场动画，直接跳转到下一张幻灯片。不会影响幻灯片内的元素动画" HorizontalAlignment="Left" MaxWidth="450"/>
                             </StackPanel>
-                            <Border x:Name="ToggleSwitchSkipAnimationsWhenGoNext" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0">
+                            <Border x:Name="ToggleSwitchSkipAnimationsWhenGoNext" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0" Tag="SkipAnimationsWhenGoNext" MouseLeftButtonDown="ToggleSwitch_Click">
                                 <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -346,7 +410,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入 PPT 放映时自动进入批注模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="进入PPT放映时自动切换到批注模式" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchShowCanvasAtNewSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchShowCanvasAtNewSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowCanvasAtNewSlideShow" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -378,7 +442,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="允许幻灯片模式下的双指手势" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在幻灯片模式下允许使用双指手势" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableTwoFingerGestureInPresentationMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEnableTwoFingerGestureInPresentationMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableTwoFingerGestureInPresentationMode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -392,7 +456,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="允许使用手指手势进行幻灯片翻页" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="在幻灯片放映模式下，当画板无墨迹时，使用手指左右滑动即可控制幻灯片翻页" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableFingerGestureSlideShowControl" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEnableFingerGestureSlideShowControl" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableFingerGestureSlideShowControl" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -406,7 +470,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PPT 放映模式显示手势按钮" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后在 PPT 放映模式下也显示手势按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchShowGestureButtonInSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchShowGestureButtonInSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="ShowGestureButtonInSlideShow" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -425,7 +489,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PPT时间显示胶囊" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后在 PPT 放映模式下显示时间胶囊，可替代最小化计时器窗口" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnablePPTTimeCapsule" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEnablePPTTimeCapsule" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnablePPTTimeCapsule" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -440,13 +504,13 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择时间胶囊在屏幕上的显示位置" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="PPTTimeCapsulePositionTopLeftBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopLeft" Margin="0,0,8,8">
+                            <Border x:Name="PPTTimeCapsulePositionTopLeftBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopLeft" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="左上角"/>
                             </Border>
-                            <Border x:Name="PPTTimeCapsulePositionTopRightBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopRight" Margin="0,0,8,8">
+                            <Border x:Name="PPTTimeCapsulePositionTopRightBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopRight" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="右上角"/>
                             </Border>
-                            <Border x:Name="PPTTimeCapsulePositionTopCenterBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopCenter" Margin="0,0,8,8">
+                            <Border x:Name="PPTTimeCapsulePositionTopCenterBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopCenter" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="顶部居中"/>
                             </Border>
                         </WrapPanel>
@@ -462,7 +526,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="记忆并提示上次播放位置" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后会记录上次播放的页数，点击&quot;是&quot;后会自动跳转" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchNotifyPreviousPage" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchNotifyPreviousPage" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="NotifyPreviousPage" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -476,7 +540,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入放映时回到首页" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="进入PPT放映时自动跳转到第一页" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAlwaysGoToFirstPageOnReenter" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchAlwaysGoToFirstPageOnReenter" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="AlwaysGoToFirstPageOnReenter" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -490,7 +554,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="提示隐藏幻灯片" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在播放隐藏幻灯片时显示提示" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchNotifyHiddenPage" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchNotifyHiddenPage" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="NotifyHiddenPage" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -504,7 +568,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="提示是否已启用自动播放" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在PPT自动播放时显示提示" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchNotifyAutoPlayPresentation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchNotifyAutoPlayPresentation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="NotifyAutoPlayPresentation" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>

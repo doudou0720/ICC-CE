@@ -35,7 +35,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示画笔光标" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="绘制时显示画笔光标" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchShowCursor" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchShowCursor" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowCursor" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -49,7 +49,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用压感触屏模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，触屏设备也将支持压感效果，适用于部分支持压感但无法被系统识别的触屏设备" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnablePressureTouchMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEnablePressureTouchMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnablePressureTouchMode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -63,7 +63,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="屏蔽压感" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，将忽略所有设备的压感信息，使所有笔画具有统一的粗细。与压感触屏模式互斥" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchDisablePressure" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchDisablePressure" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="DisablePressure" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -77,19 +77,19 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="板擦橡皮大小" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="EraserSizeVerySmall" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_VerySmall">
+                            <Border x:Name="EraserSizeVerySmall" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_VerySmall" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="很小"/>
                             </Border>
-                            <Border x:Name="EraserSizeSmall" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_Small" Margin="8,0,0,0">
+                            <Border x:Name="EraserSizeSmall" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_Small" Margin="8,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="较小"/>
                             </Border>
-                            <Border x:Name="EraserSizeMedium" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="EraserSize_Medium" Margin="8,0,0,0">
+                            <Border x:Name="EraserSizeMedium" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="EraserSize_Medium" Margin="8,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="中等"/>
                             </Border>
-                            <Border x:Name="EraserSizeLarge" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_Large" Margin="8,0,0,0">
+                            <Border x:Name="EraserSizeLarge" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_Large" Margin="8,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="较大"/>
                             </Border>
-                            <Border x:Name="EraserSizeVeryLarge" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_VeryLarge" Margin="8,0,0,0">
+                            <Border x:Name="EraserSizeVeryLarge" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserSize_VeryLarge" Margin="8,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="很大"/>
                             </Border>
                         </StackPanel>
@@ -105,7 +105,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="退出画板模式后隐藏墨迹" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，进入 PPT 模式时未处于批注模式时不会显示墨迹" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchHideStrokeWhenSelecting" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchHideStrokeWhenSelecting" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="HideStrokeWhenSelecting" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -119,7 +119,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="清空墨迹时删除墨迹历史记录" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，清空墨迹后将无法通过&quot;撤销&quot;功能恢复" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchClearCanvasAndClearTimeMachine" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchClearCanvasAndClearTimeMachine" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ClearCanvasAndClearTimeMachine" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -133,7 +133,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="清空画布时同时清空图片" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="清空画布时同时删除所有插入的图片" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchClearCanvasAlsoClearImages" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchClearCanvasAlsoClearImages" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="ClearCanvasAlsoClearImages" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -147,7 +147,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="插入图片时自动压缩（大于1920x1080）" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="插入的图片大于1920x1080时自动压缩以节省内存" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchCompressPicturesUploaded" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchCompressPicturesUploaded" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="CompressPicturesUploaded" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -166,13 +166,13 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="保留双曲线渐近线" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="HyperbolaAsymptoteYes" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="HyperbolaAsymptote_Yes">
+                            <Border x:Name="HyperbolaAsymptoteYes" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="HyperbolaAsymptote_Yes" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="是"/>
                             </Border>
-                            <Border x:Name="HyperbolaAsymptoteNo" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="HyperbolaAsymptote_No" Margin="8,0,0,0">
+                            <Border x:Name="HyperbolaAsymptoteNo" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="HyperbolaAsymptote_No" Margin="8,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="否"/>
                             </Border>
-                            <Border x:Name="HyperbolaAsymptoteAsk" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="HyperbolaAsymptote_Ask" Margin="8,0,0,0">
+                            <Border x:Name="HyperbolaAsymptoteAsk" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="HyperbolaAsymptote_Ask" Margin="8,0,0,0" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="每次询问"/>
                             </Border>
                         </StackPanel>
@@ -183,7 +183,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="绘制圆时显示圆心位置" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="绘制圆形时显示圆心标记" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchShowCircleCenter" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchShowCircleCenter" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowCircleCenter" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -197,7 +197,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="使用WPF默认贝塞尔曲线平滑" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用WPF内置的曲线平滑算法" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchFitToCurve" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchFitToCurve" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="FitToCurve" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -211,7 +211,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="使用高级曲线平滑（推荐）" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用改进的贝塞尔曲线平滑算法，提供更好的绘制效果" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAdvancedBezierSmoothing" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchAdvancedBezierSmoothing" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="AdvancedBezierSmoothing" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -230,7 +230,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用墨迹渐隐功能" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后墨迹不会绘制到画布上，而是保持湿墨迹状态，根据设置的渐隐时间自动消失" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableInkFade" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchEnableInkFade" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnableInkFade" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -245,7 +245,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="设置墨迹从绘制到完全消失的时间" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="InkFadeTimeSlider" Width="150" Minimum="1000" Maximum="10000" Value="3000" TickFrequency="1000" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="InkFadeTimeSlider" Width="150" Minimum="1000" Maximum="10000" Value="3000" TickFrequency="1000" IsSnapToTickEnabled="True" ValueChanged="InkFadeTimeSlider_ValueChanged"/>
                             <TextBlock x:Name="InkFadeTimeText" Text="3000ms" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>
@@ -261,7 +261,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="定时自动保存墨迹" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后将在设定时间间隔自动保存墨迹，仅在画布可见且有墨迹时才会保存" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableAutoSaveStrokes" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchEnableAutoSaveStrokes" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnableAutoSaveStrokes" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -276,25 +276,25 @@
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="保存间隔" HorizontalAlignment="Left" Margin="0,0,12,0"/>
                             </StackPanel>
                             <WrapPanel Orientation="Horizontal" Margin="0,0,15,0">
-                                <Border x:Name="AutoSaveStrokesInterval1MinBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="AutoSaveStrokesInterval_1" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval1MinBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="AutoSaveStrokesInterval_1" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="1分钟"/>
                                 </Border>
-                                <Border x:Name="AutoSaveStrokesInterval3MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_3" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval3MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_3" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" Text="3分钟"/>
                                 </Border>
-                                <Border x:Name="AutoSaveStrokesInterval5MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_5" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval5MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_5" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" Text="5分钟"/>
                                 </Border>
-                                <Border x:Name="AutoSaveStrokesInterval10MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_10" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval10MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_10" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" Text="10分钟"/>
                                 </Border>
-                                <Border x:Name="AutoSaveStrokesInterval15MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_15" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval15MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_15" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" Text="15分钟"/>
                                 </Border>
-                                <Border x:Name="AutoSaveStrokesInterval30MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_30" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval30MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_30" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" Text="30分钟"/>
                                 </Border>
-                                <Border x:Name="AutoSaveStrokesInterval60MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_60" Margin="0,0,8,8">
+                                <Border x:Name="AutoSaveStrokesInterval60MinBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoSaveStrokesInterval_60" Margin="0,0,8,8" MouseLeftButtonDown="AutoSaveIntervalButton_Click">
                                     <TextBlock Foreground="#2e3436" FontSize="14" Text="60分钟"/>
                                 </Border>
                             </WrapPanel>
@@ -309,7 +309,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="墨迹全页面保存" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后自动保存和手动保存墨迹时将以全屏模式保存。如果存在多个画布和墨迹，将把所有页面的墨迹按照每页为单位保存进一个压缩包中" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchSaveFullPageStrokes" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,15,8">
+                        <Border x:Name="ToggleSwitchSaveFullPageStrokes" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,15,8" Tag="SaveFullPageStrokes" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -323,7 +323,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="保存为XML格式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后保存墨迹时将使用XML格式（ISF格式），便于查看和编辑墨迹数据" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchSaveStrokesAsXML" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchSaveStrokesAsXML" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="SaveStrokesAsXML" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -341,7 +341,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动保存幻灯片墨迹" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后将在结束幻灯片放映时自动保存已有墨迹，并在下次打开时自动加载（文件名和幻灯片页数都要相同）" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoSaveStrokesInPowerPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,15,8">
+                        <Border x:Name="ToggleSwitchAutoSaveStrokesInPowerPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,15,8" Tag="AutoSaveStrokesInPowerPoint" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>

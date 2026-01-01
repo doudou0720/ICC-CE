@@ -37,7 +37,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="特殊屏幕模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用特殊屏幕模式以优化触摸体验" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsSpecialScreen" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchIsSpecialScreen" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsSpecialScreen" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -52,7 +52,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整触摸大小的倍数" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="TouchMultiplierSlider" Width="150" Minimum="0" Maximum="2" Value="0.3" TickFrequency="0.01" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="TouchMultiplierSlider" Width="150" Minimum="0" Maximum="2" Value="0.3" TickFrequency="0.01" IsSnapToTickEnabled="True" ValueChanged="TouchMultiplierSlider_ValueChanged"/>
                             <TextBlock x:Name="TouchMultiplierText" Text="0.30" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>
@@ -62,7 +62,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="橡皮擦绑定触摸大小倍数" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="橡皮擦大小与触摸大小倍数绑定" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEraserBindTouchMultiplier" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchEraserBindTouchMultiplier" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EraserBindTouchMultiplier" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>

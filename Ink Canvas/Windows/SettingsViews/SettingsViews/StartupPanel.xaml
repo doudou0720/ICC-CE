@@ -35,7 +35,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="窗口无焦点模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="窗口失去焦点时仍可接收输入" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchNoFocusMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchNoFocusMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="NoFocusMode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -49,7 +49,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="窗口无边框模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="隐藏窗口边框，提供更沉浸的体验" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchWindowMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchWindowMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="WindowMode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -63,7 +63,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="窗口置顶" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="窗口始终显示在其他窗口之上" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAlwaysOnTop" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchAlwaysOnTop" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="AlwaysOnTop" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -77,7 +77,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="UIA置顶" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用UIA方式实现置顶，需要管理员权限" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchUIAccessTopMost" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchUIAccessTopMost" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="UIAccessTopMost" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -96,7 +96,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动检查更新" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="定期检查是否有新版本可用" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsAutoUpdate" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchIsAutoUpdate" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsAutoUpdate" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -110,7 +110,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="静默更新" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在软件不使用时自动安装更新，无需手动操作" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsAutoUpdateWithSilence" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchIsAutoUpdateWithSilence" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsAutoUpdateWithSilence" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -125,10 +125,10 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择更新通道：稳定版提供可靠更新，测试版提供新功能抢先体验" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="UpdateChannelReleaseBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UpdateChannel_Release" Margin="0,0,8,8">
+                            <Border x:Name="UpdateChannelReleaseBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UpdateChannel_Release" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="稳定版"/>
                             </Border>
-                            <Border x:Name="UpdateChannelBetaBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UpdateChannel_Beta" Margin="0,0,8,8">
+                            <Border x:Name="UpdateChannelBetaBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UpdateChannel_Beta" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="测试版"/>
                             </Border>
                         </WrapPanel>
@@ -139,7 +139,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="手动更新" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="点击后立即检查并下载最新版本" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Button x:Name="ManualUpdateButton" Content="手动更新" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6"/>
+                        <Button x:Name="ManualUpdateButton" Content="手动更新" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6" Click="ManualUpdateButton_Click"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
                     <Grid Height="54">
@@ -147,7 +147,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="版本修复" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="根据当前选择的通道下载最新版本并执行安装，可用于修复损坏的安装" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Button x:Name="FixVersionButton" Content="版本修复" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6"/>
+                        <Button x:Name="FixVersionButton" Content="版本修复" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6" Click="FixVersionButton_Click"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
                     <Grid Height="54">
@@ -155,7 +155,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="历史版本回滚" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="回滚到之前的版本" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Button x:Name="HistoryRollbackButton" Content="历史版本回滚" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6"/>
+                        <Button x:Name="HistoryRollbackButton" Content="历史版本回滚" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6" Click="HistoryRollbackButton_Click"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
                     <Grid Margin="18,12,15,12" x:Name="AutoUpdateTimePeriodBlock">
@@ -169,7 +169,8 @@
                                               ItemContainerStyle="{StaticResource ComboBoxItemStyle}"
                                               HorizontalAlignment="Left"
                                               Width="150"
-                                              SelectedIndex="6">
+                                              SelectedIndex="6"
+                                              SelectionChanged="AutoUpdateWithSilenceStartTimeComboBox_SelectionChanged">
                                         <ComboBoxItem Content="00:00" Tag="00"/>
                                         <ComboBoxItem Content="01:00" Tag="01"/>
                                         <ComboBoxItem Content="02:00" Tag="02"/>
@@ -203,7 +204,8 @@
                                               ItemContainerStyle="{StaticResource ComboBoxItemStyle}"
                                               HorizontalAlignment="Left"
                                               Width="150"
-                                              SelectedIndex="22">
+                                              SelectedIndex="22"
+                                              SelectionChanged="AutoUpdateWithSilenceEndTimeComboBox_SelectionChanged">
                                         <ComboBoxItem Content="00:00" Tag="00"/>
                                         <ComboBoxItem Content="01:00" Tag="01"/>
                                         <ComboBoxItem Content="02:00" Tag="02"/>
@@ -246,7 +248,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="开机时运行" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="系统启动时自动运行软件" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchRunAtStartup" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchRunAtStartup" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="RunAtStartup" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -260,7 +262,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="开机运行后收纳到侧边栏" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开机启动后自动收纳到侧边栏" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchFoldAtStartup" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                        <Border x:Name="ToggleSwitchFoldAtStartup" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="FoldAtStartup" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -281,7 +283,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="仅PPT模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用后，软件将完全隐藏，仅在PPT放映时出现" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                        <Border x:Name="ToggleSwitchMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="Mode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>

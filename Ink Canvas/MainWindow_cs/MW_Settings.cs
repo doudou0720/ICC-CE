@@ -2750,7 +2750,7 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
-        private void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
+        public void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
             try
             {
