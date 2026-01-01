@@ -11,6 +11,7 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/InkCanvasForClass/community)
 ![GitHub forks](https://img.shields.io/github/forks/InkCanvasForClass/community)
 [![All Contributors](https://img.shields.io/github/all-contributors/InkCanvasForClass/community?color=ee8449)](#贡献者)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/InkCanvasForClass/community)
 
 [![Discord](https://img.shields.io/discord/1383039050184917053?label=Discord&logo=discord)](https://discord.gg/ahj7eJWhEG)
 [![QQ](https://img.shields.io/badge/-1054377349-white?logo=qq&label=QQ)](https://qm.qq.com/q/qo32AclNh6)
