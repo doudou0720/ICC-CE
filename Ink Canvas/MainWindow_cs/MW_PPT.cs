@@ -99,7 +99,6 @@ namespace Ink_Canvas
 
         // 页面切换防抖机制
         private DateTime _lastSlideSwitchTime = DateTime.MinValue;
-        private int _pendingSlideIndex = -1;
         private const int SlideSwitchDebounceMs = 150;
         private bool _isInkClearedByButton = false;
         #endregion
@@ -1226,7 +1225,6 @@ namespace Ink_Canvas
 
                 // 重置页面切换防抖机制
                 _lastSlideSwitchTime = DateTime.MinValue;
-                _pendingSlideIndex = -1;
 
                 LogHelper.WriteLogToFile("PPT状态变量已重置", LogHelper.LogType.Trace);
             }

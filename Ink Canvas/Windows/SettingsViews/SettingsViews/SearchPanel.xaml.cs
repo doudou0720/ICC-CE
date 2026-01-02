@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -13,9 +13,6 @@ using Microsoft.International.Converters.PinYinConverter;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// SearchPanel.xaml 的交互逻辑
-    /// </summary>
     public partial class SearchPanel : UserControl
     {
         public event EventHandler<string> NavigateToItem;
@@ -38,49 +35,21 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void InitializeSettings()
         {
-            // 初始化所有设置项数据
             _allSettings = new List<SettingItem>
             {
-                // 启动时行为
                 new SettingItem { Title = "启动时行为", Category = "启动时行为", ItemName = "StartupItem", Type = SettingItemType.Category },
-                
-                // 画板和墨迹
                 new SettingItem { Title = "画板和墨迹", Category = "画板和墨迹", ItemName = "CanvasAndInkItem", Type = SettingItemType.Category },
-                
-                // 手势操作
                 new SettingItem { Title = "手势操作", Category = "手势操作", ItemName = "GesturesItem", Type = SettingItemType.Category },
-                
-                // 墨迹纠正
                 new SettingItem { Title = "墨迹纠正", Category = "墨迹纠正", ItemName = "InkRecognitionItem", Type = SettingItemType.Category },
-                
-                // 个性化设置
                 new SettingItem { Title = "个性化设置", Category = "个性化设置", ItemName = "ThemeItem", Type = SettingItemType.Category },
-                
-                // 快捷键设置
                 new SettingItem { Title = "快捷键设置", Category = "快捷键设置", ItemName = "ShortcutsItem", Type = SettingItemType.Category },
-                
-                // 崩溃处理
                 new SettingItem { Title = "崩溃处理", Category = "崩溃处理", ItemName = "CrashActionItem", Type = SettingItemType.Category },
-                
-                // PowerPoint 支持
                 new SettingItem { Title = "PowerPoint 支持", Category = "PowerPoint 支持", ItemName = "PowerPointItem", Type = SettingItemType.Category },
-                
-                // 自动化行为
                 new SettingItem { Title = "自动化行为", Category = "自动化行为", ItemName = "AutomationItem", Type = SettingItemType.Category },
-                
-                // 随机点名
                 new SettingItem { Title = "随机点名", Category = "随机点名", ItemName = "LuckyRandomItem", Type = SettingItemType.Category },
-                
-                // 存储空间
                 new SettingItem { Title = "存储空间", Category = "存储空间", ItemName = "StorageItem", Type = SettingItemType.Category },
-                
-                // 截图和屏幕捕捉
-                new SettingItem { Title = "截图和屏幕捕捉", Category = "截图和屏幕捕捉", ItemName = "SnapshotItem", Type = SettingItemType.Category },
-                
-                // 高级选项
+                new SettingItem { Title = "截图和屏幕捕获", Category = "截图和屏幕捕获", ItemName = "SnapshotItem", Type = SettingItemType.Category },
                 new SettingItem { Title = "高级选项", Category = "高级选项", ItemName = "AdvancedItem", Type = SettingItemType.Category },
-                
-                // 关于
                 new SettingItem { Title = "关于 InkCanvasForClass", Category = "关于", ItemName = "AboutItem", Type = SettingItemType.Category },
             };
         }
@@ -100,14 +69,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             var searchLower = searchText.ToLower();
             var exactMatchSet = new HashSet<string>();
             var fuzzyMatchSet = new HashSet<string>();
-
-            // 精准匹配和拼音匹配
             foreach (var setting in _allSettings)
             {
                 var titleLower = setting.Title.ToLower();
                 var categoryLower = setting.Category.ToLower();
-                
-                // 精准匹配
                 if (titleLower.Contains(searchLower) || categoryLower.Contains(searchLower))
                 {
                     if (!exactMatchSet.Contains(setting.ItemName))
@@ -123,7 +88,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         exactMatchSet.Add(setting.ItemName);
                     }
                 }
-                // 拼音匹配
                 else if (ContainsPinyinMatch(setting.Title, searchText) || ContainsPinyinMatch(setting.Category, searchText))
                 {
                     if (!exactMatchSet.Contains(setting.ItemName))
@@ -140,8 +104,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
             }
-
-            // 模糊匹配
             foreach (var setting in _allSettings)
             {
                 if (exactMatchSet.Contains(setting.ItemName))
@@ -164,14 +126,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
             }
-
-            // 相关项
             var allMatched = new HashSet<string>(exactMatchSet.Concat(fuzzyMatchSet));
             foreach (var setting in _allSettings)
             {
                 if (!allMatched.Contains(setting.ItemName))
                 {
-                    // 简单的相关性判断
                     if (IsRelated(setting, searchText))
                     {
                         _relatedItems.Add(new SearchResultItem
@@ -196,14 +155,9 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             try
             {
-                // 将搜索词转换为小写
                 var searchLower = search.ToLower();
-                
-                // 获取文本的拼音首字母和全拼
                 var pinyinInitials = GetPinyinInitials(text);
                 var pinyinFull = GetPinyinFull(text);
-                
-                // 检查搜索词是否匹配拼音首字母或全拼
                 if (pinyinInitials.ToLower().Contains(searchLower) || 
                     pinyinFull.ToLower().Contains(searchLower))
                 {
@@ -212,7 +166,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch
             {
-                // 如果拼音转换失败，返回false
                 return false;
             }
             
@@ -234,7 +187,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             var pinyin = chineseChar.Pinyins[0];
                             if (!string.IsNullOrEmpty(pinyin) && pinyin.Length > 0)
                             {
-                                // 获取首字母（移除音调数字后取第一个字母）
                                 var firstChar = Regex.Replace(pinyin, @"\d", "")[0];
                                 sb.Append(firstChar);
                             }
@@ -266,7 +218,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         if (chineseChar.PinyinCount > 0)
                         {
                             var pinyin = chineseChar.Pinyins[0];
-                            // 移除音调数字
                             pinyin = Regex.Replace(pinyin, @"\d", "");
                             sb.Append(pinyin);
                         }
@@ -293,8 +244,6 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(search))
                 return false;
-
-            // 简单的模糊匹配：检查搜索词的字符是否按顺序出现在文本中
             int searchIndex = 0;
             foreach (char c in text)
             {
@@ -310,9 +259,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private bool IsRelated(SettingItem setting, string search)
         {
-            // 简单的相关性判断，可以根据需要改进
-            // 例如：检查是否有共同的关键词等
-            return false; // 暂时禁用相关项功能
+            return false; 
         }
 
         private void UpdateResultsVisibility()
@@ -379,6 +326,154 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             SearchTextBox.Text = text;
             PerformSearch(text);
+        }
+        public void ApplyTheme()
+        {
+            try
+            {
+                bool isDarkTheme = ThemeHelper.IsDarkTheme;
+                if (SearchPanelMainGrid != null)
+                {
+                    SearchPanelMainGrid.Background = ThemeHelper.GetBackgroundPrimaryBrush();
+                }
+                if (SearchPanelTopBarBorder != null)
+                {
+                    SearchPanelTopBarBorder.Background = ThemeHelper.GetBackgroundPrimaryBrush();
+                }
+                if (SearchInputBorder != null)
+                {
+                    SearchInputBorder.Background = ThemeHelper.GetTextBoxBackgroundBrush();
+                    SearchInputBorder.BorderBrush = ThemeHelper.GetTextBoxBorderBrush();
+                }
+                if (SearchTextBox != null)
+                {
+                    SearchTextBox.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+                if (ExactMatchTitle != null)
+                {
+                    ExactMatchTitle.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+                if (FuzzyMatchTitle != null)
+                {
+                    FuzzyMatchTitle.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+                if (RelatedItemsTitle != null)
+                {
+                    RelatedItemsTitle.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+                if (NoResultsText != null)
+                {
+                    NoResultsText.Foreground = ThemeHelper.GetTextSecondaryBrush();
+                }
+                UpdateSearchIconColor(isDarkTheme);
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SearchPanel 应用主题时出�? {ex.Message}");
+            }
+        }
+        private void UpdateSearchIconColor(bool isDarkTheme)
+        {
+            try
+            {
+                Color iconColor = isDarkTheme 
+                    ? Color.FromRgb(243, 243, 243) 
+                    : Color.FromRgb(34, 34, 34);   
+                if (SearchInputBorder != null)
+                {
+                    var image = FindVisualChild<Image>(SearchInputBorder);
+                    if (image != null && image.Source is DrawingImage drawingImage)
+                    {
+                        if (drawingImage.Drawing is DrawingGroup drawingGroup)
+                        {
+                            var clonedDrawing = CloneDrawingGroup(drawingGroup, iconColor);
+                            image.Source = new DrawingImage { Drawing = clonedDrawing };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新搜索图标颜色时出�? {ex.Message}");
+            }
+        }
+        private DrawingGroup CloneDrawingGroup(DrawingGroup source, Color newColor)
+        {
+            var cloned = new DrawingGroup();
+            cloned.ClipGeometry = source.ClipGeometry?.Clone();
+            cloned.Opacity = source.Opacity;
+            cloned.Transform = source.Transform?.Clone();
+
+            foreach (var drawing in source.Children)
+            {
+                if (drawing is GeometryDrawing geometryDrawing)
+                {
+                    var clonedGeometry = geometryDrawing.Geometry?.Clone();
+                    var clonedBrush = CloneBrush(geometryDrawing.Brush, newColor);
+                    var clonedPen = geometryDrawing.Pen != null 
+                        ? ClonePen(geometryDrawing.Pen, newColor) 
+                        : null;
+
+                    cloned.Children.Add(new GeometryDrawing(clonedBrush, clonedPen, clonedGeometry));
+                }
+                else if (drawing is DrawingGroup subGroup)
+                {
+                    cloned.Children.Add(CloneDrawingGroup(subGroup, newColor));
+                }
+                else
+                {
+                    cloned.Children.Add(drawing);
+                }
+            }
+
+            return cloned;
+        }
+        private Brush CloneBrush(Brush source, Color newColor)
+        {
+            if (source is SolidColorBrush solidBrush)
+            {
+                var originalColor = solidBrush.Color;
+                if (originalColor.R == 34 && originalColor.G == 34 && originalColor.B == 34) 
+                {
+                    return new SolidColorBrush(newColor) { Opacity = solidBrush.Opacity };
+                }
+                else if (originalColor.A > 0 && originalColor != Colors.Transparent && 
+                         originalColor.R < 50 && originalColor.G < 50 && originalColor.B < 50) 
+                {
+                    return new SolidColorBrush(newColor) { Opacity = solidBrush.Opacity };
+                }
+                return new SolidColorBrush(originalColor) { Opacity = solidBrush.Opacity };
+            }
+            return source?.Clone();
+        }
+        private Pen ClonePen(Pen source, Color newColor)
+        {
+            var clonedBrush = CloneBrush(source.Brush, newColor);
+            return new Pen(clonedBrush, source.Thickness)
+            {
+                StartLineCap = source.StartLineCap,
+                EndLineCap = source.EndLineCap,
+                LineJoin = source.LineJoin,
+                MiterLimit = source.MiterLimit
+            };
+        }
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T result)
+                {
+                    return result;
+                }
+                var childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                {
+                    return childOfChild;
+                }
+            }
+            return null;
         }
     }
 

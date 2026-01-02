@@ -24,7 +24,6 @@ namespace Ink_Canvas
         private InkCanvasEditingMode lastInkCanvasEditingMode = InkCanvasEditingMode.Ink;
         private DateTime lastTouchDownTime = DateTime.MinValue;
         private const double MULTI_TOUCH_DELAY_MS = 100;
-        private bool isMultiTouchTimerActive = false;
 
         /// </summary> 
         /// 保存画布上的非笔画元素（如图片、媒体元素等）
@@ -418,7 +417,6 @@ namespace Ink_Canvas
                 }
                 catch { }
 
-                SetCursorBasedOnEditingMode(inkCanvas);
 
                 var strokeVisual = GetStrokeVisual(e.StylusDevice.Id);
                 var stylusPointCollection = e.GetStylusPoints(this);
@@ -572,12 +570,6 @@ namespace Ink_Canvas
                 if (inkCanvas.EditingMode == InkCanvasEditingMode.None)
                     inkCanvas.EditingMode = lastInkCanvasEditingMode;
             dec.Remove(e.TouchDevice.Id);
-
-            // 重置多触控点定时器状态
-            if (dec.Count <= 1)
-            {
-                isMultiTouchTimerActive = false;
-            }
 
             if (dec.Count == 0)
             {

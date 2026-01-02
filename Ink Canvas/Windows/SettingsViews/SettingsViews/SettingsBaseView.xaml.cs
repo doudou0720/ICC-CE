@@ -23,7 +23,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
     public enum SettingsItemType
     {
-        Plain, // 只显示Title和Description
+        Plain, 
         SingleToggleSwtich,
         ToggleSwitchWithArrowButton,
         SelectionButtons,
@@ -48,8 +48,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (_toggleSwitchToggled != value)
                 {
                     _toggleSwitchToggled = value;
-                    OnPropertyChanged(nameof(ToggleSwitchToggled)); // 通知绑定控件属性变化
-                    OnToggleSwitchToggled?.Invoke(this, EventArgs.Empty); // 触发事件
+                    OnPropertyChanged(nameof(ToggleSwitchToggled)); 
+                    OnToggleSwitchToggled?.Invoke(this, EventArgs.Empty); 
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private SolidColorBrush _toggleSwitchBackground = new SolidColorBrush(Color.FromRgb(53, 132, 228));
+        private SolidColorBrush _toggleSwitchBackground = ThemeHelper.GetToggleSwitchOnBackgroundBrush();
         public SolidColorBrush ToggleSwitchBackground
         {
             get => _toggleSwitchBackground;
@@ -69,7 +69,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (_toggleSwitchBackground != value)
                 {
                     _toggleSwitchBackground = value;
-                    OnPropertyChanged(nameof(ToggleSwitchBackground)); // 通知绑定控件属性变化
+                    OnPropertyChanged(nameof(ToggleSwitchBackground)); 
                 }
             }
         }
@@ -83,7 +83,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (_toggleSwitchEnabled != value)
                 {
                     _toggleSwitchEnabled = value;
-                    OnPropertyChanged(nameof(ToggleSwitchEnabled)); // 通知绑定控件属性变化
+                    OnPropertyChanged(nameof(ToggleSwitchEnabled)); 
                 }
             }
         }

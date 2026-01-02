@@ -1,12 +1,9 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// ShortcutsPanel.xaml 的交互逻辑
-    /// </summary>
     public partial class ShortcutsPanel : UserControl
     {
         public ShortcutsPanel()
@@ -27,6 +24,17 @@ namespace Ink_Canvas.Windows.SettingsViews
             else
             {
                 IsTopBarNeedNoShadowEffect?.Invoke(this, new RoutedEventArgs());
+            }
+        }
+        public void ApplyTheme()
+        {
+            try
+            {
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ShortcutsPanel 应用主题时出�? {ex.Message}");
             }
         }
     }
