@@ -218,7 +218,9 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
-            toggleSwitch.Background = isOn ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            toggleSwitch.Background = isOn 
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -509,10 +511,42 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 // 使用 ThemeHelper 递归更新其他元素
                 ThemeHelper.ApplyThemeToControl(this);
+                
+                // 为所有 ComboBox 添加 DropDownOpened 事件处理，以便在下拉菜单打开时更新颜色
+                UpdateComboBoxDropdownTheme(AutoUpdateWithSilenceStartTimeComboBox);
+                UpdateComboBoxDropdownTheme(AutoUpdateWithSilenceEndTimeComboBox);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"StartupPanel 应用主题时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 为 ComboBox 添加下拉菜单主题更新
+        /// </summary>
+        private void UpdateComboBoxDropdownTheme(System.Windows.Controls.ComboBox comboBox)
+        {
+            if (comboBox == null) return;
+            
+            // 移除旧的事件处理（如果存在）
+            comboBox.DropDownOpened -= ComboBox_DropDownOpened;
+            // 添加新的事件处理
+            comboBox.DropDownOpened += ComboBox_DropDownOpened;
+        }
+
+        /// <summary>
+        /// ComboBox 下拉菜单打开事件处理
+        /// </summary>
+        private void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBox comboBox)
+            {
+                // 延迟更新，确保 Popup 已经完全创建
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ThemeHelper.UpdateComboBoxDropdownColors(comboBox);
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
     }

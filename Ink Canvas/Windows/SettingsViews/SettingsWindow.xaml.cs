@@ -982,7 +982,7 @@ namespace Ink_Canvas.Windows
             if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
             if (AdvancedPane != null) AdvancedPane.Visibility = _selectedSidebarItemName == "AdvancedItem" ? Visibility.Visible : Visibility.Collapsed;
             
-            // 为新显示的面板应用主题（延迟执行，确保面板已完全显示）
+            // 为新显示的面板加载设置并应用主题
             if (panelMappings.ContainsKey(_selectedSidebarItemName))
             {
                 var selectedPanel = panelMappings[_selectedSidebarItemName];
@@ -992,6 +992,15 @@ namespace Ink_Canvas.Windows
                     {
                         try
                         {
+                            // 先加载设置，确保显示的状态与实际一致
+                            var loadSettingsMethod = selectedPanel.GetType().GetMethod("LoadSettings",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            if (loadSettingsMethod != null)
+                            {
+                                loadSettingsMethod.Invoke(selectedPanel, null);
+                            }
+                            
+                            // 然后应用主题
                             var applyThemeMethod = selectedPanel.GetType().GetMethod("ApplyTheme",
                                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                             if (applyThemeMethod != null)
@@ -1001,7 +1010,7 @@ namespace Ink_Canvas.Windows
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"切换面板时应用主题到 {selectedPanel.GetType().Name} 时出错: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"切换面板时加载设置和应用主题到 {selectedPanel.GetType().Name} 时出错: {ex.Message}");
                         }
                     }), System.Windows.Threading.DispatcherPriority.Loaded);
                 }

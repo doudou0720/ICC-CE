@@ -108,15 +108,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 保留双曲线渐近线
                 SetOptionButtonState("HyperbolaAsymptote", (int)canvas.HyperbolaAsymptoteOption);
 
-                // 绘制圆时显示圆心位置
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowCircleCenter"), canvas.ShowCircleCenter);
-
-                // 使用WPF默认贝塞尔曲线平滑
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchFitToCurve"), canvas.FitToCurve && !canvas.UseAdvancedBezierSmoothing);
-
-                // 使用高级贝塞尔曲线平滑
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAdvancedBezierSmoothing"), canvas.UseAdvancedBezierSmoothing);
-
                 // 启用异步墨迹平滑
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchUseAsyncInkSmoothing"), canvas.UseAsyncInkSmoothing);
 
@@ -131,17 +122,6 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 // 启用直线端点吸附
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchLineEndpointSnapping"), canvas.LineEndpointSnapping);
-
-                // 启用墨迹渐隐功能
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableInkFade"), canvas.EnableInkFade);
-                if (InkFadeTimePanel != null)
-                {
-                    InkFadeTimePanel.Visibility = canvas.EnableInkFade ? Visibility.Visible : Visibility.Collapsed;
-                }
-                if (InkFadeTimeSlider != null)
-                {
-                    InkFadeTimeSlider.Value = canvas.InkFadeTime;
-                }
 
                 // 定时自动保存墨迹
                 // 注意：这个设置可能在 Automation 或 Canvas 中，需要根据实际情况调整
@@ -184,7 +164,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
                 ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -298,33 +278,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchCompressPicturesUploaded", newState);
                     break;
 
-                case "ShowCircleCenter":
-                    // 调用 MainWindow 中的方法
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowCircleCenter", newState);
-                    break;
-
-                case "FitToCurve":
-                    // 调用 MainWindow 中的方法
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFitToCurve", newState);
-                    // 处理互斥逻辑
-                    if (newState)
-                    {
-                        MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAdvancedBezierSmoothing", false);
-                        SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAdvancedBezierSmoothing"), false);
-                    }
-                    break;
-
-                case "AdvancedBezierSmoothing":
-                    // 调用 MainWindow 中的方法
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAdvancedBezierSmoothing", newState);
-                    // 处理互斥逻辑
-                    if (newState)
-                    {
-                        MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFitToCurve", false);
-                        SetToggleSwitchState(FindToggleSwitch("ToggleSwitchFitToCurve"), false);
-                    }
-                    break;
-
                 case "UseAsyncInkSmoothing":
                     // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAsyncInkSmoothing", newState);
@@ -348,16 +301,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 case "LineEndpointSnapping":
                     // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchLineEndpointSnapping", newState);
-                    break;
-
-                case "EnableInkFade":
-                    // 调用 MainWindow 中的方法
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableInkFade", newState);
-                    // 更新UI状态
-                    if (InkFadeTimePanel != null)
-                    {
-                        InkFadeTimePanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
-                    }
                     break;
 
                 case "EnableAutoSaveStrokes":
@@ -576,17 +519,6 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// <summary>
         /// Slider值变化事件处理
         /// </summary>
-        private void InkFadeTimeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (!_isLoaded) return;
-            if (InkFadeTimeSlider != null && InkFadeTimeText != null)
-            {
-                double value = InkFadeTimeSlider.Value;
-                InkFadeTimeText.Text = $"{(int)value}ms";
-                // 调用 MainWindow 中的方法
-                MainWindowSettingsHelper.InvokeSliderValueChanged("InkFadeTimeSlider", value);
-            }
-        }
         
         /// <summary>
         /// 应用主题

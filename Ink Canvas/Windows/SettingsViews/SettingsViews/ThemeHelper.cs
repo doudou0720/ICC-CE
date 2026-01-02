@@ -1,3 +1,5 @@
+using System;
+using System.Windows;
 using System.Windows.Media;
 using Ink_Canvas;
 
@@ -276,6 +278,28 @@ namespace Ink_Canvas.Windows.SettingsViews
                             comboBox.Foreground = GetTextPrimaryBrush();
                         }
                     }
+                    // 更新 ComboBox 背景色
+                    var background = comboBox.Background as SolidColorBrush;
+                    if (background != null)
+                    {
+                        var color = background.Color;
+                        if (color.R == 255 && color.G == 255 && color.B == 255) // 白色背景
+                        {
+                            comboBox.Background = GetTextBoxBackgroundBrush();
+                        }
+                    }
+                    // 更新 ComboBox 边框颜色
+                    var borderBrush = comboBox.BorderBrush as SolidColorBrush;
+                    if (borderBrush != null)
+                    {
+                        var color = borderBrush.Color;
+                        if (color.R == 230 && color.G == 230 && color.B == 230) // #e6e6e6
+                        {
+                            comboBox.BorderBrush = GetBorderPrimaryBrush();
+                        }
+                    }
+                    // 更新 ComboBoxItem 颜色
+                    UpdateComboBoxItemColors(comboBox);
                 }
                 UpdateInputControlsColors(child);
             }
@@ -454,6 +478,396 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
 
         /// <summary>
+        /// 更新 ComboBoxItem 的颜色
+        /// </summary>
+        private static void UpdateComboBoxItemColors(System.Windows.Controls.ComboBox comboBox)
+        {
+            try
+            {
+                // 更新下拉菜单中的 ComboBoxItem
+                if (comboBox.Items.Count > 0)
+                {
+                    foreach (var item in comboBox.Items)
+                    {
+                        if (item is System.Windows.Controls.ComboBoxItem comboBoxItem)
+                        {
+                            var foreground = comboBoxItem.Foreground as SolidColorBrush;
+                            if (foreground != null)
+                            {
+                                var color = foreground.Color;
+                                if (color.R == 46 && color.G == 52 && color.B == 54) // #2e3436
+                                {
+                                    comboBoxItem.Foreground = GetTextPrimaryBrush();
+                                }
+                            }
+                            var background = comboBoxItem.Background as SolidColorBrush;
+                            if (background != null)
+                            {
+                                var color = background.Color;
+                                if (color.R == 255 && color.G == 255 && color.B == 255) // 白色背景
+                                {
+                                    comboBoxItem.Background = GetTextBoxBackgroundBrush();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // 忽略错误
+            }
+        }
+
+        /// <summary>
+        /// 更新 ComboBox 下拉菜单的颜色（在 ComboBox 打开时调用）
+        /// </summary>
+        public static void UpdateComboBoxDropdownColors(System.Windows.Controls.ComboBox comboBox)
+        {
+            try
+            {
+                if (comboBox == null || !comboBox.IsDropDownOpen) return;
+
+                // 通过 VisualTreeHelper 查找 Popup
+                System.Windows.Controls.Primitives.Popup popup = null;
+                for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(comboBox); i++)
+                {
+                    var child = System.Windows.Media.VisualTreeHelper.GetChild(comboBox, i);
+                    if (child is System.Windows.Controls.Primitives.Popup foundPopup)
+                    {
+                        popup = foundPopup;
+                        break;
+                    }
+                    // 递归查找
+                    popup = FindPopupInVisualTree(child);
+                    if (popup != null) break;
+                }
+
+                if (popup == null)
+                {
+                    // 如果找不到，尝试通过模板查找
+                    if (comboBox.Template != null)
+                    {
+                        popup = comboBox.Template.FindName("Popup", comboBox) as System.Windows.Controls.Primitives.Popup;
+                    }
+                }
+
+                if (popup != null && popup.Child is System.Windows.Controls.Border popupBorder)
+                {
+                    // 更新下拉菜单背景色
+                    var background = popupBorder.Background as SolidColorBrush;
+                    if (background != null)
+                    {
+                        var color = background.Color;
+                        if (color.R == 255 && color.G == 255 && color.B == 255) // 白色背景
+                        {
+                            popupBorder.Background = GetTextBoxBackgroundBrush();
+                        }
+                    }
+                    // 更新下拉菜单边框颜色
+                    var borderBrush = popupBorder.BorderBrush as SolidColorBrush;
+                    if (borderBrush != null)
+                    {
+                        var color = borderBrush.Color;
+                        if (color.R == 230 && color.G == 230 && color.B == 230) // #e6e6e6
+                        {
+                            popupBorder.BorderBrush = GetBorderPrimaryBrush();
+                        }
+                    }
+                    // 更新下拉菜单中的 ComboBoxItem
+                    UpdateComboBoxItemColorsInPopup(popupBorder);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新 ComboBox 下拉菜单颜色时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 在可视化树中查找 Popup
+        /// </summary>
+        private static System.Windows.Controls.Primitives.Popup FindPopupInVisualTree(System.Windows.DependencyObject parent)
+        {
+            if (parent == null) return null;
+
+            if (parent is System.Windows.Controls.Primitives.Popup popup)
+            {
+                return popup;
+            }
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                var found = FindPopupInVisualTree(child);
+                if (found != null) return found;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 更新 ComboBox 下拉菜单的背景色（通过 Popup）
+        /// </summary>
+        public static void UpdateComboBoxPopupColors(System.Windows.DependencyObject parent)
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is System.Windows.Controls.Primitives.Popup popup)
+                {
+                    // 查找 Popup 中的 Border（下拉菜单容器）
+                    if (popup.Child is System.Windows.Controls.Border popupBorder)
+                    {
+                        var background = popupBorder.Background as SolidColorBrush;
+                        if (background != null)
+                        {
+                            var color = background.Color;
+                            if (color.R == 255 && color.G == 255 && color.B == 255) // 白色背景
+                            {
+                                popupBorder.Background = GetTextBoxBackgroundBrush();
+                            }
+                        }
+                        var borderBrush = popupBorder.BorderBrush as SolidColorBrush;
+                        if (borderBrush != null)
+                        {
+                            var color = borderBrush.Color;
+                            if (color.R == 230 && color.G == 230 && color.B == 230) // #e6e6e6
+                            {
+                                popupBorder.BorderBrush = GetBorderPrimaryBrush();
+                            }
+                        }
+                        // 递归更新 Popup 内部的 ComboBoxItem
+                        UpdateComboBoxItemColorsInPopup(popupBorder);
+                    }
+                }
+                UpdateComboBoxPopupColors(child);
+            }
+        }
+
+        /// <summary>
+        /// 更新 Popup 内部的 ComboBoxItem 颜色
+        /// </summary>
+        private static void UpdateComboBoxItemColorsInPopup(System.Windows.DependencyObject parent)
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is System.Windows.Controls.ComboBoxItem comboBoxItem)
+                {
+                    var foreground = comboBoxItem.Foreground as SolidColorBrush;
+                    if (foreground != null)
+                    {
+                        var color = foreground.Color;
+                        if (color.R == 46 && color.G == 52 && color.B == 54) // #2e3436
+                        {
+                            comboBoxItem.Foreground = GetTextPrimaryBrush();
+                        }
+                    }
+                    // 更新默认背景
+                    var background = comboBoxItem.Background as SolidColorBrush;
+                    if (background != null)
+                    {
+                        var color = background.Color;
+                        if (color.R == 255 && color.G == 255 && color.B == 255) // 白色背景
+                        {
+                            comboBoxItem.Background = GetTextBoxBackgroundBrush();
+                        }
+                    }
+                    // 更新样式触发器中的颜色
+                    UpdateComboBoxItemStyleTriggers(comboBoxItem);
+                    // 更新模板中的 Border 背景色
+                    UpdateComboBoxItemTemplateBorder(comboBoxItem);
+                    // 为 ComboBoxItem 添加状态变化监听
+                    AttachComboBoxItemStateHandlers(comboBoxItem);
+                }
+                UpdateComboBoxItemColorsInPopup(child);
+            }
+        }
+
+        /// <summary>
+        /// 更新 ComboBoxItem 模板中的 Border 背景色
+        /// </summary>
+        private static void UpdateComboBoxItemTemplateBorder(System.Windows.Controls.ComboBoxItem comboBoxItem)
+        {
+            try
+            {
+                if (comboBoxItem.Template == null) return;
+
+                // 查找模板中的 Border
+                var border = comboBoxItem.Template.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
+                if (border != null)
+                {
+                    var background = border.Background as SolidColorBrush;
+                    if (background != null)
+                    {
+                        var color = background.Color;
+                        // 根据当前状态更新背景色
+                        if (comboBoxItem.IsSelected)
+                        {
+                            border.Background = GetSelectedBackgroundBrush();
+                        }
+                        else if (comboBoxItem.IsMouseOver)
+                        {
+                            border.Background = GetHoverBackgroundBrush();
+                        }
+                        else if (color.R == 255 && color.G == 255 && color.B == 255) // 白色背景
+                        {
+                            border.Background = GetTextBoxBackgroundBrush();
+                        }
+                        else if (color.R == 245 && color.G == 245 && color.B == 245) // #f5f5f5 悬停背景
+                        {
+                            border.Background = GetHoverBackgroundBrush();
+                        }
+                        else if (color.R == 225 && color.G == 225 && color.B == 225) // #e1e1e1 选中背景
+                        {
+                            border.Background = GetSelectedBackgroundBrush();
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // 忽略错误
+            }
+        }
+
+        /// <summary>
+        /// 为 ComboBoxItem 添加状态变化监听
+        /// </summary>
+        private static void AttachComboBoxItemStateHandlers(System.Windows.Controls.ComboBoxItem comboBoxItem)
+        {
+            try
+            {
+                // 移除旧的事件处理（如果存在）
+                comboBoxItem.MouseEnter -= ComboBoxItem_MouseEnter;
+                comboBoxItem.MouseLeave -= ComboBoxItem_MouseLeave;
+                comboBoxItem.Selected -= ComboBoxItem_Selected;
+                comboBoxItem.Unselected -= ComboBoxItem_Unselected;
+
+                // 添加新的事件处理
+                comboBoxItem.MouseEnter += ComboBoxItem_MouseEnter;
+                comboBoxItem.MouseLeave += ComboBoxItem_MouseLeave;
+                comboBoxItem.Selected += ComboBoxItem_Selected;
+                comboBoxItem.Unselected += ComboBoxItem_Unselected;
+            }
+            catch
+            {
+                // 忽略错误
+            }
+        }
+
+        /// <summary>
+        /// ComboBoxItem 鼠标进入事件处理
+        /// </summary>
+        private static void ComboBoxItem_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBoxItem comboBoxItem && !comboBoxItem.IsSelected)
+            {
+                var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
+                if (border != null)
+                {
+                    border.Background = GetHoverBackgroundBrush();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ComboBoxItem 鼠标离开事件处理
+        /// </summary>
+        private static void ComboBoxItem_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBoxItem comboBoxItem && !comboBoxItem.IsSelected)
+            {
+                var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
+                if (border != null)
+                {
+                    border.Background = GetTextBoxBackgroundBrush();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ComboBoxItem 选中事件处理
+        /// </summary>
+        private static void ComboBoxItem_Selected(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBoxItem comboBoxItem)
+            {
+                var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
+                if (border != null)
+                {
+                    border.Background = GetSelectedBackgroundBrush();
+                }
+            }
+        }
+
+        /// <summary>
+        /// ComboBoxItem 取消选中事件处理
+        /// </summary>
+        private static void ComboBoxItem_Unselected(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBoxItem comboBoxItem)
+            {
+                var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
+                if (border != null)
+                {
+                    if (comboBoxItem.IsMouseOver)
+                    {
+                        border.Background = GetHoverBackgroundBrush();
+                    }
+                    else
+                    {
+                        border.Background = GetTextBoxBackgroundBrush();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 更新 ComboBoxItem 样式触发器中的颜色
+        /// </summary>
+        private static void UpdateComboBoxItemStyleTriggers(System.Windows.Controls.ComboBoxItem comboBoxItem)
+        {
+            try
+            {
+                if (comboBoxItem.Style == null) return;
+
+                // 更新样式触发器中的颜色
+                foreach (var trigger in comboBoxItem.Style.Triggers)
+                {
+                    if (trigger is System.Windows.Trigger baseTrigger)
+                    {
+                        foreach (var setter in baseTrigger.Setters)
+                        {
+                            if (setter is System.Windows.Setter setterBase)
+                            {
+                                // 更新悬停背景色
+                                if (setterBase.Property == System.Windows.Controls.Control.BackgroundProperty &&
+                                    setterBase.Value is SolidColorBrush brush)
+                                {
+                                    var color = brush.Color;
+                                    if (color.R == 245 && color.G == 245 && color.B == 245) // #f5f5f5 悬停背景
+                                    {
+                                        setterBase.Value = GetHoverBackgroundBrush();
+                                    }
+                                    else if (color.R == 225 && color.G == 225 && color.B == 225) // #e1e1e1 选中背景
+                                    {
+                                        setterBase.Value = GetSelectedBackgroundBrush();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // 忽略错误
+            }
+        }
+
+        /// <summary>
         /// 应用主题到整个控件树
         /// </summary>
         public static void ApplyThemeToControl(System.Windows.DependencyObject control)
@@ -464,6 +878,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             UpdateInputControlsColors(control);
             UpdateButtonColors(control);
             UpdateImageIconColors(control);
+            UpdateComboBoxPopupColors(control);
         }
     }
 }

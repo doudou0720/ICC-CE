@@ -288,8 +288,8 @@
                             <Image Source="/Resources/Icons-png/PPTTools.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀希沃&quot;PPT 小工具&quot;" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillPptService" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillPptService" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -304,8 +304,8 @@
                             <Image Source="/Resources/Icons-png/EasiNote.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀 希沃白板5" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillEasiNote" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillEasiNote" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -318,8 +318,8 @@
                             <Image Source="/Resources/Icons-png/HiteAnnotation.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀 鸿合屏幕书写" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillHiteAnnotation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillHiteAnnotation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -332,8 +332,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="鸿合屏幕书写查杀后自动进入批注" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="查杀鸿合屏幕书写后自动进入批注模式" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoEnterAnnotationAfterKillHite" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoEnterAnnotationAfterKillHite" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -346,8 +346,8 @@
                             <Image Source="/Resources/Icons-png/VComYouJiao.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀 优教授课端" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillVComYouJiao" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillVComYouJiao" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -360,8 +360,8 @@
                             <Image Source="/Resources/Icons-png/Seewo2Annotation.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀 希沃桌面2.0 桌面批注" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillSeewoLauncher2DesktopAnnotation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillSeewoLauncher2DesktopAnnotation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -377,8 +377,8 @@
                             <Image Source="/Resources/Icons-png/InkCanvas.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀 Ink Canvas 和 IC+" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillInkCanvas" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillInkCanvas" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -391,8 +391,8 @@
                             <Image Source="/Resources/Icons-png/ica.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀ICA（新版旧版通杀）" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillICA" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillICA" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -405,8 +405,8 @@
                             <Image Source="/Resources/Icons-png/idt.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动查杀 智绘教Inkeys（仅限新版）" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchAutoKillIDT" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="ToggleSwitchAutoKillIDT" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>

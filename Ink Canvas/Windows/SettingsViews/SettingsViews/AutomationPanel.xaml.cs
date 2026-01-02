@@ -1,7 +1,10 @@
+using Ink_Canvas;
+using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using Ink_Canvas.Windows.SettingsViews;
+using System.Windows.Media;
+using Application = System.Windows.Application;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
@@ -31,69 +34,80 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// <summary>
         /// 加载设置
         /// </summary>
-        private void LoadSettings()
+        public void LoadSettings()
         {
+            if (MainWindow.Settings == null || MainWindow.Settings.Automation == null)
+            {
+                _isLoaded = true;
+                return;
+            }
+
+            _isLoaded = false;
+
             try
             {
-                if (MainWindow.Settings == null || MainWindow.Settings.Automation == null) return;
-
-                _isLoaded = false;
-
                 var automation = MainWindow.Settings.Automation;
 
                 // 设置所有 ToggleSwitch 的状态
-                SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNote", automation.IsAutoFoldInEasiNote);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInEasiCamera", automation.IsAutoFoldInEasiCamera);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInHiteTouchPro", automation.IsAutoFoldInHiteTouchPro);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNote3", automation.IsAutoFoldInEasiNote3);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNote3C", automation.IsAutoFoldInEasiNote3C);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNote5C", automation.IsAutoFoldInEasiNote5C);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInSeewoPincoTeacher", automation.IsAutoFoldInSeewoPincoTeacher);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInHiteCamera", automation.IsAutoFoldInHiteCamera);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInHiteLightBoard", automation.IsAutoFoldInHiteLightBoard);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInWxBoardMain", automation.IsAutoFoldInWxBoardMain);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInMSWhiteboard", automation.IsAutoFoldInMSWhiteboard);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInAdmoxWhiteboard", automation.IsAutoFoldInAdmoxWhiteboard);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInAdmoxBooth", automation.IsAutoFoldInAdmoxBooth);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInQPoint", automation.IsAutoFoldInQPoint);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInYiYunVisualPresenter", automation.IsAutoFoldInYiYunVisualPresenter);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInMaxHubWhiteboard", automation.IsAutoFoldInMaxHubWhiteboard);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInPPTSlideShow", automation.IsAutoFoldInPPTSlideShow);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno", automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno);
-                SetToggleSwitchState("ToggleSwitchAutoFoldInOldZyBoard", automation.IsAutoFoldInOldZyBoard);
-                SetToggleSwitchState("ToggleSwitchKeepFoldAfterSoftwareExit", automation.KeepFoldAfterSoftwareExit);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiNote"), automation.IsAutoFoldInEasiNote);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiCamera"), automation.IsAutoFoldInEasiCamera);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInHiteTouchPro"), automation.IsAutoFoldInHiteTouchPro);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiNote3"), automation.IsAutoFoldInEasiNote3);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiNote3C"), automation.IsAutoFoldInEasiNote3C);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiNote5C"), automation.IsAutoFoldInEasiNote5C);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInSeewoPincoTeacher"), automation.IsAutoFoldInSeewoPincoTeacher);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInHiteCamera"), automation.IsAutoFoldInHiteCamera);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInHiteLightBoard"), automation.IsAutoFoldInHiteLightBoard);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInWxBoardMain"), automation.IsAutoFoldInWxBoardMain);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInMSWhiteboard"), automation.IsAutoFoldInMSWhiteboard);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInAdmoxWhiteboard"), automation.IsAutoFoldInAdmoxWhiteboard);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInAdmoxBooth"), automation.IsAutoFoldInAdmoxBooth);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInQPoint"), automation.IsAutoFoldInQPoint);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInYiYunVisualPresenter"), automation.IsAutoFoldInYiYunVisualPresenter);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInMaxHubWhiteboard"), automation.IsAutoFoldInMaxHubWhiteboard);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInPPTSlideShow"), automation.IsAutoFoldInPPTSlideShow);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno"), automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInOldZyBoard"), automation.IsAutoFoldInOldZyBoard);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchKeepFoldAfterSoftwareExit"), automation.KeepFoldAfterSoftwareExit);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillPptService"), automation.IsAutoKillPptService);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillEasiNote"), automation.IsAutoKillEasiNote);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillHiteAnnotation"), automation.IsAutoKillHiteAnnotation);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoEnterAnnotationAfterKillHite"), automation.IsAutoEnterAnnotationAfterKillHite);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillVComYouJiao"), automation.IsAutoKillVComYouJiao);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillSeewoLauncher2DesktopAnnotation"), automation.IsAutoKillSeewoLauncher2DesktopAnnotation);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillInkCanvas"), automation.IsAutoKillInkCanvas);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillICA"), automation.IsAutoKillICA);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoKillIDT"), automation.IsAutoKillIDT);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"AutomationPanel 加载设置时出错: {ex.Message}");
             }
+
+            _isLoaded = true;
+        }
+
+        /// <summary>
+        /// 查找ToggleSwitch控件
+        /// </summary>
+        private Border FindToggleSwitch(string name)
+        {
+            return this.FindDescendantByName(name) as Border;
         }
 
         /// <summary>
         /// 设置 ToggleSwitch 状态
         /// </summary>
-        private void SetToggleSwitchState(string name, bool isOn)
+        private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
-            try
+            if (toggleSwitch == null) return;
+            toggleSwitch.Background = isOn 
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
+                : ThemeHelper.GetButtonBackgroundBrush();
+            var innerBorder = toggleSwitch.Child as Border;
+            if (innerBorder != null)
             {
-                var border = FindName(name) as System.Windows.Controls.Border;
-                if (border != null)
-                {
-                    bool currentState = border.Background.ToString().Contains("3584e4");
-                    if (currentState != isOn)
-                    {
-                        border.Background = isOn ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x35, 0x84, 0xe4)) : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xe1, 0xe1, 0xe1));
-                        var innerBorder = border.Child as System.Windows.Controls.Border;
-                        if (innerBorder != null)
-                        {
-                            innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"AutomationPanel 设置 ToggleSwitch {name} 状态时出错: {ex.Message}");
+                innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
             }
         }
 
@@ -104,12 +118,15 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             if (!_isLoaded) return;
 
-            var border = sender as System.Windows.Controls.Border;
+            // 标记事件已处理，防止事件冒泡
+            e.Handled = true;
+
+            var border = sender as Border;
             if (border == null) return;
 
-            bool currentState = border.Background.ToString().Contains("3584e4");
-            bool newState = !currentState;
-            SetToggleSwitchState(border.Name, newState);
+            bool isOn = border.Background.ToString() == "#FF3584E4";
+            bool newState = !isOn;
+            SetToggleSwitchState(border, newState);
 
             // 通过 MainWindowSettingsHelper 调用 MainWindow 中的方法
             string toggleSwitchName = border.Name;

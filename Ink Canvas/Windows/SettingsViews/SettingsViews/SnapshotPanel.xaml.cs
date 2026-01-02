@@ -135,6 +135,36 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoSaveScreenShotInPowerPoint"), MainWindow.Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint);
                 }
+
+                // 墨迹设置
+                if (MainWindow.Settings.Canvas != null)
+                {
+                    var canvas = MainWindow.Settings.Canvas;
+                    
+                    // 绘制圆时显示圆心位置
+                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowCircleCenter"), canvas.ShowCircleCenter);
+
+                    // 使用WPF默认贝塞尔曲线平滑
+                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchFitToCurve"), canvas.FitToCurve && !canvas.UseAdvancedBezierSmoothing);
+
+                    // 使用高级贝塞尔曲线平滑
+                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAdvancedBezierSmoothing"), canvas.UseAdvancedBezierSmoothing);
+
+                    // 启用墨迹渐隐功能
+                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableInkFade"), canvas.EnableInkFade);
+                    if (InkFadeTimePanel != null)
+                    {
+                        InkFadeTimePanel.Visibility = canvas.EnableInkFade ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                    if (InkFadeTimeSlider != null)
+                    {
+                        InkFadeTimeSlider.Value = canvas.InkFadeTime;
+                        if (InkFadeTimeText != null)
+                        {
+                            InkFadeTimeText.Text = $"{canvas.InkFadeTime}ms";
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -160,7 +190,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
                 ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -216,6 +246,43 @@ namespace Ink_Canvas.Windows.SettingsViews
                         AutoDelIntervalPanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
                     }
                     break;
+
+                case "ShowCircleCenter":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowCircleCenter", newState);
+                    break;
+
+                case "FitToCurve":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFitToCurve", newState);
+                    // 处理互斥逻辑
+                    if (newState)
+                    {
+                        MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAdvancedBezierSmoothing", false);
+                        SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAdvancedBezierSmoothing"), false);
+                    }
+                    break;
+
+                case "AdvancedBezierSmoothing":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAdvancedBezierSmoothing", newState);
+                    // 处理互斥逻辑
+                    if (newState)
+                    {
+                        MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFitToCurve", false);
+                        SetToggleSwitchState(FindToggleSwitch("ToggleSwitchFitToCurve"), false);
+                    }
+                    break;
+
+                case "EnableInkFade":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableInkFade", newState);
+                    // 更新UI状态
+                    if (InkFadeTimePanel != null)
+                    {
+                        InkFadeTimePanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                    break;
             }
         }
 
@@ -259,10 +326,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var mainWindow = Application.Current.MainWindow as MainWindow;
                 if (mainWindow != null)
-                {
+            {
                     var textBox = mainWindow.FindName("AutoSavedStrokesLocation") as System.Windows.Controls.TextBox;
                     if (textBox != null)
-                    {
+                {
                         AutoSavedStrokesLocation.Text = textBox.Text;
                     }
                 }
@@ -304,6 +371,21 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
 
         /// <summary>
+        /// 墨迹渐隐时间滑块值变化事件处理
+        /// </summary>
+        private void InkFadeTimeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!_isLoaded) return;
+            if (InkFadeTimeSlider != null && InkFadeTimeText != null)
+            {
+                int value = (int)InkFadeTimeSlider.Value;
+                InkFadeTimeText.Text = $"{value}ms";
+                // 调用 MainWindow 中的方法
+                MainWindowSettingsHelper.InvokeSliderValueChanged("InkFadeTimeSlider", value);
+            }
+        }
+
+        /// <summary>
         /// ComboBox选择变化事件处理
         /// </summary>
         private void ComboBoxAutoDelSavedFilesDaysThreshold_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -337,17 +419,17 @@ namespace Ink_Canvas.Windows.SettingsViews
                     else
                     {
                         // 如果找不到控件，直接更新设置
-                        string tag = selectedItem.Tag?.ToString();
-                        if (!string.IsNullOrEmpty(tag) && tag.StartsWith("AutoDelSavedFilesDaysThreshold_"))
-                        {
-                            string daysStr = tag.Replace("AutoDelSavedFilesDaysThreshold_", "");
-                            if (int.TryParse(daysStr, out int days))
+                string tag = selectedItem.Tag?.ToString();
+                if (!string.IsNullOrEmpty(tag) && tag.StartsWith("AutoDelSavedFilesDaysThreshold_"))
+                {
+                    string daysStr = tag.Replace("AutoDelSavedFilesDaysThreshold_", "");
+                    if (int.TryParse(daysStr, out int days))
                             {
                                 MainWindowSettingsHelper.UpdateSettingDirectly(() =>
-                                {
-                                    if (MainWindow.Settings.Automation != null)
-                                    {
-                                        MainWindow.Settings.Automation.AutoDelSavedFilesDaysThreshold = days;
+                    {
+                        if (MainWindow.Settings.Automation != null)
+                        {
+                            MainWindow.Settings.Automation.AutoDelSavedFilesDaysThreshold = days;
                                     }
                                 }, "ComboBoxAutoDelSavedFilesDaysThreshold");
                             }
@@ -365,10 +447,41 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                
+                // 为所有 ComboBox 添加 DropDownOpened 事件处理，以便在下拉菜单打开时更新颜色
+                UpdateComboBoxDropdownTheme(ComboBoxAutoDelSavedFilesDaysThreshold);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"SnapshotPanel 应用主题时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 为 ComboBox 添加下拉菜单主题更新
+        /// </summary>
+        private void UpdateComboBoxDropdownTheme(System.Windows.Controls.ComboBox comboBox)
+        {
+            if (comboBox == null) return;
+            
+            // 移除旧的事件处理（如果存在）
+            comboBox.DropDownOpened -= ComboBox_DropDownOpened;
+            // 添加新的事件处理
+            comboBox.DropDownOpened += ComboBox_DropDownOpened;
+        }
+
+        /// <summary>
+        /// ComboBox 下拉菜单打开事件处理
+        /// </summary>
+        private void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBox comboBox)
+            {
+                // 延迟更新，确保 Popup 已经完全创建
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ThemeHelper.UpdateComboBoxDropdownColors(comboBox);
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
     }

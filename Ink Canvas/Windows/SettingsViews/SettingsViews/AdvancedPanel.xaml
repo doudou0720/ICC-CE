@@ -77,7 +77,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="笔尖模式的接触面积区分界限" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="NibModeBoundsWidthSlider" Width="150" Minimum="1" Maximum="50" Value="5" TickFrequency="1" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="NibModeBoundsWidthSlider" Width="150" Minimum="1" Maximum="50" Value="5" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="NibModeBoundsWidthSlider_ValueChanged"/>
                             <TextBlock x:Name="NibModeBoundsWidthText" Text="5" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>
@@ -88,7 +88,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="手指模式的接触面积区分界限" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="FingerModeBoundsWidthSlider" Width="150" Minimum="1" Maximum="50" Value="20" TickFrequency="1" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="FingerModeBoundsWidthSlider" Width="150" Minimum="1" Maximum="50" Value="20" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="FingerModeBoundsWidthSlider_ValueChanged"/>
                             <TextBlock x:Name="FingerModeBoundsWidthText" Text="20" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>

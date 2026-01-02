@@ -230,7 +230,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
                 ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -563,22 +563,22 @@ namespace Ink_Canvas.Windows.SettingsViews
                             if (comboBox != null)
                             {
                                 // 根据 value 找到对应的 ComboBoxItem
-                                int themeIndex;
-                                switch (value)
-                                {
-                                    case "Light":
-                                        themeIndex = 0;
-                                        break;
-                                    case "Dark":
-                                        themeIndex = 1;
-                                        break;
-                                    case "System":
-                                        themeIndex = 2;
-                                        break;
-                                    default:
-                                        themeIndex = 2;
-                                        break;
-                                }
+                    int themeIndex;
+                    switch (value)
+                    {
+                        case "Light":
+                            themeIndex = 0;
+                            break;
+                        case "Dark":
+                            themeIndex = 1;
+                            break;
+                        case "System":
+                            themeIndex = 2;
+                            break;
+                        default:
+                            themeIndex = 2;
+                            break;
+                    }
                                 
                                 if (comboBox.Items.Count > themeIndex)
                                 {
@@ -586,7 +586,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                                     MainWindowSettingsHelper.InvokeComboBoxSelectionChangedWithThemeCheck("ComboBoxTheme", selectedItem);
                                 }
                                 else
-                                {
+                    {
                                     // 如果找不到控件，直接更新设置并通知主题更新
                                     MainWindowSettingsHelper.UpdateSettingSafely(() =>
                                     {
@@ -622,9 +622,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                                     appearance.Theme = themeIndex;
                                 }, "ComboBoxTheme_SelectionChanged", "ComboBoxTheme");
                                 MainWindowSettingsHelper.NotifyThemeUpdateIfNeeded("ComboBoxTheme");
-                                
-                                // 触发主题变化事件，通知设置窗口更新主题
-                                ThemeChanged?.Invoke(this, new RoutedEventArgs());
+                        
+                        // 触发主题变化事件，通知设置窗口更新主题
+                        ThemeChanged?.Invoke(this, new RoutedEventArgs());
                             }
                         }
                     }
@@ -669,7 +669,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
-                                appearance.ChickenSoupSource = sourceIndex;
+                    appearance.ChickenSoupSource = sourceIndex;
                             }, "ComboBoxChickenSoupSource");
                         }
                     }
@@ -704,7 +704,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             // 如果找不到控件，直接更新设置并通知主题更新
                             MainWindowSettingsHelper.UpdateSettingSafely(() =>
                             {
-                                appearance.UnFoldButtonImageType = imgType;
+                    appearance.UnFoldButtonImageType = imgType;
                             }, "ComboBoxUnFoldBtnImg_SelectionChanged", "ComboBoxUnFoldBtnImg");
                             MainWindowSettingsHelper.NotifyThemeUpdateIfNeeded("ComboBoxUnFoldBtnImg");
                         }
@@ -740,7 +740,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
-                                appearance.QuickColorPaletteDisplayMode = displayMode;
+                    appearance.QuickColorPaletteDisplayMode = displayMode;
                             }, "ComboBoxQuickColorPaletteDisplayMode");
                         }
                     }
@@ -781,7 +781,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
-                                appearance.EraserDisplayOption = eraserOption;
+                    appearance.EraserDisplayOption = eraserOption;
                             }, "ComboBoxEraserDisplayOption");
                         }
                     }
@@ -797,10 +797,42 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                
+                // 为所有 ComboBox 添加 DropDownOpened 事件处理，以便在下拉菜单打开时更新颜色
+                UpdateComboBoxDropdownTheme(ComboBoxSplashScreenStyle);
+                UpdateComboBoxDropdownTheme(ComboBoxFloatingBarImg);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"ThemePanel 应用主题时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 为 ComboBox 添加下拉菜单主题更新
+        /// </summary>
+        private void UpdateComboBoxDropdownTheme(System.Windows.Controls.ComboBox comboBox)
+        {
+            if (comboBox == null) return;
+            
+            // 移除旧的事件处理（如果存在）
+            comboBox.DropDownOpened -= ComboBox_DropDownOpened;
+            // 添加新的事件处理
+            comboBox.DropDownOpened += ComboBox_DropDownOpened;
+        }
+
+        /// <summary>
+        /// ComboBox 下拉菜单打开事件处理
+        /// </summary>
+        private void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBox comboBox)
+            {
+                // 延迟更新，确保 Popup 已经完全创建
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    ThemeHelper.UpdateComboBoxDropdownColors(comboBox);
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
     }

@@ -161,7 +161,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整浮动工具栏的大小" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="ViewboxFloatingBarScaleTransformValueSlider" Width="150" Minimum="0.5" Maximum="1.25" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="ViewboxFloatingBarScaleTransformValueSlider" Width="150" Minimum="0.5" Maximum="1.25" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True" ValueChanged="ViewboxFloatingBarScaleTransformValueSlider_ValueChanged"/>
                             <TextBlock x:Name="ViewboxFloatingBarScaleTransformValueText" Text="1.00" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>
@@ -172,7 +172,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调整浮动工具栏的透明度" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="ViewboxFloatingBarOpacityValueSlider" Width="150" Minimum="0.3" Maximum="1" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="ViewboxFloatingBarOpacityValueSlider" Width="150" Minimum="0.3" Maximum="1" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True" ValueChanged="ViewboxFloatingBarOpacityValueSlider_ValueChanged"/>
                             <TextBlock x:Name="ViewboxFloatingBarOpacityValueText" Text="1.00" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>
@@ -183,7 +183,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在PPT模式下浮动工具栏的透明度（重新进入PPT放映后生效）" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="ViewboxFloatingBarOpacityInPPTValueSlider" Width="150" Minimum="0.3" Maximum="1" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True"/>
+                            <Slider x:Name="ViewboxFloatingBarOpacityInPPTValueSlider" Width="150" Minimum="0.3" Maximum="1" Value="1" TickFrequency="0.05" IsSnapToTickEnabled="True" ValueChanged="ViewboxFloatingBarOpacityInPPTValueSlider_ValueChanged"/>
                             <TextBlock x:Name="ViewboxFloatingBarOpacityInPPTValueText" Text="1.00" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>

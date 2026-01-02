@@ -169,7 +169,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
                 ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -199,7 +199,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     if (i == selectedIndex)
                     {
-                        button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                        // 使用主题适配的选中背景颜色
+                        button.Background = ThemeHelper.GetSelectedBackgroundBrush();
                         var textBlock = button.Child as TextBlock;
                         if (textBlock != null)
                         {
@@ -314,8 +315,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                 }
             }
 
-            // 设置当前按钮为选中状态
-            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            // 设置当前按钮为选中状态，使用主题适配的选中背景颜色
+            border.Background = ThemeHelper.GetSelectedBackgroundBrush();
             var currentTextBlock = border.Child as TextBlock;
             if (currentTextBlock != null)
             {
@@ -359,7 +360,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
-                                randSettings.ExternalCallerType = callerType;
+                    randSettings.ExternalCallerType = callerType;
                             }, "ComboBoxExternalCallerType");
                         }
                     }
@@ -369,7 +370,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     // 背景选择逻辑 - 这个设置可能没有对应的方法，直接更新
                     MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                     {
-                        randSettings.SelectedBackgroundIndex = 0; // 默认背景
+                    randSettings.SelectedBackgroundIndex = 0; // 默认背景
                     }, "PickNameBackground");
                     break;
             }
