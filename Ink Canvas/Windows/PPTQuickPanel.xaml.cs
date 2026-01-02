@@ -96,7 +96,6 @@ namespace Ink_Canvas.Windows
         private bool _isExpanded = false;
         private bool _isDragging = false;
         private Point _dragStartPoint;
-        private double _panelWidth = 230; // 面板总宽度（30 + 200）
         private double _collapsedOffset = 200; // 折叠时的偏移量（隐藏内容区域）
         private MainWindow _mainWindow;
         

@@ -2872,7 +2872,6 @@ namespace Ink_Canvas
         }
 
         private bool isOpeningOrHidingSettingsPane;
-        private bool wasNoFocusModeBeforeSettings;
 
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
         {

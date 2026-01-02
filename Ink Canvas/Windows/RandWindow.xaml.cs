@@ -222,7 +222,6 @@ namespace Ink_Canvas
                 {
                     animationPool.Add(num);
                 }
-                int lastDisplayedIndex = -1;
 
                 for (int i = 0; i < RandWaitingTimes; i++)
                 {

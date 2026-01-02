@@ -66,7 +66,6 @@ namespace Ink_Canvas
         private WindowOverviewModel _windowOverviewModel;
 
         // 设置面板相关状态
-        private bool userChangedNoFocusModeInSettings;
         private bool isTemporarilyDisablingNoFocusMode = false;
 
         // 全屏处理状态标志
@@ -2464,11 +2463,6 @@ namespace Ink_Canvas
                 ApplyAlwaysOnTop();
             }
 
-            // 如果当前在设置面板中，标记用户已修改无焦点模式设置
-            if (BorderSettings.Visibility == Visibility.Visible)
-            {
-                userChangedNoFocusModeInSettings = true;
-            }
         }
 
         private void ToggleSwitchAlwaysOnTop_Toggled(object sender, RoutedEventArgs e)
