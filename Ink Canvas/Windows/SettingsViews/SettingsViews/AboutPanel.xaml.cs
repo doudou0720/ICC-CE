@@ -1,7 +1,9 @@
 ﻿using iNKORE.UI.WPF.Helpers;
+using Ink_Canvas.Helpers;
 using OSVersionExtension;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Management;
 using System.Reflection;
@@ -17,16 +19,14 @@ using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// AboutPanel.xaml 的交互逻辑
-    /// </summary>
     public partial class AboutPanel : UserControl
     {
         public AboutPanel()
         {
             InitializeComponent();
 
-            // 关于页面图片横幅
+            Loaded += AboutPanel_Loaded;
+
             if (File.Exists(App.RootPath + "icc-about-illustrations.png"))
             {
                 try
@@ -42,8 +42,22 @@ namespace Ink_Canvas.Windows.SettingsViews
                 CopyrightBannerImage.Visibility = Visibility.Collapsed;
             }
 
-            // 关于页面构建时间
-            var buildTime = FileBuildTimeHelper.GetBuildDateTime(Assembly.GetExecutingAssembly());
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var version = assembly.GetName().Version;
+                var assemblyTitle = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "InkCanvasForClass";
+                AboutSoftwareVersion.Text = $"{assemblyTitle} v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+            }
+            catch
+            {
+                AboutSoftwareVersion.Text = "InkCanvasForClass v1.7.18.0";
+            }
+
+            UpdateSystemInfo();
+
+            // 以下残留代码已移至 UpdateSystemInfo() 方法，应删除
+            /*
             if (buildTime != null)
             {
                 var bt = ((DateTimeOffset)buildTime).LocalDateTime;
@@ -56,18 +70,115 @@ namespace Ink_Canvas.Windows.SettingsViews
                     $"build-{bt.Year}-{m}-{d}-{h}:{min}:{s}";
             }
 
-            // 关于页面系统版本
             AboutSystemVersion.Text = $"{OSVersion.GetOperatingSystem()} {OSVersion.GetOSVersion().Version}";
 
-            // 关于页面触摸设备
             var _t_touch = new Thread(() =>
             {
                 var touchcount = TouchTabletDetectHelper.GetTouchTabletDevices().Count;
                 var support = TouchTabletDetectHelper.IsTouchEnabled();
                 Dispatcher.BeginInvoke(() =>
-                    AboutTouchTabletText.Text = $"{touchcount}个设备，{(support ? "支持触摸设备" : "无触摸支持")}");
+                    AboutTouchTabletText.Text = $"{touchcount}���豸��{(support ? "֧�ִ����豸" : "�޴���֧��")}");
             });
             _t_touch.Start();
+            */
+
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? "? Copyright 2024-2026";
+                AboutCopyright.Text = copyright;
+                
+                if (AboutBottomCopyright != null)
+                {
+                    var company = assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "";
+                    if (!string.IsNullOrEmpty(company))
+                    {
+                        AboutBottomCopyright.Text = $"{copyright} {company} ����";
+                    }
+                    else
+                    {
+                        AboutBottomCopyright.Text = copyright;
+                    }
+                }
+            }
+            catch
+            {
+                AboutCopyright.Text = "? Copyright 2024-2026";
+                if (AboutBottomCopyright != null)
+                {
+                    AboutBottomCopyright.Text = "? Copyright 2024-2026";
+                }
+            }
+
+            if (AboutUserCopyright != null)
+            {
+                try
+                {
+                    var deviceId = DeviceIdentifier.GetDeviceId();
+                    AboutUserCopyright.Text = deviceId;
+                }
+                catch
+                {
+                    AboutUserCopyright.Text = "获取设备ID失败";
+                }
+            }
+
+            SetupLinkClickHandlers();
+            
+            UpdateLinkColors();
+        }
+
+        private void SetupLinkClickHandlers()
+        {
+            if (AboutOfficialWebsiteLink != null)
+            {
+                AboutOfficialWebsiteLink.MouseLeftButtonDown += (s, e) =>
+                {
+                    OpenUrlInBrowser("https://forum.smart-teach.cn/t/icc-ce");
+                };
+                AboutOfficialWebsiteLink.Cursor = Cursors.Hand;
+            }
+
+            if (AboutGithubLink != null)
+            {
+                AboutGithubLink.MouseLeftButtonDown += (s, e) =>
+                {
+                    OpenUrlInBrowser("https://github.com/InkCanvasForClass/community");
+                };
+                AboutGithubLink.Cursor = Cursors.Hand;
+            }
+
+            if (AboutContributorsLink != null)
+            {
+                AboutContributorsLink.MouseLeftButtonDown += (s, e) =>
+                {
+                    OpenUrlInBrowser("https://github.com/InkCanvasForClass/community#贡献者");
+                };
+                AboutContributorsLink.Cursor = Cursors.Hand;
+            }
+        }
+
+        private void OpenUrlInBrowser(string url)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Process.Start("cmd", $"/c start {url}");
+                }
+                catch
+                {
+                    System.Diagnostics.Debug.WriteLine($"�޷�������: {url}, ����: {ex.Message}");
+                }
+            }
         }
 
         public static class TouchTabletDetectHelper
@@ -143,8 +254,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         fileStream.Position = 0x3C;
                         fileStream.Read(buffer, 0, 4);
-                        fileStream.Position = BitConverter.ToUInt32(buffer, 0); // COFF header offset
-                        fileStream.Read(buffer, 0, 4); // "PE\0\0"
+                        fileStream.Position = BitConverter.ToUInt32(buffer, 0); 
+                        fileStream.Read(buffer, 0, 4); 
                         fileStream.Read(buffer, 0, buffer.Length);
                     }
                     var pinnedBuffer = GCHandle.Alloc(buffer, GCHandleType.Pinned);
@@ -259,19 +370,171 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = thumb.Template.FindName("ScrollbarThumbEx", thumb);
             ((Border)border).Background = new SolidColorBrush(Color.FromRgb(138, 138, 138));
         }
-        
-        /// <summary>
-        /// 应用主题
-        /// </summary>
         public void ApplyTheme()
         {
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                UpdateLinkColors();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AboutPanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AboutPanel Ӧ������ʱ����: {ex.Message}");
+            }
+        }
+
+        private void UpdateLinkColors()
+        {
+            var linkColor = ThemeHelper.IsDarkTheme 
+                ? Color.FromRgb(96, 205, 255)  
+                : Color.FromRgb(29, 78, 216);   
+
+            if (AboutOfficialWebsiteLink != null)
+            {
+                AboutOfficialWebsiteLink.Foreground = new SolidColorBrush(linkColor);
+            }
+            if (AboutGithubLink != null)
+            {
+                AboutGithubLink.Foreground = new SolidColorBrush(linkColor);
+            }
+            if (AboutContributorsLink != null)
+            {
+                AboutContributorsLink.Foreground = new SolidColorBrush(linkColor);
+            }
+        }
+
+        private void AboutPanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateSystemInfo();
+        }
+
+        private void UpdateSystemInfo()
+        {
+            UpdateUpdateIconVisibility();
+            
+            try
+            {
+                AboutSystemVersion.Text = $"{OSVersion.GetOperatingSystem()} {OSVersion.GetOSVersion().Version}";
+            }
+            catch
+            {
+                AboutSystemVersion.Text = "未知系统版本";
+            }
+
+            try
+            {
+                var buildTime = FileBuildTimeHelper.GetBuildDateTime(Assembly.GetExecutingAssembly());
+                if (buildTime != null)
+                {
+                    var bt = ((DateTimeOffset)buildTime).LocalDateTime;
+                    var m = bt.Month.ToString().PadLeft(2, '0');
+                    var d = bt.Day.ToString().PadLeft(2, '0');
+                    var h = bt.Hour.ToString().PadLeft(2, '0');
+                    var min = bt.Minute.ToString().PadLeft(2, '0');
+                    var s = bt.Second.ToString().PadLeft(2, '0');
+                    AboutBuildTime.Text = $"build-{bt.Year}-{m}-{d}-{h}:{min}:{s}";
+                }
+            }
+            catch
+            {
+                AboutBuildTime.Text = "build-未知";
+            }
+
+            var _t_touch = new Thread(() =>
+            {
+                try
+                {
+                    var touchcount = TouchTabletDetectHelper.GetTouchTabletDevices().Count;
+                    var support = TouchTabletDetectHelper.IsTouchEnabled();
+                    Dispatcher.BeginInvoke(() =>
+                        AboutTouchTabletText.Text = $"{touchcount}个设备，{(support ? "支持触摸设备" : "无触摸支持")}");
+                }
+                catch
+                {
+                    Dispatcher.BeginInvoke(() =>
+                        AboutTouchTabletText.Text = "检测失败");
+                }
+            });
+            _t_touch.Start();
+
+            try
+            {
+                if (AboutUserCopyright != null)
+                {
+                    var deviceId = DeviceIdentifier.GetDeviceId();
+                    AboutUserCopyright.Text = deviceId;
+                }
+            }
+            catch
+            {
+                if (AboutUserCopyright != null)
+                {
+                    AboutUserCopyright.Text = "获取设备ID失败";
+                }
+            }
+        }
+
+        private void UpdateUpdateIconVisibility()
+        {
+            try
+            {
+                if (UpdateAvailableIcon != null)
+                {
+                    bool hasUpdate = false;
+                    try
+                    {
+                        var mainWindow = Application.Current.MainWindow as MainWindow;
+                        if (mainWindow != null)
+                        {
+                            var hasNewUpdateProperty = mainWindow.GetType().GetProperty("HasNewUpdate");
+                            if (hasNewUpdateProperty != null)
+                            {
+                                hasUpdate = (bool)(hasNewUpdateProperty.GetValue(mainWindow) ?? false);
+                            }
+                            else
+                            {
+                                var updateInfoProperty = mainWindow.GetType().GetProperty("UpdateInfo");
+                                if (updateInfoProperty != null)
+                                {
+                                    var updateInfo = updateInfoProperty.GetValue(mainWindow);
+                                    if (updateInfo != null)
+                                    {
+                                        var hasUpdateProperty = updateInfo.GetType().GetProperty("HasUpdate");
+                                        if (hasUpdateProperty != null)
+                                        {
+                                            hasUpdate = (bool)(hasUpdateProperty.GetValue(updateInfo) ?? false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            var mainWindow = Application.Current.MainWindow as MainWindow;
+                            if (mainWindow != null)
+                            {
+                                var hasUpdateProperty = mainWindow.GetType().GetProperty("HasUpdate");
+                                if (hasUpdateProperty != null)
+                                {
+                                    hasUpdate = (bool)(hasUpdateProperty.GetValue(mainWindow) ?? false);
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                    
+                    UpdateAvailableIcon.Visibility = hasUpdate ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+            catch
+            {
+                if (UpdateAvailableIcon != null)
+                {
+                    UpdateAvailableIcon.Visibility = Visibility.Collapsed;
+                }
             }
         }
     }

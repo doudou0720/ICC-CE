@@ -36,8 +36,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     var sourceCollection = info.DragInfo.SourceCollection as ObservableCollection<FloatingBarItem>;
 
                     Trace.WriteLine(info.InsertIndex);
-
-                    // 在同一个 ObservableCollection 中移动
                     if (targetCollection.Equals(sourceCollection))
                     {
                         if (info.InsertIndex == 0)
@@ -59,7 +57,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                     }
                     else
-                    { // 跨 ObservableCollection 移动
+                    { 
                         sourceCollection.Remove(info.Data as FloatingBarItem);
                         targetCollection.Insert(info.InsertIndex, info.Data as FloatingBarItem);
                     }
@@ -95,14 +93,12 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     var targetCollection = info.TargetCollection as ObservableCollection<FloatingBarItem>;
                     var sourceCollection = info.DragInfo.SourceCollection as ObservableCollection<FloatingBarItem>;
-
-                    // 在同一个 ObservableCollection 中移动
                     if (targetCollection.Equals(sourceCollection))
                     {
                         targetCollection.Insert(info.InsertIndex, info.Data as FloatingBarItem);
                     }
                     else
-                    { // 跨 ObservableCollection 移动
+                    { 
                         sourceCollection.Remove(info.Data as FloatingBarItem);
                         targetCollection.Insert(info.InsertIndex, info.Data as FloatingBarItem);
                     }
@@ -144,10 +140,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 IconSource = FindResource("PenIcon") as DrawingImage,
             });
         }
-        
-        /// <summary>
-        /// 应用主题
-        /// </summary>
         public void ApplyTheme()
         {
             try
@@ -156,7 +148,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"FloatingBarDnDSettingsPanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"FloatingBarDnDSettingsPanel Ӧ������ʱ����: {ex.Message}");
             }
         }
     }

@@ -1,4 +1,4 @@
-using Ink_Canvas;
+﻿using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Windows;
@@ -8,9 +8,6 @@ using Application = System.Windows.Application;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// AutomationPanel.xaml 的交互逻辑
-    /// </summary>
     public partial class AutomationPanel : UserControl
     {
         private bool _isLoaded = false;
@@ -24,16 +21,11 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void AutomationPanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-            // 添加触摸支持
             EnableTouchSupport();
-            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
 
-        /// <summary>
-        /// 加载设置
-        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.Automation == null)
@@ -48,7 +40,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var automation = MainWindow.Settings.Automation;
 
-                // 设置所有 ToggleSwitch 的状态
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiNote"), automation.IsAutoFoldInEasiNote);
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInEasiCamera"), automation.IsAutoFoldInEasiCamera);
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldInHiteTouchPro"), automation.IsAutoFoldInHiteTouchPro);
@@ -81,29 +72,23 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AutomationPanel 加载设置时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AutomationPanel 加载设置时出�? {ex.Message}");
             }
 
             _isLoaded = true;
         }
 
-        /// <summary>
-        /// 查找ToggleSwitch控件
-        /// </summary>
         private Border FindToggleSwitch(string name)
         {
             return this.FindDescendantByName(name) as Border;
         }
 
-        /// <summary>
-        /// 设置 ToggleSwitch 状态
-        /// </summary>
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
-                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : ThemeHelper.GetButtonBackgroundBrush();
+                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
+                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -111,36 +96,27 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        /// <summary>
-        /// ToggleSwitch 点击事件处理
-        /// </summary>
         private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
 
-            // 标记事件已处理，防止事件冒泡
             e.Handled = true;
 
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
+            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
             bool newState = !isOn;
             SetToggleSwitchState(border, newState);
 
-            // 通过 MainWindowSettingsHelper 调用 MainWindow 中的方法
             string toggleSwitchName = border.Name;
             MainWindowSettingsHelper.InvokeToggleSwitchToggled(toggleSwitchName, newState);
         }
 
-        /// <summary>
-        /// 为面板中的所有交互控件启用触摸支持
-        /// </summary>
         private void EnableTouchSupport()
         {
             try
             {
-                // 延迟执行，确保所有控件都已加载
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     MainWindowSettingsHelper.EnableTouchSupportForControls(this);
@@ -148,7 +124,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AutomationPanel 启用触摸支持时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AutomationPanel 启用触摸支持时出�? {ex.Message}");
             }
         }
 
@@ -168,9 +144,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
         
-        /// <summary>
-        /// 应用主题
-        /// </summary>
         public void ApplyTheme()
         {
             try
@@ -179,7 +152,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AutomationPanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AutomationPanel 应用主题时出�? {ex.Message}");
             }
         }
     }

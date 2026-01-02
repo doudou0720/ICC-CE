@@ -1,4 +1,4 @@
-using Ink_Canvas;
+﻿using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Collections.Generic;
@@ -11,9 +11,6 @@ using Hardcodet.Wpf.TaskbarNotification;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// ThemePanel.xaml 的交互逻辑
-    /// </summary>
     public partial class ThemePanel : UserControl
     {
         private bool _isLoaded = false;
@@ -27,21 +24,15 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void ThemePanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-            // 添加触摸支持
             EnableTouchSupport();
-            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
 
-        /// <summary>
-        /// 为面板中的所有交互控件启用触摸支持
-        /// </summary>
         private void EnableTouchSupport()
         {
             try
             {
-                // 延迟执行，确保所有控件都已加载
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     MainWindowSettingsHelper.EnableTouchSupportForControls(this);
@@ -49,7 +40,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ThemePanel 启用触摸支持时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ThemePanel 启用触摸支持时出�? {ex.Message}");
             }
         }
 
@@ -70,9 +61,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        /// <summary>
-        /// 加载设置到UI
-        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.Appearance == null) return;
@@ -83,33 +71,25 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var appearance = MainWindow.Settings.Appearance;
 
-                // 主题设置
                 SetOptionButtonState("Theme", appearance.Theme);
 
-                // 启用启动动画
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableSplashScreen"), appearance.EnableSplashScreen);
                 if (SplashScreenStylePanel != null)
                 {
                     SplashScreenStylePanel.Visibility = appearance.EnableSplashScreen ? Visibility.Visible : Visibility.Collapsed;
                 }
 
-                // 启动动画样式
                 if (ComboBoxSplashScreenStyle != null)
                 {
                     ComboBoxSplashScreenStyle.SelectedIndex = Math.Min(appearance.SplashScreenStyle, ComboBoxSplashScreenStyle.Items.Count - 1);
                 }
 
-                // 浮动工具栏图标
                 if (ComboBoxFloatingBarImg != null)
                 {
-                    // 更新自定义图标列表（如果需要）
-                    // UpdateCustomIconsInComboBox();
-                    
                     int selectedIndex = Math.Min(appearance.FloatingBarImg, ComboBoxFloatingBarImg.Items.Count - 1);
                     ComboBoxFloatingBarImg.SelectedIndex = selectedIndex;
                 }
 
-                // 浮动工具栏缩放
                 if (ViewboxFloatingBarScaleTransformValueSlider != null)
                 {
                     double val = appearance.ViewboxFloatingBarScaleTransformValue;
@@ -121,7 +101,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 浮动工具栏透明度
                 if (ViewboxFloatingBarOpacityValueSlider != null)
                 {
                     ViewboxFloatingBarOpacityValueSlider.Value = appearance.ViewboxFloatingBarOpacityValue;
@@ -131,7 +110,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 浮栏在PPT下透明度
                 if (ViewboxFloatingBarOpacityInPPTValueSlider != null)
                 {
                     ViewboxFloatingBarOpacityInPPTValueSlider.Value = appearance.ViewboxFloatingBarOpacityInPPTValue;
@@ -141,16 +119,13 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 在调色盘窗口中显示笔尖模式按钮
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableDisPlayNibModeToggle"), appearance.IsEnableDisPlayNibModeToggler);
 
-                // 使用老版浮动栏按钮UI
                 if (CheckBoxUseLegacyFloatingBarUI != null)
                 {
                     CheckBoxUseLegacyFloatingBarUI.IsChecked = appearance.UseLegacyFloatingBarUI;
                 }
 
-                // 浮动栏按钮显示控制
                 if (CheckBoxShowShapeButton != null) CheckBoxShowShapeButton.IsChecked = appearance.IsShowShapeButton;
                 if (CheckBoxShowUndoButton != null) CheckBoxShowUndoButton.IsChecked = appearance.IsShowUndoButton;
                 if (CheckBoxShowRedoButton != null) CheckBoxShowRedoButton.IsChecked = appearance.IsShowRedoButton;
@@ -161,76 +136,58 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (CheckBoxShowLassoSelectButton != null) CheckBoxShowLassoSelectButton.IsChecked = appearance.IsShowLassoSelectButton;
                 if (CheckBoxShowClearAndMouseButton != null) CheckBoxShowClearAndMouseButton.IsChecked = appearance.IsShowClearAndMouseButton;
 
-                // 启用系统托盘图标
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableTrayIcon"), appearance.EnableTrayIcon);
 
-                // 画板UI缩放
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableViewboxBlackBoardScaleTransform"), appearance.EnableViewboxBlackBoardScaleTransform);
 
-                // 白板模式时间显示
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableTimeDisplayInWhiteboardMode"), appearance.EnableTimeDisplayInWhiteboardMode);
 
-                // 白板模式鸡汤文
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableChickenSoupInWhiteboardMode"), appearance.EnableChickenSoupInWhiteboardMode);
 
-                // 启用快捷面板
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableQuickPanel"), appearance.IsShowQuickPanel);
 
-                // 退出折叠模式后自动进入批注模式
                 if (MainWindow.Settings.Automation != null)
                 {
                     SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoEnterAnnotationModeWhenExitFoldMode"), MainWindow.Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode);
                 }
 
-                // PPT放映结束后自动折叠
                 if (MainWindow.Settings.Automation != null)
                 {
                     SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldAfterPPTSlideShow"), MainWindow.Settings.Automation.IsAutoFoldAfterPPTSlideShow);
                 }
 
-                // 退出白板模式后自动折叠
                 if (MainWindow.Settings.Automation != null)
                 {
                     SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoFoldWhenExitWhiteboard"), MainWindow.Settings.Automation.IsAutoFoldWhenExitWhiteboard);
                 }
 
-                // 信仰の源出自Where？
                 SetOptionButtonState("ChickenSoupSource", appearance.ChickenSoupSource);
 
-                // 取消收纳按钮图标
                 SetOptionButtonState("UnFoldBtnImg", appearance.UnFoldButtonImageType);
 
-                // 快捷调色盘显示模式
                 SetOptionButtonState("QuickColorPaletteDisplayMode", appearance.QuickColorPaletteDisplayMode);
 
-                // 橡皮按钮显示
                 SetOptionButtonState("EraserDisplayOption", appearance.EraserDisplayOption);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载个性化设置时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"加载个性化设置时出�? {ex.Message}");
             }
 
             _isLoaded = true;
         }
 
-        /// <summary>
-        /// 查找ToggleSwitch控件
-        /// </summary>
         private Border FindToggleSwitch(string name)
         {
             return this.FindDescendantByName(name) as Border;
         }
 
-        /// <summary>
-        /// 设置ToggleSwitch状态
-        /// </summary>
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
-                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : ThemeHelper.GetButtonBackgroundBrush();
+                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
+                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -238,9 +195,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        /// <summary>
-        /// ToggleSwitch点击事件处理
-        /// </summary>
         private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -248,7 +202,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
+            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
             bool newState = !isOn;
             SetToggleSwitchState(border, newState);
 
@@ -261,9 +215,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             switch (tag)
             {
                 case "EnableSplashScreen":
-                    // 调用 MainWindow 中的方法（带主题检查）
                     MainWindowSettingsHelper.InvokeToggleSwitchToggledWithThemeCheck("ToggleSwitchEnableSplashScreen", newState);
-                    // 更新UI状态
                     if (SplashScreenStylePanel != null)
                     {
                         SplashScreenStylePanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
@@ -271,14 +223,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                     break;
 
                 case "EnableDisPlayNibModeToggle":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableDisPlayNibModeToggle", newState);
                     break;
 
                 case "EnableTrayIcon":
-                    // 调用 MainWindow 中的方法（带主题检查）
                     MainWindowSettingsHelper.InvokeToggleSwitchToggledWithThemeCheck("ToggleSwitchEnableTrayIcon", newState);
-                    // 更新系统托盘图标可见性
                     var taskbar = Application.Current.Resources["TaskbarTrayIcon"] as TaskbarIcon;
                     if (taskbar != null)
                     {
@@ -287,51 +236,40 @@ namespace Ink_Canvas.Windows.SettingsViews
                     break;
 
                 case "EnableViewboxBlackBoardScaleTransform":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableViewboxBlackBoardScaleTransform", newState);
                     break;
 
                 case "EnableTimeDisplayInWhiteboardMode":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableTimeDisplayInWhiteboardMode", newState);
                     break;
 
                 case "EnableChickenSoupInWhiteboardMode":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableChickenSoupInWhiteboardMode", newState);
                     break;
 
                 case "EnableQuickPanel":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableQuickPanel", newState);
                     break;
 
                 case "AutoEnterAnnotationModeWhenExitFoldMode":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoEnterAnnotationModeWhenExitFoldMode", newState);
                     break;
 
                 case "AutoFoldAfterPPTSlideShow":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoFoldAfterPPTSlideShow", newState);
                     break;
 
                 case "AutoFoldWhenExitWhiteboard":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoFoldWhenExitWhiteboard", newState);
                     break;
             }
         }
 
-        /// <summary>
-        /// ComboBox选择变化事件处理
-        /// </summary>
         private void ComboBoxSplashScreenStyle_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!_isLoaded) return;
             if (ComboBoxSplashScreenStyle?.SelectedIndex >= 0)
             {
-                // 调用 MainWindow 中的方法（带主题检查）
                 MainWindowSettingsHelper.InvokeComboBoxSelectionChangedWithThemeCheck("ComboBoxSplashScreenStyle", ComboBoxSplashScreenStyle.SelectedItem);
             }
         }
@@ -341,14 +279,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (!_isLoaded) return;
             if (ComboBoxFloatingBarImg?.SelectedIndex >= 0)
             {
-                // 调用 MainWindow 中的方法（带主题检查）
                 MainWindowSettingsHelper.InvokeComboBoxSelectionChangedWithThemeCheck("ComboBoxFloatingBarImg", ComboBoxFloatingBarImg.SelectedItem);
             }
         }
 
-        /// <summary>
-        /// Slider值变化事件处理
-        /// </summary>
         private void ViewboxFloatingBarScaleTransformValueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
@@ -356,7 +290,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double val = ViewboxFloatingBarScaleTransformValueSlider.Value;
                 ViewboxFloatingBarScaleTransformValueText.Text = val.ToString("F2");
-                // 调用 MainWindow 中的方法（会自动检查主题更新）
                 MainWindowSettingsHelper.InvokeSliderValueChanged("ViewboxFloatingBarScaleTransformValueSlider", val);
             }
         }
@@ -368,7 +301,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double val = ViewboxFloatingBarOpacityValueSlider.Value;
                 ViewboxFloatingBarOpacityValueText.Text = val.ToString("F2");
-                // 调用 MainWindow 中的方法（会自动检查主题更新）
                 MainWindowSettingsHelper.InvokeSliderValueChanged("ViewboxFloatingBarOpacityValueSlider", val);
             }
         }
@@ -380,14 +312,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double val = ViewboxFloatingBarOpacityInPPTValueSlider.Value;
                 ViewboxFloatingBarOpacityInPPTValueText.Text = val.ToString("F2");
-                // 调用 MainWindow 中的方法（会自动检查主题更新）
                 MainWindowSettingsHelper.InvokeSliderValueChanged("ViewboxFloatingBarOpacityInPPTValueSlider", val);
             }
         }
 
-        /// <summary>
-        /// CheckBox变化事件处理
-        /// </summary>
         private void CheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -402,60 +330,47 @@ namespace Ink_Canvas.Windows.SettingsViews
             switch (name)
             {
                 case "CheckBoxUseLegacyFloatingBarUI":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxUseLegacyFloatingBarUI", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowShapeButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowShapeButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowUndoButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowUndoButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowRedoButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowRedoButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowClearButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowClearButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowWhiteboardButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowWhiteboardButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowHideButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowHideButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowQuickColorPalette":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowQuickColorPalette", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowLassoSelectButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowLassoSelectButton", checkBox.IsChecked ?? false);
                     break;
 
                 case "CheckBoxShowClearAndMouseButton":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged("CheckBoxShowClearAndMouseButton", checkBox.IsChecked ?? false);
                     break;
             }
         }
 
-        /// <summary>
-        /// 设置选项按钮状态
-        /// </summary>
         private void SetOptionButtonState(string group, int selectedIndex)
         {
             var buttons = new Dictionary<string, string[]>
@@ -476,31 +391,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var button = this.FindDescendantByName($"{group}{buttonNames[i]}Border") as Border;
                 if (button != null)
                 {
-                    if (i == selectedIndex)
-                    {
-                        button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                        var textBlock = button.Child as TextBlock;
-                        if (textBlock != null)
-                        {
-                            textBlock.FontWeight = FontWeights.Bold;
-                        }
-                    }
-                    else
-                    {
-                        button.Background = new SolidColorBrush(Colors.Transparent);
-                        var textBlock = button.Child as TextBlock;
-                        if (textBlock != null)
-                        {
-                            textBlock.FontWeight = FontWeights.Normal;
-                        }
-                    }
+                    ThemeHelper.SetOptionButtonSelectedState(button, i == selectedIndex);
                 }
             }
         }
 
-        /// <summary>
-        /// 选项按钮点击事件处理
-        /// </summary>
         private void OptionButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -517,7 +412,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             string group = parts[0];
             string value = parts[1];
 
-            // 清除同组其他按钮的选中状态
             var parent = border.Parent as Panel;
             if (parent != null)
             {
@@ -528,24 +422,13 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
-                            var textBlock = childBorder.Child as TextBlock;
-                            if (textBlock != null)
-                            {
-                                textBlock.FontWeight = FontWeights.Normal;
-                            }
+                            ThemeHelper.SetOptionButtonSelectedState(childBorder, false);
                         }
                     }
                 }
             }
 
-            // 设置当前按钮为选中状态
-            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
-            var currentTextBlock = border.Child as TextBlock;
-            if (currentTextBlock != null)
-            {
-                currentTextBlock.FontWeight = FontWeights.Bold;
-            }
+            ThemeHelper.SetOptionButtonSelectedState(border, true);
 
             var appearance = MainWindow.Settings.Appearance;
             if (appearance == null) return;
@@ -553,7 +436,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             switch (group)
             {
                 case "Theme":
-                    // 通过 MainWindowSettingsHelper 调用 ComboBoxTheme 的 SelectionChanged 事件处理器
                     try
                     {
                         var mainWindow = Application.Current.MainWindow as MainWindow;
@@ -562,7 +444,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             var comboBox = mainWindow.FindName("ComboBoxTheme") as System.Windows.Controls.ComboBox;
                             if (comboBox != null)
                             {
-                                // 根据 value 找到对应的 ComboBoxItem
                     int themeIndex;
                     switch (value)
                     {
@@ -587,20 +468,17 @@ namespace Ink_Canvas.Windows.SettingsViews
                                 }
                                 else
                     {
-                                    // 如果找不到控件，直接更新设置并通知主题更新
                                     MainWindowSettingsHelper.UpdateSettingSafely(() =>
                                     {
                                         appearance.Theme = themeIndex;
                                     }, "ComboBoxTheme_SelectionChanged", "ComboBoxTheme");
                                     MainWindowSettingsHelper.NotifyThemeUpdateIfNeeded("ComboBoxTheme");
                                     
-                                    // 触发主题变化事件，通知设置窗口更新主题
                                     ThemeChanged?.Invoke(this, new RoutedEventArgs());
                                 }
                             }
                             else
                             {
-                                // 如果找不到控件，直接更新设置并通知主题更新
                                 int themeIndex;
                                 switch (value)
                                 {
@@ -623,14 +501,13 @@ namespace Ink_Canvas.Windows.SettingsViews
                                 }, "ComboBoxTheme_SelectionChanged", "ComboBoxTheme");
                                 MainWindowSettingsHelper.NotifyThemeUpdateIfNeeded("ComboBoxTheme");
                         
-                        // 触发主题变化事件，通知设置窗口更新主题
                         ThemeChanged?.Invoke(this, new RoutedEventArgs());
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"切换主题时出错: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"切换主题时出�? {ex.Message}");
                     }
                     break;
 
@@ -654,7 +531,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             sourceIndex = 3;
                             break;
                     }
-                    // 调用 MainWindow 中的方法
                     var mainWindow6 = Application.Current.MainWindow as MainWindow;
                     if (mainWindow6 != null)
                     {
@@ -666,7 +542,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
-                            // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
                     appearance.ChickenSoupSource = sourceIndex;
@@ -689,7 +564,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             imgType = 0;
                             break;
                     }
-                    // 调用 MainWindow 中的方法（带主题检查）
                     var mainWindow3 = Application.Current.MainWindow as MainWindow;
                     if (mainWindow3 != null)
                     {
@@ -701,7 +575,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
-                            // 如果找不到控件，直接更新设置并通知主题更新
                             MainWindowSettingsHelper.UpdateSettingSafely(() =>
                             {
                     appearance.UnFoldButtonImageType = imgType;
@@ -725,7 +598,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             displayMode = 1;
                             break;
                     }
-                    // 调用 MainWindow 中的方法
                     var mainWindow4 = Application.Current.MainWindow as MainWindow;
                     if (mainWindow4 != null)
                     {
@@ -737,7 +609,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
-                            // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
                     appearance.QuickColorPaletteDisplayMode = displayMode;
@@ -766,7 +637,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             eraserOption = 0;
                             break;
                     }
-                    // 调用 MainWindow 中的方法
                     var mainWindow5 = Application.Current.MainWindow as MainWindow;
                     if (mainWindow5 != null)
                     {
@@ -778,7 +648,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
-                            // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
                     appearance.EraserDisplayOption = eraserOption;
@@ -789,46 +658,42 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
         
-        /// <summary>
-        /// 应用主题
-        /// </summary>
         public void ApplyTheme()
         {
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (MainWindow.Settings?.Appearance != null)
+                {
+                    var appearance = MainWindow.Settings.Appearance;
+                    SetOptionButtonState("Theme", appearance.Theme);
+                    SetOptionButtonState("ChickenSoupSource", appearance.ChickenSoupSource);
+                    SetOptionButtonState("UnFoldBtnImg", appearance.UnFoldButtonImageType);
+                    SetOptionButtonState("QuickColorPaletteDisplayMode", appearance.QuickColorPaletteDisplayMode);
+                    SetOptionButtonState("EraserDisplayOption", appearance.EraserDisplayOption);
+                }
                 
-                // 为所有 ComboBox 添加 DropDownOpened 事件处理，以便在下拉菜单打开时更新颜色
                 UpdateComboBoxDropdownTheme(ComboBoxSplashScreenStyle);
                 UpdateComboBoxDropdownTheme(ComboBoxFloatingBarImg);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ThemePanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"ThemePanel 应用主题时出�? {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// 为 ComboBox 添加下拉菜单主题更新
-        /// </summary>
         private void UpdateComboBoxDropdownTheme(System.Windows.Controls.ComboBox comboBox)
         {
             if (comboBox == null) return;
             
-            // 移除旧的事件处理（如果存在）
             comboBox.DropDownOpened -= ComboBox_DropDownOpened;
-            // 添加新的事件处理
             comboBox.DropDownOpened += ComboBox_DropDownOpened;
         }
 
-        /// <summary>
-        /// ComboBox 下拉菜单打开事件处理
-        /// </summary>
         private void ComboBox_DropDownOpened(object sender, EventArgs e)
         {
             if (sender is System.Windows.Controls.ComboBox comboBox)
             {
-                // 延迟更新，确保 Popup 已经完全创建
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     ThemeHelper.UpdateComboBoxDropdownColors(comboBox);

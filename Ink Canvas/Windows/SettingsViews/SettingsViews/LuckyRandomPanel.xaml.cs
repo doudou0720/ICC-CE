@@ -1,4 +1,4 @@
-using Ink_Canvas;
+﻿using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Collections.Generic;
@@ -10,9 +10,6 @@ using Application = System.Windows.Application;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// LuckyRandomPanel.xaml 的交互逻辑
-    /// </summary>
     public partial class LuckyRandomPanel : UserControl
     {
         private bool _isLoaded = false;
@@ -26,21 +23,15 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void LuckyRandomPanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-            // 添加触摸支持
             EnableTouchSupport();
-            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
 
-        /// <summary>
-        /// 为面板中的所有交互控件启用触摸支持
-        /// </summary>
         private void EnableTouchSupport()
         {
             try
             {
-                // 延迟执行，确保所有控件都已加载
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     MainWindowSettingsHelper.EnableTouchSupportForControls(this);
@@ -48,7 +39,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"LuckyRandomPanel 启用触摸支持时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"LuckyRandomPanel 启用触摸支持时出�? {ex.Message}");
             }
         }
 
@@ -68,9 +59,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        /// <summary>
-        /// 加载设置到UI
-        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.RandSettings == null) return;
@@ -81,22 +69,16 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var randSettings = MainWindow.Settings.RandSettings;
 
-                // 显示修改随机点名名单的按钮
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchDisplayRandWindowNamesInputBtn"), randSettings.DisplayRandWindowNamesInputBtn);
 
-                // 启用随机抽和单次抽按钮
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowRandomAndSingleDraw"), randSettings.ShowRandomAndSingleDraw);
 
-                // 启用快抽悬浮按钮
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableQuickDraw"), randSettings.EnableQuickDraw);
 
-                // 直接调用外部点名
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchExternalCaller"), randSettings.DirectCallCiRand);
 
-                // 点名类型
                 SetOptionButtonState("ExternalCallerType", randSettings.ExternalCallerType);
 
-                // 单次抽人窗口关闭延迟
                 if (RandWindowOnceCloseLatencySlider != null)
                 {
                     RandWindowOnceCloseLatencySlider.Value = randSettings.RandWindowOnceCloseLatency;
@@ -106,7 +88,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 单次随机点名人数上限
                 if (RandWindowOnceMaxStudentsSlider != null)
                 {
                     RandWindowOnceMaxStudentsSlider.Value = randSettings.RandWindowOnceMaxStudents;
@@ -116,13 +97,10 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 启用新点名UI
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchUseNewRollCallUI"), randSettings.UseNewRollCallUI);
 
-                // 启用机器学习避免重复
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableMLAvoidance"), randSettings.EnableMLAvoidance);
 
-                // 避免重复历史记录数量
                 if (MLAvoidanceHistorySlider != null)
                 {
                     MLAvoidanceHistorySlider.Value = randSettings.MLAvoidanceHistoryCount;
@@ -132,7 +110,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 避免重复权重
                 if (MLAvoidanceWeightSlider != null)
                 {
                     MLAvoidanceWeightSlider.Value = randSettings.MLAvoidanceWeight;
@@ -142,34 +119,27 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
-                // 背景选择
                 SetOptionButtonState("PickNameBackground", randSettings.SelectedBackgroundIndex);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载幸运随机设置时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"加载幸运随机设置时出�? {ex.Message}");
             }
 
             _isLoaded = true;
         }
 
-        /// <summary>
-        /// 查找ToggleSwitch控件
-        /// </summary>
         private Border FindToggleSwitch(string name)
         {
             return this.FindDescendantByName(name) as Border;
         }
 
-        /// <summary>
-        /// 设置ToggleSwitch状态
-        /// </summary>
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
-                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : ThemeHelper.GetButtonBackgroundBrush();
+                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
+                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -177,9 +147,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        /// <summary>
-        /// 设置选项按钮状态
-        /// </summary>
         private void SetOptionButtonState(string group, int selectedIndex)
         {
             var buttons = new Dictionary<string, string[]>
@@ -197,32 +164,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var button = this.FindDescendantByName($"{group}{buttonNames[i]}Border") as Border;
                 if (button != null)
                 {
-                    if (i == selectedIndex)
-                    {
-                        // 使用主题适配的选中背景颜色
-                        button.Background = ThemeHelper.GetSelectedBackgroundBrush();
-                        var textBlock = button.Child as TextBlock;
-                        if (textBlock != null)
-                        {
-                            textBlock.FontWeight = FontWeights.Bold;
-                        }
-                    }
-                    else
-                    {
-                        button.Background = new SolidColorBrush(Colors.Transparent);
-                        var textBlock = button.Child as TextBlock;
-                        if (textBlock != null)
-                        {
-                            textBlock.FontWeight = FontWeights.Normal;
-                        }
-                    }
+                    ThemeHelper.SetOptionButtonSelectedState(button, i == selectedIndex);
                 }
             }
         }
 
-        /// <summary>
-        /// ToggleSwitch点击事件处理
-        /// </summary>
         private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -230,7 +176,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
+            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
             bool newState = !isOn;
             SetToggleSwitchState(border, newState);
 
@@ -243,40 +189,31 @@ namespace Ink_Canvas.Windows.SettingsViews
             switch (tag)
             {
                 case "DisplayRandWindowNamesInputBtn":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchDisplayRandWindowNamesInputBtn", newState);
                     break;
 
                 case "ShowRandomAndSingleDraw":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowRandomAndSingleDraw", newState);
                     break;
 
                 case "EnableQuickDraw":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableQuickDraw", newState);
                     break;
 
                 case "ExternalCaller":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchExternalCaller", newState);
                     break;
 
                 case "UseNewRollCallUI":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchUseNewRollCallUI", newState);
                     break;
 
                 case "EnableMLAvoidance":
-                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableMLAvoidance", newState);
                     break;
             }
         }
 
-        /// <summary>
-        /// 选项按钮点击事件处理
-        /// </summary>
         private void OptionButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -293,7 +230,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             string group = parts[0];
             string value = parts[1];
 
-            // 清除同组其他按钮的选中状态
             var parent = border.Parent as Panel;
             if (parent != null)
             {
@@ -304,24 +240,13 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
-                            var textBlock = childBorder.Child as TextBlock;
-                            if (textBlock != null)
-                            {
-                                textBlock.FontWeight = FontWeights.Normal;
-                            }
+                            ThemeHelper.SetOptionButtonSelectedState(childBorder, false);
                         }
                     }
                 }
             }
 
-            // 设置当前按钮为选中状态，使用主题适配的选中背景颜色
-            border.Background = ThemeHelper.GetSelectedBackgroundBrush();
-            var currentTextBlock = border.Child as TextBlock;
-            if (currentTextBlock != null)
-            {
-                currentTextBlock.FontWeight = FontWeights.Bold;
-            }
+            ThemeHelper.SetOptionButtonSelectedState(border, true);
 
             var randSettings = MainWindow.Settings.RandSettings;
             if (randSettings == null) return;
@@ -345,7 +270,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                             callerType = 0;
                             break;
                     }
-                    // 调用 MainWindow 中的方法
                     var mainWindow = Application.Current.MainWindow as MainWindow;
                     if (mainWindow != null)
                     {
@@ -357,7 +281,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
-                            // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
                     randSettings.ExternalCallerType = callerType;
@@ -367,18 +290,14 @@ namespace Ink_Canvas.Windows.SettingsViews
                     break;
 
                 case "PickNameBackground":
-                    // 背景选择逻辑 - 这个设置可能没有对应的方法，直接更新
                     MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                     {
-                    randSettings.SelectedBackgroundIndex = 0; // 默认背景
+                    randSettings.SelectedBackgroundIndex = 0; 
                     }, "PickNameBackground");
                     break;
             }
         }
 
-        /// <summary>
-        /// Slider值变化事件处理
-        /// </summary>
         private void RandWindowOnceCloseLatencySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
@@ -386,7 +305,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double value = RandWindowOnceCloseLatencySlider.Value;
                 RandWindowOnceCloseLatencyText.Text = $"{value:F1}s";
-                // 调用 MainWindow 中的方法
                 MainWindowSettingsHelper.InvokeSliderValueChanged("RandWindowOnceCloseLatencySlider", value);
             }
         }
@@ -398,7 +316,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double value = RandWindowOnceMaxStudentsSlider.Value;
                 RandWindowOnceMaxStudentsText.Text = ((int)value).ToString();
-                // 调用 MainWindow 中的方法
                 MainWindowSettingsHelper.InvokeSliderValueChanged("RandWindowOnceMaxStudentsSlider", value);
             }
         }
@@ -410,7 +327,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double value = MLAvoidanceHistorySlider.Value;
                 MLAvoidanceHistoryText.Text = ((int)value).ToString();
-                // 调用 MainWindow 中的方法
                 MainWindowSettingsHelper.InvokeSliderValueChanged("MLAvoidanceHistorySlider", value);
             }
         }
@@ -422,23 +338,25 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 double value = MLAvoidanceWeightSlider.Value;
                 MLAvoidanceWeightText.Text = $"{(value * 100):F0}%";
-                // 调用 MainWindow 中的方法
                 MainWindowSettingsHelper.InvokeSliderValueChanged("MLAvoidanceWeightSlider", value);
             }
         }
         
-        /// <summary>
-        /// 应用主题
-        /// </summary>
         public void ApplyTheme()
         {
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (MainWindow.Settings?.RandSettings != null)
+                {
+                    var randSettings = MainWindow.Settings.RandSettings;
+                    SetOptionButtonState("ExternalCallerType", randSettings.ExternalCallerType);
+                    SetOptionButtonState("PickNameBackground", randSettings.SelectedBackgroundIndex);
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"LuckyRandomPanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"LuckyRandomPanel 应用主题时出�? {ex.Message}");
             }
         }
     }

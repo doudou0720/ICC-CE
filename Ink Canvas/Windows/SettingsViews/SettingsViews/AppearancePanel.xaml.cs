@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Ink_Canvas;
+using iNKORE.UI.WPF.Helpers;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
-    /// <summary>
-    /// AppearancePanel.xaml 的交互逻辑
-    /// </summary>
     public partial class AppearancePanel : UserControl
     {
         private bool _isLoaded = false;
@@ -20,16 +19,10 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void AppearancePanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
-            // 添加触摸支持
             MainWindowSettingsHelper.EnableTouchSupportForControls(this);
-            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
-
-        /// <summary>
-        /// 加载设置
-        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.Appearance == null) return;
@@ -39,8 +32,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 var appearance = MainWindow.Settings.Appearance;
-
-                // 浮动工具栏缩放
                 if (ViewboxFloatingBarScaleTransformValueSlider != null)
                 {
                     double val = appearance.ViewboxFloatingBarScaleTransformValue;
@@ -51,8 +42,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         ViewboxFloatingBarScaleTransformValueText.Text = val.ToString("F2");
                     }
                 }
-
-                // 浮动工具栏透明度
                 if (ViewboxFloatingBarOpacityValueSlider != null)
                 {
                     ViewboxFloatingBarOpacityValueSlider.Value = appearance.ViewboxFloatingBarOpacityValue;
@@ -61,8 +50,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                         ViewboxFloatingBarOpacityValueText.Text = appearance.ViewboxFloatingBarOpacityValue.ToString("F2");
                     }
                 }
-
-                // 浮栏在PPT下透明度
                 if (ViewboxFloatingBarOpacityInPPTValueSlider != null)
                 {
                     ViewboxFloatingBarOpacityInPPTValueSlider.Value = appearance.ViewboxFloatingBarOpacityInPPTValue;
@@ -74,7 +61,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载外观设置时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"�����������ʱ����: {ex.Message}");
             }
 
             _isLoaded = true;
@@ -95,10 +82,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 IsTopBarNeedNoShadowEffect?.Invoke(this, new RoutedEventArgs());
             }
         }
-        
-        /// <summary>
-        /// 应用主题
-        /// </summary>
         public void ApplyTheme()
         {
             try
@@ -107,13 +90,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AppearancePanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AppearancePanel Ӧ������ʱ����: {ex.Message}");
             }
         }
-
-        /// <summary>
-        /// Slider值变化事件处理
-        /// </summary>
         private void ViewboxFloatingBarScaleTransformValueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
@@ -144,6 +123,84 @@ namespace Ink_Canvas.Windows.SettingsViews
                 double val = ViewboxFloatingBarOpacityInPPTValueSlider.Value;
                 ViewboxFloatingBarOpacityInPPTValueText.Text = val.ToString("F2");
                 MainWindowSettingsHelper.InvokeSliderValueChanged("ViewboxFloatingBarOpacityInPPTValueSlider", val);
+            }
+        }
+        private Border FindToggleSwitch(string name)
+        {
+            return this.FindDescendantByName(name) as Border;
+        }
+        private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
+        {
+            if (toggleSwitch == null) return;
+            toggleSwitch.Background = isOn
+                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush()
+                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
+            var innerBorder = toggleSwitch.Child as Border;
+            if (innerBorder != null)
+            {
+                innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            }
+        }
+        private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            e.Handled = true;
+
+            var border = sender as Border;
+            if (border == null) return;
+
+            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
+            bool newState = !isOn;
+            SetToggleSwitchState(border, newState);
+
+            string tag = border.Tag?.ToString();
+            if (string.IsNullOrEmpty(tag)) return;
+
+            switch (tag)
+            {
+                case "EnableSplashScreen":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggledWithThemeCheck("ToggleSwitchEnableSplashScreen", newState);
+                    if (SplashScreenStylePanel != null)
+                    {
+                        SplashScreenStylePanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
+                    }
+                    break;
+
+                case "EnableDisPlayNibModeToggle":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableDisPlayNibModeToggle", newState);
+                    break;
+
+                case "EnableTrayIcon":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggledWithThemeCheck("ToggleSwitchEnableTrayIcon", newState);
+                    break;
+
+                case "EnableViewboxBlackBoardScaleTransform":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableViewboxBlackBoardScaleTransform", newState);
+                    break;
+
+                case "EnableTimeDisplayInWhiteboardMode":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableTimeDisplayInWhiteboardMode", newState);
+                    break;
+
+                case "EnableChickenSoupInWhiteboardMode":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableChickenSoupInWhiteboardMode", newState);
+                    break;
+
+                case "EnableQuickPanel":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableQuickPanel", newState);
+                    break;
+
+                case "AutoEnterAnnotationModeWhenExitFoldMode":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoEnterAnnotationModeWhenExitFoldMode", newState);
+                    break;
+
+                case "AutoFoldAfterPPTSlideShow":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoFoldAfterPPTSlideShow", newState);
+                    break;
+
+                case "AutoFoldWhenExitWhiteboard":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoFoldWhenExitWhiteboard", newState);
+                    break;
             }
         }
     }

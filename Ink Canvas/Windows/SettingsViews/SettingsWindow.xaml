@@ -206,7 +206,6 @@
         <DrawingImage x:Key="ShortcutsIcon">
             <DrawingImage.Drawing>
                 <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
-                    <!-- 键盘外框 -->
                     <GeometryDrawing Brush="Transparent">
                         <GeometryDrawing.Geometry>
                             <PathGeometry Figures="M2,8 C2,7.46957 2.21071,6.96086 2.58579,6.58579 C2.96086,6.21071 3.46957,6 4,6 L20,6 C20.5304,6 21.0391,6.21071 21.4142,6.58579 C21.7893,6.96086 22,7.46957 22,8 L22,16 C22,16.5304 21.7893,17.0391 21.4142,17.4142 C21.0391,17.7893 20.5304,18 20,18 L4,18 C3.46957,18 2.96086,17.7893 2.58579,17.4142 C2.21071,17.0391 2,16.5304 2,16 L2,8 Z" />
@@ -215,7 +214,6 @@
                             <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
                         </GeometryDrawing.Pen>
                     </GeometryDrawing>
-                    <!-- 第一行按键点 -->
                     <GeometryDrawing>
                         <GeometryDrawing.Geometry>
                             <PathGeometry Figures="M6,10 L6,10.01" />
@@ -248,7 +246,6 @@
                             <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
                         </GeometryDrawing.Pen>
                     </GeometryDrawing>
-                    <!-- 第二行按键 -->
                     <GeometryDrawing>
                         <GeometryDrawing.Geometry>
                             <PathGeometry Figures="M6,14 L6,14.01" />
@@ -265,7 +262,6 @@
                             <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
                         </GeometryDrawing.Pen>
                     </GeometryDrawing>
-                    <!-- 中间长按键 -->
                     <GeometryDrawing>
                         <GeometryDrawing.Geometry>
                             <PathGeometry Figures="M10,14 L14,14" />
@@ -620,7 +616,6 @@
     <Grid>
         <Border x:Name="MainBorder" Background="#fafafa" CornerRadius="7" BorderBrush="#3584e4" BorderThickness="2" Margin="8">
             <Grid>
-                <!--Sidebar-->
                 <Border x:Name="SidebarBorder" Width="250" Background="#ebebeb" BorderBrush="#e1e1e1" CornerRadius="7,0,0,7" BorderThickness="0,0,2,0" HorizontalAlignment="Left">
                     <Grid>
                         <Grid Height="48" VerticalAlignment="Top">
@@ -742,81 +737,60 @@
                         </ItemsControl>
                     </Grid>
                 </Border>
-                <!--AboutPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AboutPane">
                     <settingsViews:AboutPanel x:Name="SettingsAboutPanel"/>
                 </Grid>
 
-                <!--CanvasAndInkPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Visible" Name="CanvasAndInkPane">
                     <settingsViews:CanvasAndInkPanel x:Name="CanvasAndInkPanel"/>
                 </Grid>
-                <!--GesturesPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="GesturesPane">
                     <settingsViews:GesturesPanel x:Name="GesturesPanel"/>
                 </Grid>
-                <!--StartupPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StartupPane">
                     <settingsViews:StartupPanel x:Name="StartupPanel"/>
                 </Grid>
-                <!--AppearancePanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AppearancePane">
                     <settingsViews:AppearancePanel x:Name="AppearancePanel"/>
                 </Grid>
-                <!--InkRecognitionPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="InkRecognitionPane">
                     <settingsViews:InkRecognitionPanel x:Name="InkRecognitionPanel"/>
                 </Grid>
-                <!--AutomationPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AutomationPane">
                     <settingsViews:AutomationPanel x:Name="AutomationPanel"/>
                 </Grid>
-                <!--PowerPointPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="PowerPointPane">
                     <settingsViews:PowerPointPanel x:Name="PowerPointPanel"/>
                 </Grid>
                 
-                <!--个性化设置面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ThemePane">
                     <settingsViews:ThemePanel x:Name="ThemePanel"/>
                 </Grid>
 
-                <!--快捷键设置面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ShortcutsPane">
                     <settingsViews:ShortcutsPanel x:Name="ShortcutsPanel"/>
                 </Grid>
 
-                <!--崩溃处理面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="CrashActionPane">
                     <settingsViews:CrashActionPanel x:Name="CrashActionPanel"/>
                 </Grid>
 
-                <!--幸运随机面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="LuckyRandomPane">
                     <settingsViews:LuckyRandomPanel x:Name="LuckyRandomPanel"/>
                 </Grid>
 
-                <!--存储面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StoragePane">
-                    <settingsViews:StoragePanel x:Name="StoragePanel"/>
-                </Grid>
-
-                <!--截图面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SnapshotPane">
                     <settingsViews:SnapshotPanel x:Name="SnapshotPanel"/>
                 </Grid>
 
-                <!--高级面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
                     <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
-                <!--SearchPanel-->
                 <Grid Margin="0,0,0,0" Visibility="Collapsed" Name="SearchPane" ZIndex="1000">
                     <settingsViews:SearchPanel x:Name="SearchPanelControl"/>
                 </Grid>
                 
-                <!--Topbar-->
                 <Grid Height="48" VerticalAlignment="Top" Margin="250,0,0,0">
                     <Border x:Name="TopBarBorder" Height="48" CornerRadius="0,6,0,0" Background="#fafafa">
                         <Border.Clip>

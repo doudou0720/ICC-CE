@@ -135,9 +135,9 @@ namespace Ink_Canvas.Windows
             SidebarItems.Add(new SidebarItem()
             {
                 Type = SidebarItemType.Item,
-                Title = "存储空间",
-                Name = "StorageItem",
-                IconSource = FindResource("StorageIcon") as DrawingImage,
+                Title = "高级选项",
+                Name = "AdvancedItem",
+                IconSource = FindResource("AdvancedIcon") as DrawingImage,
                 Selected = false,
             });
             SidebarItems.Add(new SidebarItem()
@@ -151,14 +151,6 @@ namespace Ink_Canvas.Windows
             SidebarItems.Add(new SidebarItem()
             {
                 Type = SidebarItemType.Separator
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "高级选项",
-                Name = "AdvancedItem",
-                IconSource = FindResource("AdvancedIcon") as DrawingImage,
-                Selected = false,
             });
             SidebarItems.Add(new SidebarItem()
             {
@@ -180,9 +172,8 @@ namespace Ink_Canvas.Windows
                 AutomationPane,
                 PowerPointPane,
                 LuckyRandomPane,
-                StoragePane,
-                SnapshotPane,
-                AdvancedPane
+                AdvancedPane,
+                SnapshotPane
             };
 
             SettingsPaneScrollViewers = new ScrollViewer[] {
@@ -197,9 +188,8 @@ namespace Ink_Canvas.Windows
                 AutomationPanel.ScrollViewerEx,
                 PowerPointPanel.ScrollViewerEx,
                 LuckyRandomPanel.ScrollViewerEx,
-                StoragePanel.ScrollViewerEx,
-                SnapshotPanel.ScrollViewerEx,
-                AdvancedPanel.ScrollViewerEx
+                AdvancedPanel.ScrollViewerEx,
+                SnapshotPanel.ScrollViewerEx
             };
 
             SettingsPaneTitles = new string[] {
@@ -231,9 +221,8 @@ namespace Ink_Canvas.Windows
                 "AutomationItem",
                 "PowerPointItem",
                 "LuckyRandomItem",
-                "StorageItem",
-                "SnapshotItem",
-                "AdvancedItem"
+                "AdvancedItem",
+                "SnapshotItem"
             };
 
             SettingsAboutPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
@@ -267,8 +256,6 @@ namespace Ink_Canvas.Windows
             CrashActionPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
             LuckyRandomPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
             LuckyRandomPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            StoragePanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            StoragePanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
             SnapshotPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
             SnapshotPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
             AdvancedPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
@@ -323,8 +310,8 @@ namespace Ink_Canvas.Windows
                 {
                     StartupPanel, CanvasAndInkPanel, GesturesPanel, InkRecognitionPanel,
                     ThemePanel, ShortcutsPanel, CrashActionPanel, PowerPointPanel,
-                    AutomationPanel, LuckyRandomPanel, StoragePanel, SnapshotPanel,
-                    AdvancedPanel, SettingsAboutPanel, AppearancePanel, SearchPanelControl
+                    AutomationPanel, LuckyRandomPanel, AdvancedPanel, SnapshotPanel,
+                    SettingsAboutPanel, AppearancePanel, SearchPanelControl
                 };
                 
                 foreach (var panel in panels)
@@ -380,14 +367,16 @@ namespace Ink_Canvas.Windows
                     }
                     if (SearchButtonBorder != null)
                     {
-                        SearchButtonBorder.Background = ThemeHelper.GetButtonBackgroundBrush(); // Windows 系统按钮背景
-                        // 更新搜索按钮图标颜色
+                        SearchButtonBorder.Background = ThemeHelper.GetButtonBackgroundBrush();
+                        SearchButtonBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                        SearchButtonBorder.BorderThickness = new Thickness(0);
                         UpdateButtonIconColor(SearchButtonBorder, true);
                     }
                     if (MenuButtonBorder != null)
                     {
-                        MenuButtonBorder.Background = ThemeHelper.GetButtonBackgroundBrush(); // Windows 系统按钮背景
-                        // 更新菜单按钮图标颜色
+                        MenuButtonBorder.Background = ThemeHelper.GetButtonBackgroundBrush();
+                        MenuButtonBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                        MenuButtonBorder.BorderThickness = new Thickness(0);
                         UpdateButtonIconColor(MenuButtonBorder, true);
                     }
                     if (TitleTextBlock != null)
@@ -444,6 +433,9 @@ namespace Ink_Canvas.Windows
                     }
                     CollectionViewSource.GetDefaultView(SidebarItems).Refresh();
                     
+                    // 更新侧边栏项的鼠标反馈边框背景色
+                    UpdateSidebarItemMouseFeedbackBorders(true);
+                    
                     // 更新图标颜色
                     UpdateIconColors(true);
                 }
@@ -462,14 +454,16 @@ namespace Ink_Canvas.Windows
                     }
                     if (SearchButtonBorder != null)
                     {
-                        SearchButtonBorder.Background = new SolidColorBrush(Color.FromRgb(217, 217, 217));
-                        // 更新搜索按钮图标颜色
+                        SearchButtonBorder.Background = ThemeHelper.GetButtonBackgroundBrush();
+                        SearchButtonBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                        SearchButtonBorder.BorderThickness = new Thickness(0);
                         UpdateButtonIconColor(SearchButtonBorder, false);
                     }
                     if (MenuButtonBorder != null)
                     {
-                        MenuButtonBorder.Background = new SolidColorBrush(Color.FromRgb(217, 217, 217));
-                        // 更新菜单按钮图标颜色
+                        MenuButtonBorder.Background = ThemeHelper.GetButtonBackgroundBrush();
+                        MenuButtonBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                        MenuButtonBorder.BorderThickness = new Thickness(0);
                         UpdateButtonIconColor(MenuButtonBorder, false);
                     }
                     if (TitleTextBlock != null)
@@ -518,6 +512,9 @@ namespace Ink_Canvas.Windows
                         item.IsDarkTheme = false;
                     }
                     CollectionViewSource.GetDefaultView(SidebarItems).Refresh();
+                    
+                    // 更新侧边栏项的鼠标反馈边框背景色
+                    UpdateSidebarItemMouseFeedbackBorders(false);
                     
                     // 更新图标颜色
                     UpdateIconColors(false);
@@ -644,17 +641,47 @@ namespace Ink_Canvas.Windows
             try
             {
                 Color iconColor = isDarkTheme 
-                    ? Color.FromRgb(243, 243, 243) // 深色主题使用浅色图标 #F3F3F3
-                    : Color.FromRgb(34, 34, 34);   // 浅色主题使用深色图标 #222222
+                    ? Color.FromRgb(243, 243, 243)
+                    : Color.FromRgb(34, 34, 34);
 
                 foreach (var item in contextMenu.Items)
                 {
                     if (item is MenuItem menuItem)
                     {
-                        // 更新文字颜色
                         menuItem.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                        
+                        if (menuItem.Style == null)
+                        {
+                            var style = new Style(typeof(MenuItem));
+                            
+                            var hoverTrigger = new Trigger { Property = MenuItem.IsHighlightedProperty, Value = true };
+                            hoverTrigger.Setters.Add(new Setter(MenuItem.BackgroundProperty, ThemeHelper.GetHoverBackgroundBrush()));
+                            hoverTrigger.Setters.Add(new Setter(MenuItem.ForegroundProperty, ThemeHelper.GetTextPrimaryBrush()));
+                            style.Triggers.Add(hoverTrigger);
+                            
+                            menuItem.Style = style;
+                        }
+                        else
+                        {
+                            foreach (var trigger in menuItem.Style.Triggers)
+                            {
+                                if (trigger is Trigger t && t.Property == MenuItem.IsHighlightedProperty)
+                                {
+                                    foreach (var setter in t.Setters)
+                                    {
+                                        if (setter is Setter s && s.Property == MenuItem.ForegroundProperty)
+                                        {
+                                            s.Value = ThemeHelper.GetTextPrimaryBrush();
+                                        }
+                                        if (setter is Setter s2 && s2.Property == MenuItem.BackgroundProperty)
+                                        {
+                                            s2.Value = ThemeHelper.GetHoverBackgroundBrush();
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
-                        // 更新图标颜色
                         if (menuItem.Icon is Image iconImage && iconImage.Source is DrawingImage drawingImage)
                         {
                             if (drawingImage.Drawing is DrawingGroup drawingGroup)
@@ -766,9 +793,8 @@ namespace Ink_Canvas.Windows
                             PowerPointPanel,
                             AutomationPanel,
                             LuckyRandomPanel,
-                            StoragePanel,
-                            SnapshotPanel,
                             AdvancedPanel,
+                            SnapshotPanel,
                             SettingsAboutPanel,
                             AppearancePanel
                         };
@@ -888,9 +914,7 @@ namespace Ink_Canvas.Windows
                 {
                     if (Selected)
                     {
-                        return _isDarkTheme
-                            ? ThemeHelper.GetSelectedBackgroundBrush() // Windows 系统选中背景 #3E3E3E
-                            : new SolidColorBrush(Color.FromRgb(237, 237, 237));
+                        return ThemeHelper.GetSelectedBackgroundBrush();
                     }
                     return new SolidColorBrush(Colors.Transparent);
                 }
@@ -898,16 +922,12 @@ namespace Ink_Canvas.Windows
             
             public SolidColorBrush _siForeground
             {
-                get => _isDarkTheme
-                    ? ThemeHelper.GetTextPrimaryBrush() // Windows 系统主文字颜色 #F3F3F3
-                    : new SolidColorBrush(Color.FromRgb(0, 0, 0));
+                get => ThemeHelper.GetTextPrimaryBrush();
             }
             
             public SolidColorBrush _spStroke
             {
-                get => _isDarkTheme
-                    ? ThemeHelper.GetSeparatorBrush() // Windows 系统分隔线 #3E3E3E
-                    : new SolidColorBrush(Color.FromRgb(237, 237, 237));
+                get => ThemeHelper.GetSeparatorBrush();
             }
             
             public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
@@ -960,9 +980,8 @@ namespace Ink_Canvas.Windows
                 { "AutomationItem", AutomationPanel },
                 { "PowerPointItem", PowerPointPanel },
                 { "LuckyRandomItem", LuckyRandomPanel },
-                { "StorageItem", StoragePanel },
-                { "SnapshotItem", SnapshotPanel },
                 { "AdvancedItem", AdvancedPanel },
+                { "SnapshotItem", SnapshotPanel },
                 { "AppearanceItem", AppearancePanel }
             };
             
@@ -978,9 +997,8 @@ namespace Ink_Canvas.Windows
             if (AutomationPane != null) AutomationPane.Visibility = _selectedSidebarItemName == "AutomationItem" ? Visibility.Visible : Visibility.Collapsed;
             if (PowerPointPane != null) PowerPointPane.Visibility = _selectedSidebarItemName == "PowerPointItem" ? Visibility.Visible : Visibility.Collapsed;
             if (LuckyRandomPane != null) LuckyRandomPane.Visibility = _selectedSidebarItemName == "LuckyRandomItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (StoragePane != null) StoragePane.Visibility = _selectedSidebarItemName == "StorageItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
             if (AdvancedPane != null) AdvancedPane.Visibility = _selectedSidebarItemName == "AdvancedItem" ? Visibility.Visible : Visibility.Collapsed;
+            if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
             
             // 为新显示的面板加载设置并应用主题
             if (panelMappings.ContainsKey(_selectedSidebarItemName))
@@ -1131,6 +1149,36 @@ namespace Ink_Canvas.Windows
             _sidebarItemMouseDownBorder = null;
         }
 
+        private void UpdateSidebarItemMouseFeedbackBorders(bool isDarkTheme)
+        {
+            try
+            {
+                // 遍历所有侧边栏项，更新 MouseFeedbackBorder 的背景色
+                if (SidebarItemsControl != null)
+                {
+                    foreach (var item in SidebarItemsControl.Items)
+                    {
+                        var container = SidebarItemsControl.ItemContainerGenerator.ContainerFromItem(item);
+                        if (container != null)
+                        {
+                            var border = container.FindDescendantByName("MouseFeedbackBorder") as Border;
+                            if (border != null)
+                            {
+                                // 使用主题相关的颜色作为鼠标反馈背景
+                                border.Background = isDarkTheme
+                                    ? new SolidColorBrush(Color.FromRgb(9, 9, 11))  // 深色主题的鼠标反馈颜色
+                                    : new SolidColorBrush(Color.FromRgb(0, 0, 0));  // 浅色主题的鼠标反馈颜色（黑色半透明）
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新侧边栏项鼠标反馈边框时出错: {ex.Message}");
+            }
+        }
+
         private void CloseButton_Click(object sender, MouseButtonEventArgs e)
         {
             Close();
@@ -1252,25 +1300,33 @@ namespace Ink_Canvas.Windows
         private void ToggleSwitch_Click(object sender, MouseButtonEventArgs e)
         {
             var border = sender as Border;
-            if (border != null)
+            if (border == null) return;
+
+            // 使用 ThemeHelper 判断当前状态
+            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
+            bool newState = !isOn;
+            
+            // 使用统一的设置方法
+            SetToggleSwitchState(border, newState);
+
+            // 根据Tag处理不同的设置项
+            string tag = border.Tag?.ToString();
+            if (!string.IsNullOrEmpty(tag))
             {
-                // 切换开关状态
-                bool isOn = border.Background.ToString() == "#FF3584E4";
-                border.Background = isOn ? new SolidColorBrush(Color.FromRgb(225, 225, 225)) : new SolidColorBrush(Color.FromRgb(53, 132, 228));
+                HandleSettingChange(tag, newState);
+            }
+        }
 
-                // 切换内部圆点的位置
-                var innerBorder = border.Child as Border;
-                if (innerBorder != null)
-                {
-                    innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Left : HorizontalAlignment.Right;
-                }
-
-                // 根据Tag处理不同的设置项
-                string tag = border.Tag?.ToString();
-                if (!string.IsNullOrEmpty(tag))
-                {
-                    HandleSettingChange(tag, !isOn);
-                }
+        private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
+        {
+            if (toggleSwitch == null) return;
+            toggleSwitch.Background = isOn 
+                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
+                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
+            var innerBorder = toggleSwitch.Child as Border;
+            if (innerBorder != null)
+            {
+                innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
             }
         }
 
