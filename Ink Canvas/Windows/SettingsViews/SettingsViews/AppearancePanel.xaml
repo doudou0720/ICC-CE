@@ -40,7 +40,7 @@
                             <Border x:Name="ThemeDarkBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="Theme_Dark" Margin="8,0,0,0">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="深色主题"/>
                             </Border>
-                            <Border x:Name="ThemeSystemBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="Theme_System" Margin="8,0,0,0">
+                            <Border x:Name="ThemeSystemBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="Theme_System" Margin="8,0,0,0">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="跟随系统"/>
                             </Border>
                         </StackPanel>
@@ -104,7 +104,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择浮动工具栏的图标样式" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal">
-                            <Border x:Name="FloatingBarImgDefaultBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="FloatingBarImg_Default" Margin="0,0,8,8">
+                            <Border x:Name="FloatingBarImgDefaultBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="FloatingBarImg_Default" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="&quot;ICC-CE&quot;默认"/>
                             </Border>
                             <Border x:Name="FloatingBarImgNoShadowBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="FloatingBarImg_NoShadow" Margin="0,0,8,8">
@@ -292,7 +292,7 @@
                             <Border x:Name="QuickColorPaletteDisplayModeSingleBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="QuickColorPaletteDisplayMode_Single">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="单行显示(6色)"/>
                             </Border>
-                            <Border x:Name="QuickColorPaletteDisplayModeDoubleBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="QuickColorPaletteDisplayMode_Double" Margin="8,0,0,0">
+                            <Border x:Name="QuickColorPaletteDisplayModeDoubleBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="QuickColorPaletteDisplayMode_Double" Margin="8,0,0,0">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="双行显示(8色)"/>
                             </Border>
                         </StackPanel>
@@ -304,7 +304,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="选择橡皮按钮的显示方式" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border x:Name="EraserDisplayOptionBothBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="EraserDisplayOption_Both" Margin="0,0,8,8">
+                            <Border x:Name="EraserDisplayOptionBothBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserDisplayOption_Both" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="两个都显示"/>
                             </Border>
                             <Border x:Name="EraserDisplayOptionAreaBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserDisplayOption_Area" Margin="0,0,8,8">
@@ -399,7 +399,7 @@
                             <Border x:Name="ChickenSoupSourceGaokaoBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="ChickenSoupSource_Gaokao" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="高考祝福语"/>
                             </Border>
-                            <Border x:Name="ChickenSoupSourceHitokotoBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="ChickenSoupSource_Hitokoto" Margin="0,0,8,8">
+                            <Border x:Name="ChickenSoupSourceHitokotoBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="ChickenSoupSource_Hitokoto" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="一言（Hitokoto API）"/>
                             </Border>
                         </WrapPanel>
@@ -429,7 +429,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择取消收纳按钮的图标样式" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="UnFoldBtnImgArrowBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UnFoldBtnImg_Arrow" Margin="0,0,8,8">
+                            <Border x:Name="UnFoldBtnImgArrowBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UnFoldBtnImg_Arrow" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="箭头"/>
                             </Border>
                             <Border x:Name="UnFoldBtnImgPenBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UnFoldBtnImg_Pen" Margin="0,0,8,8">

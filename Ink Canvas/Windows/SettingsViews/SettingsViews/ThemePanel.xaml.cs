@@ -229,8 +229,8 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
-                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
+                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -476,23 +476,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var button = this.FindDescendantByName($"{group}{buttonNames[i]}Border") as Border;
                 if (button != null)
                 {
-                    if (i == selectedIndex)
+                    ThemeHelper.SetOptionButtonSelectedState(button, i == selectedIndex);
+                    var textBlock = button.Child as TextBlock;
+                    if (textBlock != null)
                     {
-                        button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                        var textBlock = button.Child as TextBlock;
-                        if (textBlock != null)
-                        {
-                            textBlock.FontWeight = FontWeights.Bold;
-                        }
-                    }
-                    else
-                    {
-                        button.Background = new SolidColorBrush(Colors.Transparent);
-                        var textBlock = button.Child as TextBlock;
-                        if (textBlock != null)
-                        {
-                            textBlock.FontWeight = FontWeights.Normal;
-                        }
+                        textBlock.FontWeight = i == selectedIndex ? FontWeights.Bold : FontWeights.Normal;
                     }
                 }
             }
@@ -528,7 +516,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                            ThemeHelper.SetOptionButtonSelectedState(childBorder, false);
                             var textBlock = childBorder.Child as TextBlock;
                             if (textBlock != null)
                             {
@@ -540,7 +528,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
 
             // 设置当前按钮为选中状态
-            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            ThemeHelper.SetOptionButtonSelectedState(border, true);
             var currentTextBlock = border.Child as TextBlock;
             if (currentTextBlock != null)
             {

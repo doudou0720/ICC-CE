@@ -1434,7 +1434,7 @@ namespace Ink_Canvas.Windows
                     ClearOtherOptionsInGroup(border, tag);
 
                     // 设置当前按钮为选中状态
-                    border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                    ThemeHelper.SetOptionButtonSelectedState(border, true);
                     var textBlock = border.Child as TextBlock;
                     if (textBlock != null)
                     {
@@ -1464,7 +1464,7 @@ namespace Ink_Canvas.Windows
                         string childTag = border.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(groupName + "_"))
                         {
-                            border.Background = new SolidColorBrush(Colors.Transparent);
+                            ThemeHelper.SetOptionButtonSelectedState(border, false);
                             var textBlock = border.Child as TextBlock;
                             if (textBlock != null)
                             {
