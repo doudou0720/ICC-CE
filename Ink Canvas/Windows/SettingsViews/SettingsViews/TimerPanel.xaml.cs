@@ -92,7 +92,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"TimerPanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"TimerPanel 应用主题时出�? {ex.Message}");
             }
         }
         private void TimerVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

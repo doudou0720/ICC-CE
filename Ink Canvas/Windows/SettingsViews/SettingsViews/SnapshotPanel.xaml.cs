@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using Application = System.Windows.Application;
 
@@ -414,7 +413,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        private void AutoSaveIntervalButton_Click(object sender, MouseButtonEventArgs e)
+        private void AutoSaveIntervalButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
 

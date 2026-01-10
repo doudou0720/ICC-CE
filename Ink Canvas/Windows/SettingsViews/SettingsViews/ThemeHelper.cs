@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -48,7 +48,7 @@ namespace Ink_Canvas.Windows.SettingsViews
         public static Color ButtonHoverBackground => IsDarkTheme ? Color.FromRgb(55, 55, 55) : Color.FromRgb(210, 210, 210); 
         public static Color ToggleSwitchOnBackground => IsDarkTheme ? Color.FromRgb(0, 122, 204) : Color.FromRgb(53, 132, 228); 
         public static Color ToggleSwitchOffBackground => IsDarkTheme ? ButtonBackground : Color.FromRgb(225, 225, 225); 
-        public static Color OptionButtonSelectedBackground => SelectedBackground; 
+        public static Color OptionButtonSelectedBackground => IsDarkTheme ? Color.FromRgb(62, 62, 62) : Color.FromRgb(235, 235, 235); 
         public static Color OptionButtonUnselectedBackground => Colors.Transparent; 
         public static Color OptionButtonSelectedBorder => IsDarkTheme ? Color.FromRgb(100, 100, 100) : Color.FromRgb(160, 160, 160); 
         public static Color OptionButtonUnselectedBorder => IsDarkTheme ? Color.FromRgb(50, 50, 50) : Color.FromRgb(220, 220, 220); 

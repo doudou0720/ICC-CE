@@ -483,18 +483,12 @@ namespace Ink_Canvas.Windows.SettingsViews
                     if (isRegistered)
                     {
                         FileAssociationStatusText.Text = "✓ .icstk文件关联已注册";
-                        // 使用主题适配的绿色
-                        FileAssociationStatusText.Foreground = ThemeHelper.IsDarkTheme 
-                            ? new SolidColorBrush(Color.FromRgb(76, 175, 80))  // 深色主题下的绿色
-                            : new SolidColorBrush(Color.FromRgb(46, 125, 50));  // 浅色主题下的绿色
+                        FileAssociationStatusText.Foreground = new SolidColorBrush(Colors.LightGreen);
                     }
                     else
                     {
                         FileAssociationStatusText.Text = "✗ .icstk文件关联未注册";
-                        // 使用主题适配的红色
-                        FileAssociationStatusText.Foreground = ThemeHelper.IsDarkTheme 
-                            ? new SolidColorBrush(Color.FromRgb(244, 67, 54))  // 深色主题下的红色
-                            : new SolidColorBrush(Color.FromRgb(198, 40, 40));  // 浅色主题下的红色
+                        FileAssociationStatusText.Foreground = new SolidColorBrush(Colors.LightCoral);
                     }
                 }
             }
@@ -504,10 +498,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     FileAssociationStatusText.Visibility = Visibility.Visible;
                     FileAssociationStatusText.Text = $"✗ 检查文件关联状态时出错: {ex.Message}";
-                    // 使用主题适配的红色
-                    FileAssociationStatusText.Foreground = ThemeHelper.IsDarkTheme 
-                        ? new SolidColorBrush(Color.FromRgb(244, 67, 54))  // 深色主题下的红色
-                        : new SolidColorBrush(Color.FromRgb(198, 40, 40));  // 浅色主题下的红色
+                    FileAssociationStatusText.Foreground = new SolidColorBrush(Colors.LightCoral);
                 }
             }
         }
@@ -520,26 +511,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (MainWindow.Settings?.Advanced != null)
                 {
                     SetOptionButtonState("AutoBackupInterval", MainWindow.Settings.Advanced.AutoBackupIntervalDays);
-                }
-                
-                // 如果文件关联状态文本已显示，更新其颜色以适配主题
-                if (FileAssociationStatusText != null && FileAssociationStatusText.Visibility == Visibility.Visible)
-                {
-                    var currentText = FileAssociationStatusText.Text;
-                    if (currentText.Contains("✓") || currentText.Contains("已注册"))
-                    {
-                        // 成功状态 - 绿色
-                        FileAssociationStatusText.Foreground = ThemeHelper.IsDarkTheme 
-                            ? new SolidColorBrush(Color.FromRgb(76, 175, 80))
-                            : new SolidColorBrush(Color.FromRgb(46, 125, 50));
-                    }
-                    else if (currentText.Contains("✗") || currentText.Contains("未注册") || currentText.Contains("出错"))
-                    {
-                        // 错误状态 - 红色
-                        FileAssociationStatusText.Foreground = ThemeHelper.IsDarkTheme 
-                            ? new SolidColorBrush(Color.FromRgb(244, 67, 54))
-                            : new SolidColorBrush(Color.FromRgb(198, 40, 40));
-                    }
                 }
             }
             catch (Exception ex)
