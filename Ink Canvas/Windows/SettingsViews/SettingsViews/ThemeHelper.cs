@@ -36,7 +36,7 @@ namespace Ink_Canvas.Windows.SettingsViews
         public static Color TextSecondary => IsDarkTheme ? Color.FromRgb(161, 161, 161) : Color.FromRgb(100, 100, 100); 
         public static Color TextTertiary => IsDarkTheme ? Color.FromRgb(161, 161, 161) : Color.FromRgb(100, 100, 100); 
         public static Color BackgroundPrimary => IsDarkTheme ? Color.FromRgb(32, 32, 32) : Color.FromRgb(255, 255, 255); 
-        public static Color BackgroundSecondary => IsDarkTheme ? Color.FromRgb(25, 25, 25) : Color.FromRgb(248, 248, 248); 
+        public static Color BackgroundSecondary => IsDarkTheme ? Color.FromRgb(43, 43, 43) : Color.FromRgb(248, 248, 248); 
         public static Color BackgroundTertiary => IsDarkTheme ? Color.FromRgb(43, 43, 43) : Color.FromRgb(240, 240, 240); 
         public static Color BorderPrimary => IsDarkTheme ? Color.FromRgb(62, 62, 62) : Color.FromRgb(200, 200, 200); 
         public static Color BorderSecondary => IsDarkTheme ? Color.FromRgb(70, 70, 70) : Color.FromRgb(180, 180, 180); 
