@@ -263,10 +263,8 @@ namespace Ink_Canvas.Helpers
             {
                 var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
 
-                // 验证COM对象是否有效
                 if (pptApp != null && Marshal.IsComObject(pptApp))
                 {
-                    // 尝试访问一个简单的属性来验证连接
                     var _ = pptApp.Name;
                     return pptApp;
                 }
@@ -275,15 +273,46 @@ namespace Ink_Canvas.Helpers
             catch (COMException ex)
             {
                 var hr = (uint)ex.HResult;
+                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
+                {
+                    LogHelper.WriteLogToFile($"检测到 COM 注册损坏 (HR: 0x{hr:X8})，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    return TryConnectToPowerPointViaROT();
+                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                // COM对象类型转换失败
-                return null;
+                LogHelper.WriteLogToFile("COM 对象类型转换失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                return TryConnectToPowerPointViaROT();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogHelper.WriteLogToFile($"常规连接方法失败: {ex.Message}，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                return TryConnectToPowerPointViaROT();
+            }
+        }
+
+        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToPowerPointViaROT()
+        {
+            try
+            {
+                LogHelper.WriteLogToFile("开始使用 ROT 备用方法连接 PowerPoint", LogHelper.LogType.Trace);
+                var pptApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
+                
+                if (pptApp != null)
+                {
+                    LogHelper.WriteLogToFile("ROT 备用方法连接成功", LogHelper.LogType.Event);
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile("ROT 备用方法连接失败", LogHelper.LogType.Warning);
+                }
+                
+                return pptApp;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"ROT 备用方法连接异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
@@ -294,10 +323,8 @@ namespace Ink_Canvas.Helpers
             {
                 var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
 
-                // 验证COM对象是否有效
                 if (wpsApp != null && Marshal.IsComObject(wpsApp))
                 {
-                    // 尝试访问一个简单的属性来验证连接
                     var _ = wpsApp.Name;
                     return wpsApp;
                 }
@@ -306,13 +333,12 @@ namespace Ink_Canvas.Helpers
             catch (COMException ex)
             {
                 var hr = (uint)ex.HResult;
-                // 忽略常见的WPS连接错误：
-                // 0x800401E3: 操作无法使用
-                // 0x80004005: 未指定错误
-                // 0x800706B5: RPC服务器不可用
-                // 0x8001010E: 应用程序调用一个已为另一线程整理的接口
-                // 0x800401F3: 无效的类字符串（WPS未安装或COM组件未注册）
-                if (hr != 0x800401E3 && hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E && hr != 0x800401F3)
+                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
+                {
+                    LogHelper.WriteLogToFile($"检测到 WPS COM 注册损坏 (HR: 0x{hr:X8})，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    return TryConnectToWPSViaROT();
+                }
+                if (hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E)
                 {
                     LogHelper.WriteLogToFile($"连接WPS失败: {ex}", LogHelper.LogType.Warning);
                 }
@@ -320,12 +346,37 @@ namespace Ink_Canvas.Helpers
             }
             catch (InvalidCastException)
             {
-                // COM对象类型转换失败
-                return null;
+                LogHelper.WriteLogToFile("WPS COM 对象类型转换失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                return TryConnectToWPSViaROT();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"连接WPS时发生意外错误: {ex}", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"连接WPS时发生意外错误: {ex}，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                return TryConnectToWPSViaROT();
+            }
+        }
+
+        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPSViaROT()
+        {
+            try
+            {
+                LogHelper.WriteLogToFile("开始使用 ROT 备用方法连接 WPS", LogHelper.LogType.Trace);
+                var wpsApp = PPTROTConnectionHelper.TryConnectViaROT(true);
+                
+                if (wpsApp != null)
+                {
+                    LogHelper.WriteLogToFile("ROT 备用方法连接 WPS 成功", LogHelper.LogType.Event);
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile("ROT 备用方法连接 WPS 失败", LogHelper.LogType.Warning);
+                }
+                
+                return wpsApp;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"ROT 备用方法连接 WPS 异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
@@ -429,18 +480,39 @@ namespace Ink_Canvas.Helpers
                         LogHelper.WriteLogToFile($"取消PPT事件注册失败: {ex}", LogHelper.LogType.Warning);
                     }
 
-                    // 安全释放COM对象
                     SafeReleaseComObject(CurrentSlide, "CurrentSlide");
                     SafeReleaseComObject(CurrentSlides, "CurrentSlides");
                     SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
-                    SafeReleaseComObject(PPTApplication, "PPTApplication");
+                    
+                    if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
+                    {
+                        try
+                        {
+                            int refCount = Marshal.ReleaseComObject(PPTApplication);
+                            while (refCount > 0)
+                            {
+                                refCount = Marshal.ReleaseComObject(PPTApplication);
+                            }
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                Marshal.FinalReleaseComObject(PPTApplication);
+                            }
+                            catch { }
+                        }
+                    }
 
-                    // 清理引用
                     PPTApplication = null;
                     CurrentPresentation = null;
                     CurrentSlides = null;
                     CurrentSlide = null;
                     SlidesCount = 0;
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
 
                     // 重新启动连接检查定时器
                     _connectionCheckTimer?.Start();
