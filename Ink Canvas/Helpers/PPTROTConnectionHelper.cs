@@ -71,27 +71,38 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        var pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
+                        Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
+                        
                         if (pptApp != null)
                         {
-                            var _ = pptApp.Name;
-                            LogHelper.WriteLogToFile($"通过 ROT 成功连接到 PowerPoint (优先级: {bestPriority})", LogHelper.LogType.Event);
-                            return pptApp;
+                            try
+                            {
+                                var nameObj = pptApp.GetType().InvokeMember("Name", BindingFlags.GetProperty, null, pptApp, null);
+                                SafeReleaseComObject(nameObj);
+                                LogHelper.WriteLogToFile($"通过 ROT 成功连接到 PowerPoint (优先级: {bestPriority})", LogHelper.LogType.Event);
+                                return pptApp;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"ROT 连接验证失败: {ex.Message}", LogHelper.LogType.Warning);
+                                SafeReleaseComObject(bestApp);
+                                return null;
+                            }
                         }
                         else
                         {
-                            dynamic dynApp = bestApp;
-                            var name = dynApp.Name;
-                            LogHelper.WriteLogToFile($"通过 ROT 成功连接到 PowerPoint (dynamic, 优先级: {bestPriority})", LogHelper.LogType.Event);
-                            return bestApp as Microsoft.Office.Interop.PowerPoint.Application;
+                            SafeReleaseComObject(bestApp);
                         }
                     }
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"ROT 连接验证失败: {ex.Message}", LogHelper.LogType.Warning);
                         SafeReleaseComObject(bestApp);
-                        return null;
                     }
+                }
+                else if (bestApp != null)
+                {
+                    SafeReleaseComObject(bestApp);
                 }
 
                 LogHelper.WriteLogToFile("通过 ROT 未找到可用的 PowerPoint 应用程序", LogHelper.LogType.Trace);
