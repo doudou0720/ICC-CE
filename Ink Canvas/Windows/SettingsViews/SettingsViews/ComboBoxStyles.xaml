@@ -116,21 +116,15 @@
                 <ControlTemplate TargetType="ComboBoxItem">
                     <Border x:Name="Border" 
                             Background="{TemplateBinding Background}" 
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#f5f5f5"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="Transparent"/>
-                            <Setter TargetName="Border" Property="BorderThickness" Value="0"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#e1e1e1"/>
-                            <Setter TargetName="Border" Property="BorderBrush" Value="Transparent"/>
-                            <Setter TargetName="Border" Property="BorderThickness" Value="0"/>
                             <Setter Property="FontWeight" Value="Bold"/>
                         </Trigger>
                     </ControlTemplate.Triggers>

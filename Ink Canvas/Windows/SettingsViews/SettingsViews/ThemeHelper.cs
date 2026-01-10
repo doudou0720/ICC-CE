@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -50,9 +49,9 @@ namespace Ink_Canvas.Windows.SettingsViews
         public static Color ToggleSwitchOnBackground => IsDarkTheme ? Color.FromRgb(0, 122, 204) : Color.FromRgb(53, 132, 228); 
         public static Color ToggleSwitchOffBackground => IsDarkTheme ? ButtonBackground : Color.FromRgb(225, 225, 225); 
         public static Color OptionButtonSelectedBackground => SelectedBackground; 
-        public static Color OptionButtonUnselectedBackground => ButtonBackground; 
+        public static Color OptionButtonUnselectedBackground => Colors.Transparent; 
         public static Color OptionButtonSelectedBorder => IsDarkTheme ? Color.FromRgb(100, 100, 100) : Color.FromRgb(160, 160, 160); 
-        public static Color OptionButtonUnselectedBorder => IsDarkTheme ? Color.FromRgb(90, 90, 90) : Color.FromRgb(220, 220, 220); 
+        public static Color OptionButtonUnselectedBorder => IsDarkTheme ? Color.FromRgb(50, 50, 50) : Color.FromRgb(220, 220, 220); 
         public static Color TextBoxBackground => IsDarkTheme ? Color.FromRgb(43, 43, 43) : Color.FromRgb(255, 255, 255); 
         public static Color TextBoxBorder => IsDarkTheme ? Color.FromRgb(62, 62, 62) : Color.FromRgb(200, 200, 200); 
         public static Color ScrollBarTrack => IsDarkTheme ? Color.FromRgb(25, 25, 25) : Color.FromRgb(243, 243, 243); 
@@ -586,12 +585,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var border = comboBoxItem.Template.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
                 if (border != null)
                 {
-                    // 优先检查当前状态
                     if (comboBoxItem.IsSelected)
                     {
                         border.Background = GetSelectedBackgroundBrush();
-                        border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                        border.BorderThickness = new Thickness(0);
+                        border.BorderBrush = GetBorderPrimaryBrush();
+                        border.BorderThickness = new Thickness(1);
                     }
                     else if (comboBoxItem.IsMouseOver)
                     {
@@ -611,8 +609,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             }
                             else if (color.R == 245 && color.G == 245 && color.B == 245) 
                             {
-                                // 如果当前是悬浮颜色，但 IsMouseOver 为 false，说明鼠标已离开，恢复默认
-                                border.Background = GetTextBoxBackgroundBrush();
+                                border.Background = GetHoverBackgroundBrush();
                             }
                             else if (color.R == 225 && color.G == 225 && color.B == 225) 
                             {
@@ -648,76 +645,25 @@ namespace Ink_Canvas.Windows.SettingsViews
                 comboBoxItem.MouseLeave += ComboBoxItem_MouseLeave;
                 comboBoxItem.Selected += ComboBoxItem_Selected;
                 comboBoxItem.Unselected += ComboBoxItem_Unselected;
-                
-                var descriptor = System.ComponentModel.DependencyPropertyDescriptor.FromProperty(
-                    System.Windows.UIElement.IsMouseOverProperty, typeof(System.Windows.UIElement));
-                if (descriptor != null)
-                {
-                    descriptor.RemoveValueChanged(comboBoxItem, ComboBoxItem_IsMouseOverChanged);
-                    descriptor.AddValueChanged(comboBoxItem, ComboBoxItem_IsMouseOverChanged);
-                }
             }
             catch
             {
-            }
-        }
-        
-        private static void ComboBoxItem_IsMouseOverChanged(object sender, EventArgs e)
-        {
-            if (sender is System.Windows.Controls.ComboBoxItem comboBoxItem)
-            {
-                comboBoxItem.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
-                    if (border != null)
-                    {
-                        if (comboBoxItem.IsSelected)
-                        {
-                            border.Background = GetSelectedBackgroundBrush();
-                            border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                            border.BorderThickness = new Thickness(0);
-                        }
-                        else if (comboBoxItem.IsMouseOver)
-                        {
-                            border.Background = GetHoverBackgroundBrush();
-                            border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                            border.BorderThickness = new Thickness(0);
-                        }
-                        else
-                        {
-                            border.Background = GetTextBoxBackgroundBrush();
-                            border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                            border.BorderThickness = new Thickness(0);
-                        }
-                    }
-                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
         private static void ComboBoxItem_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (sender is System.Windows.Controls.ComboBoxItem comboBoxItem)
             {
-                // 使用 Dispatcher 确保在 XAML Trigger 之后执行
-                comboBoxItem.Dispatcher.BeginInvoke(new Action(() =>
+                var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
+                if (border != null)
                 {
-                    var border = comboBoxItem.Template?.FindName("Border", comboBoxItem) as System.Windows.Controls.Border;
-                    if (border != null)
+                    if (!comboBoxItem.IsSelected)
                     {
-                        // 选中状态优先于悬浮状态
-                        if (comboBoxItem.IsSelected)
-                        {
-                            border.Background = GetSelectedBackgroundBrush();
-                            border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                            border.BorderThickness = new Thickness(0);
-                        }
-                        else if (comboBoxItem.IsMouseOver)
-                        {
-                            border.Background = GetHoverBackgroundBrush();
-                            border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                            border.BorderThickness = new Thickness(0);
-                        }
+                        border.Background = GetHoverBackgroundBrush();
+                        border.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                        border.BorderThickness = new Thickness(0);
                     }
-                }), System.Windows.Threading.DispatcherPriority.Loaded);
+                }
             }
         }
         private static void ComboBoxItem_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
@@ -730,8 +676,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     if (comboBoxItem.IsSelected)
                     {
                         border.Background = GetSelectedBackgroundBrush();
-                        border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                        border.BorderThickness = new Thickness(0);
+                        border.BorderBrush = GetBorderPrimaryBrush();
+                        border.BorderThickness = new Thickness(1);
                     }
                     else
                     {
@@ -750,8 +696,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (border != null)
                 {
                     border.Background = GetSelectedBackgroundBrush();
-                    border.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                    border.BorderThickness = new Thickness(0);
+                    border.BorderBrush = GetBorderPrimaryBrush();
+                    border.BorderThickness = new Thickness(1);
                 }
             }
         }
@@ -821,13 +767,13 @@ namespace Ink_Canvas.Windows.SettingsViews
                                              baseTrigger.Property == System.Windows.Controls.ComboBoxItem.IsSelectedProperty &&
                                              (bool)baseTrigger.Value == true)
                                     {
-                                        setterBase.Value = new SolidColorBrush(Colors.Transparent);
+                                        setterBase.Value = GetBorderPrimaryBrush();
                                     }
                                     else if (setterBase.Property == System.Windows.Controls.Border.BorderThicknessProperty &&
                                              baseTrigger.Property == System.Windows.Controls.ComboBoxItem.IsSelectedProperty &&
                                              (bool)baseTrigger.Value == true)
                                     {
-                                        setterBase.Value = new Thickness(0);
+                                        setterBase.Value = new Thickness(1);
                                     }
                                 }
                             }

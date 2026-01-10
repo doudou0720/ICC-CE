@@ -218,9 +218,7 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
-            toggleSwitch.Background = isOn 
-                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
-                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
+            toggleSwitch.Background = isOn ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
