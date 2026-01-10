@@ -63,8 +63,6 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                LogHelper.WriteLogToFile("开始通过 ROT 查找 PowerPoint 应用程序", LogHelper.LogType.Trace);
-
                 object bestApp = GetAnyActivePowerPoint(null, out int bestPriority, out _, isSupportWPS);
 
                 if (bestApp != null && bestPriority > 0)
@@ -79,7 +77,6 @@ namespace Ink_Canvas.Helpers
                             {
                                 var nameObj = pptApp.GetType().InvokeMember("Name", BindingFlags.GetProperty, null, pptApp, null);
                                 SafeReleaseComObject(nameObj);
-                                LogHelper.WriteLogToFile($"通过 ROT 成功连接到 PowerPoint (优先级: {bestPriority})", LogHelper.LogType.Event);
                                 return pptApp;
                             }
                             catch (Exception ex)
@@ -105,7 +102,6 @@ namespace Ink_Canvas.Helpers
                     SafeReleaseComObject(bestApp);
                 }
 
-                LogHelper.WriteLogToFile("通过 ROT 未找到可用的 PowerPoint 应用程序", LogHelper.LogType.Trace);
                 return null;
             }
             catch (Exception ex)

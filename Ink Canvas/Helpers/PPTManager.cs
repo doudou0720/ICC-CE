@@ -314,18 +314,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                LogHelper.WriteLogToFile("开始使用 ROT 备用方法连接 PowerPoint", LogHelper.LogType.Trace);
                 var pptApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
-                
-                if (pptApp != null)
-                {
-                    LogHelper.WriteLogToFile("ROT 备用方法连接成功", LogHelper.LogType.Event);
-                }
-                else
-                {
-                    LogHelper.WriteLogToFile("ROT 备用方法连接失败", LogHelper.LogType.Warning);
-                }
-                
                 return pptApp;
             }
             catch (Exception ex)
@@ -377,18 +366,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                LogHelper.WriteLogToFile("开始使用 ROT 备用方法连接 WPS", LogHelper.LogType.Trace);
                 var wpsApp = PPTROTConnectionHelper.TryConnectViaROT(true);
-                
-                if (wpsApp != null)
-                {
-                    LogHelper.WriteLogToFile("ROT 备用方法连接 WPS 成功", LogHelper.LogType.Event);
-                }
-                else
-                {
-                    LogHelper.WriteLogToFile("ROT 备用方法连接 WPS 失败", LogHelper.LogType.Warning);
-                }
-                
                 return wpsApp;
             }
             catch (Exception ex)
@@ -814,8 +792,7 @@ namespace Ink_Canvas.Helpers
             {
                 PresentationClose?.Invoke(pres);
 
-                // 重新启动连接检查
-                _connectionCheckTimer?.Start();
+                DisconnectFromPPT();
             }
             catch (Exception ex)
             {
