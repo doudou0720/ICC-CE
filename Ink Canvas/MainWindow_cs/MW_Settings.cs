@@ -671,13 +671,6 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void ToggleSwitchSkipAnimationsWhenGoNext_OnToggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            Settings.PowerPointSettings.SkipAnimationsWhenGoNext = ToggleSwitchSkipAnimationsWhenGoNext.IsOn;
-            SaveSettingsToFile();
-        }
-
         private void PPTLSButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
