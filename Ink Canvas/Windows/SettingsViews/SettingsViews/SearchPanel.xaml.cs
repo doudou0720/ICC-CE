@@ -77,6 +77,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 截图和屏幕捕捉
                 new SettingItem { Title = "截图和屏幕捕捉", Category = "截图和屏幕捕捉", ItemName = "SnapshotItem", Type = SettingItemType.Category },
                 
+                // 更新中心
+                new SettingItem { Title = "更新中心", Category = "更新中心", ItemName = "UpdateCenterItem", Type = SettingItemType.Category },
+                
                 // 关于
                 new SettingItem { Title = "关于 InkCanvasForClass", Category = "关于", ItemName = "AboutItem", Type = SettingItemType.Category },
             };

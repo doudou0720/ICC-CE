@@ -155,12 +155,21 @@ namespace Ink_Canvas.Windows
             SidebarItems.Add(new SidebarItem()
             {
                 Type = SidebarItemType.Item,
+                Title = "更新中心",
+                Name = "UpdateCenterItem",
+                IconSource = FindResource("UpdateCenterIcon") as DrawingImage,
+                Selected = false,
+            });
+            SidebarItems.Add(new SidebarItem()
+            {
+                Type = SidebarItemType.Item,
                 Title = "关于 InkCanvasForClass",
                 Name = "AboutItem",
                 IconSource = FindResource("AboutIcon") as DrawingImage,
                 Selected = false,
             });
             SettingsPanes = new Grid[] {
+                UpdateCenterPane,
                 AboutPane,
                 CanvasAndInkPane,
                 GesturesPane,
@@ -177,6 +186,7 @@ namespace Ink_Canvas.Windows
             };
 
             SettingsPaneScrollViewers = new ScrollViewer[] {
+                UpdateCenterPanel.UpdateCenterScrollViewerEx,
                 SettingsAboutPanel.AboutScrollViewerEx,
                 CanvasAndInkPanel.ScrollViewerEx,
                 GesturesPanel.ScrollViewerEx,
@@ -193,6 +203,7 @@ namespace Ink_Canvas.Windows
             };
 
             SettingsPaneTitles = new string[] {
+                "更新中心",
                 "关于",
                 "画板和墨迹",
                 "手势操作",
@@ -209,6 +220,7 @@ namespace Ink_Canvas.Windows
             };
 
             SettingsPaneNames = new string[] {
+                "UpdateCenterItem",
                 "AboutItem",
                 "CanvasAndInkItem",
                 "GesturesItem",
@@ -259,6 +271,8 @@ namespace Ink_Canvas.Windows
             AdvancedPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
             SnapshotPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
             SnapshotPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            UpdateCenterPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            UpdateCenterPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
 
             _selectedSidebarItemName = "StartupItem";
             
@@ -307,7 +321,7 @@ namespace Ink_Canvas.Windows
                 // 使用反射调用所有面板的 ApplyTheme 方法（如果存在）
                 var panels = new UserControl[]
                 {
-                    StartupPanel, CanvasAndInkPanel, GesturesPanel, InkRecognitionPanel,
+                    UpdateCenterPanel, StartupPanel, CanvasAndInkPanel, GesturesPanel, InkRecognitionPanel,
                     ThemePanel, ShortcutsPanel, CrashActionPanel, PowerPointPanel,
                     AutomationPanel, LuckyRandomPanel, AdvancedPanel, SnapshotPanel,
                     SettingsAboutPanel, AppearancePanel, SearchPanelControl
@@ -754,6 +768,7 @@ namespace Ink_Canvas.Windows
                             LuckyRandomPanel,
                             AdvancedPanel,
                             SnapshotPanel,
+                            UpdateCenterPanel,
                             SettingsAboutPanel,
                             AppearancePanel
                         };
@@ -947,6 +962,7 @@ namespace Ink_Canvas.Windows
                 { "LuckyRandomItem", LuckyRandomPanel },
                 { "AdvancedItem", AdvancedPanel },
                 { "SnapshotItem", SnapshotPanel },
+                { "UpdateCenterItem", UpdateCenterPanel },
                 { "AppearanceItem", AppearancePanel }
             };
             
@@ -964,6 +980,7 @@ namespace Ink_Canvas.Windows
             if (LuckyRandomPane != null) LuckyRandomPane.Visibility = _selectedSidebarItemName == "LuckyRandomItem" ? Visibility.Visible : Visibility.Collapsed;
             if (AdvancedPane != null) AdvancedPane.Visibility = _selectedSidebarItemName == "AdvancedItem" ? Visibility.Visible : Visibility.Collapsed;
             if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
+            if (UpdateCenterPane != null) UpdateCenterPane.Visibility = _selectedSidebarItemName == "UpdateCenterItem" ? Visibility.Visible : Visibility.Collapsed;
             
             // 为新显示的面板应用主题（延迟执行，确保面板已完全显示）
             if (panelMappings.ContainsKey(_selectedSidebarItemName))
