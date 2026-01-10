@@ -342,7 +342,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 根据DPI缩放因子调整TimerContainer的尺寸
         /// </summary>
-        private void AdjustTimerContainerSize()
+        public void AdjustTimerContainerSize()
         {
             try
             {
