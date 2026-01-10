@@ -922,7 +922,16 @@ namespace Ink_Canvas
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                    ViewboxFloatingBarMarginAnimation(-60);
+                    if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                    {
+                        Task.Delay(350).ContinueWith(_ =>
+                        {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                ViewboxFloatingBarMarginAnimation(-60);
+                            });
+                        });
+                    }
                 });
             }
             catch (Exception ex)
@@ -1638,8 +1647,12 @@ namespace Ink_Canvas
                 SetCurrentToolMode(InkCanvasEditingMode.None);
 
                 await Task.Delay(150);
-                // PPT退出时自动收纳，使用收纳状态的边距动画
-                ViewboxFloatingBarMarginAnimation(-60);
+                PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                {   
+                    await Task.Delay(350);
+                    ViewboxFloatingBarMarginAnimation(-60);
+                }
             }
             catch (Exception ex)
             {
@@ -1655,9 +1668,13 @@ namespace Ink_Canvas
                 // 异常情况下也手动处理自动收纳
                 await HandleManualSlideShowEnd();
 
-                // 异常情况下也要自动收纳，使用收纳状态的边距动画
                 await Task.Delay(150);
-                ViewboxFloatingBarMarginAnimation(-60);
+                PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                {
+                    await Task.Delay(350);
+                    ViewboxFloatingBarMarginAnimation(-60);
+                }
             }
         }
 
