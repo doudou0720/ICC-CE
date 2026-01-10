@@ -94,7 +94,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="设置计时器提醒音的音量" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="TimerVolumeSlider" Width="150" Minimum="0" Maximum="1" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="TimerVolumeSlider_ValueChanged"/>
+                            <Slider x:Name="TimerVolumeSlider" Width="150" Minimum="0" Maximum="1" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
                             <TextBlock x:Name="TimerVolumeText" Text="100%" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" FontFamily="Consolas"/>
                         </StackPanel>
                     </Grid>
@@ -125,7 +125,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="设置渐进提醒音的音量" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Slider x:Name="ProgressiveReminderVolumeSlider" Width="150" Minimum="0" Maximum="1" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True" ValueChanged="ProgressiveReminderVolumeSlider_ValueChanged"/>
+                            <Slider x:Name="ProgressiveReminderVolumeSlider" Width="150" Minimum="0" Maximum="1" Value="1" TickFrequency="0.1" IsSnapToTickEnabled="True"/>
                             <TextBlock x:Name="ProgressiveReminderVolumeText" Text="100%" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436" FontFamily="Consolas"/>
                         </StackPanel>
                     </Grid>

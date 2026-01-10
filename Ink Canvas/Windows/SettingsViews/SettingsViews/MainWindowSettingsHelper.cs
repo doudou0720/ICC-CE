@@ -73,51 +73,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                             }
                         }
                     }
-                    else
-                    {
-                        // 如果找不到控件和属性，先更新设置
-                        // 对于自动收纳相关的设置，直接更新 Settings 对象
-                        if (toggleSwitchName.StartsWith("ToggleSwitchAutoFold") || toggleSwitchName == "ToggleSwitchKeepFoldAfterSoftwareExit")
-                        {
-                            UpdateAutoFoldSetting(toggleSwitchName, isOn);
-                            
-                            // 对于需要调用 StartOrStoptimerCheckAutoFold 的设置
-                            if (toggleSwitchName.StartsWith("ToggleSwitchAutoFold") && 
-                                !toggleSwitchName.Contains("PPTSlideShow") && 
-                                !toggleSwitchName.Contains("KeepFold") &&
-                                !toggleSwitchName.Contains("IgnoreDesktopAnno"))
-                            {
-                                try
-                                {
-                                    InvokeMainWindowMethod("StartOrStoptimerCheckAutoFold");
-                                }
-                                catch (Exception ex)
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"调用 StartOrStoptimerCheckAutoFold 失败: {ex.Message}");
-                                }
-                            }
-                            
-                            // 通知新设置面板同步状态
-                            NotifySettingsPanelsSyncState(toggleSwitchName);
-                            return;
-                        }
-                    }
-                    
-                    // 尝试触发事件（可能通过反射调用）
+                    // 即使找不到控件，也尝试触发事件（可能通过反射调用）
                     var toggledMethodName = toggleSwitchName + "_Toggled";
-                    var method = mainWindow.GetType().GetMethod(toggledMethodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-                    if (method != null)
-                    {
-                        try
-                        {
-                            // 尝试直接调用方法
-                            InvokeMainWindowMethod(toggledMethodName, null, new RoutedEventArgs());
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"调用 {toggledMethodName} 失败: {ex.Message}");
-                        }
-                    }
+                    InvokeMainWindowMethod(toggledMethodName, null, new RoutedEventArgs());
                     
                     // 通知新设置面板同步状态
                     NotifySettingsPanelsSyncState(toggleSwitchName);
@@ -146,61 +104,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 System.Diagnostics.Debug.WriteLine($"调用 ToggleSwitch {toggleSwitchName} 失败: {ex.Message}");
             }
-        }
-
-        /// <summary>
-        /// 更新自动收纳相关的设置
-        /// </summary>
-        private static void UpdateAutoFoldSetting(string toggleSwitchName, bool isOn)
-        {
-            try
-            {
-                if (MainWindow.Settings?.Automation == null) return;
-
-                // 根据 ToggleSwitch 名称映射到对应的设置属性
-                var settingMap = new Dictionary<string, Action<bool>>
-                {
-                    { "ToggleSwitchAutoFoldInEasiNote", (val) => MainWindow.Settings.Automation.IsAutoFoldInEasiNote = val },
-                    { "ToggleSwitchAutoFoldInEasiCamera", (val) => MainWindow.Settings.Automation.IsAutoFoldInEasiCamera = val },
-                    { "ToggleSwitchAutoFoldInHiteTouchPro", (val) => MainWindow.Settings.Automation.IsAutoFoldInHiteTouchPro = val },
-                    { "ToggleSwitchAutoFoldInEasiNote3", (val) => MainWindow.Settings.Automation.IsAutoFoldInEasiNote3 = val },
-                    { "ToggleSwitchAutoFoldInEasiNote3C", (val) => MainWindow.Settings.Automation.IsAutoFoldInEasiNote3C = val },
-                    { "ToggleSwitchAutoFoldInEasiNote5C", (val) => MainWindow.Settings.Automation.IsAutoFoldInEasiNote5C = val },
-                    { "ToggleSwitchAutoFoldInSeewoPincoTeacher", (val) => MainWindow.Settings.Automation.IsAutoFoldInSeewoPincoTeacher = val },
-                    { "ToggleSwitchAutoFoldInHiteCamera", (val) => MainWindow.Settings.Automation.IsAutoFoldInHiteCamera = val },
-                    { "ToggleSwitchAutoFoldInHiteLightBoard", (val) => MainWindow.Settings.Automation.IsAutoFoldInHiteLightBoard = val },
-                    { "ToggleSwitchAutoFoldInWxBoardMain", (val) => MainWindow.Settings.Automation.IsAutoFoldInWxBoardMain = val },
-                    { "ToggleSwitchAutoFoldInMSWhiteboard", (val) => MainWindow.Settings.Automation.IsAutoFoldInMSWhiteboard = val },
-                    { "ToggleSwitchAutoFoldInAdmoxWhiteboard", (val) => MainWindow.Settings.Automation.IsAutoFoldInAdmoxWhiteboard = val },
-                    { "ToggleSwitchAutoFoldInAdmoxBooth", (val) => MainWindow.Settings.Automation.IsAutoFoldInAdmoxBooth = val },
-                    { "ToggleSwitchAutoFoldInQPoint", (val) => MainWindow.Settings.Automation.IsAutoFoldInQPoint = val },
-                    { "ToggleSwitchAutoFoldInYiYunVisualPresenter", (val) => MainWindow.Settings.Automation.IsAutoFoldInYiYunVisualPresenter = val },
-                    { "ToggleSwitchAutoFoldInMaxHubWhiteboard", (val) => MainWindow.Settings.Automation.IsAutoFoldInMaxHubWhiteboard = val },
-                    { "ToggleSwitchAutoFoldInPPTSlideShow", (val) => MainWindow.Settings.Automation.IsAutoFoldInPPTSlideShow = val },
-                    { "ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno", (val) => MainWindow.Settings.Automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno = val },
-                    { "ToggleSwitchAutoFoldInOldZyBoard", (val) => MainWindow.Settings.Automation.IsAutoFoldInOldZyBoard = val },
-                    { "ToggleSwitchKeepFoldAfterSoftwareExit", (val) => MainWindow.Settings.Automation.KeepFoldAfterSoftwareExit = val }
-                };
-
-                if (settingMap.ContainsKey(toggleSwitchName))
-                {
-                    settingMap[toggleSwitchName](isOn);
-                    MainWindow.SaveSettingsToFile();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"更新自动收纳设置失败: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// ToggleSwitch 包装类，用于在找不到实际控件时模拟 ToggleSwitch
-        /// </summary>
-        private class ToggleSwitchWrapper
-        {
-            public bool IsOn { get; set; }
-            public string Name { get; set; }
         }
 
         /// <summary>

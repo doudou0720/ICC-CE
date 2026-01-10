@@ -169,12 +169,12 @@
                         </Border>
                     </Grid>
                     <StackPanel x:Name="PPTButtonSettingsPanel" Margin="0,12,0,0" Visibility="Visible">
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
-                            <CheckBox x:Name="CheckboxEnableLBPPTButton" IsChecked="True" Content="左下" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxEnableRBPPTButton" IsChecked="True" Content="右下" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxEnableLSPPTButton" IsChecked="True" Content="左侧" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxEnableRSPPTButton" IsChecked="True" Content="右侧" Margin="0,0,0,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                        </WrapPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
+                            <CheckBox x:Name="CheckboxEnableLBPPTButton" IsChecked="True" Content="左下" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxEnableRBPPTButton" IsChecked="True" Content="右下" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxEnableLSPPTButton" IsChecked="True" Content="左侧" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxEnableRSPPTButton" IsChecked="True" Content="右侧" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                        </StackPanel>
                         <Grid Height="54">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -182,7 +182,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="左侧偏移" HorizontalAlignment="Left"/>
-                                <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="调大往上偏移，调小往下偏移，修改为0为不偏移，居中放置" HorizontalAlignment="Left" MaxWidth="450"/>
+                                <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调大往上偏移，调小往下偏移，修改为0为不偏移，居中放置" HorizontalAlignment="Left"/>
                             </StackPanel>
                             <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
                                 <Grid.ColumnDefinitions>
@@ -201,7 +201,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0">
                                 <TextBlock Foreground="#2e3436" FontSize="14.5" Text="右侧偏移" HorizontalAlignment="Left"/>
-                                <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="调大往右偏移，调小往左偏移，修改为0为不偏移，居中放置" HorizontalAlignment="Left" MaxWidth="450"/>
+                                <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="调大往右偏移，调小往左偏移，修改为0为不偏移，居中放置" HorizontalAlignment="Left"/>
                             </StackPanel>
                             <Grid Grid.Column="1" VerticalAlignment="Center" Margin="0,0,15,0">
                                 <Grid.ColumnDefinitions>
@@ -252,11 +252,11 @@
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <TextBlock Text="两侧按钮设置" FontWeight="Bold" Foreground="#2e3436" FontSize="16" Margin="0,0,0,8"/>
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-                            <CheckBox x:Name="CheckboxSPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxSPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxSPPTBlackBackground" IsChecked="True" Content="黑色背景" Margin="0,0,0,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                        </WrapPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
+                            <CheckBox x:Name="CheckboxSPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxSPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxSPPTBlackBackground" IsChecked="True" Content="黑色背景" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                        </StackPanel>
                         <StackPanel x:Name="PPTLSButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
@@ -299,11 +299,11 @@
                         </StackPanel>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                         <TextBlock Text="左下右下按钮设置" FontWeight="Bold" Foreground="#2e3436" FontSize="16" Margin="0,0,0,8"/>
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-                            <CheckBox x:Name="CheckboxBPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxBPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                            <CheckBox x:Name="CheckboxBPPTBlackBackground" IsChecked="True" Content="黑色背景" Margin="0,0,0,8" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
-                        </WrapPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
+                            <CheckBox x:Name="CheckboxBPPTDisplayPage" IsChecked="True" Content="显示页码" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxBPPTHalfOpacity" IsChecked="True" Content="半透明" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                            <CheckBox x:Name="CheckboxBPPTBlackBackground" IsChecked="True" Content="黑色背景" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                        </StackPanel>
                         <StackPanel x:Name="PPTLBButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
