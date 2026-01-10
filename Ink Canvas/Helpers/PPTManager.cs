@@ -519,51 +519,51 @@ namespace Ink_Canvas.Helpers
                             catch { }
                         }
                     }
-
-                    PPTApplication = null;
-                    CurrentPresentation = null;
-                    CurrentSlides = null;
-                    CurrentSlide = null;
-                    SlidesCount = 0;
-
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    GC.Collect();
-
-                    _isModuleUnloading = true;
-                    _connectionCheckTimer?.Stop();
-                    _slideShowStateCheckTimer?.Stop();
-
-                    // 触发连接断开事件
-                    PPTConnectionChanged?.Invoke(false);
-
-                    LogHelper.WriteLogToFile("已断开PPT连接，暂时卸载模块以确保COM完全释放", LogHelper.LogType.Event);
-
-                    ThreadPool.QueueUserWorkItem(_ =>
-                    {
-                        try
-                        {
-                            Thread.Sleep(2000);
-                            
-                            GC.Collect();
-                            GC.WaitForPendingFinalizers();
-                            GC.Collect();
-                            
-                            Thread.Sleep(1000);
-                            
-                            _isModuleUnloading = false;
-                            _connectionCheckTimer?.Start();
-                            _slideShowStateCheckTimer?.Start();
-                            
-                            LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"重新加载PPT联动模块失败: {ex}", LogHelper.LogType.Error);
-                            _isModuleUnloading = false;
-                        }
-                    });
                 }
+
+                PPTApplication = null;
+                CurrentPresentation = null;
+                CurrentSlides = null;
+                CurrentSlide = null;
+                SlidesCount = 0;
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                _isModuleUnloading = true;
+                _connectionCheckTimer?.Stop();
+                _slideShowStateCheckTimer?.Stop();
+
+                // 触发连接断开事件
+                PPTConnectionChanged?.Invoke(false);
+
+                LogHelper.WriteLogToFile("已断开PPT连接，暂时卸载模块以确保COM完全释放", LogHelper.LogType.Event);
+
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    try
+                    {
+                        Thread.Sleep(2000);
+                        
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                        GC.Collect();
+                        
+                        Thread.Sleep(1000);
+                        
+                        _isModuleUnloading = false;
+                        _connectionCheckTimer?.Start();
+                        _slideShowStateCheckTimer?.Start();
+                        
+                        LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"重新加载PPT联动模块失败: {ex}", LogHelper.LogType.Error);
+                        _isModuleUnloading = false;
+                    }
+                });
             }
             catch (Exception ex)
             {
