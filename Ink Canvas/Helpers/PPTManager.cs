@@ -744,40 +744,41 @@ namespace Ink_Canvas.Helpers
                     {
                     }
 
-                    if (skipAnimations && currentPosition > 0 && totalSlides > 0 && currentPosition < totalSlides)
+                    try
                     {
+                        view.Next();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"调用下一页失败: {ex}", LogHelper.LogType.Warning);
+                    }
+
+                    if (skipAnimations && currentPosition > 0 && totalSlides > 0)
+                    {
+                        int positionAfterNext = currentPosition;
                         try
                         {
-                            view.GotoSlide(currentPosition + 1, MsoTriState.msoFalse);
-                            return true;
+                            positionAfterNext = view.CurrentShowPosition;
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            LogHelper.WriteLogToFile($"跳过转场动画跳转到下一页失败: {ex}", LogHelper.LogType.Warning);
+                        }
+
+                        if (positionAfterNext == currentPosition && currentPosition < totalSlides)
+                        {
                             try
                             {
-                                view.Next();
+                                view.GotoSlide(currentPosition + 1, MsoTriState.msoTrue);
                                 return true;
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                return false;
+                                LogHelper.WriteLogToFile($"强制跳转到下一页失败: {ex}", LogHelper.LogType.Warning);
                             }
                         }
                     }
-                    else
-                    {
-                        try
-                        {
-                            view.Next();
-                            return true;
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"调用下一页失败: {ex}", LogHelper.LogType.Warning);
-                            return false;
-                        }
-                    }
+
+                    return true;
                 }
                 return false;
             }
