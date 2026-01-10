@@ -296,19 +296,76 @@ namespace Ink_Canvas.Helpers
                 var hr = (uint)ex.HResult;
                 if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
                 {
-                    LogHelper.WriteLogToFile($"检测到 COM 注册损坏 (HR: 0x{hr:X8})，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"检测到 COM 注册损坏 (HR: 0x{hr:X8})，等待 10 秒后重试", LogHelper.LogType.Warning);
+                    Thread.Sleep(10000);
+                    
+                    try
+                    {
+                        var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
+                        if (pptApp != null && Marshal.IsComObject(pptApp))
+                        {
+                            var _ = pptApp.Name;
+                            LogHelper.WriteLogToFile("等待后常规连接方法成功", LogHelper.LogType.Event);
+                            return pptApp;
+                        }
+                    }
+                    catch
+                    {
+                        LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                        return TryConnectToPowerPointViaROT();
+                    }
+                    
+                    LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
                     return TryConnectToPowerPointViaROT();
                 }
                 return null;
             }
             catch (InvalidCastException)
             {
-                LogHelper.WriteLogToFile("COM 对象类型转换失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile("COM 对象类型转换失败，等待 10 秒后重试", LogHelper.LogType.Warning);
+                Thread.Sleep(10000);
+                
+                try
+                {
+                    var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
+                    if (pptApp != null && Marshal.IsComObject(pptApp))
+                    {
+                        var _ = pptApp.Name;
+                        LogHelper.WriteLogToFile("等待后常规连接方法成功", LogHelper.LogType.Event);
+                        return pptApp;
+                    }
+                }
+                catch
+                {
+                    LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    return TryConnectToPowerPointViaROT();
+                }
+                
+                LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
                 return TryConnectToPowerPointViaROT();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"常规连接方法失败: {ex.Message}，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"常规连接方法失败: {ex.Message}，等待 10 秒后重试", LogHelper.LogType.Warning);
+                Thread.Sleep(10000);
+                
+                try
+                {
+                    var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
+                    if (pptApp != null && Marshal.IsComObject(pptApp))
+                    {
+                        var _ = pptApp.Name;
+                        LogHelper.WriteLogToFile("等待后常规连接方法成功", LogHelper.LogType.Event);
+                        return pptApp;
+                    }
+                }
+                catch
+                {
+                    LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    return TryConnectToPowerPointViaROT();
+                }
+                
+                LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
                 return TryConnectToPowerPointViaROT();
             }
         }
@@ -356,7 +413,26 @@ namespace Ink_Canvas.Helpers
                 var hr = (uint)ex.HResult;
                 if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
                 {
-                    LogHelper.WriteLogToFile($"检测到 WPS COM 注册损坏 (HR: 0x{hr:X8})，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"检测到 WPS COM 注册损坏 (HR: 0x{hr:X8})，等待 10 秒后重试", LogHelper.LogType.Warning);
+                    Thread.Sleep(10000);
+                    
+                    try
+                    {
+                        var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
+                        if (wpsApp != null && Marshal.IsComObject(wpsApp))
+                        {
+                            var _ = wpsApp.Name;
+                            LogHelper.WriteLogToFile("等待后常规连接方法成功", LogHelper.LogType.Event);
+                            return wpsApp;
+                        }
+                    }
+                    catch
+                    {
+                        LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                        return TryConnectToWPSViaROT();
+                    }
+                    
+                    LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
                     return TryConnectToWPSViaROT();
                 }
                 if (hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E)
@@ -367,12 +443,50 @@ namespace Ink_Canvas.Helpers
             }
             catch (InvalidCastException)
             {
-                LogHelper.WriteLogToFile("WPS COM 对象类型转换失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile("WPS COM 对象类型转换失败，等待 10 秒后重试", LogHelper.LogType.Warning);
+                Thread.Sleep(10000);
+                
+                try
+                {
+                    var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
+                    if (wpsApp != null && Marshal.IsComObject(wpsApp))
+                    {
+                        var _ = wpsApp.Name;
+                        LogHelper.WriteLogToFile("等待后常规连接方法成功", LogHelper.LogType.Event);
+                        return wpsApp;
+                    }
+                }
+                catch
+                {
+                    LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    return TryConnectToWPSViaROT();
+                }
+                
+                LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
                 return TryConnectToWPSViaROT();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"连接WPS时发生意外错误: {ex}，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"连接WPS时发生意外错误: {ex}，等待 10 秒后重试", LogHelper.LogType.Warning);
+                Thread.Sleep(10000);
+                
+                try
+                {
+                    var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
+                    if (wpsApp != null && Marshal.IsComObject(wpsApp))
+                    {
+                        var _ = wpsApp.Name;
+                        LogHelper.WriteLogToFile("等待后常规连接方法成功", LogHelper.LogType.Event);
+                        return wpsApp;
+                    }
+                }
+                catch
+                {
+                    LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
+                    return TryConnectToWPSViaROT();
+                }
+                
+                LogHelper.WriteLogToFile("等待后常规连接方法仍然失败，尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
                 return TryConnectToWPSViaROT();
             }
         }
