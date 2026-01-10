@@ -1232,12 +1232,6 @@ namespace Ink_Canvas.Windows
         {
             // 关闭新设置窗口
             Close();
-            
-            // 调用主窗口的显示老设置面板方法
-            if (_mainWindow != null)
-            {
-                _mainWindow.ShowOldSettingsPanel();
-            }
         }
 
         private void ToggleSwitch_Click(object sender, MouseButtonEventArgs e)
