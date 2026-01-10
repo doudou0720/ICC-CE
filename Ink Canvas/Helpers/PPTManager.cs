@@ -1,5 +1,4 @@
-﻿using Microsoft.Office.Core;
-using Microsoft.Office.Interop.PowerPoint;
+﻿using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -719,7 +718,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        public bool TryNavigateNext(bool skipAnimations = false)
+        public bool TryNavigateNext()
         {
             try
             {
@@ -730,54 +729,7 @@ namespace Ink_Canvas.Helpers
                 if (slideShowWindow?.View != null)
                 {
                     slideShowWindow.Activate();
-
-                    var view = slideShowWindow.View;
-                    var currentPosition = 0;
-                    var totalSlides = 0;
-
-                    try
-                    {
-                        currentPosition = view.CurrentShowPosition;
-                        totalSlides = slideShowWindow.Presentation?.Slides?.Count ?? 0;
-                    }
-                    catch
-                    {
-                    }
-
-                    try
-                    {
-                        view.Next();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"调用下一页失败: {ex}", LogHelper.LogType.Warning);
-                    }
-
-                    if (skipAnimations && currentPosition > 0 && totalSlides > 0)
-                    {
-                        int positionAfterNext = currentPosition;
-                        try
-                        {
-                            positionAfterNext = view.CurrentShowPosition;
-                        }
-                        catch
-                        {
-                        }
-
-                        if (positionAfterNext == currentPosition && currentPosition < totalSlides)
-                        {
-                            try
-                            {
-                                view.GotoSlide(currentPosition + 1, MsoTriState.msoTrue);
-                                return true;
-                            }
-                            catch (Exception ex)
-                            {
-                                LogHelper.WriteLogToFile($"强制跳转到下一页失败: {ex}", LogHelper.LogType.Warning);
-                            }
-                        }
-                    }
-
+                    slideShowWindow.View.Next();
                     return true;
                 }
                 return false;

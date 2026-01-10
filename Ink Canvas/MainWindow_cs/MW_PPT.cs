@@ -1515,7 +1515,7 @@ namespace Ink_Canvas
                         strokesToSave = inkCanvas.Strokes.Clone();
                     }
 
-                    if (_pptManager?.TryNavigateNext(skipAnimations: true) == true)
+                    if (_pptManager?.TryNavigateNext() == true)
                     {
                         var currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
 
