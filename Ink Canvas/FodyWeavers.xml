@@ -1,5 +1,10 @@
 <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
-  <Costura ExcludeAssemblies="IACore|IALoader|IAWinFX">
+  <Costura>
+    <ExcludeAssemblies>
+      <Assembly>IACore</Assembly>
+      <Assembly>IALoader</Assembly>
+      <Assembly>IAWinFX</Assembly>
+    </ExcludeAssemblies>
     <IncludeAssemblies>
       <Assembly>System.Net.Http</Assembly>
     </IncludeAssemblies>
