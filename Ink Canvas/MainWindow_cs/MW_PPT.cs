@@ -77,7 +77,7 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT State Management
-        private bool isEnteredSlideShowEndEvent;
+        private bool isEnteredSlideShowEndEvent; 
         private bool isPresentationHaveBlackSpace;
 
         // 长按翻页相关字段
@@ -93,14 +93,15 @@ namespace Ink_Canvas
         // 上次播放位置相关字段
         private int _lastPlaybackPage = 0;
         private bool _shouldNavigateToLastPage = false;
-
+        
         // 当前播放页码跟踪
         private int _currentSlideShowPosition = 0;
 
         // 页面切换防抖机制
         private DateTime _lastSlideSwitchTime = DateTime.MinValue;
-        private const int SlideSwitchDebounceMs = 150;
-        private bool _isInkClearedByButton = false;
+        private int _pendingSlideIndex = -1;
+        private System.Timers.Timer _slideSwitchDebounceTimer;
+        private const int SlideSwitchDebounceMs = 150; // 防抖延迟150毫秒
         #endregion
 
         #region PPT Managers
@@ -151,10 +152,6 @@ namespace Ink_Canvas
                 _pptUIManager.PPTRBButtonPosition = Settings.PowerPointSettings.PPTRBButtonPosition;
                 _pptUIManager.EnablePPTButtonPageClickable = Settings.PowerPointSettings.EnablePPTButtonPageClickable;
                 _pptUIManager.EnablePPTButtonLongPressPageTurn = Settings.PowerPointSettings.EnablePPTButtonLongPressPageTurn;
-                _pptUIManager.PPTLSButtonOpacity = Settings.PowerPointSettings.PPTLSButtonOpacity;
-                _pptUIManager.PPTRSButtonOpacity = Settings.PowerPointSettings.PPTRSButtonOpacity;
-                _pptUIManager.PPTLBButtonOpacity = Settings.PowerPointSettings.PPTLBButtonOpacity;
-                _pptUIManager.PPTRBButtonOpacity = Settings.PowerPointSettings.PPTRBButtonOpacity;
 
                 LogHelper.WriteLogToFile("PPT管理器初始化完成", LogHelper.LogType.Event);
             }
@@ -527,8 +524,6 @@ namespace Ink_Canvas
         {
             try
             {
-                bool isInSlideShowWhenOpened = _pptManager?.IsInSlideShow == true;
-
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     // 在初始化墨迹管理器之前，先清理画布上的所有墨迹
@@ -551,7 +546,8 @@ namespace Ink_Canvas
                         CheckAndNotifyHiddenSlides(pres);
                     }
 
-                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation && !isInSlideShowWhenOpened)
+                    // 检查自动播放设置
+                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation)
                     {
                         CheckAndNotifyAutoPlaySettings(pres);
                     }
@@ -729,7 +725,7 @@ namespace Ink_Canvas
                     if (Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow &&
                         !Settings.Automation.IsAutoFoldInPPTSlideShow)
                     {
-                        await Task.Delay(600);
+                        await Task.Delay(300);
                         // 先进入批注模式，这会显示调色盘
                         PenIcon_Click(null, null);
                         // 然后设置颜色
@@ -770,7 +766,6 @@ namespace Ink_Canvas
                     LoadCurrentSlideInk(currentSlide);
                 });
 
-
                 if (!isFloatingBarFolded)
                 {
                     new Thread(() =>
@@ -783,8 +778,9 @@ namespace Ink_Canvas
                     }).Start();
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                LogHelper.WriteLogToFile($"处理幻灯片放映开始事件失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
@@ -792,7 +788,7 @@ namespace Ink_Canvas
         {
             try
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     if (wn?.View == null || wn.Presentation == null)
                     {
@@ -803,54 +799,11 @@ namespace Ink_Canvas
                     var activePresentation = wn.Presentation;
                     var totalSlides = activePresentation.Slides.Count;
 
-                    // 获取之前的页码（用于保存墨迹）
-                    var previousSlide = _currentSlideShowPosition > 0 ? _currentSlideShowPosition :
-                                       (_pptManager?.GetCurrentSlideNumber() ?? 0);
-
-                    // 先保存当前页墨迹的副本
-                    StrokeCollection strokesToSave = null;
-                    if (previousSlide > 0 && previousSlide != currentSlide && inkCanvas.Strokes.Count > 0)
-                    {
-                        strokesToSave = inkCanvas.Strokes.Clone();
-                    }
-
-                    if (_isInkClearedByButton)
-                    {
-                        _isInkClearedByButton = false;
-                    }
-                    else if (inkCanvas.Strokes.Count > 0)
-                    {
-                        ClearStrokes(true);
-                        timeMachine.ClearStrokeHistory();
-                    }
-
                     // 更新当前播放页码
                     _currentSlideShowPosition = currentSlide;
 
-                    // 异步保存之前页面的墨迹（不阻塞翻页操作）
-                    if (strokesToSave != null && previousSlide > 0 && previousSlide != currentSlide)
-                    {
-                        Task.Run(() =>
-                        {
-                            try
-                            {
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    bool canWrite = _singlePPTInkManager?.CanWriteInk(previousSlide) == true;
-                                    if (canWrite)
-                                    {
-                                        _singlePPTInkManager?.SaveCurrentSlideStrokes(previousSlide, strokesToSave);
-                                    }
-                                });
-                            }
-                            catch (Exception ex)
-                            {
-                                LogHelper.WriteLogToFile($"异步保存PPT页面墨迹失败: {ex}", LogHelper.LogType.Error);
-                            }
-                        });
-                    }
-                    LoadCurrentSlideInk(currentSlide, skipClear: true); // 跳过清除，因为已在上面清除
-                    _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
+                    // 使用防抖机制处理页面切换
+                    HandleSlideSwitchWithDebounce(currentSlide, totalSlides);
 
                 });
             }
@@ -864,7 +817,6 @@ namespace Ink_Canvas
         {
             try
             {
-                // PPT退出时自动收纳浮动栏
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
@@ -956,7 +908,7 @@ namespace Ink_Canvas
                         if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
                             BtnHideInkCanvas_Click(BtnHideInkCanvas, null);
                         SetCurrentToolMode(InkCanvasEditingMode.None);
-
+                        
                         UpdateCurrentToolMode("cursor");
                         SetFloatingBarHighlightPosition("cursor");
                     }
@@ -969,15 +921,8 @@ namespace Ink_Canvas
                 await Task.Delay(100);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
-                    {
-                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                        ViewboxFloatingBarMarginAnimation(-60);
-                    }
-                    else
-                    {
-                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                    }
+                    PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                    ViewboxFloatingBarMarginAnimation(-60);
                 });
             }
             catch (Exception ex)
@@ -998,10 +943,7 @@ namespace Ink_Canvas
                 }
                 else if (Settings.PowerPointSettings.IsNotifyPreviousPage)
                 {
-                    if (_pptManager?.IsInSlideShow != true)
-                    {
-                        ShowPreviousPageNotification(pres);
-                    }
+                    ShowPreviousPageNotification(pres);
                 }
             }
             catch (Exception ex)
@@ -1113,7 +1055,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (_pptManager?.IsInSlideShow == true) return;
+                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible) return;
 
                 bool hasSlideTimings = false;
                 if (pres?.Slides != null)
@@ -1161,16 +1103,13 @@ namespace Ink_Canvas
             }
         }
 
-        private void LoadCurrentSlideInk(int slideIndex, bool skipClear = false)
+        private void LoadCurrentSlideInk(int slideIndex)
         {
             try
             {
-                // 如果未跳过清除，则清除当前墨迹
-                if (!skipClear)
-                {
-                    ClearStrokes(true);
-                    timeMachine.ClearStrokeHistory();
-                }
+                ClearStrokes(true);
+                timeMachine.ClearStrokeHistory();
+
                 StrokeCollection strokes = _singlePPTInkManager?.LoadSlideStrokes(slideIndex);
 
                 if (strokes != null && strokes.Count > 0)
@@ -1215,12 +1154,13 @@ namespace Ink_Canvas
                 // 重置上次播放位置相关字段
                 _lastPlaybackPage = 0;
                 _shouldNavigateToLastPage = false;
-
+                
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
 
                 // 重置页面切换防抖机制
                 _lastSlideSwitchTime = DateTime.MinValue;
+                _pendingSlideIndex = -1;
 
                 LogHelper.WriteLogToFile("PPT状态变量已重置", LogHelper.LogType.Trace);
             }
@@ -1235,14 +1175,51 @@ namespace Ink_Canvas
         /// </summary>
         private void HandleSlideSwitchWithDebounce(int currentSlide, int totalSlides)
         {
+            try
+            {
+                var now = DateTime.Now;
+
+                // 如果距离上次切换时间太短，使用防抖机制
+                if (now - _lastSlideSwitchTime < TimeSpan.FromMilliseconds(SlideSwitchDebounceMs))
+                {
+                    _pendingSlideIndex = currentSlide;
+
+                    // 停止之前的定时器
+                    _slideSwitchDebounceTimer?.Stop();
+
+                    // 创建新的定时器
+                    _slideSwitchDebounceTimer = new System.Timers.Timer(SlideSwitchDebounceMs);
+                    _slideSwitchDebounceTimer.Elapsed += (sender, e) =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            if (_pendingSlideIndex > 0)
+                            {
+                                SwitchSlideInk(_pendingSlideIndex);
+                                _pptUIManager?.UpdateCurrentSlideNumber(_pendingSlideIndex, totalSlides);
+                                _pendingSlideIndex = -1;
+                            }
+                        });
+                        _slideSwitchDebounceTimer?.Stop();
+                    };
+                    _slideSwitchDebounceTimer.Start();
+                }
+                else
+                {
+                    // 直接处理页面切换
+                    SwitchSlideInk(currentSlide);
+                    _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
+                }
+
+                _lastSlideSwitchTime = now;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"处理页面切换防抖失败: {ex}", LogHelper.LogType.Error);
+            }
         }
 
-        /// <summary>
-        /// 切换页面墨迹
-        /// </summary>
-        /// <param name="newSlideIndex">新页面索引</param>
-        /// <param name="skipClear">是否跳过清除操作（如果已在翻页时立即清除，则设为true）</param>
-        private void SwitchSlideInk(int newSlideIndex, bool skipClear = false)
+        private void SwitchSlideInk(int newSlideIndex)
         {
             try
             {
@@ -1263,25 +1240,20 @@ namespace Ink_Canvas
                 }
 
                 // 如果有当前墨迹且不是第一次切换，先保存到当前页面
-                if (currentSlideIndex > 0 && currentSlideIndex != newSlideIndex)
+                if (inkCanvas.Strokes.Count > 0 && currentSlideIndex > 0 && currentSlideIndex != newSlideIndex)
                 {
                     bool canWrite = _singlePPTInkManager?.CanWriteInk(currentSlideIndex) == true;
 
-                    if (canWrite && inkCanvas.Strokes.Count > 0)
+                    if (canWrite)
                     {
                         _singlePPTInkManager?.SaveCurrentSlideStrokes(currentSlideIndex, inkCanvas.Strokes);
                     }
                 }
 
-                if (!skipClear)
-                {
-                    ClearStrokes(true);
-                    timeMachine.ClearStrokeHistory();
-                }
-
-                // 加载新页面的墨迹
+                ClearStrokes(true);
+                timeMachine.ClearStrokeHistory();
                 StrokeCollection newStrokes = _singlePPTInkManager?.SwitchToSlide(newSlideIndex, null);
-
+                
                 if (newStrokes != null && newStrokes.Count > 0)
                 {
                     inkCanvas.Strokes.Add(newStrokes);
@@ -1416,72 +1388,25 @@ namespace Ink_Canvas
             {
                 try
                 {
-                    var previousSlideBeforeNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-
-                    StrokeCollection strokesToSave = null;
-                    if (previousSlideBeforeNavigate > 0 && inkCanvas.Strokes.Count > 0)
+                    // 保存当前页墨迹
+                    var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                    if (currentSlide > 0)
                     {
-                        strokesToSave = inkCanvas.Strokes.Clone();
+                        _singlePPTInkManager?.SaveCurrentSlideStrokes(currentSlide, inkCanvas.Strokes);
                     }
 
+                    // 保存截图（如果启用）
+                    if (inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
+                        Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint)
+                    {
+                        var presentationName = _pptManager?.GetPresentationName() ?? "";
+                        SaveScreenShot(true, $"{presentationName}/{currentSlide}");
+                    }
+
+                    // 执行翻页
                     if (_pptManager?.TryNavigatePrevious() == true)
                     {
-                        var currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-
-                        if (previousSlideBeforeNavigate == currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
-                        {
-                            Thread.Sleep(50);
-                            currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        }
-
-                        if (previousSlideBeforeNavigate != currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
-                        {
-                            if (inkCanvas.Strokes.Count > 0)
-                            {
-                                ClearStrokes(true);
-                                timeMachine.ClearStrokeHistory();
-                                _isInkClearedByButton = true;
-                            }
-
-                            if (strokesToSave != null && previousSlideBeforeNavigate > 0)
-                            {
-                                Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        Application.Current.Dispatcher.Invoke(() =>
-                                        {
-                                            _singlePPTInkManager?.SaveCurrentSlideStrokes(previousSlideBeforeNavigate, strokesToSave);
-                                        });
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        LogHelper.WriteLogToFile($"异步保存PPT上一页墨迹失败: {ex}", LogHelper.LogType.Error);
-                                    }
-                                });
-
-                                // 异步保存截图（如果启用）
-                                if (strokesToSave.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
-                                    Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint)
-                                {
-                                    Task.Run(() =>
-                                    {
-                                        try
-                                        {
-                                            Application.Current.Dispatcher.Invoke(() =>
-                                            {
-                                                var presentationName = _pptManager?.GetPresentationName() ?? "";
-                                                SaveScreenShot(true, $"{presentationName}/{previousSlideBeforeNavigate}");
-                                            });
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            LogHelper.WriteLogToFile($"异步保存PPT上一页截图失败: {ex}", LogHelper.LogType.Error);
-                                        }
-                                    });
-                                }
-                            }
-                        }
+                        // 翻页成功，等待事件处理墨迹切换
                     }
                     else
                     {
@@ -1503,72 +1428,25 @@ namespace Ink_Canvas
             {
                 try
                 {
-                    var previousSlideBeforeNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-
-                    StrokeCollection strokesToSave = null;
-                    if (previousSlideBeforeNavigate > 0 && inkCanvas.Strokes.Count > 0)
+                    // 保存当前页墨迹
+                    var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                    if (currentSlide > 0)
                     {
-                        strokesToSave = inkCanvas.Strokes.Clone();
+                        _singlePPTInkManager?.SaveCurrentSlideStrokes(currentSlide, inkCanvas.Strokes);
                     }
 
+                    // 保存截图（如果启用）
+                    if (inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
+                        Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint)
+                    {
+                        var presentationName = _pptManager?.GetPresentationName() ?? "";
+                        SaveScreenShot(true, $"{presentationName}/{currentSlide}");
+                    }
+
+                    // 执行翻页
                     if (_pptManager?.TryNavigateNext() == true)
                     {
-                        var currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-
-                        if (previousSlideBeforeNavigate == currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
-                        {
-                            Thread.Sleep(50);
-                            currentSlideAfterNavigate = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        }
-
-                        if (previousSlideBeforeNavigate != currentSlideAfterNavigate && previousSlideBeforeNavigate > 0)
-                        {
-                            if (inkCanvas.Strokes.Count > 0)
-                            {
-                                ClearStrokes(true);
-                                timeMachine.ClearStrokeHistory();
-                                _isInkClearedByButton = true;
-                            }
-
-                            if (strokesToSave != null && previousSlideBeforeNavigate > 0)
-                            {
-                                Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        Application.Current.Dispatcher.Invoke(() =>
-                                        {
-                                            _singlePPTInkManager?.SaveCurrentSlideStrokes(previousSlideBeforeNavigate, strokesToSave);
-                                        });
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        LogHelper.WriteLogToFile($"异步保存PPT下一页墨迹失败: {ex}", LogHelper.LogType.Error);
-                                    }
-                                });
-
-                                // 异步保存截图（如果启用）
-                                if (strokesToSave.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
-                                    Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint)
-                                {
-                                    Task.Run(() =>
-                                    {
-                                        try
-                                        {
-                                            Application.Current.Dispatcher.Invoke(() =>
-                                            {
-                                                var presentationName = _pptManager?.GetPresentationName() ?? "";
-                                                SaveScreenShot(true, $"{presentationName}/{previousSlideBeforeNavigate}");
-                                            });
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            LogHelper.WriteLogToFile($"异步保存PPT下一页截图失败: {ex}", LogHelper.LogType.Error);
-                                        }
-                                    });
-                                }
-                            }
-                        }
+                        // 翻页成功，等待事件处理墨迹切换
                     }
                     else
                     {
@@ -1744,15 +1622,8 @@ namespace Ink_Canvas
                 SetCurrentToolMode(InkCanvasEditingMode.None);
 
                 await Task.Delay(150);
-
-                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
-                {
-                    ViewboxFloatingBarMarginAnimation(-60);
-                }
-                else
-                {
-                    ViewboxFloatingBarMarginAnimation(100, true);
-                }
+                // PPT退出时自动收纳，使用收纳状态的边距动画
+                ViewboxFloatingBarMarginAnimation(-60);
             }
             catch (Exception ex)
             {
@@ -1768,15 +1639,9 @@ namespace Ink_Canvas
                 // 异常情况下也手动处理自动收纳
                 await HandleManualSlideShowEnd();
 
+                // 异常情况下也要自动收纳，使用收纳状态的边距动画
                 await Task.Delay(150);
-                if (Settings.Automation.IsAutoFoldAfterPPTSlideShow)
-                {
-                    ViewboxFloatingBarMarginAnimation(-60);
-                }
-                else
-                {
-                    ViewboxFloatingBarMarginAnimation(100, true);
-                }
+                ViewboxFloatingBarMarginAnimation(-60);
             }
         }
 
@@ -1787,7 +1652,6 @@ namespace Ink_Canvas
         {
             try
             {
-                // PPT退出时自动收纳浮动栏
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
