@@ -191,10 +191,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (slider != null)
                 {
                     var oldValue = slider.Value;
-                    if (Math.Abs(slider.Value - value) > double.Epsilon)
-                    {
-                        slider.Value = value;
-                    }
+                    slider.Value = value;
                     var valueChangedMethodName = sliderName + "_ValueChanged";
                     InvokeMainWindowMethod(valueChangedMethodName, slider, 
                         new System.Windows.RoutedPropertyChangedEventArgs<double>(oldValue, value));
