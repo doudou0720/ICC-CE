@@ -1092,15 +1092,13 @@ namespace Ink_Canvas.Helpers
                     int versionDiff = CalculateVersionGenerationDifference(localVersion, updateVersion);
                     LogHelper.WriteLogToFile($"DeviceIdentifier | 无法获取版本发布时间，使用版本号差异判断 - 本地版本: {localVersion}, 远程版本: {updateVersion}, 代数差异: {versionDiff}");
 
-                    // 当版本号代数差异大于3时自动更新
-                    if (versionDiff > 3)
+                    if (versionDiff >= 1)
                     {
-                        LogHelper.WriteLogToFile($"DeviceIdentifier | 版本号代数差异({versionDiff})大于3，自动更新");
-                        return true;
+                        LogHelper.WriteLogToFile($"DeviceIdentifier | 版本号代数差异({versionDiff})>=1，允许更新");
                     }
                     else
                     {
-                        LogHelper.WriteLogToFile($"DeviceIdentifier | 版本号代数差异({versionDiff})不大于3，暂不更新");
+                        LogHelper.WriteLogToFile($"DeviceIdentifier | 版本号代数差异({versionDiff})<1，可能是相同版本或降级，暂不更新");
                         return false;
                     }
                 }

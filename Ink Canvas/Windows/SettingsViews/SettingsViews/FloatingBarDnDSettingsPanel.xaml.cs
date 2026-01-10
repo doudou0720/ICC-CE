@@ -1,4 +1,5 @@
 ﻿using iNKORE.UI.WPF.DragDrop;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
@@ -142,6 +143,21 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 IconSource = FindResource("PenIcon") as DrawingImage,
             });
+        }
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
+        public void ApplyTheme()
+        {
+            try
+            {
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"FloatingBarDnDSettingsPanel 应用主题时出错: {ex.Message}");
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ on:
     branches: [ main, beta ]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [ main ]
+    branches: [ main, beta ]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
@@ -64,7 +64,7 @@ jobs:
     permissions:
       pull-requests: write
     outputs:
-      comment_id: ${{ steps.create-preview-comment.outputs.comment-id }}
+      comment_id: ${{ steps.create-preview-comment.outputs.comment-id || '' }}
     steps:
       - name: Prepare Preview Comment
         id: prepare-preview
@@ -111,7 +111,8 @@ jobs:
       
       - name: Post/Update Preview Comment
         id: create-preview-comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
+        continue-on-error: true  # 即使评论失败也继续执行
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ needs.find-or-create-pr-comment.outputs.comment_id }}
@@ -293,7 +294,7 @@ jobs:
             
             # 如果有构建产物，显示下载链接
             if [ "$BUILD_SUCCESS" = "true" ]; then
-              NIGHTLY_LINK="https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/app-package.zip"
+              NIGHTLY_LINK="https://hk.gh-proxy.com/https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/app-package.zip"
               echo ""
               echo "## 构建产物"
               if [ -n "$ARTIFACT_URL" ]; then
@@ -339,8 +340,23 @@ jobs:
           
           echo "最终评论内容已生成"
       
+      - name: Write Final Comment to GitHub Summary
+        run: |
+          echo "# 🚀 最终构建结果 (GitHub Actions Summary)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> ⚠️ 注意：由于权限限制，评论可能无法发布到 PR。这里是在 GitHub Actions 中的构建结果：" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat final_comment.txt >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**工作流信息：**" >> $GITHUB_STEP_SUMMARY
+          echo "- 事件类型: ${{ github.event_name }} (${{ github.event.action }})" >> $GITHUB_STEP_SUMMARY
+          echo "- 运行编号: #${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 运行 ID: ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+      
       - name: Update Final Comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
+        continue-on-error: true  # 即使评论失败也继续执行
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ needs.pr-preview-comment.outputs.comment_id }}
@@ -380,4 +396,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**直链下载 (nightly.link):**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[🌙 nightly.link 下载链接](https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/app-package.zip)" >> $GITHUB_STEP_SUMMARY
+          echo "[🌙 nightly.link 下载链接](https://hk.gh-proxy.com/https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}/app-package.zip)" >> $GITHUB_STEP_SUMMARY

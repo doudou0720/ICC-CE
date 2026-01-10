@@ -259,5 +259,20 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = thumb.Template.FindName("ScrollbarThumbEx", thumb);
             ((Border)border).Background = new SolidColorBrush(Color.FromRgb(138, 138, 138));
         }
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
+        public void ApplyTheme()
+        {
+            try
+            {
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"AboutPanel 应用主题时出错: {ex.Message}");
+            }
+        }
     }
 }

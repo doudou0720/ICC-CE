@@ -1,69 +1,48 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
+    /// <summary>
+    /// AppearancePanel.xaml 的交互逻辑
+    /// </summary>
     public partial class AppearancePanel : UserControl
     {
         public AppearancePanel()
         {
             InitializeComponent();
-            BaseView.SettingsPanels.Add(new SettingsViewPanel()
+        }
+
+        public event EventHandler<RoutedEventArgs> IsTopBarNeedShadowEffect;
+        public event EventHandler<RoutedEventArgs> IsTopBarNeedNoShadowEffect;
+
+        private void ScrollViewerEx_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var scrollViewer = (ScrollViewer)sender;
+            if (scrollViewer.VerticalOffset >= 10)
             {
-                Title = "新版设置测试",
-                Items = new ObservableCollection<SettingsItem>(new SettingsItem[] {
-                    new SettingsItem() {
-                        Title = "默认ToggleSwitch",
-                        Description = "这是测试文本，这是测试文本",
-                        Type = SettingsItemType.SingleToggleSwtich,
-                        IsSeparatorVisible = true
-                    },
-                    new SettingsItem() {
-                        Title = "默认开启的ToggleSwitch",
-                        Description = "这是测试文本，这是测试文本324234324",
-                        Type = SettingsItemType.SingleToggleSwtich,
-                        IsSeparatorVisible = true,
-                        ToggleSwitchToggled = true,
-                    },
-                    new SettingsItem() {
-                        Title = "默认关闭的ToggleSwitch",
-                        Description = "这是测试文本，这是测试文本fsdsdffsd",
-                        Type = SettingsItemType.SingleToggleSwtich,
-                        IsSeparatorVisible = true,
-                        ToggleSwitchToggled = false,
-                    },
-                    new SettingsItem() {
-                        Title = "绿色的ToggleSwitch",
-                        Description = "这是测试文本，这是测试文本fs大风刮过4sd",
-                        Type = SettingsItemType.SingleToggleSwtich,
-                        IsSeparatorVisible = true,
-                        ToggleSwitchToggled = true,
-                        ToggleSwitchBackground = new SolidColorBrush(Color.FromRgb(51, 209, 122)),
-                    },
-                    new SettingsItem() {
-                        Title = "默认禁用的的ToggleSwitch",
-                        Description = "这是测试文本",
-                        Type = SettingsItemType.SingleToggleSwtich,
-                        IsSeparatorVisible = true,
-                        ToggleSwitchToggled = true,
-                        ToggleSwitchEnabled = false,
-                        ToggleSwitchBackground = new SolidColorBrush(Color.FromRgb(51, 209, 122)),
-                    },
-                    new SettingsItem() {
-                        Title = "控制上面的ToggleSwitch是否启用",
-                        Description = "12423432452312322335",
-                        Type = SettingsItemType.SingleToggleSwtich,
-                        IsSeparatorVisible = true,
-                        ToggleSwitchToggled = false,
-                    },
-                })
-            });
-            BaseView.SettingsPanels[0].Items[5].OnToggleSwitchToggled += (sender, args) =>
+                IsTopBarNeedShadowEffect?.Invoke(this, new RoutedEventArgs());
+            }
+            else
             {
-                var item = (SettingsItem)sender;
-                BaseView.SettingsPanels[0].Items[4].ToggleSwitchEnabled = item.ToggleSwitchToggled;
-            };
+                IsTopBarNeedNoShadowEffect?.Invoke(this, new RoutedEventArgs());
+            }
+        }
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
+        public void ApplyTheme()
+        {
+            try
+            {
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"AppearancePanel 应用主题时出错: {ex.Message}");
+            }
         }
     }
 }

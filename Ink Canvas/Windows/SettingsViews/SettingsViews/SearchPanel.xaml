@@ -6,10 +6,10 @@
              xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews"
              mc:Ignorable="d" 
              d:DesignHeight="691" d:DesignWidth="910">
-    <Grid Background="#fafafa" Margin="250,0,0,0">
+    <Grid x:Name="SearchPanelMainGrid" Background="#fafafa" Margin="250,0,0,0">
         <!-- 搜索框区域 -->
         <Grid Height="48" VerticalAlignment="Top" Margin="0,0,0,0">
-            <Border Height="48" CornerRadius="0,6,0,0" Background="#fafafa">
+            <Border x:Name="SearchPanelTopBarBorder" Height="48" CornerRadius="0,6,0,0" Background="#fafafa">
                 <Border.Effect>
                     <DropShadowEffect Direction="-90" ShadowDepth="3" BlurRadius="4" Color="#000000" Opacity="0.25"/>
                 </Border.Effect>
@@ -20,7 +20,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <!-- 搜索输入框 -->
-                <Border Grid.Column="0" Margin="60,8,12,8" Background="White" CornerRadius="8" BorderBrush="#e6e6e6" BorderThickness="1">
+                <Border x:Name="SearchInputBorder" Grid.Column="0" Margin="60,8,12,8" Background="White" CornerRadius="8" BorderBrush="#e6e6e6" BorderThickness="1">
                     <Grid>
                         <Image Width="16" Height="16" Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
                             <Image.Source>
@@ -67,7 +67,7 @@
             <StackPanel Margin="60,12,60,24" Name="SearchResultsPanel">
                 <!-- 精准和拼音匹配结果 -->
                 <StackPanel Name="ExactMatchPanel" Visibility="Collapsed">
-                    <TextBlock Text="精准匹配" FontSize="13" FontWeight="Bold" Foreground="#2e3436" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="ExactMatchTitle" Text="精准匹配" FontSize="13" FontWeight="Bold" Foreground="#2e3436" Margin="0,0,0,8"/>
                     <ItemsControl Name="ExactMatchItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -87,7 +87,7 @@
                 
                 <!-- 模糊匹配结果 -->
                 <StackPanel Name="FuzzyMatchPanel" Visibility="Collapsed" Margin="0,16,0,0">
-                    <TextBlock Text="模糊匹配" FontSize="13" FontWeight="Bold" Foreground="#2e3436" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="FuzzyMatchTitle" Text="模糊匹配" FontSize="13" FontWeight="Bold" Foreground="#2e3436" Margin="0,0,0,8"/>
                     <ItemsControl Name="FuzzyMatchItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -107,7 +107,7 @@
                 
                 <!-- 相关项结果 -->
                 <StackPanel Name="RelatedItemsPanel" Visibility="Collapsed" Margin="0,16,0,0">
-                    <TextBlock Text="相关项" FontSize="13" FontWeight="Bold" Foreground="#2e3436" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="RelatedItemsTitle" Text="相关项" FontSize="13" FontWeight="Bold" Foreground="#2e3436" Margin="0,0,0,8"/>
                     <ItemsControl Name="RelatedItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
