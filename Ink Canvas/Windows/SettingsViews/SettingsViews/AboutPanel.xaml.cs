@@ -1,7 +1,9 @@
 ﻿using iNKORE.UI.WPF.Helpers;
+using Ink_Canvas.Helpers;
 using OSVersionExtension;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Management;
 using System.Reflection;
@@ -14,6 +16,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
@@ -42,32 +45,135 @@ namespace Ink_Canvas.Windows.SettingsViews
                 CopyrightBannerImage.Visibility = Visibility.Collapsed;
             }
 
-            // 关于页面构建时间
-            var buildTime = FileBuildTimeHelper.GetBuildDateTime(Assembly.GetExecutingAssembly());
-            if (buildTime != null)
+            try
             {
-                var bt = ((DateTimeOffset)buildTime).LocalDateTime;
-                var m = bt.Month.ToString().PadLeft(2, '0');
-                var d = bt.Day.ToString().PadLeft(2, '0');
-                var h = bt.Hour.ToString().PadLeft(2, '0');
-                var min = bt.Minute.ToString().PadLeft(2, '0');
-                var s = bt.Second.ToString().PadLeft(2, '0');
-                AboutBuildTime.Text =
-                    $"build-{bt.Year}-{m}-{d}-{h}:{min}:{s}";
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                AboutAppVersion.Text = $"InkCanvasForClass v{version}";
+            }
+            catch (Exception ex)
+            {
+                AboutAppVersion.Text = "InkCanvasForClass v未知";
+                System.Diagnostics.Debug.WriteLine($"获取软件版本失败: {ex.Message}");
             }
 
-            // 关于页面系统版本
+            try
+            {
+                string deviceId = DeviceIdentifier.GetDeviceId();
+                AboutDeviceID.Text = deviceId;
+            }
+            catch (Exception ex)
+            {
+                AboutDeviceID.Text = "获取失败";
+                System.Diagnostics.Debug.WriteLine($"获取设备ID失败: {ex.Message}");
+            }
+
+            try
+            {
+                var copyright = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyCopyrightAttribute>();
+                if (copyright != null && !string.IsNullOrEmpty(copyright.Copyright))
+                {
+                    var copyrightText = copyright.Copyright;
+                    AboutCopyright.Text = copyrightText;
+                    AboutBottomCopyright.Text = copyrightText.Replace("Copyright ©", "© Copyright") + " 所有";
+                }
+                else
+                {
+                    AboutCopyright.Text = "© Copyright 2024 Dubi906w 所有";
+                    AboutBottomCopyright.Text = "© Copyright 2024 Dubi906w(Doubx690i/kriastans) 所有";
+                }
+            }
+            catch (Exception ex)
+            {
+                AboutCopyright.Text = "© Copyright 2024 Dubi906w 所有";
+                AboutBottomCopyright.Text = "© Copyright 2024 Dubi906w(Doubx690i/kriastans) 所有";
+                System.Diagnostics.Debug.WriteLine($"获取版权信息失败: {ex.Message}");
+            }
+
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var filePath = assembly.Location;
+                
+                if (File.Exists(filePath))
+                {
+                    var bt = File.GetCreationTime(filePath);
+                    var m = bt.Month.ToString().PadLeft(2, '0');
+                    var d = bt.Day.ToString().PadLeft(2, '0');
+                    var h = bt.Hour.ToString().PadLeft(2, '0');
+                    var min = bt.Minute.ToString().PadLeft(2, '0');
+                    var s = bt.Second.ToString().PadLeft(2, '0');
+                    AboutBuildTime.Text = $"{bt.Year}-{m}-{d} {h}:{min}:{s}";
+                }
+                else
+                {
+                    AboutBuildTime.Text = "获取失败";
+                }
+            }
+            catch (Exception ex)
+            {
+                AboutBuildTime.Text = "获取失败";
+                System.Diagnostics.Debug.WriteLine($"获取构建时间失败: {ex.Message}");
+            }
+
             AboutSystemVersion.Text = $"{OSVersion.GetOperatingSystem()} {OSVersion.GetOSVersion().Version}";
 
-            // 关于页面触摸设备
             var _t_touch = new Thread(() =>
             {
-                var touchcount = TouchTabletDetectHelper.GetTouchTabletDevices().Count;
-                var support = TouchTabletDetectHelper.IsTouchEnabled();
-                Dispatcher.BeginInvoke(() =>
-                    AboutTouchTabletText.Text = $"{touchcount}个设备，{(support ? "支持触摸设备" : "无触摸支持")}");
+                try
+                {
+                    var support = TouchTabletDetectHelper.IsTouchEnabled();
+                    var touchcount = TouchTabletDetectHelper.GetTouchTabletDevices().Count;
+                    
+                    Dispatcher.BeginInvoke(() =>
+                    {
+                        if (support)
+                        {
+                            if (touchcount > 0)
+                            {
+                                AboutTouchTabletText.Text = $"{touchcount}个设备，支持触摸设备";
+                            }
+                            else
+                            {
+                                AboutTouchTabletText.Text = "支持触摸设备";
+                            }
+                        }
+                        else
+                        {
+                            AboutTouchTabletText.Text = "无触摸支持";
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.BeginInvoke(() =>
+                        AboutTouchTabletText.Text = "检测失败");
+                    System.Diagnostics.Debug.WriteLine($"检测触摸设备失败: {ex.Message}");
+                }
             });
             _t_touch.Start();
+
+            CheckUpdateStatus();
+        }
+
+        private void CheckUpdateStatus()
+        {
+            try
+            {
+                var mainWindow = Application.Current.MainWindow as MainWindow;
+                if (mainWindow != null)
+                {
+                    var field = typeof(MainWindow).GetField("AvailableLatestVersion", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (field != null)
+                    {
+                        var availableVersion = field.GetValue(mainWindow) as string;
+                        if (!string.IsNullOrEmpty(availableVersion))
+                        {
+                            UpdateAvailableIcon.Visibility = Visibility.Visible;
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
         public static class TouchTabletDetectHelper
@@ -100,22 +206,51 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 List<USBDeviceInfo> devices = new List<USBDeviceInfo>();
 
-                ManagementObjectCollection collection;
-                using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_PnPEntity"))
-                    collection = searcher.Get();
-
-                foreach (var device in collection)
+                try
                 {
-                    var name = new StringBuilder((string)device.GetPropertyValue("Name")).ToString();
-                    if (!name.Contains("Pentablet")) continue;
-                    devices.Add(new USBDeviceInfo(
-                        (string)device.GetPropertyValue("DeviceID"),
-                        (string)device.GetPropertyValue("PNPDeviceID"),
-                        (string)device.GetPropertyValue("Description")
-                    ));
+                    ManagementObjectCollection collection;
+                    using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_PnPEntity"))
+                        collection = searcher.Get();
+
+                    foreach (var device in collection)
+                    {
+                        try
+                        {
+                            var name = device.GetPropertyValue("Name")?.ToString() ?? "";
+                            var description = device.GetPropertyValue("Description")?.ToString() ?? "";
+                            
+                            if (string.IsNullOrEmpty(name)) continue;
+                            
+                            var nameLower = name.ToLower();
+                            var descLower = description.ToLower();
+                            
+                            if (nameLower.Contains("pentablet") || 
+                                nameLower.Contains("tablet") || 
+                                nameLower.Contains("touch") ||
+                                nameLower.Contains("digitizer") ||
+                                descLower.Contains("touch") ||
+                                descLower.Contains("digitizer"))
+                            {
+                                devices.Add(new USBDeviceInfo(
+                                    device.GetPropertyValue("DeviceID")?.ToString() ?? "",
+                                    device.GetPropertyValue("PNPDeviceID")?.ToString() ?? "",
+                                    description
+                                ));
+                            }
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+
+                    collection.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"获取触摸设备列表失败: {ex.Message}");
                 }
 
-                collection.Dispose();
                 return devices;
             }
         }
@@ -135,30 +270,48 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             public static DateTimeOffset? GetBuildDateTime(Assembly assembly)
             {
-                var path = assembly.Location;
-                if (File.Exists(path))
+                try
                 {
-                    var buffer = new byte[Math.Max(Marshal.SizeOf(typeof(_IMAGE_FILE_HEADER)), 4)];
-                    using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    var path = assembly.Location;
+                    if (string.IsNullOrEmpty(path) || !File.Exists(path))
                     {
+                        return null;
+                    }
+
+                    using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        var peHeader = new byte[4];
                         fileStream.Position = 0x3C;
-                        fileStream.Read(buffer, 0, 4);
-                        fileStream.Position = BitConverter.ToUInt32(buffer, 0); // COFF header offset
-                        fileStream.Read(buffer, 0, 4); // "PE\0\0"
-                        fileStream.Read(buffer, 0, buffer.Length);
-                    }
-                    var pinnedBuffer = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                    try
-                    {
-                        var coffHeader = (_IMAGE_FILE_HEADER)Marshal.PtrToStructure(pinnedBuffer.AddrOfPinnedObject(), typeof(_IMAGE_FILE_HEADER));
-                        return DateTimeOffset.FromUnixTimeSeconds(coffHeader.TimeDateStamp);
-                    }
-                    finally
-                    {
-                        pinnedBuffer.Free();
+                        fileStream.Read(peHeader, 0, 4);
+                        var peHeaderOffset = BitConverter.ToUInt32(peHeader, 0);
+                        
+                        fileStream.Position = peHeaderOffset;
+                        var signature = new byte[4];
+                        fileStream.Read(signature, 0, 4);
+                        
+                        if (signature[0] != 0x50 || signature[1] != 0x45 || signature[2] != 0x00 || signature[3] != 0x00)
+                        {
+                            return null;
+                        }
+                        
+                        var fileHeader = new byte[Marshal.SizeOf(typeof(_IMAGE_FILE_HEADER))];
+                        fileStream.Read(fileHeader, 0, fileHeader.Length);
+                        
+                        var pinnedBuffer = GCHandle.Alloc(fileHeader, GCHandleType.Pinned);
+                        try
+                        {
+                            var coffHeader = (_IMAGE_FILE_HEADER)Marshal.PtrToStructure(pinnedBuffer.AddrOfPinnedObject(), typeof(_IMAGE_FILE_HEADER));
+                            var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                            var buildTime = epoch.AddSeconds(coffHeader.TimeDateStamp);
+                            return new DateTimeOffset(buildTime.ToLocalTime());
+                        }
+                        finally
+                        {
+                            pinnedBuffer.Free();
+                        }
                     }
                 }
-                else
+                catch
                 {
                     return null;
                 }
@@ -260,6 +413,55 @@ namespace Ink_Canvas.Windows.SettingsViews
             ((Border)border).Background = new SolidColorBrush(Color.FromRgb(138, 138, 138));
         }
         
+
+        private void LinkOfficialWebsite_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://inkcanvasforclass.github.io",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开官方网站失败: {ex.Message}");
+            }
+        }
+
+        private void LinkGithubRepo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/InkCanvasForClass/community",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开GitHub仓库失败: {ex.Message}");
+            }
+        }
+
+        private void LinkContributors_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/InkCanvasForClass/community#贡献者",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开贡献者名单失败: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// 应用主题
         /// </summary>

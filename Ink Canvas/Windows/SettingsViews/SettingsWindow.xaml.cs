@@ -135,9 +135,9 @@ namespace Ink_Canvas.Windows
             SidebarItems.Add(new SidebarItem()
             {
                 Type = SidebarItemType.Item,
-                Title = "存储空间",
-                Name = "StorageItem",
-                IconSource = FindResource("StorageIcon") as DrawingImage,
+                Title = "高级选项",
+                Name = "AdvancedItem",
+                IconSource = FindResource("AdvancedIcon") as DrawingImage,
                 Selected = false,
             });
             SidebarItems.Add(new SidebarItem()
@@ -151,14 +151,6 @@ namespace Ink_Canvas.Windows
             SidebarItems.Add(new SidebarItem()
             {
                 Type = SidebarItemType.Separator
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "高级选项",
-                Name = "AdvancedItem",
-                IconSource = FindResource("AdvancedIcon") as DrawingImage,
-                Selected = false,
             });
             SidebarItems.Add(new SidebarItem()
             {
@@ -180,9 +172,8 @@ namespace Ink_Canvas.Windows
                 AutomationPane,
                 PowerPointPane,
                 LuckyRandomPane,
-                StoragePane,
-                SnapshotPane,
-                AdvancedPane
+                AdvancedPane,
+                SnapshotPane
             };
 
             SettingsPaneScrollViewers = new ScrollViewer[] {
@@ -197,9 +188,8 @@ namespace Ink_Canvas.Windows
                 AutomationPanel.ScrollViewerEx,
                 PowerPointPanel.ScrollViewerEx,
                 LuckyRandomPanel.ScrollViewerEx,
-                StoragePanel.ScrollViewerEx,
-                SnapshotPanel.ScrollViewerEx,
-                AdvancedPanel.ScrollViewerEx
+                AdvancedPanel.ScrollViewerEx,
+                SnapshotPanel.ScrollViewerEx
             };
 
             SettingsPaneTitles = new string[] {
@@ -214,9 +204,8 @@ namespace Ink_Canvas.Windows
                 "自动化",
                 "PowerPoint",
                 "幸运随机",
-                "存储",
-                "截图",
-                "高级"
+                "高级",
+                "截图"
             };
 
             SettingsPaneNames = new string[] {
@@ -231,9 +220,8 @@ namespace Ink_Canvas.Windows
                 "AutomationItem",
                 "PowerPointItem",
                 "LuckyRandomItem",
-                "StorageItem",
-                "SnapshotItem",
-                "AdvancedItem"
+                "AdvancedItem",
+                "SnapshotItem"
             };
 
             SettingsAboutPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
@@ -267,12 +255,10 @@ namespace Ink_Canvas.Windows
             CrashActionPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
             LuckyRandomPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
             LuckyRandomPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            StoragePanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            StoragePanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            SnapshotPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            SnapshotPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
             AdvancedPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
             AdvancedPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
+            SnapshotPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
+            SnapshotPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
 
             _selectedSidebarItemName = "StartupItem";
             
@@ -323,8 +309,8 @@ namespace Ink_Canvas.Windows
                 {
                     StartupPanel, CanvasAndInkPanel, GesturesPanel, InkRecognitionPanel,
                     ThemePanel, ShortcutsPanel, CrashActionPanel, PowerPointPanel,
-                    AutomationPanel, LuckyRandomPanel, StoragePanel, SnapshotPanel,
-                    AdvancedPanel, SettingsAboutPanel, AppearancePanel, SearchPanelControl
+                    AutomationPanel, LuckyRandomPanel, AdvancedPanel, SnapshotPanel,
+                    SettingsAboutPanel, AppearancePanel, SearchPanelControl
                 };
                 
                 foreach (var panel in panels)
@@ -766,9 +752,8 @@ namespace Ink_Canvas.Windows
                             PowerPointPanel,
                             AutomationPanel,
                             LuckyRandomPanel,
-                            StoragePanel,
-                            SnapshotPanel,
                             AdvancedPanel,
+                            SnapshotPanel,
                             SettingsAboutPanel,
                             AppearancePanel
                         };
@@ -960,9 +945,8 @@ namespace Ink_Canvas.Windows
                 { "AutomationItem", AutomationPanel },
                 { "PowerPointItem", PowerPointPanel },
                 { "LuckyRandomItem", LuckyRandomPanel },
-                { "StorageItem", StoragePanel },
-                { "SnapshotItem", SnapshotPanel },
                 { "AdvancedItem", AdvancedPanel },
+                { "SnapshotItem", SnapshotPanel },
                 { "AppearanceItem", AppearancePanel }
             };
             
@@ -978,9 +962,8 @@ namespace Ink_Canvas.Windows
             if (AutomationPane != null) AutomationPane.Visibility = _selectedSidebarItemName == "AutomationItem" ? Visibility.Visible : Visibility.Collapsed;
             if (PowerPointPane != null) PowerPointPane.Visibility = _selectedSidebarItemName == "PowerPointItem" ? Visibility.Visible : Visibility.Collapsed;
             if (LuckyRandomPane != null) LuckyRandomPane.Visibility = _selectedSidebarItemName == "LuckyRandomItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (StoragePane != null) StoragePane.Visibility = _selectedSidebarItemName == "StorageItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
             if (AdvancedPane != null) AdvancedPane.Visibility = _selectedSidebarItemName == "AdvancedItem" ? Visibility.Visible : Visibility.Collapsed;
+            if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
             
             // 为新显示的面板应用主题（延迟执行，确保面板已完全显示）
             if (panelMappings.ContainsKey(_selectedSidebarItemName))

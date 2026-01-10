@@ -796,19 +796,14 @@
                     <settingsViews:LuckyRandomPanel x:Name="LuckyRandomPanel"/>
                 </Grid>
 
-                <!--存储面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StoragePane">
-                    <settingsViews:StoragePanel x:Name="StoragePanel"/>
+                <!--高级面板-->
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
+                    <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
                 <!--截图面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SnapshotPane">
                     <settingsViews:SnapshotPanel x:Name="SnapshotPanel"/>
-                </Grid>
-
-                <!--高级面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
-                    <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
                 <!--SearchPanel-->
