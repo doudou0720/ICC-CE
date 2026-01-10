@@ -67,8 +67,7 @@
                                PopupAnimation="Fade" 
                                IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
                                StaysOpen="False">
-                            <Border x:Name="PopupBorder" 
-                                    Background="White" 
+                            <Border Background="White" 
                                     BorderBrush="#e6e6e6" 
                                     BorderThickness="1" 
                                     CornerRadius="8" 
@@ -104,6 +103,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- ComboBoxItem样式 - 符合设置页面风格 -->
     <Style x:Key="ComboBoxItemStyle" TargetType="ComboBoxItem">
         <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="#2e3436"/>

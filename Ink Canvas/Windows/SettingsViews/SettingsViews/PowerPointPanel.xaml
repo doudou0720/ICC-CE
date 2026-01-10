@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ComboBoxStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <!-- 开关样式模板 -->
             <Style x:Key="ToggleSwitchStyle" TargetType="Border">
                 <Setter Property="Width" Value="48"/>
                 <Setter Property="Height" Value="25"/>
@@ -26,6 +27,7 @@
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
         <StackPanel Margin="60,12,60,24">
+            <!-- PPT联动设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="此部分的设置项将会在幻灯片播放时使用，优先级高于其他设置项" 
@@ -36,7 +38,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="Microsoft PowerPoint 支持" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchSupportPowerPoint" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="SupportPowerPoint" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -50,7 +52,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PowerPoint 联动增强" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchPowerPointEnhancement" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="PowerPointEnhancement" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -64,7 +66,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="WPS 支持" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchSupportWPS" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="SupportWPS" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -78,7 +80,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="关闭后将不会自动查杀WPP残留进程，可能导致WPP关闭卡顿或无法彻底退出" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableWppProcessKill" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableWppProcessKill" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -110,60 +112,41 @@
                 </StackPanel>
             </Border>
             
+            <!-- PPT翻页按钮设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="PPT翻页按钮" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
                     <Border ClipToBounds="True" Width="324" Height="182" Margin="0,0,0,12">
                         <Grid>
-                            <Image x:Name="PPTBtnPreviewBackground" Width="324" Height="182" Stretch="Fill">
-                                <Image.Source>
-                                    <BitmapImage UriSource="pack://application:,,,/Resources/PresentationExample/page.jpg"/>
-                                </Image.Source>
-                            </Image>
-                            <Image x:Name="PPTBtnPreviewToolbar" Height="16"
-                                   VerticalAlignment="Bottom" HorizontalAlignment="Center" Stretch="Uniform">
-                                <Image.Source>
-                                    <BitmapImage UriSource="pack://application:,,,/Resources/PresentationExample/toolbar.png"/>
-                                </Image.Source>
-                            </Image>
-                            <Image x:Name="PPTBtnPreviewLS" Width="10" Height="30"
+                            <Image Source="Resources/PresentationExample/page.jpg" Width="324" Height="182" Stretch="Fill"/>
+                            <Image x:Name="PPTBtnPreviewToolbar" Source="Resources/PresentationExample/toolbar.png" Height="16"
+                                   VerticalAlignment="Bottom" HorizontalAlignment="Center" Stretch="Uniform"/>
+                            <Image x:Name="PPTBtnPreviewLS" Source="Resources/PresentationExample/sidebar-white.png" Width="10" Height="30"
                                    VerticalAlignment="Center" HorizontalAlignment="Left" RenderTransformOrigin="0.5,0.5" Stretch="Fill">
-                                <Image.Source>
-                                    <BitmapImage UriSource="pack://application:,,,/Resources/PresentationExample/sidebar-white.png"/>
-                                </Image.Source>
                                 <Image.RenderTransform>
                                     <TransformGroup>
                                         <TranslateTransform x:Name="PPTBtnPreviewLSTransform"/>
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-                            <Image x:Name="PPTBtnPreviewRS" Width="10" Height="30"
+                            <Image x:Name="PPTBtnPreviewRS" Source="Resources/PresentationExample/sidebar-white.png" Width="10" Height="30"
                                    VerticalAlignment="Center" HorizontalAlignment="Right" RenderTransformOrigin="0.5,0.5" Stretch="Fill">
-                                <Image.Source>
-                                    <BitmapImage UriSource="pack://application:,,,/Resources/PresentationExample/sidebar-white.png"/>
-                                </Image.Source>
                                 <Image.RenderTransform>
                                     <TransformGroup>
                                         <TranslateTransform x:Name="PPTBtnPreviewRSTransform"/>
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-                            <Image x:Name="PPTBtnPreviewLB" Height="10" Width="30"
+                            <Image x:Name="PPTBtnPreviewLB" Source="Resources/PresentationExample/bottombar-white.png" Height="10" Width="30"
                                    VerticalAlignment="Bottom" HorizontalAlignment="Left" RenderTransformOrigin="0.5,0.5" Stretch="Fill">
-                                <Image.Source>
-                                    <BitmapImage UriSource="pack://application:,,,/Resources/PresentationExample/bottombar-white.png"/>
-                                </Image.Source>
                                 <Image.RenderTransform>
                                     <TransformGroup>
                                         <TranslateTransform x:Name="PPTBtnPreviewLBTransform"/>
                                     </TransformGroup>
                                 </Image.RenderTransform>
                             </Image>
-                            <Image x:Name="PPTBtnPreviewRB" Height="10" Width="30"
+                            <Image x:Name="PPTBtnPreviewRB" Source="Resources/PresentationExample/bottombar-white.png" Height="10" Width="30"
                                    VerticalAlignment="Bottom" HorizontalAlignment="Right" RenderTransformOrigin="0.5,0.5" Stretch="Fill">
-                                <Image.Source>
-                                    <BitmapImage UriSource="pack://application:,,,/Resources/PresentationExample/bottombar-white.png"/>
-                                </Image.Source>
                                 <Image.RenderTransform>
                                     <TransformGroup>
                                         <TranslateTransform x:Name="PPTBtnPreviewRBTransform"/>
@@ -178,7 +161,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在PPT放映模式下显示翻页控制按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchShowPPTButton" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowPPTButton" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -372,7 +355,7 @@
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后，点击页码按钮可以唤起PowerPoint自带的网格缩略图视图。WPS不支持该功能" HorizontalAlignment="Left" MaxWidth="450"/>
                             </StackPanel>
                             <Border x:Name="ToggleSwitchEnablePPTButtonPageClickable" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0" Tag="EnablePPTButtonPageClickable" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
@@ -390,7 +373,7 @@
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后，长按PPT翻页按钮可以连续翻页，提高翻页效率" HorizontalAlignment="Left" MaxWidth="450"/>
                             </StackPanel>
                             <Border x:Name="ToggleSwitchEnablePPTButtonLongPressPageTurn" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0" Tag="EnablePPTButtonLongPressPageTurn" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
@@ -408,7 +391,7 @@
                                 <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后，点击下一页按钮时会跳过幻灯片之间的转场动画，直接跳转到下一张幻灯片。不会影响幻灯片内的元素动画" HorizontalAlignment="Left" MaxWidth="450"/>
                             </StackPanel>
                             <Border x:Name="ToggleSwitchSkipAnimationsWhenGoNext" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Grid.Column="1" VerticalAlignment="Top" Margin="0,8,0,0" Tag="SkipAnimationsWhenGoNext" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
@@ -419,6 +402,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- PPT放映模式设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <Grid Height="54">
@@ -427,7 +411,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="进入PPT放映时自动切换到批注模式" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchShowCanvasAtNewSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowCanvasAtNewSlideShow" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -459,7 +443,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在幻灯片模式下允许使用双指手势" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableTwoFingerGestureInPresentationMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableTwoFingerGestureInPresentationMode" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -473,7 +457,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="在幻灯片放映模式下，当画板无墨迹时，使用手指左右滑动即可控制幻灯片翻页" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableFingerGestureSlideShowControl" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableFingerGestureSlideShowControl" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -487,7 +471,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后在 PPT 放映模式下也显示手势按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchShowGestureButtonInSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="ShowGestureButtonInSlideShow" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -497,6 +481,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- PPT时间胶囊设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <Grid Height="54">
@@ -505,7 +490,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="开启后在 PPT 放映模式下显示时间胶囊，可替代最小化计时器窗口" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnablePPTTimeCapsule" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnablePPTTimeCapsule" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -519,7 +504,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择时间胶囊在屏幕上的显示位置" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="PPTTimeCapsulePositionTopLeftBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopLeft" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="PPTTimeCapsulePositionTopLeftBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopLeft" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="左上角"/>
                             </Border>
                             <Border x:Name="PPTTimeCapsulePositionTopRightBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PPTTimeCapsulePosition_TopRight" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
@@ -533,6 +518,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- PPT提示设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <Grid Height="54">
@@ -541,7 +527,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后会记录上次播放的页数，点击&quot;是&quot;后会自动跳转" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchNotifyPreviousPage" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="NotifyPreviousPage" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -555,7 +541,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="进入PPT放映时自动跳转到第一页" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchAlwaysGoToFirstPageOnReenter" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="AlwaysGoToFirstPageOnReenter" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -569,7 +555,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在播放隐藏幻灯片时显示提示" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchNotifyHiddenPage" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="NotifyHiddenPage" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -583,7 +569,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在PPT自动播放时显示提示" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchNotifyAutoPlayPresentation" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="NotifyAutoPlayPresentation" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>

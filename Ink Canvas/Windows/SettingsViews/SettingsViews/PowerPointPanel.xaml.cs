@@ -1,4 +1,4 @@
-﻿using Ink_Canvas;
+using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Collections.Generic;
@@ -9,6 +9,9 @@ using System.Windows.Media;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
+    /// <summary>
+    /// PowerPointPanel.xaml 的交互逻辑
+    /// </summary>
     public partial class PowerPointPanel : UserControl
     {
         private bool _isLoaded = false;
@@ -22,15 +25,21 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void PowerPointPanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
+            // 添加触摸支持
             EnableTouchSupport();
+            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
 
+        /// <summary>
+        /// 为面板中的所有交互控件启用触摸支持
+        /// </summary>
         private void EnableTouchSupport()
         {
             try
             {
+                // 延迟执行，确保所有控件都已加载
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     MainWindowSettingsHelper.EnableTouchSupportForControls(this);
@@ -38,7 +47,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"PowerPointPanel 启用触摸支持时出�? {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"PowerPointPanel 启用触摸支持时出错: {ex.Message}");
             }
         }
 
@@ -58,6 +67,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        /// <summary>
+        /// 加载设置到UI
+        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.PowerPointSettings == null) return;
@@ -68,20 +80,26 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var pptSettings = MainWindow.Settings.PowerPointSettings;
 
+                // Microsoft PowerPoint 支持
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchSupportPowerPoint"), pptSettings.PowerPointSupport);
 
+                // PowerPoint 联动增强
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchPowerPointEnhancement"), pptSettings.EnablePowerPointEnhancement);
 
+                // WPS 支持
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchSupportWPS"), pptSettings.IsSupportWPS);
 
+                // WPP进程查杀
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableWppProcessKill"), pptSettings.EnableWppProcessKill);
 
+                // 在 PPT 模式下显示翻页按钮
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowPPTButton"), pptSettings.ShowPPTButton);
                 if (PPTButtonSettingsPanel != null)
                 {
                     PPTButtonSettingsPanel.Visibility = pptSettings.ShowPPTButton ? Visibility.Visible : Visibility.Collapsed;
                 }
 
+                // PPT按钮显示选项
                 var dops = pptSettings.PPTButtonsDisplayOption.ToString();
                 var dopsc = dops.ToCharArray();
                 if (dopsc.Length >= 4)
@@ -92,6 +110,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     if (CheckboxEnableRSPPTButton != null) CheckboxEnableRSPPTButton.IsChecked = dopsc[3] == '2';
                 }
 
+                // 按钮位置
                 if (PPTButtonLeftPositionValueSlider != null)
                 {
                     PPTButtonLeftPositionValueSlider.Value = pptSettings.PPTLSButtonPosition;
@@ -125,6 +144,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
+                // 两侧按钮选项
                 var sops = pptSettings.PPTSButtonsOption.ToString();
                 var sopsc = sops.ToCharArray();
                 if (sopsc.Length >= 3)
@@ -134,6 +154,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     if (CheckboxSPPTBlackBackground != null) CheckboxSPPTBlackBackground.IsChecked = sopsc[2] == '2';
                 }
 
+                // 左下右下按钮选项
                 var bops = pptSettings.PPTBButtonsOption.ToString();
                 var bopsc = bops.ToCharArray();
                 if (bopsc.Length >= 3)
@@ -143,6 +164,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     if (CheckboxBPPTBlackBackground != null) CheckboxBPPTBlackBackground.IsChecked = bopsc[2] == '2';
                 }
 
+                // 按钮透明度
                 if (PPTLSButtonOpacityValueSlider != null)
                 {
                     PPTLSButtonOpacityValueSlider.Value = pptSettings.PPTLSButtonOpacity > 0 ? pptSettings.PPTLSButtonOpacity : 0.5;
@@ -176,56 +198,70 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
 
+                // PPT 页码按钮可点击
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnablePPTButtonPageClickable"), pptSettings.EnablePPTButtonPageClickable);
 
+                // PPT 翻页按钮长按翻页
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnablePPTButtonLongPressPageTurn"), pptSettings.EnablePPTButtonLongPressPageTurn);
 
+                // 点击翻页时跳过转场动画
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchSkipAnimationsWhenGoNext"), pptSettings.SkipAnimationsWhenGoNext);
 
+                // 进入 PPT 放映时自动进入批注模式
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowCanvasAtNewSlideShow"), pptSettings.IsShowCanvasAtNewSlideShow);
 
+                // 允许幻灯片模式下的双指手势
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableTwoFingerGestureInPresentationMode"), pptSettings.IsEnableTwoFingerGestureInPresentationMode);
 
+                // 允许使用手指手势进行幻灯片翻页
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableFingerGestureSlideShowControl"), pptSettings.IsEnableFingerGestureSlideShowControl);
 
+                // PPT 放映模式显示手势按钮
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowGestureButtonInSlideShow"), pptSettings.ShowGestureButtonInSlideShow);
 
+                // PPT时间显示胶囊
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnablePPTTimeCapsule"), pptSettings.EnablePPTTimeCapsule);
 
+                // 时间胶囊位置
                 SetOptionButtonState("PPTTimeCapsulePosition", pptSettings.PPTTimeCapsulePosition);
 
+                // 记忆并提示上次播放位置
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchNotifyPreviousPage"), pptSettings.IsNotifyPreviousPage);
 
+                // 进入放映时回到首页
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAlwaysGoToFirstPageOnReenter"), pptSettings.IsAlwaysGoToFirstPageOnReenter);
 
+                // 提示隐藏幻灯片
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchNotifyHiddenPage"), pptSettings.IsNotifyHiddenPage);
 
+                // 提示是否已启用自动播放
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchNotifyAutoPlayPresentation"), pptSettings.IsNotifyAutoPlayPresentation);
-
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    UpdatePPTBtnPreview();
-                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载PowerPoint设置时出�? {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"加载PowerPoint设置时出错: {ex.Message}");
             }
 
             _isLoaded = true;
         }
 
+        /// <summary>
+        /// 查找ToggleSwitch控件
+        /// </summary>
         private Border FindToggleSwitch(string name)
         {
             return this.FindDescendantByName(name) as Border;
         }
 
+        /// <summary>
+        /// 设置ToggleSwitch状态
+        /// </summary>
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
-                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
-                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -233,6 +269,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        /// <summary>
+        /// 设置选项按钮状态
+        /// </summary>
         private void SetOptionButtonState(string group, int selectedIndex)
         {
             var buttons = new Dictionary<string, string[]>
@@ -249,11 +288,31 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var button = this.FindDescendantByName($"{group}{buttonNames[i]}Border") as Border;
                 if (button != null)
                 {
-                    ThemeHelper.SetOptionButtonSelectedState(button, i == selectedIndex);
+                    if (i == selectedIndex)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                        var textBlock = button.Child as TextBlock;
+                        if (textBlock != null)
+                        {
+                            textBlock.FontWeight = FontWeights.Bold;
+                        }
+                    }
+                    else
+                    {
+                        button.Background = new SolidColorBrush(Colors.Transparent);
+                        var textBlock = button.Child as TextBlock;
+                        if (textBlock != null)
+                        {
+                            textBlock.FontWeight = FontWeights.Normal;
+                        }
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// ToggleSwitch点击事件处理
+        /// </summary>
         private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -261,7 +320,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
+            bool isOn = border.Background.ToString() == "#FF3584E4";
             bool newState = !isOn;
             SetToggleSwitchState(border, newState);
 
@@ -274,80 +333,100 @@ namespace Ink_Canvas.Windows.SettingsViews
             switch (tag)
             {
                 case "SupportPowerPoint":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchSupportPowerPoint", newState);
                     break;
 
                 case "PowerPointEnhancement":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchPowerPointEnhancement", newState);
                     break;
 
                 case "SupportWPS":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchSupportWPS", newState);
                     break;
 
                 case "EnableWppProcessKill":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableWppProcessKill", newState);
                     break;
 
                 case "ShowPPTButton":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowPPTButton", newState);
+                    // 更新UI状态
                     if (PPTButtonSettingsPanel != null)
                     {
                         PPTButtonSettingsPanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
                     }
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "EnablePPTButtonPageClickable":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePPTButtonPageClickable", newState);
                     break;
 
                 case "EnablePPTButtonLongPressPageTurn":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePPTButtonLongPressPageTurn", newState);
                     break;
 
                 case "SkipAnimationsWhenGoNext":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchSkipAnimationsWhenGoNext", newState);
                     break;
 
                 case "ShowCanvasAtNewSlideShow":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowCanvasAtNewSlideShow", newState);
                     break;
 
                 case "EnableTwoFingerGestureInPresentationMode":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableTwoFingerGestureInPresentationMode", newState);
                     break;
 
                 case "EnableFingerGestureSlideShowControl":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableFingerGestureSlideShowControl", newState);
                     break;
 
                 case "ShowGestureButtonInSlideShow":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowGestureButtonInSlideShow", newState);
                     break;
 
                 case "EnablePPTTimeCapsule":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePPTTimeCapsule", newState);
                     break;
 
                 case "NotifyPreviousPage":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchNotifyPreviousPage", newState);
                     break;
 
                 case "AlwaysGoToFirstPageOnReenter":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAlwaysGoToFirstPageOnReenter", newState);
                     break;
 
                 case "NotifyHiddenPage":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchNotifyHiddenPage", newState);
                     break;
 
                 case "NotifyAutoPlayPresentation":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchNotifyAutoPlayPresentation", newState);
                     break;
             }
         }
 
+        /// <summary>
+        /// 选项按钮点击事件处理
+        /// </summary>
         private void OptionButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -364,6 +443,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             string group = parts[0];
             string value = parts[1];
 
+            // 清除同组其他按钮的选中状态
             var parent = border.Parent as Panel;
             if (parent != null)
             {
@@ -374,13 +454,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            ThemeHelper.SetOptionButtonSelectedState(childBorder, false);
+                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                            var textBlock = childBorder.Child as TextBlock;
+                            if (textBlock != null)
+                            {
+                                textBlock.FontWeight = FontWeights.Normal;
+                            }
                         }
                     }
                 }
             }
 
-            ThemeHelper.SetOptionButtonSelectedState(border, true);
+            // 设置当前按钮为选中状态
+            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            var currentTextBlock = border.Child as TextBlock;
+            if (currentTextBlock != null)
+            {
+                currentTextBlock.FontWeight = FontWeights.Bold;
+            }
 
             var pptSettings = MainWindow.Settings.PowerPointSettings;
             if (pptSettings == null) return;
@@ -410,13 +501,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }, "PPTTimeCapsulePosition");
                     break;
             }
-            
-            if (group.Contains("PPT") || group.Contains("Button"))
-            {
-                UpdatePPTBtnPreview();
-            }
         }
 
+        /// <summary>
+        /// CheckBox变化事件处理
+        /// </summary>
         private void CheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -428,17 +517,14 @@ namespace Ink_Canvas.Windows.SettingsViews
             var pptSettings = MainWindow.Settings.PowerPointSettings;
             if (pptSettings == null) return;
 
+            // 调用 MainWindow 中的方法
             MainWindowSettingsHelper.InvokeCheckBoxCheckedChanged(name, checkBox.IsChecked ?? false);
-            
-            if (name.Contains("SPPT") || name.Contains("BPPT") || name == "CheckboxSPPTDisplayPage" || 
-                name == "CheckboxSPPTHalfOpacity" || name == "CheckboxSPPTBlackBackground" ||
-                name == "CheckboxBPPTDisplayPage" || name == "CheckboxBPPTHalfOpacity" || name == "CheckboxBPPTBlackBackground")
-            {
-                UpdatePPTBtnPreview();
-            }
         }
 
 
+        /// <summary>
+        /// Slider值变化事件处理
+        /// </summary>
         private void PPTButtonPositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
@@ -449,6 +535,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             string name = slider.Name;
             double value = slider.Value;
 
+            // 更新文本显示
             switch (name)
             {
                 case "PPTButtonLeftPositionValueSlider":
@@ -456,8 +543,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTButtonLeftPositionValueText.Text = ((int)value).ToString();
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTButtonLeftPositionValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "PPTButtonRightPositionValueSlider":
@@ -465,8 +552,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTButtonRightPositionValueText.Text = ((int)value).ToString();
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTButtonRightPositionValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "PPTButtonLBPositionValueSlider":
@@ -474,8 +561,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTButtonLBPositionValueText.Text = ((int)value).ToString();
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTButtonLBPositionValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "PPTButtonRBPositionValueSlider":
@@ -483,12 +570,15 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTButtonRBPositionValueText.Text = ((int)value).ToString();
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTButtonRBPositionValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
             }
         }
 
+        /// <summary>
+        /// 按钮透明度Slider值变化事件处理
+        /// </summary>
         private void PPTButtonOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
@@ -499,6 +589,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             string name = slider.Name;
             double value = slider.Value;
 
+            // 更新文本显示
             switch (name)
             {
                 case "PPTLSButtonOpacityValueSlider":
@@ -506,8 +597,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTLSButtonOpacityValueText.Text = value.ToString("F1");
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTLSButtonOpacityValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "PPTRSButtonOpacityValueSlider":
@@ -515,8 +606,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTRSButtonOpacityValueText.Text = value.ToString("F1");
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTRSButtonOpacityValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "PPTLBButtonOpacityValueSlider":
@@ -524,8 +615,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTLBButtonOpacityValueText.Text = value.ToString("F1");
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTLBButtonOpacityValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
 
                 case "PPTRBButtonOpacityValueSlider":
@@ -533,215 +624,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         PPTRBButtonOpacityValueText.Text = value.ToString("F1");
                     }
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeSliderValueChanged("PPTRBButtonOpacityValueSlider", value);
-                    UpdatePPTBtnPreview();
                     break;
             }
         }
         
+        /// <summary>
+        /// 应用主题
+        /// </summary>
         public void ApplyTheme()
         {
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
-                if (MainWindow.Settings?.PowerPointSettings != null)
-                {
-                    SetOptionButtonState("PPTTimeCapsulePosition", MainWindow.Settings.PowerPointSettings.PPTTimeCapsulePosition);
-                }
-                
-                UpdatePPTBtnPreview();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"PowerPointPanel 应用主题时出�? {ex.Message}");
-            }
-        }
-
-
-        private void UpdatePPTBtnPreview()
-        {
-            try
-            {
-                if (MainWindow.Settings?.PowerPointSettings == null) return;
-
-                var pptSettings = MainWindow.Settings.PowerPointSettings;
-
-                var bopt = pptSettings.PPTBButtonsOption.ToString();
-                char[] boptc = bopt.ToCharArray();
-                
-                if (PPTBtnPreviewLB != null)
-                {
-                    PPTBtnPreviewLB.Opacity = pptSettings.PPTLBButtonOpacity;
-                }
-                if (PPTBtnPreviewRB != null)
-                {
-                    PPTBtnPreviewRB.Opacity = pptSettings.PPTRBButtonOpacity;
-                }
-
-                if (boptc.Length >= 3 && boptc[2] == '2')
-                {
-                    if (PPTBtnPreviewLB != null)
-                    {
-                        PPTBtnPreviewLB.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/bottombar-white.png"));
-                    }
-                    if (PPTBtnPreviewRB != null)
-                    {
-                        PPTBtnPreviewRB.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/bottombar-white.png"));
-                    }
-                }
-                else
-                {
-                    if (PPTBtnPreviewLB != null)
-                    {
-                        PPTBtnPreviewLB.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/bottombar-white.png"));
-                    }
-                    if (PPTBtnPreviewRB != null)
-                    {
-                        PPTBtnPreviewRB.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/bottombar-white.png"));
-                    }
-                }
-
-                var sopt = pptSettings.PPTSButtonsOption.ToString();
-                char[] soptc = sopt.ToCharArray();
-                
-                if (PPTBtnPreviewLS != null)
-                {
-                    PPTBtnPreviewLS.Opacity = pptSettings.PPTLSButtonOpacity;
-                }
-                if (PPTBtnPreviewRS != null)
-                {
-                    PPTBtnPreviewRS.Opacity = pptSettings.PPTRSButtonOpacity;
-                }
-
-                if (soptc.Length >= 3 && soptc[2] == '2')
-                {
-                    if (PPTBtnPreviewLS != null)
-                    {
-                        PPTBtnPreviewLS.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/sidebar-white.png"));
-                    }
-                    if (PPTBtnPreviewRS != null)
-                    {
-                        PPTBtnPreviewRS.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/sidebar-white.png"));
-                    }
-                }
-                else
-                {
-                    if (PPTBtnPreviewLS != null)
-                    {
-                        PPTBtnPreviewLS.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/sidebar-white.png"));
-                    }
-                    if (PPTBtnPreviewRS != null)
-                    {
-                        PPTBtnPreviewRS.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Resources/PresentationExample/sidebar-white.png"));
-                    }
-                }
-
-                var dopt = pptSettings.PPTButtonsDisplayOption.ToString();
-                char[] doptc = dopt.ToCharArray();
-
-                if (pptSettings.ShowPPTButton)
-                {
-                    if (PPTBtnPreviewLB != null)
-                    {
-                        PPTBtnPreviewLB.Visibility = doptc.Length > 0 && doptc[0] == '2' ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                    if (PPTBtnPreviewRB != null)
-                    {
-                        PPTBtnPreviewRB.Visibility = doptc.Length > 1 && doptc[1] == '2' ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                    if (PPTBtnPreviewLS != null)
-                    {
-                        PPTBtnPreviewLS.Visibility = doptc.Length > 2 && doptc[2] == '2' ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                    if (PPTBtnPreviewRS != null)
-                    {
-                        PPTBtnPreviewRS.Visibility = doptc.Length > 3 && doptc[3] == '2' ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                }
-                else
-                {
-                    if (PPTBtnPreviewLB != null) PPTBtnPreviewLB.Visibility = Visibility.Collapsed;
-                    if (PPTBtnPreviewRB != null) PPTBtnPreviewRB.Visibility = Visibility.Collapsed;
-                    if (PPTBtnPreviewLS != null) PPTBtnPreviewLS.Visibility = Visibility.Collapsed;
-                    if (PPTBtnPreviewRS != null) PPTBtnPreviewRS.Visibility = Visibility.Collapsed;
-                }
-
-                var actualScreenWidth = SystemParameters.PrimaryScreenWidth;
-                var actualScreenHeight = SystemParameters.PrimaryScreenHeight;
-
-                const double previewWidth = 324.0;
-                const double previewHeight = 182.0;
-
-                double scaleX = previewWidth / actualScreenWidth;
-                double scaleY = previewHeight / actualScreenHeight;
-
-                double rsPosition = pptSettings.PPTRSButtonPosition;
-                double lsPosition = pptSettings.PPTLSButtonPosition;
-                double lbPosition = pptSettings.PPTLBButtonPosition;
-                double rbPosition = pptSettings.PPTRBButtonPosition;
-
-                bool showSidePageButton = sopt.Length >= 1 && sopt[0] == '2';
-                bool showBottomPageButton = bopt.Length >= 1 && bopt[0] == '2';
-
-                const double pageButtonWidth = 50.0;
-                const double pageButtonHeight = 50.0;
-
-                double sideOffsetY = showSidePageButton ? pageButtonHeight * scaleY : 0;
-                if (PPTBtnPreviewRSTransform != null)
-                {
-                    PPTBtnPreviewRSTransform.Y = -(rsPosition * scaleY) - sideOffsetY;
-                }
-                if (PPTBtnPreviewLSTransform != null)
-                {
-                    PPTBtnPreviewLSTransform.Y = -(lsPosition * scaleY) - sideOffsetY;
-                }
-
-                const double bottomMarginOffset = 6.0;
-                double scaledMarginOffset = bottomMarginOffset * scaleX;
-
-                double bottomOffsetX = showBottomPageButton ? pageButtonWidth * scaleX : 0;
-                if (PPTBtnPreviewLBTransform != null)
-                {
-                    PPTBtnPreviewLBTransform.X = scaledMarginOffset + (lbPosition * scaleX) + bottomOffsetX;
-                }
-                if (PPTBtnPreviewRBTransform != null)
-                {
-                    PPTBtnPreviewRBTransform.X = -(scaledMarginOffset + (rbPosition * scaleX) + bottomOffsetX);
-                }
-
-                var dpiScaleX = 1.0;
-                var dpiScaleY = 1.0;
-                try
-                {
-                    var source = PresentationSource.FromVisual(this);
-                    if (source?.CompositionTarget != null)
-                    {
-                        var transform = source.CompositionTarget.TransformToDevice;
-                        dpiScaleX = transform.M11;
-                        dpiScaleY = transform.M22;
-                    }
-                }
-                catch
-                {
-                    dpiScaleX = 1.0;
-                    dpiScaleY = 1.0;
-                }
-
-                const double baseToolbarHeight = 24.0;
-                double actualToolbarHeight = baseToolbarHeight * dpiScaleY;
-                double scaledToolbarHeight = actualToolbarHeight * scaleY;
-                double scaledToolbarWidth = previewWidth;
-
-                var toolbar = this.FindDescendantByName("PPTBtnPreviewToolbar") as System.Windows.Controls.Image;
-                if (toolbar != null)
-                {
-                    toolbar.Height = scaledToolbarHeight;
-                    toolbar.Width = scaledToolbarWidth;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"更新PPT按钮预览时出�? {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"PowerPointPanel 应用主题时出错: {ex.Message}");
             }
         }
     }

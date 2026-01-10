@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ComboBoxStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <!-- 开关样式模板 -->
             <Style x:Key="ToggleSwitchStyle" TargetType="Border">
                 <Setter Property="Width" Value="48"/>
                 <Setter Property="Height" Value="25"/>
@@ -26,6 +27,7 @@
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
         <StackPanel Margin="60,12,60,24">
+            <!-- 基本设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <Grid Height="54">
@@ -34,7 +36,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在随机点名窗口中显示修改名单的按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchDisplayRandWindowNamesInputBtn" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="DisplayRandWindowNamesInputBtn" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -48,7 +50,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在随机点名窗口中显示随机抽和单次抽按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchShowRandomAndSingleDraw" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="ShowRandomAndSingleDraw" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -62,7 +64,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用快速抽人的悬浮按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableQuickDraw" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableQuickDraw" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -76,7 +78,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用外部点名工具代替内置点名功能" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchExternalCaller" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="ExternalCaller" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -90,7 +92,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="选择外部点名工具的类型" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border x:Name="ExternalCallerTypeClassIslandBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="ExternalCallerType_ClassIsland" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="ExternalCallerTypeClassIslandBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="ExternalCallerType_ClassIsland" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="ClassIsland点名"/>
                             </Border>
                             <Border x:Name="ExternalCallerTypeSecRandomBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="ExternalCallerType_SecRandom" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
@@ -104,6 +106,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 窗口设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <Grid Height="54">
@@ -130,6 +133,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 新点名UI设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="新点名UI设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -139,7 +143,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用新的点名界面设计" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchUseNewRollCallUI" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="UseNewRollCallUI" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -153,7 +157,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用机器学习算法避免重复抽取相同的人" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableMLAvoidance" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableMLAvoidance" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -187,6 +191,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 背景设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="点名窗口背景设置(仅老版点名UI有效)" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -196,7 +201,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择点名窗口的背景" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal">
-                            <Border x:Name="PickNameBackgroundDefaultBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="PickNameBackground_Default" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="PickNameBackgroundDefaultBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="PickNameBackground_Default" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="默认背景"/>
                             </Border>
                         </WrapPanel>

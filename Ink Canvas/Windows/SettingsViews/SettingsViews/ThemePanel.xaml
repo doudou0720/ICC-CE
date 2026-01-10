@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ComboBoxStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <!-- 开关样式模板 -->
             <Style x:Key="ToggleSwitchStyle" TargetType="Border">
                 <Setter Property="Width" Value="48"/>
                 <Setter Property="Height" Value="25"/>
@@ -26,6 +27,7 @@
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
         <StackPanel Margin="60,12,60,24">
+            <!-- 主题设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
                     <Grid Height="54">
@@ -40,7 +42,7 @@
                             <Border x:Name="ThemeDarkBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="Theme_Dark" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="深色主题"/>
                             </Border>
-                            <Border x:Name="ThemeSystemBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="Theme_System" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="ThemeSystemBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="Theme_System" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="跟随系统"/>
                             </Border>
                         </WrapPanel>
@@ -48,6 +50,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 启动动画设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
                     <Grid Height="54">
@@ -56,7 +59,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启动时显示动画效果" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableSplashScreen" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnableSplashScreen" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -87,6 +90,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 浮动工具栏设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Margin="18,8,18,8">
@@ -163,7 +167,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在调色盘窗口中显示笔尖模式切换按钮" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableDisPlayNibModeToggle" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnableDisPlayNibModeToggle" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -181,6 +185,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 浮动栏按钮显示设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="浮动栏按钮显示" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -265,7 +270,7 @@
                             <Border x:Name="QuickColorPaletteDisplayModeSingleBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="QuickColorPaletteDisplayMode_Single" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="单行显示(6色)"/>
                             </Border>
-                            <Border x:Name="QuickColorPaletteDisplayModeDoubleBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="QuickColorPaletteDisplayMode_Double" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="QuickColorPaletteDisplayModeDoubleBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="QuickColorPaletteDisplayMode_Double" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="双行显示(8色)"/>
                             </Border>
                         </WrapPanel>
@@ -277,7 +282,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="选择橡皮按钮的显示方式" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <Border x:Name="EraserDisplayOptionBothBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserDisplayOption_Both" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="EraserDisplayOptionBothBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="EraserDisplayOption_Both" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="两个都显示"/>
                             </Border>
                             <Border x:Name="EraserDisplayOptionAreaBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="EraserDisplayOption_Area" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
@@ -294,6 +299,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 任务栏托盘图标设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="任务栏托盘图标" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -303,7 +309,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在任务栏系统托盘显示图标" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableTrayIcon" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableTrayIcon" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -313,6 +319,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 白板设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="白板设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -322,7 +329,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="将白板界面缩放至80%" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableViewboxBlackBoardScaleTransform" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableViewboxBlackBoardScaleTransform" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -336,7 +343,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在白板界面显示当前时间和日期" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableTimeDisplayInWhiteboardMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableTimeDisplayInWhiteboardMode" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -350,7 +357,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在白板界面显示励志语句" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableChickenSoupInWhiteboardMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableChickenSoupInWhiteboardMode" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -373,7 +380,7 @@
                             <Border x:Name="ChickenSoupSourceGaokaoBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="ChickenSoupSource_Gaokao" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="高考祝福语"/>
                             </Border>
-                            <Border x:Name="ChickenSoupSourceHitokotoBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="ChickenSoupSource_Hitokoto" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="ChickenSoupSourceHitokotoBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="ChickenSoupSource_Hitokoto" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="一言（Hitokoto API）"/>
                             </Border>
                         </WrapPanel>
@@ -381,6 +388,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 收纳模式设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="收纳模式设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -390,7 +398,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在收纳模式下显示快速操作面板" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableQuickPanel" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableQuickPanel" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -404,7 +412,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择取消收纳按钮的图标样式" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
-                            <Border x:Name="UnFoldBtnImgArrowBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UnFoldBtnImg_Arrow" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                            <Border x:Name="UnFoldBtnImgArrowBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UnFoldBtnImg_Arrow" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="箭头"/>
                             </Border>
                             <Border x:Name="UnFoldBtnImgPenBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UnFoldBtnImg_Pen" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
@@ -419,7 +427,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，退出收纳模式时将自动切换至批注模式，便于快速批注" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchAutoEnterAnnotationModeWhenExitFoldMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="AutoEnterAnnotationModeWhenExitFoldMode" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -433,7 +441,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，退出PPT放映后会自动收纳浮动栏" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchAutoFoldAfterPPTSlideShow" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="AutoFoldAfterPPTSlideShow" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -447,7 +455,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，退出白板模式时会自动收纳到侧边栏" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchAutoFoldWhenExitWhiteboard" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="AutoFoldWhenExitWhiteboard" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>

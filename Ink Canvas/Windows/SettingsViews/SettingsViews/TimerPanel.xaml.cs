@@ -1,4 +1,4 @@
-﻿using Ink_Canvas;
+using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Windows;
@@ -6,6 +6,9 @@ using System.Windows.Controls;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
+    /// <summary>
+    /// TimerPanel.xaml 的交互逻辑
+    /// </summary>
     public partial class TimerPanel : UserControl
     {
         private bool _isLoaded = false;
@@ -19,10 +22,16 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void TimerPanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
+            // 添加触摸支持
             MainWindowSettingsHelper.EnableTouchSupportForControls(this);
+            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
+
+        /// <summary>
+        /// 加载设置
+        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.RandSettings == null) return;
@@ -32,6 +41,8 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 var randSettings = MainWindow.Settings.RandSettings;
+
+                // 定时器音量
                 if (TimerVolumeSlider != null)
                 {
                     TimerVolumeSlider.Value = randSettings.TimerVolume;
@@ -40,11 +51,23 @@ namespace Ink_Canvas.Windows.SettingsViews
                         TimerVolumeText.Text = (randSettings.TimerVolume * 100).ToString("F0") + "%";
                     }
                 }
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchUseLegacyTimerUI"), randSettings.UseLegacyTimerUI);
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchUseNewStyleUI"), randSettings.UseNewStyleUI);
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableOvertimeCountUp"), randSettings.EnableOvertimeCountUp);
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableOvertimeRedText"), randSettings.EnableOvertimeRedText);
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableProgressiveReminder"), randSettings.EnableProgressiveReminder);
+
+                // 渐进提醒
+                var toggleSwitchEnableProgressiveReminder = this.FindDescendantByName("ToggleSwitchEnableProgressiveReminder") as Border;
+                if (toggleSwitchEnableProgressiveReminder != null)
+                {
+                    bool isOn = randSettings.EnableProgressiveReminder;
+                    toggleSwitchEnableProgressiveReminder.Background = isOn 
+                        ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(53, 132, 228)) 
+                        : ThemeHelper.GetButtonBackgroundBrush();
+                    var innerBorder = toggleSwitchEnableProgressiveReminder.Child as Border;
+                    if (innerBorder != null)
+                    {
+                        innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                    }
+                }
+
+                // 渐进提醒音量面板可见性
                 var progressiveReminderVolumePanel = this.FindDescendantByName("ProgressiveReminderVolumePanel") as Grid;
                 if (progressiveReminderVolumePanel != null)
                 {
@@ -52,6 +75,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                         ? Visibility.Visible 
                         : Visibility.Collapsed;
                 }
+
+                // 渐进提醒音量
                 if (ProgressiveReminderVolumeSlider != null)
                 {
                     ProgressiveReminderVolumeSlider.Value = randSettings.ProgressiveReminderVolume;
@@ -84,6 +109,10 @@ namespace Ink_Canvas.Windows.SettingsViews
                 IsTopBarNeedNoShadowEffect?.Invoke(this, new RoutedEventArgs());
             }
         }
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
         public void ApplyTheme()
         {
             try
@@ -92,9 +121,13 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"TimerPanel 应用主题时出�? {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"TimerPanel 应用主题时出错: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Slider值变化事件处理
+        /// </summary>
         private void TimerVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
@@ -114,68 +147,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 double val = ProgressiveReminderVolumeSlider.Value;
                 ProgressiveReminderVolumeText.Text = (val * 100).ToString("F0") + "%";
                 MainWindowSettingsHelper.InvokeSliderValueChanged("ProgressiveReminderVolumeSlider", val);
-            }
-        }
-        private Border FindToggleSwitch(string name)
-        {
-            return this.FindDescendantByName(name) as Border;
-        }
-        private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
-        {
-            if (toggleSwitch == null) return;
-            toggleSwitch.Background = isOn
-                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush()
-                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
-            var innerBorder = toggleSwitch.Child as Border;
-            if (innerBorder != null)
-            {
-                innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
-            }
-        }
-        private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoaded) return;
-            e.Handled = true;
-
-            var border = sender as Border;
-            if (border == null) return;
-
-            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
-            string tag = border.Tag?.ToString();
-            if (string.IsNullOrEmpty(tag)) return;
-
-            switch (tag)
-            {
-                case "UseLegacyTimerUI":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchUseLegacyTimerUI", newState);
-                    break;
-
-                case "UseNewStyleUI":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchUseNewStyleUI", newState);
-                    break;
-
-                case "EnableOvertimeCountUp":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableOvertimeCountUp", newState);
-                    break;
-
-                case "EnableOvertimeRedText":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableOvertimeRedText", newState);
-                    break;
-
-                case "EnableProgressiveReminder":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableProgressiveReminder", newState);
-                    if (ProgressiveReminderVolumePanel != null)
-                    {
-                        ProgressiveReminderVolumePanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                    if (ProgressiveReminderSoundPanel != null)
-                    {
-                        ProgressiveReminderSoundPanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
-                    }
-                    break;
             }
         }
     }

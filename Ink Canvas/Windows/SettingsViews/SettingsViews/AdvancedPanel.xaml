@@ -12,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ComboBoxStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <!-- 开关样式模板 -->
             <Style x:Key="ToggleSwitchStyle" TargetType="Border">
                 <Setter Property="Width" Value="48"/>
                 <Setter Property="Height" Value="25"/>
@@ -26,6 +27,7 @@
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
         <StackPanel Margin="60,12,60,24">
+            <!-- 特殊屏幕和触摸设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="可在手指触摸画板时显示圆形橡皮或手掌触摸画板时显示的橡皮比手掌大很多时调整" 
@@ -36,7 +38,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用特殊屏幕模式以优化触摸体验" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchIsSpecialScreen" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsSpecialScreen" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -61,7 +63,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="橡皮擦大小与触摸大小倍数绑定" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEraserBindTouchMultiplier" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EraserBindTouchMultiplier" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -96,8 +98,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="四边红外模式" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用四边红外触摸屏模式" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsQuadIR" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsQuadIR" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsQuadIR" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -107,6 +109,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 日志和系统设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <Grid Height="54">
@@ -114,8 +117,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="记录日志" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用日志记录功能" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsLogEnabled" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsLogEnabled" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsLogEnabled" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -132,8 +135,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="日志以日期保存" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" TextWrapping="Wrap" Text="日志文件超过 512 KB 时会自动删除。开启日期保存后，日志将保存在Logs文件夹中，当文件夹大小超过5MB时自动清空" HorizontalAlignment="Left" MaxWidth="450"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsSaveLogByDate" Grid.Column="1" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" VerticalAlignment="Top" Margin="0,8,15,8" Tag="IsSaveLogByDate" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsSaveLogByDate" Grid.Column="1" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" VerticalAlignment="Top" Margin="0,8,15,8">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -146,8 +149,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="关闭软件时二次弹窗确认" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="关闭软件时显示确认对话框" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsSecondConfimeWhenShutdownApp" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsSecondConfirmWhenShutdownApp" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsSecondConfimeWhenShutdownApp" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -157,6 +160,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 实验性功能 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="实验性选项" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -181,8 +185,8 @@
                             </Border>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用FullScreenHelper" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableFullScreenHelper" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableFullScreenHelper" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsEnableFullScreenHelper" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -213,8 +217,8 @@
                             </Border>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用AvoidFullScreenHelper" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableAvoidFullScreenHelper" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableAvoidFullScreenHelper" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsEnableAvoidFullScreenHelper" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -245,8 +249,8 @@
                             </Border>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用EdgeGestureUtil" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableEdgeGestureUtil" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableEdgeGestureUtil" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsEnableEdgeGestureUtil" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -277,8 +281,8 @@
                             </Border>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用ForceFullScreen" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableForceFullScreen" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableForceFullScreen" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsEnableForceFullScreen" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -309,8 +313,8 @@
                             </Border>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用DPIChangeDetection" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableDPIChangeDetection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableDPIChangeDetection" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsEnableDPIChangeDetection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -341,8 +345,8 @@
                             </Border>
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用ResolutionChangeDetection" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableResolutionChangeDetection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableResolutionChangeDetection" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsEnableResolutionChangeDetection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -354,6 +358,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 设置备份与还原 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="设置备份与还原" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -364,8 +369,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动更新前备份" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在自动更新前自动备份当前设置" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsAutoBackupBeforeUpdate" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsAutoBackupBeforeUpdate" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsAutoBackupBeforeUpdate" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -378,8 +383,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="定期自动备份" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="定期自动备份设置文件" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsAutoBackupEnabled" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsAutoBackupEnabled" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchIsAutoBackupEnabled" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -399,7 +404,7 @@
                             <Border x:Name="AutoBackupInterval3DaysBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoBackupInterval_3" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="3天"/>
                             </Border>
-                            <Border x:Name="AutoBackupInterval7DaysBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoBackupInterval_7" Margin="0,0,8,8">
+                            <Border x:Name="AutoBackupInterval7DaysBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="AutoBackupInterval_7" Margin="0,0,8,8">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="7天"/>
                             </Border>
                             <Border x:Name="AutoBackupInterval14DaysBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="AutoBackupInterval_14" Margin="0,0,8,8">
@@ -412,30 +417,27 @@
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                        <Button x:Name="BtnManualBackup" Content="手动备份" Padding="12,6" Margin="0,0,12,0"/>
-                        <Button x:Name="BtnRestoreBackup" Content="还原备份" Padding="12,6"/>
+                        <Button x:Name="BtnManualBackup" Content="手动备份" Padding="12,6" Margin="0,0,12,0" Background="#2563eb" Foreground="White"/>
+                        <Button x:Name="BtnRestoreBackup" Content="还原备份" Padding="12,6" Background="#2563eb" Foreground="White"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
             
+            <!-- 文件关联管理 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="文件关联管理" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
                     <TextBlock Text="管理.icstk文件的关联设置，双击.icstk文件可直接在Ink Canvas中打开" 
                                TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                        <Button x:Name="BtnUnregisterFileAssociation" Content="取消文件关联" Padding="15,5" Margin="0,0,8,0"/>
-                        <Button x:Name="BtnCheckFileAssociation" Content="检查关联状态" Padding="15,5" Margin="0,0,8,0"/>
-                        <Button x:Name="BtnRegisterFileAssociation" Content="重新注册关联" Padding="15,5"/>
+                        <Button x:Name="BtnUnregisterFileAssociation" Content="取消文件关联" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White"/>
+                        <Button x:Name="BtnCheckFileAssociation" Content="检查关联状态" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White"/>
+                        <Button x:Name="BtnRegisterFileAssociation" Content="重新注册关联" Padding="15,5" Background="#2563eb" Foreground="White"/>
                     </StackPanel>
-                    <TextBlock x:Name="FileAssociationStatusText" 
-                               TextWrapping="Wrap" 
-                               FontSize="12" 
-                               Margin="0,8,0,0" 
-                               Visibility="Collapsed"/>
                 </StackPanel>
             </Border>
             
+            <!-- 悬浮窗拦截 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="悬浮窗拦截" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -446,14 +448,15 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用悬浮窗拦截" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后自动检测并拦截同类软件的悬浮窗" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchFloatingWindowInterceptorEnabled" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="FloatingWindowInterceptorEnabled" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchFloatingWindowInterceptorEnabled" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
                             </Border>
                         </Border>
                     </Grid>
+                    <!-- 拦截规则网格 -->
                     <Grid x:Name="FloatingWindowInterceptorGrid" Margin="0,12,0,0" Visibility="Collapsed">
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -467,143 +470,156 @@
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
+                        <!-- 希沃白板3 -->
                         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiNote3.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃白板3" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoWhiteboard3Floating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoWhiteboard3Floating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoWhiteboard3Floating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃白板5 -->
                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiNote.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃白板5" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoWhiteboard5Floating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoWhiteboard5Floating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoWhiteboard5Floating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃白板5C -->
                         <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/EasiNote5C.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃白板5C" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoWhiteboard5CFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoWhiteboard5CFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoWhiteboard5CFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃品课 -->
                         <StackPanel Grid.Row="0" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/SeewoPinco.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃品课" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoPincoSideBarFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoPincoSideBarFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoPincoSideBarFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃品课画笔 -->
                         <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/SeewoPinco.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃品课画笔" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoPincoDrawingFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoPincoDrawingFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoPincoDrawingFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃PPT小工具 -->
                         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/PPTTools.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃PPT小工具" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoPPTFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoPPTFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoPPTFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- AiClass -->
                         <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/AiClass.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="AiClass" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchAiClassFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="AiClassFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchAiClassFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 鸿合屏幕书写 -->
                         <StackPanel Grid.Row="1" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/HiteAnnotation.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="鸿合屏幕书写" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchHiteAnnotationFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="HiteAnnotationFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchHiteAnnotationFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 畅言智慧课堂 -->
                         <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/畅言智慧课堂.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="畅言智慧课堂" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchChangYanFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="ChangYanFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchChangYanFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 畅言PPT -->
                         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/畅言智慧课堂.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="畅言PPT" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchChangYanPptFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="ChangYanPptFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchChangYanPptFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 天喻教育云 -->
                         <StackPanel Grid.Row="2" Grid.Column="2" Orientation="Vertical" Margin="0,0,8,12">
                             <Image Source="/Resources/Icons-png/天喻教育云.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="天喻教育云" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchIntelligentClassFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="IntelligentClassFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchIntelligentClassFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃桌面画笔 -->
                         <StackPanel Grid.Row="2" Grid.Column="3" Orientation="Vertical" Margin="0,0,0,12">
                             <Image Source="/Resources/Icons-png/SeewoPinco.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃桌面画笔" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoDesktopAnnotationFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoDesktopAnnotationFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoDesktopAnnotationFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
                                 </Border>
                             </Border>
                         </StackPanel>
+                        <!-- 希沃桌面侧栏 -->
                         <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
                             <Image Source="/Resources/Icons-png/SeewoPinco.png" Width="42" Height="42" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                             <TextBlock Text="希沃桌面侧栏" HorizontalAlignment="Center" FontSize="14" Margin="0,0,0,4" Foreground="#2e3436"/>
-                            <Border x:Name="ToggleSwitchSeewoDesktopSideBarFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center" Tag="SeewoDesktopSideBarFloating" MouseLeftButtonDown="ToggleSwitch_Click">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Border x:Name="ToggleSwitchSeewoDesktopSideBarFloating" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" HorizontalAlignment="Center">
+                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                     </Border.Effect>
@@ -616,10 +632,11 @@
                 </StackPanel>
             </Border>
             
+            <!-- Dlass设置管理 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="Dlass设置管理" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
-                    <Button x:Name="BtnDlassSettingsManage" Content="Dlass设置管理" Padding="15,5" HorizontalAlignment="Left"/>
+                    <Button x:Name="BtnDlassSettingsManage" Content="Dlass设置管理" Padding="15,5" HorizontalAlignment="Left" Background="#2563eb" Foreground="White"/>
                 </StackPanel>
             </Border>
         </StackPanel>

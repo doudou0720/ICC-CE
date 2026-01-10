@@ -8,6 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="950" d:DesignWidth="640">
     <UserControl.Resources>
+        <!-- 开关样式模板 -->
         <Style x:Key="ToggleSwitchStyle" TargetType="Border">
             <Setter Property="Width" Value="48"/>
             <Setter Property="Height" Value="25"/>
@@ -21,6 +22,7 @@
     </UserControl.Resources>
     <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="ScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
         <StackPanel Margin="60,12,60,24">
+            <!-- 计时器UI设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="计时器UI设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -29,8 +31,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="使用老版计时器按钮UI" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用旧版本的计时器按钮界面" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchUseLegacyTimerUI" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="UseLegacyTimerUI" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchUseLegacyTimerUI" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -43,8 +45,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="新计时器UI" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用新样式的计时器界面" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchUseNewStyleUI" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="UseNewStyleUI" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchUseNewStyleUI" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -57,8 +59,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用正计时" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="计时器超时后继续正向计时" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableOvertimeCountUp" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnableOvertimeCountUp" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchEnableOvertimeCountUp" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -71,8 +73,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="超时醒目数字" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="计时器超时后数字显示为红色" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableOvertimeRedText" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableOvertimeRedText" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchEnableOvertimeRedText" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>
@@ -82,6 +84,7 @@
                 </StackPanel>
             </Border>
             
+            <!-- 提醒设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="提醒设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
@@ -107,8 +110,8 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="渐进提醒" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用渐进式提醒功能" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchEnableProgressiveReminder" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="EnableProgressiveReminder" MouseLeftButtonDown="ToggleSwitch_Click">
-                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <Border x:Name="ToggleSwitchEnableProgressiveReminder" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>

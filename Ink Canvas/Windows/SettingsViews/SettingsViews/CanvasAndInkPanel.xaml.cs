@@ -1,4 +1,4 @@
-﻿using Ink_Canvas;
+using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Linq;
@@ -10,6 +10,9 @@ using System.Windows.Media;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
+    /// <summary>
+    /// CanvasAndInkPanel.xaml 的交互逻辑
+    /// </summary>
     public partial class CanvasAndInkPanel : UserControl
     {
         private bool _isLoaded = false;
@@ -23,15 +26,21 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void CanvasAndInkPanel_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
+            // 添加触摸支持
             EnableTouchSupport();
+            // 应用主题
             ApplyTheme();
             _isLoaded = true;
         }
 
+        /// <summary>
+        /// 为面板中的所有交互控件启用触摸支持
+        /// </summary>
         private void EnableTouchSupport()
         {
             try
             {
+                // 延迟执行，确保所有控件都已加载
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     MainWindowSettingsHelper.EnableTouchSupportForControls(this);
@@ -39,7 +48,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"CanvasAndInkPanel 启用触摸支持时出�? {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"CanvasAndInkPanel 启用触摸支持时出错: {ex.Message}");
             }
         }
 
@@ -59,6 +68,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        /// <summary>
+        /// 加载设置到UI
+        /// </summary>
         public void LoadSettings()
         {
             if (MainWindow.Settings == null || MainWindow.Settings.Canvas == null) return;
@@ -69,53 +81,64 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var canvas = MainWindow.Settings.Canvas;
 
+                // 显示画笔光标
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowCursor"), canvas.IsShowCursor);
 
+                // 启用压感触屏模式
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnablePressureTouchMode"), canvas.EnablePressureTouchMode);
 
+                // 屏蔽压感
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchDisablePressure"), canvas.DisablePressure);
 
+                // 板擦橡皮大小
                 SetOptionButtonState("EraserSize", canvas.EraserSize);
 
+                // 退出画板模式后隐藏墨迹
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchHideStrokeWhenSelecting"), canvas.HideStrokeWhenSelecting);
 
+                // 清空墨迹时删除墨迹历史记录
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchClearCanvasAndClearTimeMachine"), canvas.ClearCanvasAndClearTimeMachine);
 
+                // 清空画布时同时清空图片
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchClearCanvasAlsoClearImages"), canvas.ClearCanvasAlsoClearImages);
 
+                // 插入图片时自动压缩
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchCompressPicturesUploaded"), canvas.IsCompressPicturesUploaded);
 
+                // 保留双曲线渐近线
                 SetOptionButtonState("HyperbolaAsymptote", (int)canvas.HyperbolaAsymptoteOption);
 
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchShowCircleCenter"), canvas.ShowCircleCenter);
-
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchFitToCurve"), canvas.FitToCurve && !canvas.UseAdvancedBezierSmoothing);
-
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAdvancedBezierSmoothing"), canvas.UseAdvancedBezierSmoothing);
-
-                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableInkFade"), canvas.EnableInkFade);
-                if (InkFadeTimePanel != null)
-                {
-                    InkFadeTimePanel.Visibility = canvas.EnableInkFade ? Visibility.Visible : Visibility.Collapsed;
-                }
-                if (InkFadeTimeSlider != null)
-                {
-                    InkFadeTimeSlider.Value = canvas.InkFadeTime;
-                    if (InkFadeTimeText != null)
-                    {
-                        InkFadeTimeText.Text = $"{canvas.InkFadeTime}ms";
-                    }
-                }
-
+                // 启用异步墨迹平滑
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchUseAsyncInkSmoothing"), canvas.UseAsyncInkSmoothing);
 
+                // 启用硬件加速
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchUseHardwareAcceleration"), canvas.UseHardwareAcceleration);
 
+                // 启用直线自动拉直
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoStraightenLine"), canvas.AutoStraightenLine);
 
+                // 启用高精度直线拉直
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchHighPrecisionLineStraighten"), canvas.HighPrecisionLineStraighten);
 
+                // 启用直线端点吸附
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchLineEndpointSnapping"), canvas.LineEndpointSnapping);
+
+                // 定时自动保存墨迹
+                // 注意：这个设置可能在 Automation 或 Canvas 中，需要根据实际情况调整
+                // SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableAutoSaveStrokes"), ...);
+
+                // 墨迹全页面保存
+                // SetToggleSwitchState(FindToggleSwitch("ToggleSwitchSaveFullPageStrokes"), ...);
+
+                // 保存为XML格式
+                // SetToggleSwitchState(FindToggleSwitch("ToggleSwitchSaveStrokesAsXML"), ...);
+
+                // 自动保存幻灯片墨迹
+                if (MainWindow.Settings.PowerPointSettings != null)
+                {
+                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoSaveStrokesInPowerPoint"), 
+                        MainWindow.Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint);
+                }
             }
             catch (Exception ex)
             {
@@ -125,17 +148,23 @@ namespace Ink_Canvas.Windows.SettingsViews
             _isLoaded = true;
         }
 
+        /// <summary>
+        /// 查找ToggleSwitch控件
+        /// </summary>
         private Border FindToggleSwitch(string name)
         {
             return this.FindDescendantByName(name) as Border;
         }
 
+        /// <summary>
+        /// 设置ToggleSwitch状态
+        /// </summary>
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
-                ? ThemeHelper.GetToggleSwitchOnBackgroundBrush() 
-                : ThemeHelper.GetToggleSwitchOffBackgroundBrush();
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
+                : ThemeHelper.GetButtonBackgroundBrush();
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
@@ -143,6 +172,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        /// <summary>
+        /// 设置选项按钮状态
+        /// </summary>
         private void SetOptionButtonState(string group, int selectedIndex)
         {
             var buttons = new[] { "VerySmall", "Small", "Medium", "Large", "VeryLarge" };
@@ -150,16 +182,36 @@ namespace Ink_Canvas.Windows.SettingsViews
             
             string[] buttonNames = group == "EraserSize" ? buttons : hyperbolaButtons;
             
-            for (int i = 0; i < buttonNames.Length; i++)
+            for (int i = 0; i < buttonNames.Length && i <= selectedIndex; i++)
             {
                 var button = this.FindDescendantByName($"{group}{buttonNames[i]}") as Border;
                 if (button != null)
                 {
-                    ThemeHelper.SetOptionButtonSelectedState(button, i == selectedIndex);
+                    if (i == selectedIndex)
+                    {
+                        button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                        var textBlock = button.Child as TextBlock;
+                        if (textBlock != null)
+                        {
+                            textBlock.FontWeight = FontWeights.Bold;
+                        }
+                    }
+                    else
+                    {
+                        button.Background = new SolidColorBrush(Colors.Transparent);
+                        var textBlock = button.Child as TextBlock;
+                        if (textBlock != null)
+                        {
+                            textBlock.FontWeight = FontWeights.Normal;
+                        }
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// ToggleSwitch点击事件处理
+        /// </summary>
         private void ToggleSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -167,7 +219,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = ThemeHelper.IsToggleSwitchOn(border.Background);
+            bool isOn = border.Background.ToString() == "#FF3584E4";
             bool newState = !isOn;
             SetToggleSwitchState(border, newState);
 
@@ -180,11 +232,14 @@ namespace Ink_Canvas.Windows.SettingsViews
             switch (tag)
             {
                 case "ShowCursor":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowCursor", newState);
                     break;
 
                 case "EnablePressureTouchMode":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePressureTouchMode", newState);
+                    // 处理互斥逻辑
                     if (newState && canvas.DisablePressure)
                     {
                         MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchDisablePressure", false);
@@ -193,7 +248,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                     break;
 
                 case "DisablePressure":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchDisablePressure", newState);
+                    // 处理互斥逻辑
                     if (newState && canvas.EnablePressureTouchMode)
                     {
                         MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePressureTouchMode", false);
@@ -202,73 +259,75 @@ namespace Ink_Canvas.Windows.SettingsViews
                     break;
 
                 case "HideStrokeWhenSelecting":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchHideStrokeWhenSelecting", newState);
                     break;
 
                 case "ClearCanvasAndClearTimeMachine":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchClearCanvasAndClearTimeMachine", newState);
                     break;
 
                 case "ClearCanvasAlsoClearImages":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchClearCanvasAlsoClearImages", newState);
                     break;
 
                 case "CompressPicturesUploaded":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchCompressPicturesUploaded", newState);
                     break;
 
                 case "UseAsyncInkSmoothing":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAsyncInkSmoothing", newState);
                     break;
 
                 case "UseHardwareAcceleration":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchHardwareAcceleration", newState);
                     break;
 
                 case "AutoStraightenLine":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoStraightenLine", newState);
                     break;
 
                 case "HighPrecisionLineStraighten":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchHighPrecisionLineStraighten", newState);
                     break;
 
                 case "LineEndpointSnapping":
+                    // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchLineEndpointSnapping", newState);
                     break;
 
-                case "ShowCircleCenter":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchShowCircleCenter", newState);
+                case "EnableAutoSaveStrokes":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableAutoSaveStrokes", newState);
                     break;
 
-                case "FitToCurve":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFitToCurve", newState);
-                    if (newState)
-                    {
-                        MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAdvancedBezierSmoothing", false);
-                        SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAdvancedBezierSmoothing"), false);
-                    }
+                case "SaveFullPageStrokes":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchSaveFullPageStrokes", newState);
                     break;
 
-                case "AdvancedBezierSmoothing":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAdvancedBezierSmoothing", newState);
-                    if (newState)
-                    {
-                        MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFitToCurve", false);
-                        SetToggleSwitchState(FindToggleSwitch("ToggleSwitchFitToCurve"), false);
-                    }
+                case "SaveStrokesAsXML":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchSaveStrokesAsXML", newState);
                     break;
 
-                case "EnableInkFade":
-                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableInkFade", newState);
-                    if (InkFadeTimePanel != null)
-                    {
-                        InkFadeTimePanel.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
-                    }
+                case "AutoSaveStrokesInPowerPoint":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAutoSaveStrokesInPowerPoint", newState);
                     break;
             }
         }
 
+        /// <summary>
+        /// 选项按钮点击事件处理
+        /// </summary>
         private void OptionButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -285,6 +344,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             string group = parts[0];
             string value = parts[1];
 
+            // 清除同组其他按钮的选中状态
             var parent = border.Parent as Panel;
             if (parent != null)
             {
@@ -295,13 +355,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            ThemeHelper.SetOptionButtonSelectedState(childBorder, false);
+                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                            var textBlock = childBorder.Child as TextBlock;
+                            if (textBlock != null)
+                            {
+                                textBlock.FontWeight = FontWeights.Normal;
+                            }
                         }
                     }
                 }
             }
 
-            ThemeHelper.SetOptionButtonSelectedState(border, true);
+            // 设置当前按钮为选中状态
+            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            var currentTextBlock = border.Child as TextBlock;
+            if (currentTextBlock != null)
+            {
+                currentTextBlock.FontWeight = FontWeights.Bold;
+            }
 
             var canvas = MainWindow.Settings.Canvas;
             if (canvas == null) return;
@@ -331,6 +402,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             eraserSize = 2;
                             break;
                     }
+                    // 调用 MainWindow 中的方法
                     var mainWindow = Application.Current.MainWindow as MainWindow;
                     if (mainWindow != null)
                     {
@@ -342,6 +414,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
+                            // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
                                 canvas.EraserSize = eraserSize;
@@ -367,6 +440,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                             option = OptionalOperation.Ask;
                             break;
                     }
+                    // 调用 MainWindow 中的方法
                     var mainWindow2 = Application.Current.MainWindow as MainWindow;
                     if (mainWindow2 != null)
                     {
@@ -382,6 +456,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
+                            // 如果找不到控件，直接更新设置
                             MainWindowSettingsHelper.UpdateSettingDirectly(() =>
                             {
                                 canvas.HyperbolaAsymptoteOption = option;
@@ -389,35 +464,74 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                     }
                     break;
+
+                case "AutoSaveStrokesInterval":
+                    // 调用 MainWindow 中的方法
+                    int interval = int.Parse(value);
+                    var mainWindow3 = Application.Current.MainWindow as MainWindow;
+                    if (mainWindow3 != null)
+                    {
+                        var comboBox = mainWindow3.FindName("ComboBoxAutoSaveStrokesInterval") as System.Windows.Controls.ComboBox;
+                        if (comboBox != null)
+                        {
+                            // 查找对应的选项（根据 Tag 或 Content 匹配）
+                            foreach (System.Windows.Controls.ComboBoxItem item in comboBox.Items)
+                            {
+                                if (item.Tag != null && int.TryParse(item.Tag.ToString(), out int tagValue) && tagValue == interval)
+                                {
+                                    comboBox.SelectedItem = item;
+                                    MainWindowSettingsHelper.InvokeComboBoxSelectionChanged("ComboBoxAutoSaveStrokesInterval", item);
+                                    break;
+                                }
+                                else if (item.Content != null && item.Content.ToString().Contains(interval.ToString()))
+                                {
+                                    comboBox.SelectedItem = item;
+                                    MainWindowSettingsHelper.InvokeComboBoxSelectionChanged("ComboBoxAutoSaveStrokesInterval", item);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // 如果找不到控件，直接更新设置
+                            MainWindowSettingsHelper.UpdateSettingDirectly(() =>
+                            {
+                                if (MainWindow.Settings.Automation != null)
+                                {
+                                    MainWindow.Settings.Automation.AutoSaveStrokesIntervalMinutes = interval;
+                                }
+                            }, "ComboBoxAutoSaveStrokesInterval");
+                        }
+                    }
+                    break;
             }
         }
 
-        private void InkFadeTimeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        /// <summary>
+        /// 自动保存间隔选项按钮点击事件处理
+        /// </summary>
+        private void AutoSaveIntervalButton_Click(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
-            if (InkFadeTimeSlider != null && InkFadeTimeText != null)
-            {
-                int value = (int)InkFadeTimeSlider.Value;
-                InkFadeTimeText.Text = $"{value}ms";
-                MainWindowSettingsHelper.InvokeSliderValueChanged("InkFadeTimeSlider", value);
-            }
+            OptionButton_Click(sender, e);
         }
 
+        /// <summary>
+        /// Slider值变化事件处理
+        /// </summary>
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
         public void ApplyTheme()
         {
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
-                if (MainWindow.Settings?.Canvas != null)
-                {
-                    var canvas = MainWindow.Settings.Canvas;
-                    SetOptionButtonState("EraserSize", canvas.EraserSize);
-                    SetOptionButtonState("HyperbolaAsymptote", (int)canvas.HyperbolaAsymptoteOption);
-                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"CanvasAndInkPanel 应用主题时出�? {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"CanvasAndInkPanel 应用主题时出错: {ex.Message}");
             }
         }
     }

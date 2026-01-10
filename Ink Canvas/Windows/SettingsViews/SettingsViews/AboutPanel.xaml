@@ -73,8 +73,8 @@
                     <StackPanel Orientation="Vertical">
                         <Grid Height="54">
                             <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
-                                <TextBlock Foreground="#9a9996" FontSize="12" Margin="0,0,0,3" Text="设备ID" HorizontalAlignment="Left"/>
-                                <TextBlock Name="AboutUserCopyright" Foreground="#2e3436" FontSize="14.5" Text="2024 孙笑川一中 高2026级114班" HorizontalAlignment="Left"/>
+                                <TextBlock Foreground="#9a9996" FontSize="12" Margin="0,0,0,3" Text="用户版权信息" HorizontalAlignment="Left"/>
+                                <TextBlock Foreground="#2e3436" FontSize="14.5" Text="2024 孙笑川一中 高2026级114班" HorizontalAlignment="Left"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -84,8 +84,8 @@
                         <Grid Height="54">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="软件版本" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="18,0,0,0"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,18,0">
-                                <TextBlock Name="AboutSoftwareVersion" Foreground="#878787" FontSize="14.5" Text="InkCanvasForClass v1.7.18.4" VerticalAlignment="Center" />
-                                <Image x:Name="UpdateAvailableIcon" Margin="12,0,0,0" Width="18" Height="18" VerticalAlignment="Center" Visibility="Collapsed">
+                                <TextBlock Foreground="#878787" FontSize="14.5" Text="InkCanvasForClass v2024.8.30" VerticalAlignment="Center" />
+                                <Image Margin="12,0,0,0" Width="18" Height="18" VerticalAlignment="Center">
                                     <Image.Source>
                                         <DrawingImage>
                                             <DrawingImage.Drawing>
@@ -119,7 +119,7 @@
                         <Border Height="1" Background="#ebebeb"/>
                         <Grid Height="54">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="版权信息" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="18,0,0,0"/>
-                            <TextBlock Name="AboutCopyright" Foreground="#878787" FontSize="14.5" Text="© Copyright 2024-2026" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,18,0"/>
+                            <TextBlock Foreground="#878787" FontSize="14.5" Text="© Copyright 2024 Dubi906w 所有" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,18,0"/>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -128,7 +128,7 @@
                         <Grid Height="54">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="ICC 官方网站" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="18,0,0,0"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,18,0">
-                                <TextBlock Name="AboutOfficialWebsiteLink" Foreground="#1d4ed8" TextDecorations="Underline" FontSize="14.5" Text="forum.smart-teach.cn/t/icc-ce" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBlock Foreground="#1d4ed8" TextDecorations="Underline" FontSize="14.5" Text="icc.bliemhax.com" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                 <Image Margin="12,0,0,0" Width="16" Height="16" VerticalAlignment="Center">
                                     <Image.Source>
                                         <DrawingImage>
@@ -146,7 +146,7 @@
                         <Grid Height="54">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="Github 仓库" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="18,0,0,0"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,18,0">
-                                <TextBlock Name="AboutGithubLink" Foreground="#1d4ed8" TextDecorations="Underline" FontSize="14.5" Text="github.com/InkCanvasForClass/community" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBlock Foreground="#1d4ed8" TextDecorations="Underline" FontSize="14.5" Text="github.com/InkCanvas/InkCanvasForClass" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                 <Image Margin="12,0,0,0" Width="16" Height="16" VerticalAlignment="Center">
                                     <Image.Source>
                                         <DrawingImage>
@@ -164,7 +164,7 @@
                         <Grid Height="54">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="贡献者名单" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="18,0,0,0"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,18,0">
-                                <TextBlock Name="AboutContributorsLink" Foreground="#1d4ed8" TextDecorations="Underline" FontSize="14.5" Text="github.com/InkCanvasForClass/community#贡献者" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                <TextBlock Foreground="#1d4ed8" TextDecorations="Underline" FontSize="14.5" Text="icc.bliemhax.com/contributors" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                                 <Image Margin="12,0,0,0" Width="16" Height="16" VerticalAlignment="Center">
                                     <Image.Source>
                                         <DrawingImage>
@@ -181,7 +181,7 @@
                     </StackPanel>
                 </Border>
                 <StackPanel Orientation="Vertical" Margin="0,16,0,0">
-                    <TextBlock Name="AboutBottomCopyright" Foreground="#2e3436" FontWeight="Bold" FontSize="12" Text="© Copyright 2024-2026" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,15,0"/>
+                    <TextBlock Foreground="#2e3436" FontWeight="Bold" FontSize="12" Text="© Copyright 2024 Dubi906w(Doubx690i/kriastans) 所有" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,15,0"/>
                     <TextBlock Foreground="#878787" Width="356" FlowDirection="RightToLeft" TextWrapping="Wrap" FontSize="12" Text="ICC 的部分元素设计参考来源于：© iNKORE! 名下产品 Inkways，已经过授权使用，最终解释权归 Yoojun Zhou 所有" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,6,15,0"/>
                     <TextBlock Foreground="#878787" FontWeight="Bold" Width="276" FlowDirection="RightToLeft" TextWrapping="Wrap" FontSize="12" Text="ICC 使用了 iNKORE! 开发的 UI 组件库：iNKORE.UI.WPF.Modern" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,6,15,0"/>
                 </StackPanel>
