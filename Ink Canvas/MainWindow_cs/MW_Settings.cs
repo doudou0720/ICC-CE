@@ -108,6 +108,21 @@ namespace Ink_Canvas
             if (!isLoaded) return;
 
             Settings.PowerPointSettings.PowerPointSupport = ToggleSwitchSupportPowerPoint.IsOn;
+            
+            if (!Settings.PowerPointSettings.PowerPointSupport)
+            {
+                if (Settings.PowerPointSettings.IsSupportWPS)
+                {
+                    Settings.PowerPointSettings.IsSupportWPS = false;
+                    ToggleSwitchSupportWPS.IsOn = false;
+                    
+                    if (_pptManager != null)
+                    {
+                        _pptManager.IsSupportWPS = false;
+                    }
+                }
+            }
+            
             SaveSettingsToFile();
 
             // 使用新的PPT管理器

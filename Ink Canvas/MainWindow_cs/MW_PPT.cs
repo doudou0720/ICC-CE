@@ -1363,9 +1363,25 @@ namespace Ink_Canvas
 
             if (Settings.PowerPointSettings.IsSupportWPS)
             {
-                Settings.PowerPointSettings.EnablePowerPointEnhancement = false;
-                ToggleSwitchPowerPointEnhancement.IsOn = false;
-                StopPowerPointProcessMonitoring();
+                if (!Settings.PowerPointSettings.PowerPointSupport)
+                {
+                    Settings.PowerPointSettings.PowerPointSupport = true;
+                    ToggleSwitchSupportPowerPoint.IsOn = true;
+                    
+                    // 启动PPT监控
+                    if (_pptManager == null)
+                    {
+                        InitializePPTManagers();
+                    }
+                    StartPPTMonitoring();
+                }
+
+                if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
+                {
+                    Settings.PowerPointSettings.EnablePowerPointEnhancement = false;
+                    ToggleSwitchPowerPointEnhancement.IsOn = false;
+                    StopPowerPointProcessMonitoring();
+                }
             }
 
             // 更新PPT管理器的WPS支持设置
