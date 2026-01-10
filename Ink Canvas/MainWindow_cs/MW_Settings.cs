@@ -1,11 +1,10 @@
-using Hardcodet.Wpf.TaskbarNotification;
+using Flurl.Http;
 using Ink_Canvas.Helpers;
-using Newtonsoft.Json;
-using OSVersionExtension;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -319,24 +318,17 @@ namespace Ink_Canvas
         {
             try
             {
-                var client = new HttpClient
-                {
-                    Timeout = TimeSpan.FromSeconds(5)
-                };
-                try
-                {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("InkCanvas-Hitokoto/1.0");
-                }
-                catch
-                {
-                }
-                return client;
+                // 使用Flurl.Http创建HTTP客户端
+                return "https://v1.hitokoto.cn"
+                    .WithTimeout(TimeSpan.FromSeconds(5))
+                    .WithHeader("User-Agent", "InkCanvas-Hitokoto/1.0")
+                    .Client;
             }
             catch (Exception ex)
             {
                 try
                 {
-                    LogHelper.WriteLogToFile($"无法创建 HttpClient (System.Net.Http 可能缺失): {ex.Message}", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"无法创建 HTTP 客户端: {ex.Message}", LogHelper.LogType.Warning);
                 }
                 catch
                 {
@@ -383,20 +375,21 @@ namespace Ink_Canvas
                         catch (Exception initEx)
                         {
                             LogHelper.WriteLogToFile($"HTTP 客户端初始化失败: {initEx.Message}", LogHelper.LogType.Warning);
-                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            BlackBoardWaterMark.Text = "一言功能不可用（网络连接失败）";
                             return;
                         }
 
-                        if (clientObj == null || !(clientObj is HttpClient client))
+                        if (clientObj == null)
                         {
-                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            BlackBoardWaterMark.Text = "一言功能不可用（HTTP 客户端初始化失败）";
                             return;
                         }
 
-                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text");
-                        response.EnsureSuccessStatusCode();
+                        var text = await "https://v1.hitokoto.cn"
+                            .SetQueryParam("encode", "text")
+                            .WithTimeout(TimeSpan.FromSeconds(5))
+                            .GetStringAsync();
 
-                        var text = await response.Content.ReadAsStringAsync();
                         if (!string.IsNullOrWhiteSpace(text))
                         {
                             BlackBoardWaterMark.Text = text.Trim();

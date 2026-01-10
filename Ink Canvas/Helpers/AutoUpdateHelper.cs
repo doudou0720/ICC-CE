@@ -1,3 +1,4 @@
+using Flurl.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -9,8 +10,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -186,42 +185,14 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                // 检测是否为Windows 7
-                var osVersion = Environment.OSVersion;
-                bool isWindows7 = osVersion.Version.Major == 6 && osVersion.Version.Minor == 1;
-
-                if (isWindows7)
-                {
-                    // Windows 7使用特殊配置
-                    using (var handler = new HttpClientHandler())
-                    {
-                        // 配置HttpClientHandler以支持Windows 7
-                        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
-                        using (var client = new HttpClient(handler))
-                        {
-                            client.Timeout = TimeSpan.FromSeconds(5);
-                            var sw = Stopwatch.StartNew();
-                            var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
-                            sw.Stop();
-                            if (resp.IsSuccessStatusCode)
-                                return sw.ElapsedMilliseconds;
-                        }
-                    }
-                }
-                else
-                {
-                    // 其他Windows版本使用标准配置
-                    using (var client = new HttpClient())
-                    {
-                        client.Timeout = TimeSpan.FromSeconds(5);
-                        var sw = Stopwatch.StartNew();
-                        var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
-                        sw.Stop();
-                        if (resp.IsSuccessStatusCode)
-                            return sw.ElapsedMilliseconds;
-                    }
-                }
+                var sw = Stopwatch.StartNew();
+                var resp = await url
+                    .WithTimeout(TimeSpan.FromSeconds(5))
+                    .HeadAsync();
+                
+                sw.Stop();
+                if (resp.StatusCode >= 200 && resp.StatusCode < 300)
+                    return sw.ElapsedMilliseconds;
             }
             catch { }
             return -1;
@@ -328,36 +299,13 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                var osVersion = Environment.OSVersion;
-                bool isWindows7 = osVersion.Version.Major == 6 && osVersion.Version.Minor == 1;
-
-                if (isWindows7)
-                {
-                    using (var handler = new HttpClientHandler())
-                    {
-                        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
-                        using (var client = new HttpClient(handler))
-                        {
-                            client.Timeout = TimeSpan.FromSeconds(5);
-                            var sw = Stopwatch.StartNew();
-                            var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
-                            sw.Stop();
-                            return sw.ElapsedMilliseconds;
-                        }
-                    }
-                }
-                else
-                {
-                    using (var client = new HttpClient())
-                    {
-                        client.Timeout = TimeSpan.FromSeconds(5);
-                        var sw = Stopwatch.StartNew();
-                        var resp = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
-                        sw.Stop();
-                        return sw.ElapsedMilliseconds;
-                    }
-                }
+                var sw = Stopwatch.StartNew();
+                var resp = await url
+                    .WithTimeout(TimeSpan.FromSeconds(5))
+                    .HeadAsync();
+                
+                sw.Stop();
+                return sw.ElapsedMilliseconds;
             }
             catch
             {
@@ -368,158 +316,59 @@ namespace Ink_Canvas.Helpers
         // 获取远程版本号
         private static async Task<string> GetRemoteVersion(string fileUrl)
         {
-            // 检测是否为Windows 7
-            var osVersion = Environment.OSVersion;
-            bool isWindows7 = osVersion.Version.Major == 6 && osVersion.Version.Minor == 1;
-
-            if (isWindows7)
+            try
             {
-                // Windows 7使用特殊配置
-                using (var handler = new HttpClientHandler())
+                LogHelper.WriteLogToFile($"AutoUpdate | 发送HTTP请求到: {fileUrl}");
+
+                string content = await fileUrl
+                    .WithTimeout(RequestTimeout)
+                    .GetStringAsync();
+
+                content = content.Trim();
+
+                // 如果内容包含HTML（可能是GitHub页面而不是原始内容），尝试提取版本号
+                if (content.Contains("<html") || content.Contains("<!DOCTYPE"))
                 {
-                    try
+                    LogHelper.WriteLogToFile("AutoUpdate | 收到HTML内容而不是原始版本号 - 尝试提取版本");
+                    int startPos = content.IndexOf("<table");
+                    if (startPos > 0)
                     {
-                        // 配置HttpClientHandler以支持Windows 7
-                        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
-                        using (HttpClient client = new HttpClient(handler))
+                        int endPos = content.IndexOf("</table>", startPos);
+                        if (endPos > startPos)
                         {
-                            client.Timeout = RequestTimeout;
-                            LogHelper.WriteLogToFile($"AutoUpdate | 发送HTTP请求到: {fileUrl}");
-
-                            var downloadTask = client.GetAsync(fileUrl);
-                            var timeoutTask = Task.Delay(RequestTimeout);
-
-                            var completedTask = await Task.WhenAny(downloadTask, timeoutTask);
-                            if (completedTask == timeoutTask)
+                            string tableContent = content.Substring(startPos, endPos - startPos);
+                            var match = Regex.Match(tableContent, @"(\d+\.\d+\.\d+(\.\d+)?)");
+                            if (match.Success)
                             {
-                                LogHelper.WriteLogToFile($"AutoUpdate | 请求超时 ({RequestTimeout.TotalSeconds}秒)", LogHelper.LogType.Error);
+                                content = match.Groups[1].Value;
+                                LogHelper.WriteLogToFile($"AutoUpdate | 从HTML提取版本: {content}");
+                            }
+                            else
+                            {
+                                LogHelper.WriteLogToFile("AutoUpdate | 无法从HTML内容提取版本");
                                 return null;
                             }
-
-                            HttpResponseMessage response = await downloadTask;
-                            LogHelper.WriteLogToFile($"AutoUpdate | HTTP响应状态: {response.StatusCode}");
-                            response.EnsureSuccessStatusCode();
-
-                            string content = await response.Content.ReadAsStringAsync();
-                            content = content.Trim();
-
-                            // 如果内容包含HTML（可能是GitHub页面而不是原始内容），尝试提取版本号
-                            if (content.Contains("<html") || content.Contains("<!DOCTYPE"))
-                            {
-                                LogHelper.WriteLogToFile("AutoUpdate | 收到HTML内容而不是原始版本号 - 尝试提取版本");
-                                int startPos = content.IndexOf("<table");
-                                if (startPos > 0)
-                                {
-                                    int endPos = content.IndexOf("</table>", startPos);
-                                    if (endPos > startPos)
-                                    {
-                                        string tableContent = content.Substring(startPos, endPos - startPos);
-                                        var match = Regex.Match(tableContent, @"(\d+\.\d+\.\d+(\.\d+)?)");
-                                        if (match.Success)
-                                        {
-                                            content = match.Groups[1].Value;
-                                            LogHelper.WriteLogToFile($"AutoUpdate | 从HTML提取版本: {content}");
-                                        }
-                                        else
-                                        {
-                                            LogHelper.WriteLogToFile("AutoUpdate | 无法从HTML内容提取版本");
-                                            return null;
-                                        }
-                                    }
-                                }
-                            }
-
-                            LogHelper.WriteLogToFile($"AutoUpdate | 响应内容: {content}");
-                            return content;
                         }
                     }
-                    catch (HttpRequestException ex)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | HTTP请求错误: {ex.Message}", LogHelper.LogType.Error);
-                    }
-                    catch (TaskCanceledException ex)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 请求超时: {ex.Message}", LogHelper.LogType.Error);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 错误: {ex.Message}", LogHelper.LogType.Error);
-                    }
-
-                    return null;
                 }
-            }
 
-            // 其他Windows版本使用标准配置
-            using (HttpClient client = new HttpClient())
+                LogHelper.WriteLogToFile($"AutoUpdate | 响应内容: {content}");
+                return content;
+            }
+            catch (FlurlHttpTimeoutException ex)
             {
-                try
-                {
-                    client.Timeout = RequestTimeout;
-                    LogHelper.WriteLogToFile($"AutoUpdate | 发送HTTP请求到: {fileUrl}");
-
-                    var downloadTask = client.GetAsync(fileUrl);
-                    var timeoutTask = Task.Delay(RequestTimeout);
-
-                    var completedTask = await Task.WhenAny(downloadTask, timeoutTask);
-                    if (completedTask == timeoutTask)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 请求超时 ({RequestTimeout.TotalSeconds}秒)", LogHelper.LogType.Error);
-                        return null;
-                    }
-
-                    HttpResponseMessage response = await downloadTask;
-                    LogHelper.WriteLogToFile($"AutoUpdate | HTTP响应状态: {response.StatusCode}");
-                    response.EnsureSuccessStatusCode();
-
-                    string content = await response.Content.ReadAsStringAsync();
-                    content = content.Trim();
-
-                    // 如果内容包含HTML（可能是GitHub页面而不是原始内容），尝试提取版本号
-                    if (content.Contains("<html") || content.Contains("<!DOCTYPE"))
-                    {
-                        LogHelper.WriteLogToFile("AutoUpdate | 收到HTML内容而不是原始版本号 - 尝试提取版本");
-                        int startPos = content.IndexOf("<table");
-                        if (startPos > 0)
-                        {
-                            int endPos = content.IndexOf("</table>", startPos);
-                            if (endPos > startPos)
-                            {
-                                string tableContent = content.Substring(startPos, endPos - startPos);
-                                var match = Regex.Match(tableContent, @"(\d+\.\d+\.\d+(\.\d+)?)");
-                                if (match.Success)
-                                {
-                                    content = match.Groups[1].Value;
-                                    LogHelper.WriteLogToFile($"AutoUpdate | 从HTML提取版本: {content}");
-                                }
-                                else
-                                {
-                                    LogHelper.WriteLogToFile("AutoUpdate | 无法从HTML内容提取版本");
-                                    return null;
-                                }
-                            }
-                        }
-                    }
-
-                    LogHelper.WriteLogToFile($"AutoUpdate | 响应内容: {content}");
-                    return content;
-                }
-                catch (HttpRequestException ex)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | HTTP请求错误: {ex.Message}", LogHelper.LogType.Error);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | 请求超时: {ex.Message}", LogHelper.LogType.Error);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | 错误: {ex.Message}", LogHelper.LogType.Error);
-                }
-
-                return null;
+                LogHelper.WriteLogToFile($"AutoUpdate | 请求超时 ({RequestTimeout.TotalSeconds}秒): {ex.Message}", LogHelper.LogType.Error);
             }
+            catch (FlurlHttpException ex)
+            {
+                LogHelper.WriteLogToFile($"AutoUpdate | HTTP请求错误: {ex.Message}", LogHelper.LogType.Error);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"AutoUpdate | 错误: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            return null;
         }
 
         // 通过GitHub API获取指定版本的Release信息
@@ -530,30 +379,28 @@ namespace Ink_Canvas.Helpers
                 string apiUrl = channel == UpdateChannel.Beta
                     ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases"
                     : "https://api.github.com/repos/InkCanvasForClass/community/releases";
-                using (var client = new HttpClient())
+                
+                LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
+                var releases = await apiUrl
+                    .WithHeader("User-Agent", "ICC-CE Auto Updater")
+                    .GetJsonAsync<JArray>();
+
+                foreach (var release in releases)
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "ICC-CE Auto Updater");
-                    LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
-                    var response = await client.GetStringAsync(apiUrl);
-                    var releases = JArray.Parse(response);
-
-                    foreach (var release in releases)
+                    string version = release["tag_name"]?.ToString();
+                    if (version == targetVersion || version == $"v{targetVersion}" || version == $"V{targetVersion}")
                     {
-                        string version = release["tag_name"]?.ToString();
-                        if (version == targetVersion || version == $"v{targetVersion}" || version == $"V{targetVersion}")
+                        string releaseNotes = release["body"]?.ToString();
+                        string downloadUrl = release["assets"]?.FirstOrDefault()?["browser_download_url"]?.ToString();
+
+                        // 解析发布时间
+                        DateTime? releaseTime = null;
+                        if (release["published_at"] != null && DateTime.TryParse(release["published_at"].ToString(), out DateTime parsedTime))
                         {
-                            string releaseNotes = release["body"]?.ToString();
-                            string downloadUrl = release["assets"]?.First?["browser_download_url"]?.ToString();
-
-                            // 解析发布时间
-                            DateTime? releaseTime = null;
-                            if (release["published_at"] != null && DateTime.TryParse(release["published_at"].ToString(), out DateTime parsedTime))
-                            {
-                                releaseTime = parsedTime;
-                            }
-
-                            return (version, downloadUrl, releaseNotes, releaseTime);
+                            releaseTime = parsedTime;
                         }
+
+                        return (version, downloadUrl, releaseNotes, releaseTime);
                     }
                 }
             }
@@ -572,26 +419,25 @@ namespace Ink_Canvas.Helpers
                 string apiUrl = channel == UpdateChannel.Beta
                     ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases/latest"
                     : "https://api.github.com/repos/InkCanvasForClass/community/releases/latest";
-                using (var client = new HttpClient())
+                
+                LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
+                var json = await apiUrl
+                    .WithHeader("User-Agent", "ICC-CE Auto Updater")
+                    .GetJsonAsync<JObject>();
+                
+                string version = json["tag_name"]?.ToString();
+                string releaseNotes = json["body"]?.ToString();
+                string downloadUrl = json["assets"]?.FirstOrDefault()?["browser_download_url"]?.ToString();
+
+                // 解析发布时间
+                DateTime? releaseTime = null;
+                if (json["published_at"] != null && DateTime.TryParse(json["published_at"].ToString(), out DateTime parsedTime))
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "ICC-CE Auto Updater");
-                    LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
-                    var response = await client.GetStringAsync(apiUrl);
-                    var json = JObject.Parse(response);
-                    string version = json["tag_name"]?.ToString();
-                    string releaseNotes = json["body"]?.ToString();
-                    string downloadUrl = json["assets"]?.First?["browser_download_url"]?.ToString();
-
-                    // 解析发布时间
-                    DateTime? releaseTime = null;
-                    if (json["published_at"] != null && DateTime.TryParse(json["published_at"].ToString(), out DateTime parsedTime))
-                    {
-                        releaseTime = parsedTime;
-                    }
-
-                    if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
-                        return (version, downloadUrl, releaseNotes, releaseTime);
+                    releaseTime = parsedTime;
                 }
+
+                if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
+                    return (version, downloadUrl, releaseNotes, releaseTime);
             }
             catch (Exception ex)
             {
@@ -733,29 +579,30 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                using (var handler = new HttpClientHandler { AllowAutoRedirect = false })
-                using (var client = new HttpClient(handler))
+                var response = await url
+                    .WithTimeout(RequestTimeout)
+                    .AllowHttpStatus("3xx")
+                    .GetAsync();
+
+                // 优先取Location头
+                if (response.StatusCode >= 300 && response.StatusCode < 400)
                 {
-                    client.Timeout = RequestTimeout;
-                    var resp = await client.GetAsync(url);
-                    // 优先取Location头
-                    if (resp.StatusCode == HttpStatusCode.Found || resp.StatusCode == HttpStatusCode.Redirect || resp.StatusCode == HttpStatusCode.MovedPermanently)
+                    var location = response.Headers.FirstOrDefault("Location");
+                    if (!string.IsNullOrEmpty(location))
                     {
-                        if (resp.Headers.Location != null)
-                        {
-                            var realUrl = resp.Headers.Location.ToString();
-                            if (realUrl.Contains(" ")) realUrl = realUrl.Replace(" ", "%20");
-                            return realUrl;
-                        }
-                    }
-                    // 有些服务器直接返回真实地址在内容里
-                    var content = await resp.Content.ReadAsStringAsync();
-                    if (Uri.IsWellFormedUriString(content.Trim(), UriKind.Absolute))
-                    {
-                        var realUrl = content.Trim();
+                        var realUrl = location.ToString();
                         if (realUrl.Contains(" ")) realUrl = realUrl.Replace(" ", "%20");
                         return realUrl;
                     }
+                }
+                
+                // 有些服务器直接返回真实地址在内容里
+                var content = await response.GetStringAsync();
+                if (Uri.IsWellFormedUriString(content.Trim(), UriKind.Absolute))
+                {
+                    var realUrl = content.Trim();
+                    if (realUrl.Contains(" ")) realUrl = realUrl.Replace(" ", "%20");
+                    return realUrl;
                 }
             }
             catch (Exception ex)
@@ -869,30 +716,41 @@ namespace Ink_Canvas.Helpers
             long totalSize = -1;
             try
             {
-                using (var client = new HttpClient())
+                var resp = await fileUrl
+                    .WithHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .WithHeader("Range", "bytes=0-0")
+                    .HeadAsync();
+                
+                if (resp.StatusCode == 206) // PartialContent
                 {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-                    var req = new HttpRequestMessage(HttpMethod.Head, fileUrl);
-                    req.Headers.Range = new RangeHeaderValue(0, 0);
-                    var resp = await client.SendAsync(req);
-                    if (resp.StatusCode == HttpStatusCode.PartialContent)
+                    supportRange = true;
+                    var contentRange = resp.Headers.FirstOrDefault("Content-Range");
+                    if (!string.IsNullOrEmpty(contentRange) && contentRange.Contains("/"))
                     {
-                        supportRange = true;
-                        if (resp.Content.Headers.ContentRange != null && resp.Content.Headers.ContentRange.Length.HasValue)
+                        var parts = contentRange.Split('/');
+                        if (parts.Length > 1 && long.TryParse(parts[1], out long size))
                         {
-                            totalSize = resp.Content.Headers.ContentRange.Length.Value;
-                        }
-                        else if (resp.Content.Headers.ContentLength.HasValue)
-                        {
-                            totalSize = resp.Content.Headers.ContentLength.Value;
+                            totalSize = size;
                         }
                     }
-                    else if (resp.StatusCode == HttpStatusCode.OK)
+                    else if (resp.Headers.Contains("Content-Length"))
                     {
-                        supportRange = false;
-                        if (resp.Content.Headers.ContentLength.HasValue)
+                        var contentLength = resp.Headers.FirstOrDefault("Content-Length");
+                        if (long.TryParse(contentLength, out long size))
                         {
-                            totalSize = resp.Content.Headers.ContentLength.Value;
+                            totalSize = size;
+                        }
+                    }
+                }
+                else if (resp.StatusCode == 200) // OK
+                {
+                    supportRange = false;
+                    if (resp.Headers.Contains("Content-Length"))
+                    {
+                        var contentLength = resp.Headers.FirstOrDefault("Content-Length");
+                        if (long.TryParse(contentLength, out long size))
+                        {
+                            totalSize = size;
                         }
                     }
                 }
@@ -956,28 +814,23 @@ namespace Ink_Canvas.Helpers
 
                             for (int retry = block.RetryCount; retry < maxRetry && !success; retry++)
                             {
-                                try
-                                {
-                                    using (var client = new HttpClient())
+                                    try
                                     {
-                                        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-                                        var req = new HttpRequestMessage(HttpMethod.Get, fileUrl);
-                                        req.Headers.Range = new RangeHeaderValue(block.Start, block.End);
-
-                                        // 增加连接超时设置
-                                        client.Timeout = TimeSpan.FromSeconds(30);
-
                                         var downloadCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
                                         var lastReadTime = DateTime.UtcNow;
                                         bool dataReceived = false;
 
-                                        using (var resp = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, downloadCts.Token))
+                                        using (var resp = await fileUrl
+                                            .WithHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                                            .WithHeader("Range", $"bytes={block.Start}-{block.End}")
+                                            .WithTimeout(TimeSpan.FromSeconds(30))
+                                            .SendAsync(HttpMethod.Get, cancellationToken: downloadCts.Token))
                                         {
                                             LogHelper.WriteLogToFile($"AutoUpdate | 分块{block.Index} 响应状态: {resp.StatusCode}");
                                             resp.EnsureSuccessStatusCode();
                                             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
                                             {
-                                                var stream = await resp.Content.ReadAsStreamAsync();
+                                                var stream = await resp.GetStreamAsync();
                                                 byte[] buffer = new byte[8192];
                                                 int read;
                                                 long blockDownloadedBytes = 0;
@@ -1008,7 +861,6 @@ namespace Ink_Canvas.Helpers
                                                     progressCallback?.Invoke(percent, $"多线程下载中({threadCount}线程): {percent:F1}%");
                                                 }
                                             }
-                                        }
 
                                         if (!dataReceived)
                                         {
@@ -1152,25 +1004,23 @@ namespace Ink_Canvas.Helpers
             return false;
         }
 
-        // 单线程下载方法
-        private static async Task<bool> DownloadSingleThread(string fileUrl, string destinationPath, long totalSize, Action<double, string> progressCallback = null)
-        {
-            try
+            // 单线程下载方法
+            private static async Task<bool> DownloadSingleThread(string fileUrl, string destinationPath, long totalSize, Action<double, string> progressCallback = null)
             {
-                LogHelper.WriteLogToFile($"AutoUpdate | 开始单线程下载: {fileUrl}");
-                progressCallback?.Invoke(0, "开始单线程下载");
-
-                using (var client = new HttpClient())
+                try
                 {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-                    client.Timeout = TimeSpan.FromMinutes(10); // 单线程下载设置更长的超时时间
+                    LogHelper.WriteLogToFile($"AutoUpdate | 开始单线程下载: {fileUrl}");
+                    progressCallback?.Invoke(0, "开始单线程下载");
 
-                    using (var resp = await client.GetAsync(fileUrl, HttpCompletionOption.ResponseHeadersRead))
+                    using (var resp = await fileUrl
+                        .WithHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                        .WithTimeout(TimeSpan.FromMinutes(10))
+                        .SendAsync(HttpMethod.Get, cancellationToken: default))
                     {
                         resp.EnsureSuccessStatusCode();
                         using (var fs = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
-                            var stream = await resp.Content.ReadAsStreamAsync();
+                            var stream = await resp.GetStreamAsync();
                             byte[] buffer = new byte[8192];
                             int read;
                             long downloaded = 0;
@@ -1194,7 +1044,6 @@ namespace Ink_Canvas.Helpers
                             }
                         }
                     }
-                }
 
                 progressCallback?.Invoke(100, "单线程下载完成");
                 LogHelper.WriteLogToFile("AutoUpdate | 单线程下载完成");
@@ -1213,12 +1062,12 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                using (var client = new HttpClient())
+                var resp = await fileUrl.HeadAsync();
+                if (resp.IsSuccessStatusCode && resp.Headers.Contains("Content-Length"))
                 {
-                    var req = new HttpRequestMessage(HttpMethod.Head, fileUrl);
-                    var resp = await client.SendAsync(req);
-                    if (resp.IsSuccessStatusCode && resp.Content.Headers.ContentLength.HasValue)
-                        return resp.Content.Headers.ContentLength.Value;
+                    var contentLength = resp.Headers.FirstOrDefault("Content-Length");
+                    if (long.TryParse(contentLength, out long size))
+                        return size;
                 }
             }
             catch { }
@@ -1855,90 +1704,30 @@ namespace Ink_Canvas.Helpers
         // 获取远程内容的通用方法
         public static async Task<string> GetRemoteContent(string fileUrl)
         {
-            // 检测是否为Windows 7
-            var osVersion = Environment.OSVersion;
-            bool isWindows7 = osVersion.Version.Major == 6 && osVersion.Version.Minor == 1;
-
-            if (isWindows7)
+            try
             {
-                // Windows 7使用特殊配置
-                using (var handler = new HttpClientHandler())
-                {
-                    try
-                    {
-                        // 配置HttpClientHandler以支持Windows 7
-                        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                LogHelper.WriteLogToFile($"AutoUpdate | 发送HTTP请求到: {fileUrl}");
 
-                        using (HttpClient client = new HttpClient(handler))
-                        {
-                            client.Timeout = RequestTimeout;
-                            LogHelper.WriteLogToFile($"AutoUpdate | 发送HTTP请求到: {fileUrl}");
-                            var downloadTask = client.GetAsync(fileUrl);
-                            var timeoutTask = Task.Delay(RequestTimeout);
-                            var completedTask = await Task.WhenAny(downloadTask, timeoutTask);
-                            if (completedTask == timeoutTask)
-                            {
-                                LogHelper.WriteLogToFile($"AutoUpdate | 请求超时 ({RequestTimeout.TotalSeconds}秒)", LogHelper.LogType.Error);
-                                return null;
-                            }
-                            HttpResponseMessage response = await downloadTask;
-                            LogHelper.WriteLogToFile($"AutoUpdate | HTTP响应状态: {response.StatusCode}");
-                            response.EnsureSuccessStatusCode();
-                            string content = await response.Content.ReadAsStringAsync();
-                            return content;
-                        }
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | HTTP请求错误: {ex.Message}", LogHelper.LogType.Error);
-                    }
-                    catch (TaskCanceledException ex)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 请求超时: {ex.Message}", LogHelper.LogType.Error);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 错误: {ex.Message}", LogHelper.LogType.Error);
-                    }
-                    return null;
-                }
+                string content = await fileUrl
+                    .WithTimeout(RequestTimeout)
+                    .GetStringAsync();
+
+                return content;
+            }
+            catch (FlurlHttpTimeoutException ex)
+            {
+                LogHelper.WriteLogToFile($"AutoUpdate | 请求超时 ({RequestTimeout.TotalSeconds}秒): {ex.Message}", LogHelper.LogType.Error);
+            }
+            catch (FlurlHttpException ex)
+            {
+                LogHelper.WriteLogToFile($"AutoUpdate | HTTP请求错误: {ex.Message}", LogHelper.LogType.Error);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"AutoUpdate | 错误: {ex.Message}", LogHelper.LogType.Error);
             }
 
-            // 其他Windows版本使用标准配置
-            using (HttpClient client = new HttpClient())
-            {
-                try
-                {
-                    client.Timeout = RequestTimeout;
-                    LogHelper.WriteLogToFile($"AutoUpdate | 发送HTTP请求到: {fileUrl}");
-                    var downloadTask = client.GetAsync(fileUrl);
-                    var timeoutTask = Task.Delay(RequestTimeout);
-                    var completedTask = await Task.WhenAny(downloadTask, timeoutTask);
-                    if (completedTask == timeoutTask)
-                    {
-                        LogHelper.WriteLogToFile($"AutoUpdate | 请求超时 ({RequestTimeout.TotalSeconds}秒)", LogHelper.LogType.Error);
-                        return null;
-                    }
-                    HttpResponseMessage response = await downloadTask;
-                    LogHelper.WriteLogToFile($"AutoUpdate | HTTP响应状态: {response.StatusCode}");
-                    response.EnsureSuccessStatusCode();
-                    string content = await response.Content.ReadAsStringAsync();
-                    return content;
-                }
-                catch (HttpRequestException ex)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | HTTP请求错误: {ex.Message}", LogHelper.LogType.Error);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | 请求超时: {ex.Message}", LogHelper.LogType.Error);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"AutoUpdate | 错误: {ex.Message}", LogHelper.LogType.Error);
-                }
-                return null;
-            }
+            return null;
         }
 
         // 使用指定线路组获取更新日志
@@ -2026,20 +1815,19 @@ namespace Ink_Canvas.Helpers
                 string apiUrl = channel == UpdateChannel.Beta
                     ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases"
                     : "https://api.github.com/repos/InkCanvasForClass/community/releases";
-                using (var client = new HttpClient())
+                
+                LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
+                var arr = await apiUrl
+                    .WithHeader("User-Agent", "ICC-CE Auto Updater")
+                    .GetJsonAsync<JArray>();
+                
+                foreach (var item in arr)
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "ICC-CE Auto Updater");
-                    LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
-                    var response = await client.GetStringAsync(apiUrl);
-                    var arr = JArray.Parse(response);
-                    foreach (var item in arr)
-                    {
-                        string version = item["tag_name"]?.ToString();
-                        string releaseNotes = item["body"]?.ToString();
-                        string downloadUrl = item["assets"]?.First?["browser_download_url"]?.ToString();
-                        if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
-                            result.Add((version, downloadUrl, releaseNotes));
-                    }
+                    string version = item["tag_name"]?.ToString();
+                    string releaseNotes = item["body"]?.ToString();
+                    string downloadUrl = item["assets"]?.FirstOrDefault()?["browser_download_url"]?.ToString();
+                    if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
+                        result.Add((version, downloadUrl, releaseNotes));
                 }
             }
             catch (Exception ex)
@@ -2055,39 +1843,27 @@ namespace Ink_Canvas.Helpers
             try
             {
                 // 检测是否为Windows 7
-                var osVersion = Environment.OSVersion;
-                bool isWindows7 = osVersion.Version.Major == 6 && osVersion.Version.Minor == 1;
-
-                if (!isWindows7)
-                {
-                    LogHelper.WriteLogToFile("AutoUpdate | 当前系统不是Windows 7，跳过TLS连接测试");
-                    return true; // 非Windows 7系统直接返回成功
-                }
+                LogHelper.WriteLogToFile("AutoUpdate | TLS连接测试已过时，直接返回成功");
+                return true; // 所有系统都直接返回成功
 
                 LogHelper.WriteLogToFile("AutoUpdate | 开始测试Windows 7 TLS连接...");
 
                 // 测试GitHub连接
                 var testUrl = "https://github.com/InkCanvasForClass/community/raw/refs/heads/main/AutomaticUpdateVersionControl.txt";
 
-                using (var handler = new HttpClientHandler())
+                var response = await testUrl
+                    .WithTimeout(TimeSpan.FromSeconds(10))
+                    .AllowAnyHttpStatus()
+                    .GetAsync();
+
+                if (response.StatusCode >= 200 && response.StatusCode < 300)
                 {
-                    handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-
-                    using (var client = new HttpClient(handler))
-                    {
-                        client.Timeout = TimeSpan.FromSeconds(10);
-                        var response = await client.GetAsync(testUrl);
-
-                        if (response.IsSuccessStatusCode)
-                        {
-                            LogHelper.WriteLogToFile("AutoUpdate | Windows 7 TLS连接测试成功");
-                            return true;
-                        }
-
-                        LogHelper.WriteLogToFile($"AutoUpdate | Windows 7 TLS连接测试失败，状态码: {response.StatusCode}", LogHelper.LogType.Error);
-                        return false;
-                    }
+                    LogHelper.WriteLogToFile("AutoUpdate | Windows 7 TLS连接测试成功");
+                    return true;
                 }
+
+                LogHelper.WriteLogToFile($"AutoUpdate | Windows 7 TLS连接测试失败，状态码: {response.StatusCode}", LogHelper.LogType.Error);
+                return false;
             }
             catch (Exception ex)
             {
