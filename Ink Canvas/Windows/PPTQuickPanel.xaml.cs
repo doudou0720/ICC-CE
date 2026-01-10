@@ -1,6 +1,7 @@
 using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -134,14 +136,126 @@ namespace Ink_Canvas.Windows
             // 获取MainWindow引用
             _mainWindow = Application.Current.MainWindow as MainWindow;
             
-            // 订阅PPT事件
             SubscribeToPPTEvents();
-            
-            // 延迟初始化音量显示，确保音频设备已初始化
+            SubscribeToInkCanvasChildrenChanges();
             Dispatcher.BeginInvoke(new Action(() =>
             {
                 UpdateVolumeDisplay();
             }), DispatcherPriority.Loaded);
+        }
+        
+        private void SubscribeToInkCanvasChildrenChanges()
+        {
+            try
+            {
+                if (_mainWindow == null) return;
+                
+                System.Windows.Controls.InkCanvas inkCanvas = null;
+                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                if (inkCanvasField != null)
+                {
+                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
+                }
+                if (inkCanvas == null)
+                {
+                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
+                }
+                
+                if (inkCanvas != null && inkCanvas.Children is INotifyCollectionChanged notifyCollection)
+                {
+                    notifyCollection.CollectionChanged += InkCanvasChildren_CollectionChanged;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"订阅inkCanvas.Children变化事件失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+        
+        private void InkCanvasChildren_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            try
+            {
+                if (e.Action == NotifyCollectionChangedAction.Remove)
+                {
+                    foreach (var item in e.OldItems)
+                    {
+                        if (item is System.Windows.Controls.Image image)
+                        {
+                            RemoveImageFromPPT(image);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"处理inkCanvas.Children变化失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+        
+        private void RemoveImageFromPPT(System.Windows.Controls.Image image)
+        {
+            try
+            {
+                if (image == null) return;
+                
+                if (_pptImages.ContainsKey(image))
+                {
+                    int slideNumber = _pptImages[image];
+                    _pptImages.Remove(image);
+                    
+                    if (_pptImagePaths.ContainsKey(slideNumber))
+                    {
+                        string imagePath = image.Tag as string;
+                        if (!string.IsNullOrEmpty(imagePath) && _pptImagePaths[slideNumber].Contains(imagePath))
+                        {
+                            _pptImagePaths[slideNumber].Remove(imagePath);
+                            
+                            if (_pptImagePaths[slideNumber].Count == 0)
+                            {
+                                _pptImagePaths.Remove(slideNumber);
+                                DeletePPTImagePathsFile(slideNumber);
+                            }
+                            else
+                            {
+                                SavePPTImagePaths(slideNumber);
+                            }
+                            
+                            LogHelper.WriteLogToFile($"已从PPT页面{slideNumber}移除图片: {imagePath}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"从PPT关联数据中移除图片失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+        
+        private void DeletePPTImagePathsFile(int slideIndex)
+        {
+            try
+            {
+                if (slideIndex <= 0) return;
+                
+                var folderPath = GetPresentationFolderPath();
+                if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath)) 
+                    return;
+                
+                var jsonFilePath = Path.Combine(folderPath, slideIndex.ToString("0000") + ".images.json");
+                if (File.Exists(jsonFilePath))
+                {
+                    File.Delete(jsonFilePath);
+                    LogHelper.WriteLogToFile($"已删除第{slideIndex}页图片路径JSON文件: {jsonFilePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"删除PPT图片路径JSON文件失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
         
         private void SubscribeToPPTEvents()
@@ -359,6 +473,38 @@ namespace Ink_Canvas.Windows
         private void PPTQuickPanel_Unloaded(object sender, RoutedEventArgs e)
         {
             SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+            UnsubscribeFromInkCanvasChildrenChanges();
+        }
+        
+        private void UnsubscribeFromInkCanvasChildrenChanges()
+        {
+            try
+            {
+                if (_mainWindow == null) return;
+                
+                System.Windows.Controls.InkCanvas inkCanvas = null;
+                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                if (inkCanvasField != null)
+                {
+                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
+                }
+                if (inkCanvas == null)
+                {
+                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
+                }
+                
+                if (inkCanvas != null && inkCanvas.Children is INotifyCollectionChanged notifyCollection)
+                {
+                    notifyCollection.CollectionChanged -= InkCanvasChildren_CollectionChanged;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"取消订阅inkCanvas.Children变化事件失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -775,13 +921,12 @@ namespace Ink_Canvas.Windows
 
         #region 图片插入
 
-        private async void InsertImageButton_Click(object sender, RoutedEventArgs e)
+        private async void InsertImageSelectFileButton_Click(object sender, RoutedEventArgs e)
         {
             if (_mainWindow == null) return;
             
             try
             {
-                // 调用MainWindow的图片插入功能
                 var dialog = new OpenFileDialog
                 {
                     Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
@@ -791,7 +936,6 @@ namespace Ink_Canvas.Windows
                 {
                     string filePath = dialog.FileName;
                     
-                    // 使用反射调用MainWindow的CreateAndCompressImageAsync方法
                     var createImageMethod = _mainWindow.GetType().GetMethod("CreateAndCompressImageAsync", 
                         System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                     
@@ -804,8 +948,6 @@ namespace Ink_Canvas.Windows
                             if (image != null)
                             {
                                 image.Tag = filePath;
-                                
-                                // 使用反射调用MainWindow的图片插入相关方法
                                 await InsertImageToMainWindow(image, filePath);
                             }
                         }
@@ -820,6 +962,227 @@ namespace Ink_Canvas.Windows
             {
                 LogHelper.WriteLogToFile($"插入图片失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private async void InsertImageScreenshotButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_mainWindow == null) return;
+            
+            try
+            {
+                var captureScreenshotMethod = _mainWindow.GetType().GetMethod("CaptureScreenshotAndInsert", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (captureScreenshotMethod != null)
+                {
+                    var task = captureScreenshotMethod.Invoke(_mainWindow, null) as System.Threading.Tasks.Task;
+                    if (task != null)
+                    {
+                        await task;
+                        await SaveScreenshotToPPT();
+                    }
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile("无法找到CaptureScreenshotAndInsert方法", LogHelper.LogType.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"截图插入失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private async System.Threading.Tasks.Task SaveScreenshotToPPT()
+        {
+            try
+            {
+                if (_mainWindow == null) return;
+                
+                System.Windows.Controls.InkCanvas inkCanvas = null;
+                var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                if (inkCanvasField != null)
+                {
+                    inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
+                }
+                if (inkCanvas == null)
+                {
+                    var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas", 
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                    inkCanvas = inkCanvasProperty?.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
+                }
+                
+                if (inkCanvas == null) return;
+                
+                System.Windows.Controls.Image lastScreenshot = null;
+                foreach (System.Windows.Controls.Image img in inkCanvas.Children.OfType<System.Windows.Controls.Image>())
+                {
+                    if (img.Name != null && (img.Name.StartsWith("screenshot_") || img.Name.StartsWith("camera_")) && img.Tag == null)
+                    {
+                        lastScreenshot = img;
+                    }
+                }
+                
+                if (lastScreenshot == null) return;
+                
+                string screenshotFilePath = await SaveScreenshotToFile(lastScreenshot);
+                
+                if (string.IsNullOrEmpty(screenshotFilePath))
+                {
+                    LogHelper.WriteLogToFile("保存截图文件失败", LogHelper.LogType.Warning);
+                    return;
+                }
+                
+                lastScreenshot.Tag = screenshotFilePath;
+                await ManageScreenshotInPPT(lastScreenshot, screenshotFilePath);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"保存截图到PPT失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private async System.Threading.Tasks.Task<string> SaveScreenshotToFile(System.Windows.Controls.Image image)
+        {
+            try
+            {
+                if (image?.Source == null) return null;
+                
+                string savePath = null;
+                var settingsProperty = _mainWindow.GetType().GetProperty("Settings");
+                if (settingsProperty != null)
+                {
+                    var settings = settingsProperty.GetValue(_mainWindow);
+                    if (settings != null)
+                    {
+                        var autoSavedStrokesLocationProperty = settings.GetType().GetProperty("Automation");
+                        if (autoSavedStrokesLocationProperty != null)
+                        {
+                            var automation = autoSavedStrokesLocationProperty.GetValue(settings);
+                            if (automation != null)
+                            {
+                                var locationProperty = automation.GetType().GetProperty("AutoSavedStrokesLocation");
+                                if (locationProperty != null)
+                                {
+                                    var location = locationProperty.GetValue(automation) as string;
+                                    if (!string.IsNullOrEmpty(location))
+                                    {
+                                        savePath = Path.Combine(location, "File Dependency");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (string.IsNullOrEmpty(savePath))
+                {
+                    LogHelper.WriteLogToFile("无法获取AutoSavedStrokesLocation", LogHelper.LogType.Warning);
+                    return null;
+                }
+                
+                if (!Directory.Exists(savePath))
+                {
+                    Directory.CreateDirectory(savePath);
+                }
+                
+                string timestamp = image.Name;
+                string filePath = Path.Combine(savePath, timestamp + ".png");
+                
+                await Application.Current.Dispatcher.InvokeAsync(() =>
+                {
+                    if (image.Source is BitmapSource bitmapSource)
+                    {
+                        var encoder = new PngBitmapEncoder();
+                        encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+                        
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            encoder.Save(fileStream);
+                        }
+                    }
+                });
+                
+                return filePath;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"保存截图到文件失败: {ex.Message}", LogHelper.LogType.Error);
+                return null;
+            }
+        }
+
+        private async System.Threading.Tasks.Task ManageScreenshotInPPT(System.Windows.Controls.Image image, string filePath)
+        {
+            if (_mainWindow == null || image == null || string.IsNullOrEmpty(filePath)) return;
+            
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                try
+                {
+                    int currentSlideNumber = 0;
+                    try
+                    {
+                        var pptManagerProperty = _mainWindow.GetType().GetProperty("PPTManager", 
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+                        var pptManager = pptManagerProperty?.GetValue(_mainWindow);
+                        
+                        if (pptManager != null)
+                        {
+                            var isInSlideShowProperty = pptManager.GetType().GetProperty("IsInSlideShow");
+                            bool isInSlideShow = false;
+                            if (isInSlideShowProperty != null)
+                            {
+                                var result = isInSlideShowProperty.GetValue(pptManager);
+                                if (result != null)
+                                {
+                                    isInSlideShow = (bool)result;
+                                }
+                            }
+                            
+                            if (isInSlideShow)
+                            {
+                                var getCurrentSlideNumberMethod = pptManager.GetType().GetMethod("GetCurrentSlideNumber");
+                                if (getCurrentSlideNumberMethod != null)
+                                {
+                                    var result = getCurrentSlideNumberMethod.Invoke(pptManager, null);
+                                    if (result != null)
+                                    {
+                                        currentSlideNumber = (int)result;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"获取当前PPT页面编号失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+                    
+                    if (currentSlideNumber > 0 && !string.IsNullOrEmpty(filePath))
+                    {
+                        _pptImages[image] = currentSlideNumber;
+                        
+                        if (!_pptImagePaths.ContainsKey(currentSlideNumber))
+                        {
+                            _pptImagePaths[currentSlideNumber] = new List<string>();
+                        }
+                        _pptImagePaths[currentSlideNumber].Add(filePath);
+                        SavePPTImagePaths(currentSlideNumber);
+                        
+                        LogHelper.WriteLogToFile($"截图已关联到PPT页面{currentSlideNumber}: {filePath}");
+                    }
+                    else if (currentSlideNumber > 0)
+                    {
+                        _pptImages[image] = currentSlideNumber;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"管理截图在PPT中的关联失败: {ex.Message}", LogHelper.LogType.Error);
+                }
+            }, DispatcherPriority.Normal);
         }
 
         private async System.Threading.Tasks.Task InsertImageToMainWindow(System.Windows.Controls.Image image, string originalFilePath = null, bool saveToJson = true)
@@ -839,10 +1202,7 @@ namespace Ink_Canvas.Windows
                     image.IsHitTestVisible = true;
                     image.Focusable = false;
 
-                    // 获取inkCanvas - 尝试字段和属性两种方式
                     System.Windows.Controls.InkCanvas inkCanvas = null;
-                    
-                    // 先尝试字段
                     var inkCanvasField = _mainWindow.GetType().GetField("inkCanvas", 
                         System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
                     if (inkCanvasField != null)
@@ -850,7 +1210,6 @@ namespace Ink_Canvas.Windows
                         inkCanvas = inkCanvasField.GetValue(_mainWindow) as System.Windows.Controls.InkCanvas;
                     }
                     
-                    // 如果字段获取失败，尝试属性
                     if (inkCanvas == null)
                     {
                         var inkCanvasProperty = _mainWindow.GetType().GetProperty("inkCanvas", 
