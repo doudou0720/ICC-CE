@@ -296,52 +296,18 @@ namespace Ink_Canvas.Helpers
                 var hr = (uint)ex.HResult;
                 if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
                 {
-                    LogHelper.WriteLogToFile($"检测到 COM 注册损坏 (HR: 0x{hr:X8})，持续尝试常规方法 10 秒", LogHelper.LogType.Warning);
-                    return TryConnectToPowerPointWithRetry();
+                    return TryConnectToPowerPointViaROT();
                 }
                 return null;
             }
             catch (InvalidCastException)
             {
-                LogHelper.WriteLogToFile("COM 对象类型转换失败，持续尝试常规方法 10 秒", LogHelper.LogType.Warning);
-                return TryConnectToPowerPointWithRetry();
+                return TryConnectToPowerPointViaROT();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogHelper.WriteLogToFile($"常规连接方法失败: {ex.Message}，持续尝试常规方法 10 秒", LogHelper.LogType.Warning);
-                return TryConnectToPowerPointWithRetry();
+                return null;
             }
-        }
-
-        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToPowerPointWithRetry()
-        {
-            DateTime startTime = DateTime.Now;
-            TimeSpan timeout = TimeSpan.FromSeconds(10);
-            int attemptCount = 0;
-
-            while (DateTime.Now - startTime < timeout)
-            {
-                try
-                {
-                    attemptCount++;
-                    var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
-                    
-                    if (pptApp != null && Marshal.IsComObject(pptApp))
-                    {
-                        var _ = pptApp.Name;
-                        LogHelper.WriteLogToFile($"常规连接方法在第 {attemptCount} 次尝试后成功", LogHelper.LogType.Event);
-                        return pptApp;
-                    }
-                }
-                catch
-                {
-                }
-
-                Thread.Sleep(500);
-            }
-
-            LogHelper.WriteLogToFile($"10 秒内常规连接方法失败（共尝试 {attemptCount} 次），尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
-            return TryConnectToPowerPointViaROT();
         }
 
         private Microsoft.Office.Interop.PowerPoint.Application TryConnectToPowerPointViaROT()
@@ -387,8 +353,8 @@ namespace Ink_Canvas.Helpers
                 var hr = (uint)ex.HResult;
                 if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
                 {
-                    LogHelper.WriteLogToFile($"检测到 WPS COM 注册损坏 (HR: 0x{hr:X8})，持续尝试常规方法 10 秒", LogHelper.LogType.Warning);
-                    return TryConnectToWPSWithRetry();
+                    // WPS COM注册损坏，尝试使用ROT备用方法
+                    return TryConnectToWPSViaROT();
                 }
                 if (hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E)
                 {
@@ -398,45 +364,13 @@ namespace Ink_Canvas.Helpers
             }
             catch (InvalidCastException)
             {
-                LogHelper.WriteLogToFile("WPS COM 对象类型转换失败，持续尝试常规方法 10 秒", LogHelper.LogType.Warning);
-                return TryConnectToWPSWithRetry();
+                // WPS COM对象类型转换失败，尝试使用ROT备用方法
+                return TryConnectToWPSViaROT();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogHelper.WriteLogToFile($"连接WPS时发生意外错误: {ex}，持续尝试常规方法 10 秒", LogHelper.LogType.Warning);
-                return TryConnectToWPSWithRetry();
+                return null;
             }
-        }
-
-        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPSWithRetry()
-        {
-            DateTime startTime = DateTime.Now;
-            TimeSpan timeout = TimeSpan.FromSeconds(10);
-            int attemptCount = 0;
-
-            while (DateTime.Now - startTime < timeout)
-            {
-                try
-                {
-                    attemptCount++;
-                    var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
-                    
-                    if (wpsApp != null && Marshal.IsComObject(wpsApp))
-                    {
-                        var _ = wpsApp.Name;
-                        LogHelper.WriteLogToFile($"WPS 常规连接方法在第 {attemptCount} 次尝试后成功", LogHelper.LogType.Event);
-                        return wpsApp;
-                    }
-                }
-                catch
-                {
-                }
-
-                Thread.Sleep(500);
-            }
-
-            LogHelper.WriteLogToFile($"10 秒内 WPS 常规连接方法失败（共尝试 {attemptCount} 次），尝试使用 ROT 备用方法", LogHelper.LogType.Warning);
-            return TryConnectToWPSViaROT();
         }
 
         private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPSViaROT()
