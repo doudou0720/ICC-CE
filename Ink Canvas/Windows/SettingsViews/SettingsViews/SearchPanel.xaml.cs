@@ -71,14 +71,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 随机点名
                 new SettingItem { Title = "随机点名", Category = "随机点名", ItemName = "LuckyRandomItem", Type = SettingItemType.Category },
                 
-                // 存储空间
-                new SettingItem { Title = "存储空间", Category = "存储空间", ItemName = "StorageItem", Type = SettingItemType.Category },
+                // 高级选项
+                new SettingItem { Title = "高级选项", Category = "高级选项", ItemName = "AdvancedItem", Type = SettingItemType.Category },
                 
                 // 截图和屏幕捕捉
                 new SettingItem { Title = "截图和屏幕捕捉", Category = "截图和屏幕捕捉", ItemName = "SnapshotItem", Type = SettingItemType.Category },
-                
-                // 高级选项
-                new SettingItem { Title = "高级选项", Category = "高级选项", ItemName = "AdvancedItem", Type = SettingItemType.Category },
                 
                 // 关于
                 new SettingItem { Title = "关于 InkCanvasForClass", Category = "关于", ItemName = "AboutItem", Type = SettingItemType.Category },

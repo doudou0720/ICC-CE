@@ -119,10 +119,36 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             var _t_touch = new Thread(() =>
             {
-                var touchcount = TouchTabletDetectHelper.GetTouchTabletDevices().Count;
-                var support = TouchTabletDetectHelper.IsTouchEnabled();
-                Dispatcher.BeginInvoke(() =>
-                    AboutTouchTabletText.Text = $"{touchcount}个设备，{(support ? "支持触摸设备" : "无触摸支持")}");
+                try
+                {
+                    var support = TouchTabletDetectHelper.IsTouchEnabled();
+                    var touchcount = TouchTabletDetectHelper.GetTouchTabletDevices().Count;
+                    
+                    Dispatcher.BeginInvoke(() =>
+                    {
+                        if (support)
+                        {
+                            if (touchcount > 0)
+                            {
+                                AboutTouchTabletText.Text = $"{touchcount}个设备，支持触摸设备";
+                            }
+                            else
+                            {
+                                AboutTouchTabletText.Text = "支持触摸设备";
+                            }
+                        }
+                        else
+                        {
+                            AboutTouchTabletText.Text = "无触摸支持";
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.BeginInvoke(() =>
+                        AboutTouchTabletText.Text = "检测失败");
+                    System.Diagnostics.Debug.WriteLine($"检测触摸设备失败: {ex.Message}");
+                }
             });
             _t_touch.Start();
 
@@ -180,22 +206,51 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 List<USBDeviceInfo> devices = new List<USBDeviceInfo>();
 
-                ManagementObjectCollection collection;
-                using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_PnPEntity"))
-                    collection = searcher.Get();
-
-                foreach (var device in collection)
+                try
                 {
-                    var name = new StringBuilder((string)device.GetPropertyValue("Name")).ToString();
-                    if (!name.Contains("Pentablet")) continue;
-                    devices.Add(new USBDeviceInfo(
-                        (string)device.GetPropertyValue("DeviceID"),
-                        (string)device.GetPropertyValue("PNPDeviceID"),
-                        (string)device.GetPropertyValue("Description")
-                    ));
+                    ManagementObjectCollection collection;
+                    using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_PnPEntity"))
+                        collection = searcher.Get();
+
+                    foreach (var device in collection)
+                    {
+                        try
+                        {
+                            var name = device.GetPropertyValue("Name")?.ToString() ?? "";
+                            var description = device.GetPropertyValue("Description")?.ToString() ?? "";
+                            
+                            if (string.IsNullOrEmpty(name)) continue;
+                            
+                            var nameLower = name.ToLower();
+                            var descLower = description.ToLower();
+                            
+                            if (nameLower.Contains("pentablet") || 
+                                nameLower.Contains("tablet") || 
+                                nameLower.Contains("touch") ||
+                                nameLower.Contains("digitizer") ||
+                                descLower.Contains("touch") ||
+                                descLower.Contains("digitizer"))
+                            {
+                                devices.Add(new USBDeviceInfo(
+                                    device.GetPropertyValue("DeviceID")?.ToString() ?? "",
+                                    device.GetPropertyValue("PNPDeviceID")?.ToString() ?? "",
+                                    description
+                                ));
+                            }
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+
+                    collection.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"获取触摸设备列表失败: {ex.Message}");
                 }
 
-                collection.Dispose();
                 return devices;
             }
         }
