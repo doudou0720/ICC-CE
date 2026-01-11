@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews"
+             xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
              mc:Ignorable="d" 
              d:DesignHeight="950" d:DesignWidth="640">
     <UserControl.Resources>
@@ -75,49 +76,42 @@
     </UserControl.Resources>
     <Grid>
         <ScrollViewer ScrollChanged="ScrollViewerEx_ScrollChanged" IsManipulationEnabled="True" Name="UpdateCenterScrollViewerEx" IsDeferredScrollingEnabled="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsTabStop="False" TabIndex="-1" Margin="0,0,2,2">
-            <StackPanel Margin="0,12,0,24" HorizontalAlignment="Center" Width="524">
-                <TextBlock Foreground="#2e3436" FontSize="24" FontWeight="Bold" Text="更新中心" Margin="0,0,0,8"/>
-                <TextBlock Foreground="#878787" FontSize="14" Text="检查并安装 InkCanvasForClass 的最新更新" TextWrapping="Wrap" Margin="0,0,0,24"/>
+            <StackPanel Margin="60,24,60,24">
+                <TextBlock Foreground="#2e3436" FontSize="28" FontWeight="Bold" Text="InkCanvasForClass 更新" Margin="0,0,0,24"/>
                 
-                <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <Border BorderBrush="#e6e6e6" BorderThickness="1" CornerRadius="8" Padding="20" Background="#FAFAFA" Margin="0,0,0,20">
                     <StackPanel>
-                        <Grid Margin="0,0,0,16">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Foreground="#2e3436" FontSize="18" FontWeight="SemiBold" Text="当前版本" VerticalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <TextBlock Name="CurrentVersionText" Foreground="#878787" FontSize="16" Text="正在获取..." VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Grid>
-                        
-                        <Border Height="1" Background="#ebebeb" Margin="0,0,0,16"/>
-                        
-                        <Grid Margin="0,0,0,16">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                <TextBlock Foreground="#2e3436" FontSize="18" FontWeight="SemiBold" Text="更新状态" VerticalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <TextBlock Name="UpdateStatusText" Foreground="#878787" FontSize="16" Text="正在检查更新..." VerticalAlignment="Center"/>
-                                <Image Name="UpdateStatusIcon" Margin="8,0,0,0" Width="20" Height="20" VerticalAlignment="Center" Visibility="Collapsed">
-                                    <Image.Source>
-                                        <DrawingImage>
-                                            <DrawingImage.Drawing>
-                                                <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
-                                                    <GeometryDrawing Brush="#FFFF7800" Geometry="F1 M16,16z M0,0z M8.00493,0C7.74518,0,7.49541,0.0999063,7.2956,0.289728L5.5872,1.99813 2.99963,1.99813C2.45014,1.99813,2.00056,2.44771,2.00056,2.99719L2.00056,5.58476 0.292165,7.29316C-0.0974697,7.6828,-0.0974697,8.31221,0.292165,8.70184L2.00056,10.4102 2.00056,12.9978C2.00056,13.5473,2.45014,13.9969,2.99963,13.9969L5.5872,13.9969 7.2956,15.7053C7.68523,16.0949,8.31464,16.0949,8.70428,15.7053L10.4127,13.9969 13.0003,13.9969C13.5497,13.9969,13.9993,13.5473,13.9993,12.9978L13.9993,10.4102 15.7077,8.70184C16.0973,8.31221,16.0973,7.6828,15.7077,7.29316L13.9993,5.58476 13.9993,2.99719C13.9993,2.44771,13.5497,1.99813,13.0003,1.99813L10.4127,1.99813 8.70428,0.289728C8.50447,0.0899157,8.2547,0,7.99494,0L8.00493,0z M8.00493,4.99532C8.26469,4.99532,8.51446,5.09522,8.71427,5.28505L10.7124,7.28317C10.9022,7.47299,11.0021,7.72276,11.0021,7.99251L11.0021,8.99157 9.004,8.99157 9.004,10.9897 7.00587,10.9897 7.00587,8.99157 5.00774,8.99157 5.00774,7.99251C5.00774,7.73275,5.10765,7.47299,5.29747,7.28317L7.2956,5.28505C7.49541,5.08523,7.74518,4.99532,8.00493,4.99532z" />
-                                                </DrawingGroup>
-                                            </DrawingImage.Drawing>
-                                        </DrawingImage>
-                                    </Image.Source>
-                                </Image>
-                            </StackPanel>
-                        </Grid>
-                        
-                        <Border Height="1" Background="#ebebeb" Margin="0,0,0,16"/>
-                        
-                        <StackPanel Name="UpdateAvailablePanel" Visibility="Collapsed">
+                        <TextBlock Name="UpdateStatusText" Foreground="#2e3436" FontSize="18" FontWeight="SemiBold" Text="正在检查更新..." TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <TextBlock Name="LastCheckTimeText" Foreground="#878787" FontSize="14" Text="上次检查时间: 从未" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+                
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,24" VerticalAlignment="Center">
+                    <TextBlock Name="CurrentVersionText" Foreground="#878787" FontSize="14" Text="当前版本: 正在获取..." TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    <ui:ProgressRing Name="LoadingSpinner" Width="16" Height="16" IsActive="False" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
+                    <Button Name="CheckUpdateButton" Content="检查更新" HorizontalAlignment="Left" Padding="20,10" FontSize="14" Cursor="Hand" Click="CheckUpdateButton_Click" Background="#F3F3F3" Foreground="#2e3436" BorderThickness="1" BorderBrush="#E1E1E1" Margin="0,0,12,0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Path Name="ChevronIcon" Data="M 0 0 L 4 4 L 0 8" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.5" Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                    </StackPanel>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+                
+                <StackPanel Name="UpdateAvailablePanel" Visibility="Collapsed" Margin="0,0,0,24">
+                    <Border BorderBrush="#e6e6e6" BorderThickness="1" CornerRadius="8" Padding="16" Background="#F9F9F9">
+                        <StackPanel>
                             <TextBlock Foreground="#2e3436" FontSize="16" FontWeight="SemiBold" Text="可用更新" Margin="0,0,0,8"/>
                             <TextBlock Name="LatestVersionText" Foreground="#878787" FontSize="14" Text="" TextWrapping="Wrap" Margin="0,0,0,16"/>
-                            <Button Name="UpdateNowButton" Content="立即更新" HorizontalAlignment="Left" Padding="16,8" FontSize="14" Cursor="Hand" Click="UpdateNowButton_Click" Background="#0078D4" Foreground="White" BorderThickness="0">
+                            <Button Name="UpdateNowButton" Content="立即更新" HorizontalAlignment="Left" Padding="20,10" FontSize="14" Cursor="Hand" Click="UpdateNowButton_Click" Background="#0078D4" Foreground="White" BorderThickness="0">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
                                         <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
@@ -127,47 +121,8 @@
                                 </Button.Template>
                             </Button>
                         </StackPanel>
-                        
-                        <Button Name="CheckUpdateButton" Content="检查更新" HorizontalAlignment="Left" Padding="16,8" FontSize="14" Cursor="Hand" Click="CheckUpdateButton_Click" Background="#F3F3F3" Foreground="#2e3436" BorderThickness="1" BorderBrush="#E1E1E1" Margin="0,8,0,0">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </StackPanel>
-                </Border>
-                
-                <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8" Padding="20">
-                    <StackPanel>
-                        <TextBlock Foreground="#2e3436" FontSize="18" FontWeight="SemiBold" Text="更新设置" Margin="0,0,0,16"/>
-                        
-                        <Grid Height="54">
-                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动检查更新" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <Border Name="AutoUpdateToggle" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="AutoUpdate" MouseLeftButtonDown="ToggleSwitch_Click" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
-                                    </Border.Effect>
-                                </Border>
-                            </Border>
-                        </Grid>
-                        <TextBlock Foreground="#878787" FontSize="12" Text="启用后，应用将在启动时自动检查更新" TextWrapping="Wrap" Margin="0,4,0,16"/>
-                        
-                        <Border Height="1" Background="#ebebeb" Margin="0,0,0,16"/>
-                        
-                        <Grid Height="54">
-                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="更新通道" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <ComboBox Name="UpdateChannelComboBox" HorizontalAlignment="Right" VerticalAlignment="Center" Width="150" SelectionChanged="UpdateChannelComboBox_SelectionChanged">
-                                <ComboBoxItem Content="稳定版" Tag="Release"/>
-                                <ComboBoxItem Content="测试版" Tag="Beta"/>
-                            </ComboBox>
-                        </Grid>
-                        <TextBlock Foreground="#878787" FontSize="12" Text="选择要接收的更新类型" TextWrapping="Wrap" Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Border>
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

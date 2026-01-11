@@ -1,12 +1,14 @@
 using iNKORE.UI.WPF.Helpers;
 using Ink_Canvas.Helpers;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
@@ -27,6 +29,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 isLoaded = true;
                 LoadSettings();
                 CheckUpdateStatus();
+                ApplyTheme();
             }
         }
 
@@ -35,24 +38,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
-                CurrentVersionText.Text = $"InkCanvasForClass v{version}";
+                var platform = Environment.Is64BitOperatingSystem ? "windows-x64" : "windows-x86";
+                CurrentVersionText.Text = $"当前版本: v{version} | {platform}";
 
-                if (MainWindow.Settings?.Startup != null)
-                {
-                    UpdateToggleSwitch(AutoUpdateToggle, MainWindow.Settings.Startup.IsAutoUpdate);
-
-                    if (UpdateChannelComboBox != null)
-                    {
-                        foreach (ComboBoxItem item in UpdateChannelComboBox.Items)
-                        {
-                            if (item.Tag?.ToString() == MainWindow.Settings.Startup.UpdateChannel.ToString())
-                            {
-                                UpdateChannelComboBox.SelectedItem = item;
-                                break;
-                            }
-                        }
-                    }
-                }
+                LoadLastCheckTime();
             }
             catch (Exception ex)
             {
@@ -60,58 +49,59 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        private void UpdateToggleSwitch(Border toggle, bool isOn)
+        private void LoadLastCheckTime()
         {
-            if (toggle == null) return;
-
-            toggle.Background = isOn ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-            var innerBorder = toggle.Child as Border;
-            if (innerBorder != null)
+            try
             {
-                innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                var lastCheckTimePath = Path.Combine(App.RootPath, "last_update_check.dat");
+                if (File.Exists(lastCheckTimePath))
+                {
+                    var timeStr = File.ReadAllText(lastCheckTimePath);
+                    if (DateTime.TryParse(timeStr, out var lastCheckTime))
+                    {
+                        var now = DateTime.Now;
+                        var timeDiff = now - lastCheckTime;
+                        
+                        if (timeDiff.TotalDays < 1 && lastCheckTime.Date == now.Date)
+                        {
+                            LastCheckTimeText.Text = $"上次检查时间: 今天, {lastCheckTime:HH:mm}";
+                        }
+                        else if (timeDiff.TotalDays < 2 && lastCheckTime.Date == now.Date.AddDays(-1))
+                        {
+                            LastCheckTimeText.Text = $"上次检查时间: 昨天, {lastCheckTime:HH:mm}";
+                        }
+                        else
+                        {
+                            LastCheckTimeText.Text = $"上次检查时间: {lastCheckTime:yyyy-MM-dd HH:mm}";
+                        }
+                        return;
+                    }
+                }
+                LastCheckTimeText.Text = "上次检查时间: 从未";
             }
-            else
+            catch
             {
-                var ellipse = new Border
-                {
-                    Width = 19,
-                    Height = 19,
-                    Background = Brushes.White,
-                    CornerRadius = new CornerRadius(10),
-                    HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                ellipse.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    BlurRadius = 4,
-                    Direction = -45,
-                    Color = Colors.Black,
-                    Opacity = 0.3,
-                    ShadowDepth = 0
-                };
-                toggle.Child = ellipse;
+                LastCheckTimeText.Text = "上次检查时间: 从未";
             }
         }
 
-        private void ToggleSwitch_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void SaveLastCheckTime()
         {
-            var toggle = sender as Border;
-            if (toggle == null) return;
-
-            var tag = toggle.Tag?.ToString();
-            if (tag == "AutoUpdate" && MainWindow.Settings?.Startup != null)
+            try
             {
-                MainWindowSettingsHelper.UpdateSettingSafely(() =>
-                {
-                    MainWindow.Settings.Startup.IsAutoUpdate = !MainWindow.Settings.Startup.IsAutoUpdate;
-                    UpdateToggleSwitch(toggle, MainWindow.Settings.Startup.IsAutoUpdate);
-                }, "ToggleSwitchIsAutoUpdate_Toggled", "ToggleSwitchIsAutoUpdate");
+                var lastCheckTimePath = Path.Combine(App.RootPath, "last_update_check.dat");
+                File.WriteAllText(lastCheckTimePath, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                LoadLastCheckTime();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"保存上次检查时间失败: {ex.Message}");
             }
         }
 
         private void CheckUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            CheckUpdateStatus();
+            CheckUpdateStatus(true);
         }
 
         private void UpdateNowButton_Click(object sender, RoutedEventArgs e)
@@ -134,79 +124,70 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        private void UpdateChannelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!isLoaded || MainWindow.Settings?.Startup == null) return;
-
-            var comboBox = sender as ComboBox;
-            if (comboBox?.SelectedItem is ComboBoxItem selectedItem)
-            {
-                var channel = selectedItem.Tag?.ToString();
-                if (Enum.TryParse<UpdateChannel>(channel, out var updateChannel))
-                {
-                    MainWindowSettingsHelper.UpdateSettingSafely(() =>
-                    {
-                        MainWindow.Settings.Startup.UpdateChannel = updateChannel;
-                    }, "UpdateChannelSelector_Checked");
-                }
-            }
-        }
-
-        private void CheckUpdateStatus()
+        private void CheckUpdateStatus(bool manualCheck = false)
         {
             UpdateStatusText.Text = "正在检查更新...";
-            UpdateStatusIcon.Visibility = Visibility.Collapsed;
             UpdateAvailablePanel.Visibility = Visibility.Collapsed;
             CheckUpdateButton.IsEnabled = false;
+            StartLoadingAnimation();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    var mainWindow = Application.Current.MainWindow as MainWindow;
-                    if (mainWindow != null)
+                    var updateChannel = UpdateChannel.Release;
+                    if (MainWindow.Settings?.Startup != null)
                     {
-                        var field = typeof(MainWindow).GetField("AvailableLatestVersion", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        if (field != null)
+                        updateChannel = MainWindow.Settings.Startup.UpdateChannel;
+                    }
+
+                    var (remoteVersion, lineGroup, releaseNotes) = await AutoUpdateHelper.CheckForUpdates(updateChannel, manualCheck, false);
+                    
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        StopLoadingAnimation();
+                        
+                        if (!string.IsNullOrEmpty(remoteVersion))
                         {
-                            var availableVersion = field.GetValue(mainWindow) as string;
+                            var localVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                            var localVersionStr = localVersion.ToString();
+                            var remoteVersionStr = remoteVersion.TrimStart('v', 'V');
                             
-                            Dispatcher.BeginInvoke(new Action(() =>
+                            Version local = new Version(localVersionStr);
+                            Version remote = new Version(remoteVersionStr);
+                            
+                            if (remote > local)
                             {
-                                if (!string.IsNullOrEmpty(availableVersion))
-                                {
-                                    UpdateStatusText.Text = "有可用更新";
-                                    UpdateStatusIcon.Visibility = Visibility.Visible;
-                                    LatestVersionText.Text = $"版本 {availableVersion} 现已可用";
-                                    UpdateAvailablePanel.Visibility = Visibility.Visible;
-                                }
-                                else
-                                {
-                                    UpdateStatusText.Text = "已是最新版本";
-                                    UpdateStatusIcon.Visibility = Visibility.Collapsed;
-                                    UpdateAvailablePanel.Visibility = Visibility.Collapsed;
-                                }
-                                CheckUpdateButton.IsEnabled = true;
-                            }));
+                                UpdateStatusText.Text = "有可用更新";
+                                LatestVersionText.Text = $"版本 {remoteVersion} 现已可用";
+                                UpdateAvailablePanel.Visibility = Visibility.Visible;
+                            }
+                            else
+                            {
+                                UpdateStatusText.Text = "你使用的是最新版本";
+                                UpdateAvailablePanel.Visibility = Visibility.Collapsed;
+                            }
                         }
                         else
                         {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                UpdateStatusText.Text = "检查更新失败";
-                                UpdateStatusIcon.Visibility = Visibility.Collapsed;
-                                UpdateAvailablePanel.Visibility = Visibility.Collapsed;
-                                CheckUpdateButton.IsEnabled = true;
-                            }));
+                            UpdateStatusText.Text = "你使用的是最新版本";
+                            UpdateAvailablePanel.Visibility = Visibility.Collapsed;
                         }
-                    }
+                        
+                        if (manualCheck)
+                        {
+                            SaveLastCheckTime();
+                        }
+                        
+                        CheckUpdateButton.IsEnabled = true;
+                    }));
                 }
                 catch (Exception ex)
                 {
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
+                        StopLoadingAnimation();
                         UpdateStatusText.Text = "检查更新失败";
-                        UpdateStatusIcon.Visibility = Visibility.Collapsed;
                         UpdateAvailablePanel.Visibility = Visibility.Collapsed;
                         CheckUpdateButton.IsEnabled = true;
                     }));
@@ -287,10 +268,53 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                
+                if (CheckUpdateButton != null)
+                {
+                    CheckUpdateButton.Background = ThemeHelper.GetButtonBackgroundBrush();
+                    CheckUpdateButton.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                    CheckUpdateButton.BorderBrush = ThemeHelper.GetBorderPrimaryBrush();
+                }
+                
+                if (UpdateNowButton != null)
+                {
+                    UpdateNowButton.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212));
+                    UpdateNowButton.Foreground = Brushes.White;
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"UpdateCenterPanel 应用主题时出错: {ex.Message}");
+            }
+        }
+
+        private void StartLoadingAnimation()
+        {
+            try
+            {
+                if (LoadingSpinner != null)
+                {
+                    LoadingSpinner.IsActive = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"启动加载动画失败: {ex.Message}");
+            }
+        }
+
+        private void StopLoadingAnimation()
+        {
+            try
+            {
+                if (LoadingSpinner != null)
+                {
+                    LoadingSpinner.IsActive = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"停止加载动画失败: {ex.Message}");
             }
         }
     }
