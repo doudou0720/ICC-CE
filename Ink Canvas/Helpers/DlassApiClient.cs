@@ -1,9 +1,8 @@
 using Newtonsoft.Json;
+using Flurl;
+using Flurl.Http;
 using System;
 using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Ink_Canvas.Helpers
@@ -17,7 +16,7 @@ namespace Ink_Canvas.Helpers
         private readonly string _appId;
         private readonly string _appSecret;
         private readonly string _baseUrl;
-        private HttpClient _httpClient;
+        private IFlurlClient _flurlClient;
         private string _accessToken;
         private DateTime _tokenExpiresAt;
 
@@ -43,12 +42,9 @@ namespace Ink_Canvas.Helpers
                 _baseUrl = "https://" + _baseUrl;
             }
 
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(_baseUrl),
-                Timeout = TimeSpan.FromSeconds(30)
-            };
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", "InkCanvas/1.0");
+            _flurlClient = new FlurlClient(_baseUrl)
+                .WithTimeout(TimeSpan.FromSeconds(30))
+                .WithHeader("User-Agent", "InkCanvas/1.0");
         }
 
         /// <summary>
@@ -75,13 +71,12 @@ namespace Ink_Canvas.Helpers
                     grant_type = "client_credentials"
                 };
 
-                var json = JsonConvert.SerializeObject(requestData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _flurlClient.Request("/oauth/token")
+                    .PostJsonAsync(requestData);
 
-                var response = await _httpClient.PostAsync("/oauth/token", content);
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseContent = await response.GetStringAsync();
 
-                if (response.IsSuccessStatusCode)
+                if (response.StatusCode >= 200 && response.StatusCode < 300)
                 {
                     var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(responseContent);
                     _accessToken = tokenResponse.AccessToken;
@@ -93,13 +88,20 @@ namespace Ink_Canvas.Helpers
                     throw new Exception($"获取Access Token失败: {response.StatusCode}");
                 }
             }
-            catch (HttpRequestException httpEx)
+            catch (FlurlHttpException flurlEx)
             {
-                throw new Exception($"获取Access Token时网络错误: {httpEx.Message}", httpEx);
-            }
-            catch (TaskCanceledException timeoutEx)
-            {
-                throw new Exception("获取Access Token时请求超时", timeoutEx);
+                if (flurlEx.StatusCode.HasValue)
+                {
+                    throw new Exception($"获取Access Token失败: {flurlEx.StatusCode}", flurlEx);
+                }
+                else if (flurlEx.InnerException is TaskCanceledException)
+                {
+                    throw new Exception("获取Access Token时请求超时", flurlEx.InnerException);
+                }
+                else
+                {
+                    throw new Exception($"获取Access Token时网络错误: {flurlEx.Message}", flurlEx);
+                }
             }
             catch (Exception ex)
             {
@@ -114,30 +116,28 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                string token = null;
+                var request = _flurlClient.Request(endpoint);
+
                 if (requireAuth)
                 {
-                    token = await GetAccessTokenAsync();
-                }
-
-                var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-
-                if (requireAuth && !string.IsNullOrEmpty(token))
-                {
-                    if (!string.IsNullOrEmpty(_userToken))
+                    var token = await GetAccessTokenAsync();
+                    if (!string.IsNullOrEmpty(token))
                     {
-                        request.Headers.Add("X-User-Token", token);
-                    }
-                    else
-                    {
-                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        if (!string.IsNullOrEmpty(_userToken))
+                        {
+                            request.WithHeader("X-User-Token", token);
+                        }
+                        else
+                        {
+                            request.WithOAuthBearerToken(token);
+                        }
                     }
                 }
 
-                var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
+                var response = await request.GetAsync();
+                var content = await response.GetStringAsync();
 
-                if (response.IsSuccessStatusCode)
+                if (response.StatusCode >= 200 && response.StatusCode < 300)
                 {
                     if (string.IsNullOrEmpty(content))
                     {
@@ -150,13 +150,29 @@ namespace Ink_Canvas.Helpers
                     throw new Exception($"API请求失败: {response.StatusCode} - {content}");
                 }
             }
-            catch (HttpRequestException httpEx)
+            catch (FlurlHttpException flurlEx)
             {
-                throw new Exception($"发送请求时出错: {httpEx.Message}", httpEx);
-            }
-            catch (TaskCanceledException timeoutEx)
-            {
-                throw new Exception($"请求超时: {endpoint}", timeoutEx);
+                string errorContent = flurlEx.Message;
+                if (flurlEx.StatusCode.HasValue)
+                {
+                    try
+                    {
+                        errorContent = await flurlEx.GetResponseStringAsync() ?? errorContent;
+                    }
+                    catch
+                    {
+                        // 如果获取响应内容失败，保持原有的错误信息
+                    }
+                    throw new Exception($"API请求失败: {flurlEx.StatusCode} - {errorContent}", flurlEx);
+                }
+                else if (flurlEx.InnerException is TaskCanceledException)
+                {
+                    throw new Exception($"请求超时: {endpoint}", flurlEx.InnerException);
+                }
+                else
+                {
+                    throw new Exception($"发送请求时出错: {flurlEx.Message}", flurlEx);
+                }
             }
             catch (Exception ex)
             {
@@ -171,36 +187,31 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                string token = null;
+                var request = _flurlClient.Request(endpoint);
+
                 if (requireAuth)
                 {
-                    token = await GetAccessTokenAsync();
-                }
-
-                var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-
-                if (requireAuth && !string.IsNullOrEmpty(token))
-                {
-                    if (!string.IsNullOrEmpty(_userToken))
+                    var token = await GetAccessTokenAsync();
+                    if (!string.IsNullOrEmpty(token))
                     {
-                        request.Headers.Add("X-User-Token", token);
-                    }
-                    else
-                    {
-                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        if (!string.IsNullOrEmpty(_userToken))
+                        {
+                            request.WithHeader("X-User-Token", token);
+                        }
+                        else
+                        {
+                            request.WithOAuthBearerToken(token);
+                        }
                     }
                 }
 
-                if (data != null)
-                {
-                    var json = JsonConvert.SerializeObject(data);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                }
+                var response = await (data != null ? 
+                    request.PostJsonAsync(data) : 
+                    request.PostAsync(null));
+                
+                var content = await response.GetStringAsync();
 
-                var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
+                if (response.StatusCode >= 200 && response.StatusCode < 300)
                 {
                     if (string.IsNullOrEmpty(content))
                     {
@@ -213,13 +224,29 @@ namespace Ink_Canvas.Helpers
                     throw new Exception($"API请求失败: {response.StatusCode} - {content}");
                 }
             }
-            catch (HttpRequestException httpEx)
+            catch (FlurlHttpException flurlEx)
             {
-                throw new Exception($"发送请求时出错: {httpEx.Message}", httpEx);
-            }
-            catch (TaskCanceledException timeoutEx)
-            {
-                throw new Exception($"请求超时: {endpoint}", timeoutEx);
+                string errorContent = flurlEx.Message;
+                if (flurlEx.StatusCode.HasValue)
+                {
+                    try
+                    {
+                        errorContent = await flurlEx.GetResponseStringAsync() ?? errorContent;
+                    }
+                    catch
+                    {
+                        // 如果获取响应内容失败，保持原有的错误信息
+                    }
+                    throw new Exception($"API请求失败: {flurlEx.StatusCode} - {errorContent}", flurlEx);
+                }
+                else if (flurlEx.InnerException is TaskCanceledException)
+                {
+                    throw new Exception($"请求超时: {endpoint}", flurlEx.InnerException);
+                }
+                else
+                {
+                    throw new Exception($"发送请求时出错: {flurlEx.Message}", flurlEx);
+                }
             }
             catch (Exception ex)
             {
@@ -234,37 +261,31 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                string token = null;
+                var request = _flurlClient.Request(endpoint);
+
                 if (requireAuth)
                 {
-                    token = await GetAccessTokenAsync();
-                }
-
-                var request = new HttpRequestMessage(HttpMethod.Put, endpoint);
-
-                if (requireAuth && !string.IsNullOrEmpty(token))
-                {
-                    // 如果是用户token，使用X-User-Token header
-                    if (!string.IsNullOrEmpty(_userToken))
+                    var token = await GetAccessTokenAsync();
+                    if (!string.IsNullOrEmpty(token))
                     {
-                        request.Headers.Add("X-User-Token", token);
-                    }
-                    else
-                    {
-                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        if (!string.IsNullOrEmpty(_userToken))
+                        {
+                            request.WithHeader("X-User-Token", token);
+                        }
+                        else
+                        {
+                            request.WithOAuthBearerToken(token);
+                        }
                     }
                 }
 
-                if (data != null)
-                {
-                    var json = JsonConvert.SerializeObject(data);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-                }
+                var response = await (data != null ? 
+                    request.PutJsonAsync(data) : 
+                    request.PutAsync(null));
+                
+                var content = await response.GetStringAsync();
 
-                var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
+                if (response.StatusCode >= 200 && response.StatusCode < 300)
                 {
                     if (string.IsNullOrEmpty(content))
                     {
@@ -277,13 +298,29 @@ namespace Ink_Canvas.Helpers
                     throw new Exception($"API请求失败: {response.StatusCode} - {content}");
                 }
             }
-            catch (HttpRequestException httpEx)
+            catch (FlurlHttpException flurlEx)
             {
-                throw new Exception($"发送请求时出错: {httpEx.Message}", httpEx);
-            }
-            catch (TaskCanceledException timeoutEx)
-            {
-                throw new Exception($"请求超时: {endpoint}", timeoutEx);
+                string errorContent = flurlEx.Message;
+                if (flurlEx.StatusCode.HasValue)
+                {
+                    try
+                    {
+                        errorContent = await flurlEx.GetResponseStringAsync() ?? errorContent;
+                    }
+                    catch
+                    {
+                        // 如果获取响应内容失败，保持原有的错误信息
+                    }
+                    throw new Exception($"API请求失败: {flurlEx.StatusCode} - {errorContent}", flurlEx);
+                }
+                else if (flurlEx.InnerException is TaskCanceledException)
+                {
+                    throw new Exception($"请求超时: {endpoint}", flurlEx.InnerException);
+                }
+                else
+                {
+                    throw new Exception($"发送请求时出错: {flurlEx.Message}", flurlEx);
+                }
             }
             catch (Exception ex)
             {
@@ -298,43 +335,29 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                string token = null;
+                var request = _flurlClient.Request(endpoint);
+
                 if (requireAuth)
                 {
-                    token = await GetAccessTokenAsync();
-                }
-
-                var request = new HttpRequestMessage(HttpMethod.Delete, endpoint);
-
-                if (requireAuth && !string.IsNullOrEmpty(token))
-                {
-                    // 如果是用户token，使用X-User-Token header
-                    if (!string.IsNullOrEmpty(_userToken))
+                    var token = await GetAccessTokenAsync();
+                    if (!string.IsNullOrEmpty(token))
                     {
-                        request.Headers.Add("X-User-Token", token);
-                    }
-                    else
-                    {
-                        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                        if (!string.IsNullOrEmpty(_userToken))
+                        {
+                            request.WithHeader("X-User-Token", token);
+                        }
+                        else
+                        {
+                            request.WithOAuthBearerToken(token);
+                        }
                     }
                 }
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await request.DeleteAsync();
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                return response.StatusCode >= 200 && response.StatusCode < 300;
             }
-            catch (HttpRequestException)
-            {
-                return false;
-            }
-            catch (TaskCanceledException)
+            catch (FlurlHttpException)
             {
                 return false;
             }
@@ -363,60 +386,60 @@ namespace Ink_Canvas.Helpers
                     throw new FileNotFoundException($"文件不存在: {filePath}");
                 }
 
-                var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                var request = _flurlClient.Request(endpoint)
+                    .WithHeader("X-Board-ID", boardId)
+                    .WithHeader("X-Secret-Key", secretKey);
 
-                // 设置白板认证头
-                request.Headers.Add("X-Board-ID", boardId);
-                request.Headers.Add("X-Secret-Key", secretKey);
-
-                // 创建multipart/form-data内容
-                var content = new MultipartFormDataContent();
-
-                // 添加文件
-                var fileContent = new ByteArrayContent(File.ReadAllBytes(filePath));
-                var fileName = Path.GetFileName(filePath);
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                content.Add(fileContent, "file", fileName);
-
-                // 添加可选参数
-                if (!string.IsNullOrEmpty(title))
+                using (var content = new Flurl.Http.Content.CapturedMultipartContent())
                 {
-                    content.Add(new StringContent(title), "title");
-                }
-                if (!string.IsNullOrEmpty(description))
-                {
-                    content.Add(new StringContent(description), "description");
-                }
-                if (!string.IsNullOrEmpty(tags))
-                {
-                    content.Add(new StringContent(tags), "tags");
-                }
+                    // 添加文件
+                    content.AddFile("file", filePath);
 
-                request.Content = content;
-
-                var response = await _httpClient.SendAsync(request);
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    if (string.IsNullOrEmpty(responseContent))
+                    // 添加可选参数
+                    if (!string.IsNullOrEmpty(title))
                     {
-                        return default(T);
+                        content.AddString("title", title);
                     }
-                    return JsonConvert.DeserializeObject<T>(responseContent);
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        content.AddString("description", description);
+                    }
+                    if (!string.IsNullOrEmpty(tags))
+                    {
+                        content.AddString("tags", tags);
+                    }
+
+                    var response = await request.PostMultipartAsync(content);
+                    var responseContent = await response.GetStringAsync();
+
+                    if (response.StatusCode >= 200 && response.StatusCode < 300)
+                    {
+                        if (string.IsNullOrEmpty(responseContent))
+                        {
+                            return default(T);
+                        }
+                        return JsonConvert.DeserializeObject<T>(responseContent);
+                    }
+                    else
+                    {
+                        throw new Exception($"上传文件失败: {response.StatusCode} - {responseContent}");
+                    }
+                }
+            }
+            catch (FlurlHttpException flurlEx)
+            {
+                if (flurlEx.StatusCode.HasValue)
+                {
+                    throw new Exception($"上传文件失败: {flurlEx.StatusCode}", flurlEx);
+                }
+                else if (flurlEx.InnerException is TaskCanceledException)
+                {
+                    throw new Exception($"上传文件超时: {endpoint}", flurlEx.InnerException);
                 }
                 else
                 {
-                    throw new Exception($"上传文件失败: {response.StatusCode} - {responseContent}");
+                    throw new Exception($"上传文件时网络错误: {flurlEx.Message}", flurlEx);
                 }
-            }
-            catch (HttpRequestException httpEx)
-            {
-                throw new Exception($"上传文件时网络错误: {httpEx.Message}", httpEx);
-            }
-            catch (TaskCanceledException timeoutEx)
-            {
-                throw new Exception($"上传文件超时: {endpoint}", timeoutEx);
             }
             catch (Exception ex)
             {
@@ -429,7 +452,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void Dispose()
         {
-            _httpClient?.Dispose();
+            _flurlClient?.Dispose();
         }
 
         #region 内部类
