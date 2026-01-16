@@ -4904,7 +4904,7 @@
                                         <Border ClipToBounds="True" Name="BoardTwoFingerGestureBorder"
                                                 Margin="-115,-161,-55,50"
                                                 CornerRadius="8"
-                                                Background="{DynamicResource FloatBarBackground}" Opacity="1" BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                                                Background="{DynamicResource FloatBarBackground}" Opacity="1" BorderBrush="#2563eb"
                                                 BorderThickness="1">
                                             <ui:SimpleStackPanel Margin="0">
                                                 <Border BorderBrush="#1e3a8a" BorderThickness="0,0,0,1"
