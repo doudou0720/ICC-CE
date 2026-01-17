@@ -231,6 +231,8 @@ namespace Ink_Canvas.Helpers
                     object bestApp = PPTROTConnectionHelper.GetAnyActivePowerPoint(PPTApplication, out int bestPriority, out int targetPriority);
                     bool needRebind = false;
 
+                    LogHelper.WriteLogToFile($"ROT扫描结果: now={targetPriority}, best={bestPriority}, bestApp={(bestApp != null ? "found" : "null")}", LogHelper.LogType.Trace);
+
                     if (PPTApplication == null && bestApp != null)
                     {
                         needRebind = true;
@@ -245,6 +247,8 @@ namespace Ink_Canvas.Helpers
 
                     if (needRebind)
                     {
+                        LogHelper.WriteLogToFile($"需要重新绑定: bestPriority={bestPriority}, targetPriority={targetPriority}", LogHelper.LogType.Trace);
+                        
                         bool wait = (PPTApplication != null);
                         DisconnectFromPPT();
 
@@ -257,16 +261,19 @@ namespace Ink_Canvas.Helpers
                                 Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
                                 if (pptApp != null)
                                 {
+                                    LogHelper.WriteLogToFile("成功转换为强类型Application，开始连接", LogHelper.LogType.Trace);
                                     ConnectToPPT(pptApp);
                                 }
                                 else
                                 {
+                                    LogHelper.WriteLogToFile("无法转换为强类型Application，使用dynamic类型连接", LogHelper.LogType.Trace);
                                     PPTApplication = bestApp;
                                     ConnectToPPT(null);
                                 }
                             }
-                            catch
+                            catch (Exception ex)
                             {
+                                LogHelper.WriteLogToFile($"连接失败: {ex.Message}", LogHelper.LogType.Warning);
                                 PPTROTConnectionHelper.SafeReleaseComObject(bestApp);
                             }
                         }
@@ -516,16 +523,32 @@ namespace Ink_Canvas.Helpers
                 try
                 {
                     dynamic pptAppDynamic = PPTApplication;
-                    _pptActivePresentation = pptAppDynamic.ActivePresentation;
-                    _updateTime = DateTime.Now;
-
-                    int tempTotalPage = -1;
                     try
                     {
-                        _pptSlideShowWindow = _pptActivePresentation.SlideShowWindow;
-                        tempTotalPage = GetTotalSlideIndex(_pptActivePresentation);
+                        _pptActivePresentation = pptAppDynamic.ActivePresentation;
+                        _updateTime = DateTime.Now;
                     }
-                    catch
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"访问ActivePresentation失败: {ex.Message}，继续使用轮询模式", LogHelper.LogType.Warning);
+                        _pptActivePresentation = null;
+                        _updateTime = DateTime.Now;
+                    }
+
+                    int tempTotalPage = -1;
+                    if (_pptActivePresentation != null)
+                    {
+                        try
+                        {
+                            _pptSlideShowWindow = _pptActivePresentation.SlideShowWindow;
+                            tempTotalPage = GetTotalSlideIndex(_pptActivePresentation);
+                        }
+                        catch
+                        {
+                            tempTotalPage = -1;
+                        }
+                    }
+                    else
                     {
                         tempTotalPage = -1;
                     }
@@ -600,7 +623,10 @@ namespace Ink_Canvas.Helpers
                     _bindingEvents = false;
                     _forcePolling = true;
 
-                    UpdateCurrentPresentationInfo();
+                    if (_pptActivePresentation != null)
+                    {
+                        UpdateCurrentPresentationInfo();
+                    }
 
                     PPTConnectionChanged?.Invoke(true);
 
@@ -614,9 +640,13 @@ namespace Ink_Canvas.Helpers
                         LogHelper.WriteLogToFile("成功绑定!", LogHelper.LogType.Event);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    DisconnectFromPPT();
+                    LogHelper.WriteLogToFile($"ConnectToPPT内部异常: {ex.Message}", LogHelper.LogType.Warning);
+                    if (_pptActivePresentation == null && PPTApplication == null)
+                    {
+                        DisconnectFromPPT();
+                    }
                 }
             }
             catch (Exception ex)
