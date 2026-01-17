@@ -508,6 +508,140 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 检查是否存在应当被收纳应用的全屏窗口
+        /// </summary>
+        /// <returns>如果存在应当被收纳应用的全屏窗口返回true，否则返回false</returns>
+        private bool HasFullScreenWindowOfAutoFoldApps()
+        {
+            if (_windowOverviewModel == null) return false;
+
+            try
+            {
+                var fullScreenWindows = _windowOverviewModel.GetFullScreenWindows();
+                if (fullScreenWindows == null || fullScreenWindows.Count == 0) return false;
+
+                foreach (var window in fullScreenWindows)
+                {
+                    var windowProcessName = window.ProcessName;
+                    var windowRect = window.Rect;
+
+                    if (windowProcessName == "EasiNote")
+                    {
+                        if (window.ProcessPath != "Unknown")
+                        {
+                            try
+                            {
+                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
+                                string version = versionInfo.FileVersion;
+                                string prodName = versionInfo.ProductName;
+
+                                if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
+                                {
+                                    return true;
+                                }
+                                else if (version.StartsWith("3.") && Settings.Automation.IsAutoFoldInEasiNote3)
+                                {
+                                    return true;
+                                }
+                                else if (prodName.Contains("3C") && Settings.Automation.IsAutoFoldInEasiNote3C)
+                                {
+                                    return true;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    else if (Settings.Automation.IsAutoFoldInEasiCamera && windowProcessName == "EasiCamera")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInEasiNote5C && windowProcessName == "EasiNote5C")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                             (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInHiteCamera && windowProcessName == "HiteCamera")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInHiteTouchPro && windowProcessName == "HiteTouchPro")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInWxBoardMain && windowProcessName == "WxBoardMain")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                             (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInHiteLightBoard && windowProcessName == "HiteLightBoard")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInAdmoxWhiteboard && windowProcessName == "Amdox.WhiteBoard")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInAdmoxBooth && windowProcessName == "Amdox.Booth")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInQPoint && windowProcessName == "QPoint")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInYiYunVisualPresenter && windowProcessName == "YiYunVisualPresenter")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInMaxHubWhiteboard && windowProcessName == "WhiteBoard")
+                    {
+                        if (window.ProcessPath != "Unknown")
+                        {
+                            try
+                            {
+                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
+                                var version = versionInfo.FileVersion;
+                                var prodName = versionInfo.ProductName;
+                                if (version.StartsWith("6.") && prodName == "WhiteBoard")
+                                {
+                                    return true;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                }
+
+                if (Settings.Automation.IsAutoFoldInOldZyBoard &&
+                    (WinTabWindowsChecker.IsWindowExisted("WhiteBoard - DrawingWindow") ||
+                     WinTabWindowsChecker.IsWindowExisted("InstantAnnotationWindow")))
+                {
+                    var oldZyWindows = _windowOverviewModel.Windows.Where(w =>
+                        (w.Title.Contains("WhiteBoard - DrawingWindow") || w.Title.Contains("InstantAnnotationWindow")) &&
+                        w.IsFullScreen).ToList();
+                    if (oldZyWindows.Count > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"检查全屏窗口失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// 使用窗口预览模型检测前台窗口是否符合自动收纳要求（仅用于检测，不执行任何操作）
         /// </summary>
         /// <returns>如果符合自动收纳要求返回true，否则返回false</returns>
@@ -690,6 +824,12 @@ namespace Ink_Canvas
             if (isFloatingBarChangingHideMode) return;
             try
             {
+                if (HasFullScreenWindowOfAutoFoldApps())
+                {
+                    if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                    return;
+                }
+
                 bool shouldAutoFold = CheckShouldAutoFoldByWindowPreview();
                 var windowProcessName = ForegroundWindowInfo.ProcessName();
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
@@ -948,11 +1088,24 @@ namespace Ink_Canvas
                 else if (WinTabWindowsChecker.IsWindowExisted("幻灯片放映", false))
                 {
                     // 处于幻灯片放映状态
+                    if (HasFullScreenWindowOfAutoFoldApps())
+                    {
+                        if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                        return;
+                    }
+                    
                     if (!Settings.Automation.IsAutoFoldInPPTSlideShow && isFloatingBarFolded && !foldFloatingBarByUser)
                         UnFoldFloatingBar_MouseUp(new object(), null);
                 }
                 else
                 {
+                    if (HasFullScreenWindowOfAutoFoldApps())
+                    {
+                        if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                        unfoldFloatingBarByUser = false;
+                        return;
+                    }
+
                     // 检查是否启用了软件退出后保持收纳模式
                     if (Settings.Automation.KeepFoldAfterSoftwareExit)
                     {
