@@ -63,7 +63,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                object bestApp = GetAnyActivePowerPoint(null, out int bestPriority, out _, isSupportWPS);
+                object bestApp = GetAnyActivePowerPoint(null, out int bestPriority, out _);
 
                 if (bestApp != null && bestPriority > 0)
                 {
@@ -113,7 +113,7 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Private Methods
-        private static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority, bool isSupportWPS)
+        private static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
             IEnumMoniker enumMoniker = null;
@@ -169,10 +169,7 @@ namespace Ink_Canvas.Helpers
                                     object appObj = comObject.GetType().InvokeMember("Application", BindingFlags.GetProperty, null, comObject, null);
                                     candidateApp = appObj;
                                 }
-                                catch
-                                {
-                                    candidateApp = comObject;
-                                }
+                                catch { }
                             }
                         }
                         bool isDuplicate = false;
@@ -243,7 +240,7 @@ namespace Ink_Canvas.Helpers
                                             }
                                             else
                                             {
-                                                if (IsSlideShowWindowActive(ssWindow, isSupportWPS))
+                                                if (IsSlideShowWindowActive(ssWindow))
                                                 {
                                                     currentPriority = 3;
                                                 }
@@ -355,10 +352,12 @@ namespace Ink_Canvas.Helpers
             return false;
         }
 
-        private static bool IsSlideShowWindowActive(object sswObj, bool isSupportWPS)
+        private static bool IsSlideShowWindowActive(object sswObj)
         {
             try
             {
+                dynamic ssw = sswObj;
+
                 IntPtr foregroundHwnd = GetForegroundWindow();
                 if (foregroundHwnd == IntPtr.Zero) return false;
 
@@ -371,31 +370,28 @@ namespace Ink_Canvas.Helpers
                     sswHwnd = GetPptHwndFromSlideShowWindow(sswObj);
                 }
                 catch { return false; }
-
                 if (sswHwnd == IntPtr.Zero) return false;
 
                 uint sswPid;
                 GetWindowThreadProcessId(sswHwnd, out sswPid);
 
                 if (fgPid == sswPid) return true;
-                if (isSupportWPS)
-                {
-                    try
-                    {
-                        using (Process fgProc = Process.GetProcessById((int)fgPid))
-                        using (Process appProc = Process.GetProcessById((int)sswPid))
-                        {
-                            string fgName = fgProc.ProcessName.ToLower();
-                            string appName = appProc.ProcessName.ToLower();
 
-                            if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
-                            {
-                                return true;
-                            }
+                try
+                {
+                    using (Process fgProc = Process.GetProcessById((int)fgPid))
+                    using (Process appProc = Process.GetProcessById((int)sswPid))
+                    {
+                        string fgName = fgProc.ProcessName.ToLower();
+                        string appName = appProc.ProcessName.ToLower();
+
+                        if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
+                        {
+                            return true;
                         }
                     }
-                    catch { }
                 }
+                catch { }
 
                 return false;
             }
@@ -407,28 +403,20 @@ namespace Ink_Canvas.Helpers
 
         private static IntPtr GetPptHwndFromSlideShowWindow(object pptSlideShowWindowObj)
         {
+            IntPtr hwnd = IntPtr.Zero;
             if (pptSlideShowWindowObj == null) return IntPtr.Zero;
 
             try
             {
-                dynamic ssw = pptSlideShowWindowObj;
-                object hwndObj = ssw.HWND;
-                
-                if (hwndObj is int)
-                {
-                    return new IntPtr((int)hwndObj);
-                }
-                else if (hwndObj is IntPtr)
-                {
-                    return (IntPtr)hwndObj;
-                }
+                Microsoft.Office.Interop.PowerPoint.SlideShowWindow slideWindow = (Microsoft.Office.Interop.PowerPoint.SlideShowWindow)pptSlideShowWindowObj;
 
-                return IntPtr.Zero;
+                int hwndVal = slideWindow.HWND;
+
+                hwnd = new IntPtr(hwndVal);
             }
-            catch
-            {
-                return IntPtr.Zero;
-            }
+            catch { }
+
+            return hwnd;
         }
 
         private static void SafeReleaseComObject(object comObj)
