@@ -921,16 +921,22 @@ namespace Ink_Canvas
                 await Task.Delay(100);
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                    if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                    if (!isFloatingBarFolded)
                     {
-                        Task.Delay(350).ContinueWith(_ =>
+                        PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                        if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
                         {
-                            Application.Current.Dispatcher.Invoke(() =>
+                            Task.Delay(350).ContinueWith(_ =>
                             {
-                                ViewboxFloatingBarMarginAnimation(-60);
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    if (!isFloatingBarFolded)
+                                    {
+                                        ViewboxFloatingBarMarginAnimation(-60);
+                                    }
+                                });
                             });
-                        });
+                        }
                     }
                 });
             }
@@ -1647,11 +1653,17 @@ namespace Ink_Canvas
                 SetCurrentToolMode(InkCanvasEditingMode.None);
 
                 await Task.Delay(150);
-                PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
-                {   
-                    await Task.Delay(350);
-                    ViewboxFloatingBarMarginAnimation(-60);
+                if (!isFloatingBarFolded)
+                {
+                    PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                    if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                    {   
+                        await Task.Delay(350);
+                        if (!isFloatingBarFolded)
+                        {
+                            ViewboxFloatingBarMarginAnimation(-60);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -1669,11 +1681,17 @@ namespace Ink_Canvas
                 await HandleManualSlideShowEnd();
 
                 await Task.Delay(150);
-                PureViewboxFloatingBarMarginAnimationInDesktopMode();
-                if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                if (!isFloatingBarFolded)
                 {
-                    await Task.Delay(350);
-                    ViewboxFloatingBarMarginAnimation(-60);
+                    PureViewboxFloatingBarMarginAnimationInDesktopMode();
+                    if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
+                    {
+                        await Task.Delay(350);
+                        if (!isFloatingBarFolded)
+                        {
+                            ViewboxFloatingBarMarginAnimation(-60);
+                        }
+                    }
                 }
             }
         }
