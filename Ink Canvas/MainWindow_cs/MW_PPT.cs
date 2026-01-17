@@ -644,7 +644,7 @@ namespace Ink_Canvas
                     }
                     else
                     {
-                        activePresentation = _pptManager?.GetCurrentActivePresentation();
+                        activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
                         currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         totalSlides = _pptManager?.SlidesCount ?? 0;
                         // 初始化当前播放页码跟踪

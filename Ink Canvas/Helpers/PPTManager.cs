@@ -143,8 +143,8 @@ namespace Ink_Canvas.Helpers
         private readonly object _lockObject = new object();
         private bool _disposed;
         
-        private Presentation _pptActivePresentation;
-        private SlideShowWindow _pptSlideShowWindow;
+        private dynamic _pptActivePresentation;
+        private dynamic _pptSlideShowWindow;
         private int _polling = 0;
         private bool _forcePolling = false;
         private bool _bindingEvents = false;
@@ -307,15 +307,15 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                Presentation activePresentation = null;
-                SlideShowWindow slideShowWindow = null;
+                dynamic activePresentation = null;
+                dynamic slideShowWindow = null;
 
                 try
                 {
                     dynamic app = PPTApplication;
                     activePresentation = app.ActivePresentation;
 
-                    if (activePresentation != null && !PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation))
+                    if (activePresentation != null && _pptActivePresentation != null && !PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation))
                     {
                         DisconnectFromPPT();
                         return;
@@ -328,20 +328,32 @@ namespace Ink_Canvas.Helpers
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.WriteLogToFile($"检查演示文稿状态失败: {ex}", LogHelper.LogType.Warning);
-                    DisconnectFromPPT();
-                    return;
+                    LogHelper.WriteLogToFile($"检查演示文稿状态失败: {ex.Message}，继续使用轮询模式", LogHelper.LogType.Warning);
+                    activePresentation = null;
                 }
                 finally
                 {
-                    SafeReleaseComObject(activePresentation);
+                    if (activePresentation != null && (_pptActivePresentation == null || !PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation)))
+                    {
+                        SafeReleaseComObject(activePresentation);
+                    }
                 }
 
                 bool isSlideShowActive = false;
                 try
                 {
                     dynamic app = PPTApplication;
-                    activePresentation = app.ActivePresentation;
+                    if (activePresentation == null)
+                    {
+                        try
+                        {
+                            activePresentation = app.ActivePresentation;
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"访问ActivePresentation失败: {ex.Message}，继续使用轮询模式", LogHelper.LogType.Warning);
+                        }
+                    }
 
                     if (activePresentation != null)
                     {
@@ -356,9 +368,10 @@ namespace Ink_Canvas.Helpers
                         catch { }
                     }
 
-                    if (isSlideShowActive)
+                    if (isSlideShowActive && activePresentation != null)
                     {
-                        slideShowWindow = activePresentation.SlideShowWindow;
+                        dynamic pres = activePresentation;
+                        slideShowWindow = pres.SlideShowWindow;
                         if (_pptSlideShowWindow == null || !PPTROTConnectionHelper.IsValidSlideShowWindow(_pptSlideShowWindow))
                         {
                             if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptSlideShowWindow, slideShowWindow))
@@ -380,8 +393,11 @@ namespace Ink_Canvas.Helpers
                 }
                 finally
                 {
-                    SafeReleaseComObject(activePresentation);
-                    if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptSlideShowWindow, slideShowWindow))
+                    if (activePresentation != null && (_pptActivePresentation == null || !PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation)))
+                    {
+                        SafeReleaseComObject(activePresentation);
+                    }
+                    if (slideShowWindow != null && !PPTROTConnectionHelper.AreComObjectsEqual(_pptSlideShowWindow, slideShowWindow))
                     {
                         SafeReleaseComObject(slideShowWindow);
                     }
@@ -393,7 +409,8 @@ namespace Ink_Canvas.Helpers
                     {
                         try
                         {
-                            slideShowWindow = _pptActivePresentation.SlideShowWindow;
+                            dynamic pres = _pptActivePresentation;
+                            slideShowWindow = pres.SlideShowWindow;
 
                             int tempTotalPage = -1;
                             if (slideShowWindow != null)
@@ -828,94 +845,114 @@ namespace Ink_Canvas.Helpers
                     {
                         if (_pptActivePresentation != null)
                         {
-                            CurrentPresentation = _pptActivePresentation;
-                            CurrentSlides = CurrentPresentation.Slides;
-
                             try
                             {
-                                var slideCount = CurrentSlides.Count;
-                                if (slideCount > 0)
+                                CurrentPresentation = _pptActivePresentation as Presentation;
+                                if (CurrentPresentation != null)
                                 {
-                                    SlidesCount = slideCount;
+                                    CurrentSlides = CurrentPresentation.Slides;
                                 }
                                 else
                                 {
-                                    SlidesCount = 0;
-                                    LogHelper.WriteLogToFile("PPT演示文稿页数为0，可能为空演示文稿", LogHelper.LogType.Warning);
+                                    dynamic pres = _pptActivePresentation;
+                                    CurrentSlides = pres.Slides as Slides;
                                 }
                             }
-                            catch (COMException comEx)
+                            catch
                             {
-                                var hr = (uint)comEx.HResult;
-                                SlidesCount = 0;
-                                LogHelper.WriteLogToFile($"读取PPT页数失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                                dynamic pres = _pptActivePresentation;
+                                CurrentSlides = pres.Slides as Slides;
                             }
 
-                            try
+                            if (CurrentSlides != null)
                             {
-                                if (IsInSlideShow && _pptSlideShowWindow != null)
+                                try
                                 {
-                                    try
+                                    var slideCount = CurrentSlides.Count;
+                                    if (slideCount > 0)
                                     {
-                                        view = _pptSlideShowWindow.View;
-                                        if (view != null)
-                                        {
-                                            dynamic viewObj = view;
-                                            CurrentSlide = viewObj.Slide as Slide;
-                                        }
+                                        SlidesCount = slideCount;
                                     }
-                                    catch { }
-                                }
-                                else
-                                {
-                                    dynamic app = PPTApplication;
-                                    activeWindow = app.ActiveWindow;
-                                    if (activeWindow != null)
+                                    else
                                     {
-                                        dynamic aw = activeWindow;
-                                        selection = aw.Selection;
-                                        if (selection != null)
+                                        SlidesCount = 0;
+                                        LogHelper.WriteLogToFile("PPT演示文稿页数为0，可能为空演示文稿", LogHelper.LogType.Warning);
+                                    }
+                                }
+                                catch (COMException comEx)
+                                {
+                                    var hr = (uint)comEx.HResult;
+                                    SlidesCount = 0;
+                                    LogHelper.WriteLogToFile($"读取PPT页数失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                                }
+
+                                try
+                                {
+                                    if (IsInSlideShow && _pptSlideShowWindow != null)
+                                    {
+                                        try
                                         {
-                                            dynamic sel = selection;
-                                            slideRange = sel.SlideRange;
-                                            if (slideRange != null)
+                                            dynamic ssw = _pptSlideShowWindow;
+                                            view = ssw.View;
+                                            if (view != null)
                                             {
-                                                dynamic sr = slideRange;
-                                                int slideNumber = sr.SlideNumber;
-                                                if (slideNumber > 0 && slideNumber <= SlidesCount)
+                                                dynamic viewObj = view;
+                                                CurrentSlide = viewObj.Slide as Slide;
+                                            }
+                                        }
+                                        catch { }
+                                    }
+                                    else
+                                    {
+                                        dynamic app = PPTApplication;
+                                        activeWindow = app.ActiveWindow;
+                                        if (activeWindow != null)
+                                        {
+                                            dynamic aw = activeWindow;
+                                            selection = aw.Selection;
+                                            if (selection != null)
+                                            {
+                                                dynamic sel = selection;
+                                                slideRange = sel.SlideRange;
+                                                if (slideRange != null)
                                                 {
-                                                    CurrentSlide = CurrentSlides[slideNumber];
+                                                    dynamic sr = slideRange;
+                                                    int slideNumber = sr.SlideNumber;
+                                                    if (slideNumber > 0 && slideNumber <= SlidesCount)
+                                                    {
+                                                        CurrentSlide = CurrentSlides[slideNumber];
+                                                    }
                                                 }
                                             }
                                         }
+
+                                        if (CurrentSlide == null && SlidesCount > 0)
+                                        {
+                                            CurrentSlide = CurrentSlides[1];
+                                        }
                                     }
-                                    
-                                    if (CurrentSlide == null && SlidesCount > 0)
+                                }
+                                catch (COMException comEx)
+                                {
+                                    var hr = (uint)comEx.HResult;
+                                    if (hr != 0x8001010E && hr != 0x80004005)
+                                    {
+                                        LogHelper.WriteLogToFile($"获取当前幻灯片失败: {comEx.Message}", LogHelper.LogType.Warning);
+                                    }
+
+                                    if (SlidesCount > 0)
                                     {
                                         CurrentSlide = CurrentSlides[1];
                                     }
                                 }
                             }
-                            catch (COMException comEx)
+                            else
                             {
-                                var hr = (uint)comEx.HResult;
-                                if (hr != 0x8001010E && hr != 0x80004005)
-                                {
-                                    LogHelper.WriteLogToFile($"获取当前幻灯片失败: {comEx.Message}", LogHelper.LogType.Warning);
-                                }
-
-                                if (SlidesCount > 0)
-                                {
-                                    CurrentSlide = CurrentSlides[1];
-                                }
+                                CurrentPresentation = null;
+                                CurrentSlides = null;
+                                CurrentSlide = null;
+                                SlidesCount = 0;
                             }
-                        }
-                        else
-                        {
-                            CurrentPresentation = null;
-                            CurrentSlides = null;
-                            CurrentSlide = null;
-                            SlidesCount = 0;
                         }
                     }
                     catch (COMException comEx)
@@ -1412,7 +1449,7 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 获取当前活跃的演示文稿
         /// </summary>
-        public Presentation GetCurrentActivePresentation()
+        public object GetCurrentActivePresentation()
         {
             object slideShowWindows = null;
             object slideShowWindow = null;
@@ -1447,7 +1484,7 @@ namespace Ink_Canvas.Helpers
                                     {
                                         dynamic slideObj = slide;
                                         presentation = slideObj.Parent;
-                                        return presentation as Presentation;
+                                        return presentation;
                                     }
                                 }
                             }
@@ -1463,7 +1500,7 @@ namespace Ink_Canvas.Helpers
                     presentation = aw.Presentation;
                     if (presentation != null)
                     {
-                        return presentation as Presentation;
+                        return presentation;
                     }
                 }
 
@@ -1505,7 +1542,7 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 获取当前幻灯片编号
         /// </summary>
-        private int GetCurrentSlideIndex(SlideShowWindow slideShowWindow)
+        private int GetCurrentSlideIndex(dynamic slideShowWindow)
         {
             object view = null;
             object slide = null;
@@ -1513,7 +1550,8 @@ namespace Ink_Canvas.Helpers
             try
             {
                 if (slideShowWindow == null) return 0;
-                view = slideShowWindow.View;
+                dynamic ssw = slideShowWindow;
+                view = ssw.View;
                 if (view != null)
                 {
                     dynamic viewObj = view;
@@ -1533,12 +1571,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private int GetTotalSlideIndex(Presentation presentation)
+        private int GetTotalSlideIndex(dynamic presentation)
         {
             try
             {
                 if (presentation == null) return 0;
-                return presentation.Slides.Count;
+                dynamic pres = presentation;
+                return pres.Slides.Count;
             }
             catch
             {
