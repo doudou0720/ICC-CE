@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -258,18 +259,9 @@ namespace Ink_Canvas.Helpers
 
                             try
                             {
-                                Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
-                                if (pptApp != null)
-                                {
-                                    LogHelper.WriteLogToFile("成功转换为强类型Application，开始连接", LogHelper.LogType.Trace);
-                                    ConnectToPPT(pptApp);
-                                }
-                                else
-                                {
-                                    LogHelper.WriteLogToFile("无法转换为强类型Application，使用dynamic类型连接", LogHelper.LogType.Trace);
-                                    PPTApplication = bestApp;
-                                    ConnectToPPT(null);
-                                }
+                                LogHelper.WriteLogToFile("使用dynamic类型连接", LogHelper.LogType.Trace);
+                                PPTApplication = bestApp;
+                                ConnectToPPT(null);
                             }
                             catch (Exception ex)
                             {
@@ -528,7 +520,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private void ConnectToPPT(Microsoft.Office.Interop.PowerPoint.Application pptApp)
+        private void ConnectToPPT(object pptApp)
         {
             try
             {
@@ -627,7 +619,7 @@ namespace Ink_Canvas.Helpers
                         {
                             _bindingEvents = false;
                             _forcePolling = true;
-                            LogHelper.WriteLogToFile("转换Application接口失败，无法注册事件", LogHelper.LogType.Warning);
+                            LogHelper.WriteLogToFile("无法转换为强类型Application，使用轮询模式", LogHelper.LogType.Trace);
                         }
                     }
                     catch (Exception ex)
@@ -636,9 +628,6 @@ namespace Ink_Canvas.Helpers
                         _forcePolling = true;
                         LogHelper.WriteLogToFile($"无法注册事件: {ex.Message}", LogHelper.LogType.Warning);
                     }
-
-                    _bindingEvents = false;
-                    _forcePolling = true;
 
                     if (_pptActivePresentation != null)
                     {
@@ -2095,13 +2084,19 @@ namespace Ink_Canvas.Helpers
                 }
 
                 // 第三步：释放 pptApp 对象（PPTApplication）
-                Microsoft.Office.Interop.PowerPoint.Application pptApp = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
-                if (pptApp != null)
+                if (PPTApplication != null)
                 {
-                    Marshal.ReleaseComObject(pptApp);
-                    pptApp = null;
-                    PPTApplication = null;
-                    LogHelper.WriteLogToFile("已释放pptApp对象", LogHelper.LogType.Trace);
+                    try
+                    {
+                        Marshal.ReleaseComObject(PPTApplication);
+                        PPTApplication = null;
+                        LogHelper.WriteLogToFile("已释放pptApp对象", LogHelper.LogType.Trace);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"释放pptApp对象失败: {ex.Message}", LogHelper.LogType.Trace);
+                        PPTApplication = null;
+                    }
                 }
 
                 // 第四步：强制垃圾回收及等待终结器执行
