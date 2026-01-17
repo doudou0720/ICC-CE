@@ -291,18 +291,13 @@ namespace Ink_Canvas.Helpers
                 }
                 return null;
             }
-            catch (COMException ex)
+            catch (COMException)
             {
-                var hr = (uint)ex.HResult;
-                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
-                {
-                    return TryConnectToPowerPointViaROT();
-                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                return TryConnectToPowerPointViaROT();
+                return null;
             }
             catch (Exception)
             {
@@ -337,24 +332,13 @@ namespace Ink_Canvas.Helpers
                 }
                 return null;
             }
-            catch (COMException ex)
+            catch (COMException)
             {
-                var hr = (uint)ex.HResult;
-                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
-                {
-                    // WPS COM注册损坏，尝试使用ROT备用方法
-                    return TryConnectToWPSViaROT();
-                }
-                if (hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E)
-                {
-                    LogHelper.WriteLogToFile($"连接WPS失败: {ex}", LogHelper.LogType.Warning);
-                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                // WPS COM对象类型转换失败，尝试使用ROT备用方法
-                return TryConnectToWPSViaROT();
+                return null;
             }
             catch (Exception)
             {
