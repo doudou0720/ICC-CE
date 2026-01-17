@@ -371,29 +371,7 @@ namespace Ink_Canvas.Helpers
 
                 if (IsInSlideShow)
                 {
-                    object slideShowWindows = null;
-                    object slideShowWindow = null;
-                    try
-                    {
-                        slideShowWindows = PPTApplication.SlideShowWindows;
-                        if (slideShowWindows != null)
-                        {
-                            dynamic ssw = slideShowWindows;
-                            if (ssw.Count > 0)
-                            {
-                                slideShowWindow = ssw[1];
-                                if (slideShowWindow != null)
-                                {
-                                    OnSlideShowBegin(slideShowWindow as SlideShowWindow);
-                                }
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        SafeReleaseComObject(slideShowWindow);
-                        SafeReleaseComObject(slideShowWindows);
-                    }
+                    OnSlideShowBegin(PPTApplication.SlideShowWindows[1]);
                 }
                 else if (CurrentPresentation != null)
                 {
@@ -1080,55 +1058,35 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public Presentation GetCurrentActivePresentation()
         {
-            object slideShowWindows = null;
-            object slideShowWindow = null;
-            object view = null;
-            object slide = null;
-            object activeWindow = null;
-            object presentation = null;
             try
             {
                 if (!IsConnected || PPTApplication == null) return null;
                 if (!Marshal.IsComObject(PPTApplication)) return null;
 
-                if (IsInSlideShow)
+                if (IsInSlideShow && PPTApplication.SlideShowWindows.Count > 0)
                 {
-                    slideShowWindows = PPTApplication.SlideShowWindows;
-                    if (slideShowWindows != null)
+                    try
                     {
-                        dynamic ssw = slideShowWindows;
-                        if (ssw.Count > 0)
+                        var slideShowWindow = PPTApplication.SlideShowWindows[1];
+                        if (slideShowWindow?.View != null)
                         {
-                            slideShowWindow = ssw[1];
-                            if (slideShowWindow != null)
-                            {
-                                dynamic sswObj = slideShowWindow;
-                                view = sswObj.View;
-                                if (view != null)
-                                {
-                                    dynamic viewObj = view;
-                                    slide = viewObj.Slide;
-                                    if (slide != null)
-                                    {
-                                        dynamic slideObj = slide;
-                                        presentation = slideObj.Parent;
-                                        return presentation as Presentation;
-                                    }
-                                }
-                            }
+                            return (Presentation)slideShowWindow.View.Slide.Parent;
                         }
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        if (hr == 0x80048240)
+                        {
+                            return null;
+                        }
+                        throw;
                     }
                 }
 
-                activeWindow = PPTApplication.ActiveWindow;
-                if (activeWindow != null)
+                if (PPTApplication.ActiveWindow?.Presentation != null)
                 {
-                    dynamic aw = activeWindow;
-                    presentation = aw.Presentation;
-                    if (presentation != null)
-                    {
-                        return presentation as Presentation;
-                    }
+                    return PPTApplication.ActiveWindow.Presentation;
                 }
 
                 return CurrentPresentation;
@@ -1140,10 +1098,6 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                if (hr == 0x80048240)
-                {
-                    return null;
-                }
                 LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {comEx.Message}", LogHelper.LogType.Warning);
                 return CurrentPresentation;
             }
@@ -1151,18 +1105,6 @@ namespace Ink_Canvas.Helpers
             {
                 LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {ex}", LogHelper.LogType.Error);
                 return CurrentPresentation;
-            }
-            finally
-            {
-                if (presentation != null && !ReferenceEquals(presentation, CurrentPresentation))
-                {
-                    SafeReleaseComObject(presentation);
-                }
-                SafeReleaseComObject(slide);
-                SafeReleaseComObject(view);
-                SafeReleaseComObject(slideShowWindow);
-                SafeReleaseComObject(slideShowWindows);
-                SafeReleaseComObject(activeWindow);
             }
         }
 
