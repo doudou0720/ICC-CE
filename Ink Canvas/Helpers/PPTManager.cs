@@ -318,7 +318,7 @@ namespace Ink_Canvas.Helpers
                             {
                                 LogHelper.WriteLogToFile("检测到演示文稿切换，断开连接", LogHelper.LogType.Trace);
                                 DisconnectFromPPT();
-                                break;
+                                continue;
                             }
                         }
                         catch (COMException ex) when ((uint)ex.ErrorCode == 0x8001010A)
@@ -347,22 +347,60 @@ namespace Ink_Canvas.Helpers
                             {
                                 count = slideShowWindows.Count;
                             }
-                            PPTROTConnectionHelper.SafeReleaseComObject(slideShowWindows);
 
                             if (activePresentation != null && count > 0)
                             {
                                 isSlideShowActive = true;
 
-                                slideShowWindow = activePresentation.SlideShowWindow;
-                                if (_pptSlideShowWindow == null || !PPTROTConnectionHelper.IsValidSlideShowWindow(_pptSlideShowWindow))
+                                dynamic activeSlideShowWindow = null;
+                                
+                                try
                                 {
-                                    if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptSlideShowWindow, slideShowWindow))
+                                    for (int i = 1; i <= count; i++)
                                     {
-                                        PPTROTConnectionHelper.SafeReleaseComObject(_pptSlideShowWindow);
-                                        _pptSlideShowWindow = slideShowWindow;
-                                        LogHelper.WriteLogToFile("发现窗口，成功设置 slideshowwindow", LogHelper.LogType.Trace);
+                                        try
+                                        {
+                                            dynamic ssw = slideShowWindows[i];
+                                            if (PPTROTConnectionHelper.IsSlideShowWindowActive(ssw))
+                                            {
+                                                activeSlideShowWindow = ssw;
+                                                LogHelper.WriteLogToFile($"找到活跃的放映窗口: {i}/{count}", LogHelper.LogType.Trace);
+                                                break;
+                                            }
+                                        }
+                                        catch { }
                                     }
                                 }
+                                catch { }
+
+                                if (activeSlideShowWindow == null)
+                                {
+                                    try
+                                    {
+                                        activeSlideShowWindow = activePresentation.SlideShowWindow;
+                                    }
+                                    catch { }
+                                }
+
+                                if (activeSlideShowWindow != null)
+                                {
+                                    slideShowWindow = activeSlideShowWindow;
+                                    if (_pptSlideShowWindow == null || !PPTROTConnectionHelper.IsValidSlideShowWindow(_pptSlideShowWindow))
+                                    {
+                                        if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptSlideShowWindow, slideShowWindow))
+                                        {
+                                            PPTROTConnectionHelper.SafeReleaseComObject(_pptSlideShowWindow);
+                                            _pptSlideShowWindow = slideShowWindow;
+                                            LogHelper.WriteLogToFile("发现窗口，成功设置 slideshowwindow", LogHelper.LogType.Trace);
+                                        }
+                                    }
+                                }
+                                
+                                PPTROTConnectionHelper.SafeReleaseComObject(slideShowWindows);
+                            }
+                            else
+                            {
+                                PPTROTConnectionHelper.SafeReleaseComObject(slideShowWindows);
                             }
                         }
                         catch (COMException ex) when ((uint)ex.ErrorCode == 0x8001010A)

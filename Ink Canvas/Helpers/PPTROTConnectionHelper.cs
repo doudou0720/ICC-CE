@@ -369,7 +369,7 @@ namespace Ink_Canvas.Helpers
             return false;
         }
 
-        private static bool IsSlideShowWindowActive(object sswObj)
+        public static bool IsSlideShowWindowActive(object sswObj)
         {
             try
             {
