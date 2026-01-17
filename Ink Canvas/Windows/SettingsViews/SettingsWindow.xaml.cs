@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Helpers;
+using iNKORE.UI.WPF.Helpers;
 using Ink_Canvas.Windows.SettingsViews;
 using System;
 using System.Collections.Generic;
@@ -367,11 +367,10 @@ namespace Ink_Canvas.Windows
 
                 if (isDarkTheme)
                 {
-                    // 深色主题 - 参考 Windows 系统设置
                     if (MainBorder != null)
                     {
-                        MainBorder.Background = ThemeHelper.GetBackgroundPrimaryBrush(); // Windows 系统主背景 #202020
-                        MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 120, 215)); // Windows 系统强调色（蓝色）
+                        MainBorder.Background = new SolidColorBrush(Color.FromRgb(43, 43, 43));
+                        MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 120, 215));
                     }
                     if (SidebarBorder != null)
                     {
@@ -449,10 +448,9 @@ namespace Ink_Canvas.Windows
                 }
                 else
                 {
-                    // 浅色主题（默认）
                     if (MainBorder != null)
                     {
-                        MainBorder.Background = new SolidColorBrush(Color.FromRgb(250, 250, 250));
+                        MainBorder.Background = new SolidColorBrush(Color.FromRgb(255, 255, 255));
                         MainBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(53, 132, 228));
                     }
                     if (SidebarBorder != null)

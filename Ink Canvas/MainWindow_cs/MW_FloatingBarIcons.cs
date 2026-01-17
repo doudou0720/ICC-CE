@@ -431,8 +431,9 @@ namespace Ink_Canvas
                     LassoSelectIconGeometry.Brush = new SolidColorBrush(FloatBarForegroundColor);
                     LassoSelectIconGeometry.Geometry = Geometry.Parse(GetCorrectIcon("lassoSelect", false));
 
-                    // 根据主题设置颜色
-                    if (Settings.Appearance.Theme == 1) // 深色主题
+                    bool isDarkThemeForButtons = Settings.Appearance.Theme == 1 ||
+                                                 (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                    if (isDarkThemeForButtons)
                     {
                         BoardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
                         BoardSelect.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
@@ -447,7 +448,7 @@ namespace Ink_Canvas
                         BoardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
                         BoardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
                     }
-                    else // 浅色主题或跟随系统
+                    else
                     {
                         BoardPen.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
                         BoardSelect.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
@@ -539,15 +540,16 @@ namespace Ink_Canvas
                             CursorIconGeometry.Brush = new SolidColorBrush(highlightColor);
                             CursorIconGeometry.Geometry =
                                 Geometry.Parse(GetCorrectIcon("cursor", true));
-                            // 根据主题设置颜色
-                            if (Settings.Appearance.Theme == 1) // 深色主题
+                            bool isDarkThemeForCursor = Settings.Appearance.Theme == 1 ||
+                                                        (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                            if (isDarkThemeForCursor)
                             {
                                 BoardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
                                 BoardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
                                 BoardPenGeometry.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
                                 BoardPenLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255));
                             }
-                            else // 浅色主题或跟随系统
+                            else
                             {
                                 BoardPen.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
                                 BoardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170));
