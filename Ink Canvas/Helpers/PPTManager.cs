@@ -336,11 +336,21 @@ namespace Ink_Canvas.Helpers
                     dynamic app = PPTApplication;
                     activePresentation = app.ActivePresentation;
 
-                    Microsoft.Office.Interop.PowerPoint.Application pptAppForCount = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
-                    if (activePresentation != null && pptAppForCount != null && PPTROTConnectionHelper.GetSlideShowWindowsCount(pptAppForCount) > 0)
+                    if (activePresentation != null)
                     {
-                        isSlideShowActive = true;
+                        try
+                        {
+                            dynamic slideShowWindows = app.SlideShowWindows;
+                            if (slideShowWindows != null && slideShowWindows.Count > 0)
+                            {
+                                isSlideShowActive = true;
+                            }
+                        }
+                        catch { }
+                    }
 
+                    if (isSlideShowActive)
+                    {
                         slideShowWindow = activePresentation.SlideShowWindow;
                         if (_pptSlideShowWindow == null || !PPTROTConnectionHelper.IsValidSlideShowWindow(_pptSlideShowWindow))
                         {
