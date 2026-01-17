@@ -2957,6 +2957,12 @@ namespace Ink_Canvas
         {
             try
             {
+                // 如果切换到非橡皮擦模式，禁用橡皮擦覆盖层并重置橡皮擦状态
+                if (newMode != InkCanvasEditingMode.EraseByPoint && newMode != InkCanvasEditingMode.EraseByStroke)
+                {
+                    DisableEraserOverlay();
+                }
+
                 // 执行模式切换
                 inkCanvas.EditingMode = newMode;
 
