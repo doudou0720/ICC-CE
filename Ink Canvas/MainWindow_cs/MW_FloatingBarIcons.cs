@@ -3075,7 +3075,9 @@ namespace Ink_Canvas
                         ViewboxFloatingBar.Visibility = Visibility.Visible;
 
                         // 退出白板时自动收纳功能 - 等待浮动栏完全展开后再收纳
-                        if (Settings.Automation.IsAutoFoldWhenExitWhiteboard && !isFloatingBarFolded)
+                        // 当处于PPT放映模式时，不自动收纳
+                        if (Settings.Automation.IsAutoFoldWhenExitWhiteboard && !isFloatingBarFolded &&
+                            BtnPPTSlideShowEnd.Visibility != Visibility.Visible)
                         {
                             // 使用异步延迟，等待浮动栏展开动画完成后再收纳
                             Task.Run(async () =>
