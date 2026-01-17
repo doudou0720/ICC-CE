@@ -445,41 +445,17 @@ namespace Ink_Canvas
             try
             {
                 LogHelper.WriteLogToFile("开始创建启动画面...");
-                
-                UpdateHeartbeatOnUIThread();
-                
                 _splashScreen = new SplashScreen();
                 LogHelper.WriteLogToFile("启动画面对象创建成功，准备显示...");
-                
-                UpdateHeartbeatOnUIThread();
-                
-                if (Current?.Dispatcher != null && !Current.Dispatcher.HasShutdownStarted)
-                {
-                    Current.Dispatcher.Invoke(() =>
-                    {
-                        _splashScreen.Show();
-                        _isSplashScreenShown = true;
-                        
-                        Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
-                        
-                        UpdateHeartbeatOnUIThread();
-                        
-                        LogHelper.WriteLogToFile("启动画面已显示");
-                    }, DispatcherPriority.Normal);
-                }
-                else
-                {
-                    _splashScreen.Show();
-                    _isSplashScreenShown = true;
-                    UpdateHeartbeatOnUIThread();
-                    LogHelper.WriteLogToFile("启动画面已显示");
-                }
+                _splashScreen.Show();
+                _isSplashScreenShown = true;
+                splashScreenStartTime = DateTime.Now;
+                LogHelper.WriteLogToFile("启动画面已显示");
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"显示启动画面失败: {ex.Message}", LogHelper.LogType.Error);
                 LogHelper.WriteLogToFile($"异常堆栈: {ex.StackTrace}", LogHelper.LogType.Error);
-                UpdateHeartbeatOnUIThread();
             }
         }
 
@@ -666,34 +642,25 @@ namespace Ink_Canvas
 
         async void App_Startup(object sender, StartupEventArgs e)
         {
+            // 初始化应用启动时间
             appStartTime = DateTime.Now;
-            
-            UpdateHeartbeatOnUIThread();
 
+            // 根据设置决定是否显示启动画面
             if (ShouldShowSplashScreen())
             {
                 ShowSplashScreen();
                 SetSplashMessage("正在启动 Ink Canvas...");
                 SetSplashProgress(20);
-                
-                UpdateHeartbeatOnUIThread();
-                
                 await Task.Delay(500);
 
-                Application.Current.Dispatcher.Invoke(() => 
-                {
-                    UpdateHeartbeatOnUIThread();
-                }, DispatcherPriority.Render);
+                // 强制刷新UI，确保启动画面显示
+                Application.Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
             }
 
-            UpdateHeartbeatOnUIThread();
-            
             System.Threading.Thread.Sleep(500);
             RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
             LogHelper.NewLog(string.Format("Ink Canvas Starting (Version: {0})", Assembly.GetExecutingAssembly().GetName().Version));
-
-            UpdateHeartbeatOnUIThread();
 
             // 检查是否为最终应用启动（更新后的应用）
             bool isFinalApp = e.Args.Contains("--final-app");
@@ -721,61 +688,49 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile("App | 检测到最终应用启动（更新后的应用）");
             }
 
+            // 释放IACore相关DLL
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在初始化组件...");
                 SetSplashProgress(40);
                 await Task.Delay(500);
             }
-            
-            UpdateHeartbeatOnUIThread();
-            
             try
             {
                 IACoreDllExtractor.ExtractIACoreDlls();
-                UpdateHeartbeatOnUIThread();
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"释放IACore DLL时出错: {ex.Message}", LogHelper.LogType.Error);
-                UpdateHeartbeatOnUIThread();
             }
 
+            // 释放UIAccess DLL
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在初始化组件...");
                 SetSplashProgress(50);
                 await Task.Delay(300);
             }
-            
-            UpdateHeartbeatOnUIThread();
-            
             try
             {
                 UIAccessDllExtractor.ExtractUIAccessDlls();
-                UpdateHeartbeatOnUIThread();
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"释放UIAccess DLL时出错: {ex.Message}", LogHelper.LogType.Error);
-                UpdateHeartbeatOnUIThread();
             }
 
+            // 记录应用启动（设备标识符）
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在加载配置...");
                 SetSplashProgress(60);
                 await Task.Delay(500);
             }
-            
-            UpdateHeartbeatOnUIThread();
-            
             DeviceIdentifier.RecordAppLaunch();
             LogHelper.WriteLogToFile($"App | 设备ID: {DeviceIdentifier.GetDeviceId()}");
             LogHelper.WriteLogToFile($"App | 使用频率: {DeviceIdentifier.GetUsageFrequency()}");
             LogHelper.WriteLogToFile($"App | 更新优先级: {DeviceIdentifier.GetUpdatePriority()}");
-            
-            UpdateHeartbeatOnUIThread();
 
             // 处理更新模式启动
             bool isUpdateMode = AutoUpdateHelper.HandleUpdateModeStartup(e.Args);
@@ -1027,26 +982,22 @@ namespace Ink_Canvas
 
             StartArgs = e.Args;
 
+            // 在非更新模式下创建主窗口
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在初始化主界面...");
                 SetSplashProgress(80);
                 await Task.Delay(500);
             }
-            
-            UpdateHeartbeatOnUIThread();
-            
             var mainWindow = new MainWindow();
             MainWindow = mainWindow;
-            
-            UpdateHeartbeatOnUIThread();
 
+            // 主窗口加载完成后关闭启动画面
             mainWindow.Loaded += (s, args) =>
             {
-                UpdateHeartbeatOnUIThread();
-                
-                isStartupPhase = false;
-                LogHelper.WriteLogToFile("心跳监控 | 主窗口加载完成，启动阶段结束");
+                isStartupComplete = true;
+                startupCompleteHeartbeat = DateTime.Now;
+                LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {(startupCompleteHeartbeat - splashScreenStartTime).TotalSeconds:F2}秒");
                 
                 if (_isSplashScreenShown)
                 {
@@ -1058,15 +1009,10 @@ namespace Ink_Canvas
                         {
                             SetSplashMessage("启动完成！");
                             SetSplashProgress(100);
-                            UpdateHeartbeatOnUIThread();
-                            
+                            // 延迟关闭启动画面，让用户看到完成消息
                             Task.Delay(500).ContinueWith(__ =>
                             {
-                                Dispatcher.Invoke(() => 
-                                {
-                                    CloseSplashScreen();
-                                    UpdateHeartbeatOnUIThread();
-                                });
+                                Dispatcher.Invoke(() => CloseSplashScreen());
                             });
                         });
                     });
@@ -1074,36 +1020,29 @@ namespace Ink_Canvas
             };
 
             mainWindow.Show();
-            
-            UpdateHeartbeatOnUIThread();
 
+            // 注册.icstk文件关联
             try
             {
                 LogHelper.WriteLogToFile("开始注册.icstk文件关联");
                 FileAssociationManager.RegisterFileAssociation();
                 FileAssociationManager.ShowFileAssociationStatus();
-                UpdateHeartbeatOnUIThread();
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"注册文件关联时出错: {ex.Message}", LogHelper.LogType.Error);
-                UpdateHeartbeatOnUIThread();
             }
 
+            // 启动IPC监听器
             try
             {
                 LogHelper.WriteLogToFile("启动IPC监听器");
                 FileAssociationManager.StartIpcListener();
-                UpdateHeartbeatOnUIThread();
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"启动IPC监听器时出错: {ex.Message}", LogHelper.LogType.Error);
-                UpdateHeartbeatOnUIThread();
             }
-
-            UpdateHeartbeatOnUIThread();
-            LogHelper.WriteLogToFile("心跳监控 | 应用启动流程完成");
 
         }
 
@@ -1132,106 +1071,71 @@ namespace Ink_Canvas
             NoAction
         }
 
+        // 心跳相关
         private static Timer heartbeatTimer;
         private static DateTime lastHeartbeat = DateTime.Now;
         private static Timer watchdogTimer;
-        private static DispatcherTimer uiHeartbeatTimer;
-        private static bool isStartupPhase = true;
-        private static DateTime startupStartTime = DateTime.Now;
-
-        public static void UpdateHeartbeatOnUIThread()
-        {
-            try
-            {
-                if (Current?.Dispatcher != null && !Current.Dispatcher.HasShutdownStarted)
-                {
-                    Current.Dispatcher.Invoke(() =>
-                    {
-                        lastHeartbeat = DateTime.Now;
-                        Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
-                    }, DispatcherPriority.Normal);
-                }
-                else
-                {
-                    lastHeartbeat = DateTime.Now;
-                }
-            }
-            catch
-            {
-                lastHeartbeat = DateTime.Now;
-            }
-        }
+        private static bool isStartupComplete = false;
+        private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
+        private static DateTime splashScreenStartTime = DateTime.MinValue;
 
         private void StartHeartbeatMonitor()
         {
-            startupStartTime = DateTime.Now;
-            
-            heartbeatTimer = new Timer(_ => 
-            {
-                if ((DateTime.Now - lastHeartbeat).TotalSeconds > 2)
-                {
-                    lastHeartbeat = DateTime.Now;
-                }
-            }, null, 0, 1000);
-
-            if (Current?.Dispatcher != null)
-            {
-                uiHeartbeatTimer = new DispatcherTimer
-                {
-                    Interval = TimeSpan.FromMilliseconds(500)
-                };
-                uiHeartbeatTimer.Tick += (s, e) =>
-                {
-                    lastHeartbeat = DateTime.Now;
-                    Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Background);
-                };
-                uiHeartbeatTimer.Start();
-            }
-
+            heartbeatTimer = new Timer(_ => lastHeartbeat = DateTime.Now, null, 0, 1000);
             watchdogTimer = new Timer(_ =>
             {
-                try
+                if (_isSplashScreenShown && splashScreenStartTime != DateTime.MinValue)
                 {
-                    double timeSinceLastHeartbeat = (DateTime.Now - lastHeartbeat).TotalSeconds;
-                    double timeSinceStartup = (DateTime.Now - startupStartTime).TotalSeconds;
-                    
-                    double timeoutThreshold = isStartupPhase ? 30.0 : 10.0;
-                    
-                    if (isStartupPhase && timeSinceStartup > 60)
+                    if (!isStartupComplete)
                     {
-                        isStartupPhase = false;
-                        LogHelper.WriteLogToFile("心跳监控 | 启动阶段结束，切换到正常运行模式");
-                    }
-
-                    if (timeSinceLastHeartbeat > timeoutThreshold)
-                    {
-                        string phase = isStartupPhase ? "启动阶段" : "运行阶段";
-                        LogHelper.WriteLogToFile($"心跳监控 | 检测到主线程无响应（{phase}，超时{timeoutThreshold}秒），准备自动重启。");
-                        LogHelper.WriteLogToFile($"心跳监控 | 距离上次心跳: {timeSinceLastHeartbeat:F1}秒，距离启动: {timeSinceStartup:F1}秒");
-                        
-                        SyncCrashActionFromSettings();
-                        if (CrashAction == CrashActionType.SilentRestart)
+                        TimeSpan elapsedSinceSplashStart = DateTime.Now - splashScreenStartTime;
+                        if (elapsedSinceSplashStart.TotalMinutes >= 2)
                         {
-                            StartupCount.Increment();
-                            if (StartupCount.GetCount() >= 5)
+                            LogHelper.WriteLogToFile($"检测到启动假死：启动画面已显示{elapsedSinceSplashStart.TotalMinutes:F2}分钟，但未收到启动完成心跳，自动重启。", LogHelper.LogType.Error);
+                            SyncCrashActionFromSettings();
+                            if (CrashAction == CrashActionType.SilentRestart)
                             {
-                                MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
-                                StartupCount.Reset();
+                                StartupCount.Increment();
+                                if (StartupCount.GetCount() >= 5)
+                                {
+                                    MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    StartupCount.Reset();
+                                    Environment.Exit(1);
+                                }
+                                try
+                                {
+                                    string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                                    Process.Start(exePath);
+                                }
+                                catch { }
                                 Environment.Exit(1);
                             }
-                            try
-                            {
-                                string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                                Process.Start(exePath);
-                            }
-                            catch { }
-                            Environment.Exit(1);
+                            return;
                         }
                     }
                 }
-                catch (Exception ex)
+                
+                if (isStartupComplete && (DateTime.Now - lastHeartbeat).TotalSeconds > 10)
                 {
-                    LogHelper.WriteLogToFile($"心跳监控 | 检测过程出错: {ex.Message}", LogHelper.LogType.Warning);
+                    LogHelper.NewLog("检测到主线程无响应，自动重启。");
+                    SyncCrashActionFromSettings();
+                    if (CrashAction == CrashActionType.SilentRestart)
+                    {
+                        StartupCount.Increment();
+                        if (StartupCount.GetCount() >= 5)
+                        {
+                            MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                            StartupCount.Reset();
+                            Environment.Exit(1);
+                        }
+                        try
+                        {
+                            string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                            Process.Start(exePath);
+                        }
+                        catch { }
+                        Environment.Exit(1);
+                    }
                 }
             }, null, 0, 3000);
         }
@@ -1303,20 +1207,14 @@ namespace Ink_Canvas
 
         private void App_Exit(object sender, ExitEventArgs e)
         {
+            // 仅在软件内主动退出时关闭看门狗，并写入退出信号
             try
             {
-                heartbeatTimer?.Dispose();
-                watchdogTimer?.Dispose();
-                uiHeartbeatTimer?.Stop();
-                uiHeartbeatTimer = null;
-            }
-            catch { }
-
-            try
-            {
+                // 记录应用退出状态
                 string exitType = IsAppExitByUser ? "用户主动退出" : "应用程序退出";
                 WriteCrashLog($"{exitType}，退出代码: {e.ApplicationExitCode}");
 
+                // 记录应用退出（设备标识符）
                 try
                 {
                     DeviceIdentifier.RecordAppExit();
@@ -1329,6 +1227,7 @@ namespace Ink_Canvas
 
                 if (IsAppExitByUser)
                 {
+                    // 写入退出信号文件，通知看门狗正常退出
                     StartupCount.Reset();
                     File.WriteAllText(watchdogExitSignalFile, "exit");
                     if (watchdogProcess != null && !watchdogProcess.HasExited)
@@ -1339,6 +1238,7 @@ namespace Ink_Canvas
             }
             catch (Exception ex)
             {
+                // 尝试记录最后的错误
                 try
                 {
                     LogHelper.WriteLogToFile($"退出处理时发生错误: {ex.Message}", LogHelper.LogType.Error);
