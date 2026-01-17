@@ -150,6 +150,7 @@ namespace Ink_Canvas.Helpers
         private bool _forcePolling = false;
         private bool _bindingEvents = false;
         private DateTime _updateTime;
+        private int _lastPolledSlideNumber = -1;
         #endregion
 
         #region Constructor & Initialization
@@ -423,6 +424,19 @@ namespace Ink_Canvas.Helpers
                                     SlidesCount = tempTotalPage;
                                     if (currentPage >= tempTotalPage) _polling = 1;
                                     else _polling = 0;
+
+                                    if (_forcePolling && currentPage != _lastPolledSlideNumber && _lastPolledSlideNumber != -1)
+                                    {
+                                        try
+                                        {
+                                            SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Trace);
+                                        }
+                                    }
+                                    _lastPolledSlideNumber = currentPage;
                                 }
                                 catch (Exception ex)
                                 {
@@ -450,6 +464,18 @@ namespace Ink_Canvas.Helpers
                         try
                         {
                             int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
+                            if (_forcePolling && currentPage != _lastPolledSlideNumber && _lastPolledSlideNumber != -1)
+                            {
+                                try
+                                {
+                                    SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Trace);
+                                }
+                            }
+                            _lastPolledSlideNumber = currentPage;
                             UpdateCurrentPresentationInfo();
                             _polling = 2;
                         }
@@ -536,12 +562,14 @@ namespace Ink_Canvas.Helpers
                     {
                         _pptActivePresentation = pptAppDynamic.ActivePresentation;
                         _updateTime = DateTime.Now;
+                        _lastPolledSlideNumber = -1;
                     }
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"访问ActivePresentation失败: {ex.Message}，继续使用轮询模式", LogHelper.LogType.Warning);
                         _pptActivePresentation = null;
                         _updateTime = DateTime.Now;
+                        _lastPolledSlideNumber = -1;
                     }
 
                     int tempTotalPage = -1;
@@ -577,11 +605,13 @@ namespace Ink_Canvas.Helpers
                                 SlidesCount = tempTotalPage;
                                 if (currentPage >= tempTotalPage) _polling = 1;
                                 else _polling = 0;
+                                _lastPolledSlideNumber = currentPage;
                             }
                             else
                             {
                                 SlidesCount = tempTotalPage;
                                 _polling = 0;
+                                _lastPolledSlideNumber = -1;
                             }
                         }
                         catch
