@@ -291,16 +291,35 @@ namespace Ink_Canvas.Helpers
                 }
                 return null;
             }
-            catch (COMException)
+            catch (COMException ex)
             {
+                var hr = (uint)ex.HResult;
+                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
+                {
+                    return TryConnectToPowerPointViaROT();
+                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                return null;
+                return TryConnectToPowerPointViaROT();
             }
             catch (Exception)
             {
+                return null;
+            }
+        }
+
+        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToPowerPointViaROT()
+        {
+            try
+            {
+                var pptApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
+                return pptApp;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"ROT 备用方法连接异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
@@ -318,16 +337,41 @@ namespace Ink_Canvas.Helpers
                 }
                 return null;
             }
-            catch (COMException)
+            catch (COMException ex)
             {
+                var hr = (uint)ex.HResult;
+                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
+                {
+                    // WPS COM注册损坏，尝试使用ROT备用方法
+                    return TryConnectToWPSViaROT();
+                }
+                if (hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E)
+                {
+                    LogHelper.WriteLogToFile($"连接WPS失败: {ex}", LogHelper.LogType.Warning);
+                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                return null;
+                // WPS COM对象类型转换失败，尝试使用ROT备用方法
+                return TryConnectToWPSViaROT();
             }
             catch (Exception)
             {
+                return null;
+            }
+        }
+
+        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPSViaROT()
+        {
+            try
+            {
+                var wpsApp = PPTROTConnectionHelper.TryConnectViaROT(true);
+                return wpsApp;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"ROT 备用方法连接 WPS 异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
@@ -1058,35 +1102,55 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public Presentation GetCurrentActivePresentation()
         {
+            object slideShowWindows = null;
+            object slideShowWindow = null;
+            object view = null;
+            object slide = null;
+            object activeWindow = null;
+            object presentation = null;
             try
             {
                 if (!IsConnected || PPTApplication == null) return null;
                 if (!Marshal.IsComObject(PPTApplication)) return null;
 
-                if (IsInSlideShow && PPTApplication.SlideShowWindows.Count > 0)
+                if (IsInSlideShow)
                 {
-                    try
+                    slideShowWindows = PPTApplication.SlideShowWindows;
+                    if (slideShowWindows != null)
                     {
-                        var slideShowWindow = PPTApplication.SlideShowWindows[1];
-                        if (slideShowWindow?.View != null)
+                        dynamic ssw = slideShowWindows;
+                        if (ssw.Count > 0)
                         {
-                            return (Presentation)slideShowWindow.View.Slide.Parent;
+                            slideShowWindow = ssw[1];
+                            if (slideShowWindow != null)
+                            {
+                                dynamic sswObj = slideShowWindow;
+                                view = sswObj.View;
+                                if (view != null)
+                                {
+                                    dynamic viewObj = view;
+                                    slide = viewObj.Slide;
+                                    if (slide != null)
+                                    {
+                                        dynamic slideObj = slide;
+                                        presentation = slideObj.Parent;
+                                        return presentation as Presentation;
+                                    }
+                                }
+                            }
                         }
-                    }
-                    catch (COMException comEx)
-                    {
-                        var hr = (uint)comEx.HResult;
-                        if (hr == 0x80048240)
-                        {
-                            return null;
-                        }
-                        throw;
                     }
                 }
 
-                if (PPTApplication.ActiveWindow?.Presentation != null)
+                activeWindow = PPTApplication.ActiveWindow;
+                if (activeWindow != null)
                 {
-                    return PPTApplication.ActiveWindow.Presentation;
+                    dynamic aw = activeWindow;
+                    presentation = aw.Presentation;
+                    if (presentation != null)
+                    {
+                        return presentation as Presentation;
+                    }
                 }
 
                 return CurrentPresentation;
@@ -1098,6 +1162,10 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
+                if (hr == 0x80048240)
+                {
+                    return null;
+                }
                 LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {comEx.Message}", LogHelper.LogType.Warning);
                 return CurrentPresentation;
             }
@@ -1105,6 +1173,18 @@ namespace Ink_Canvas.Helpers
             {
                 LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {ex}", LogHelper.LogType.Error);
                 return CurrentPresentation;
+            }
+            finally
+            {
+                if (presentation != null && !ReferenceEquals(presentation, CurrentPresentation))
+                {
+                    SafeReleaseComObject(presentation);
+                }
+                SafeReleaseComObject(slide);
+                SafeReleaseComObject(view);
+                SafeReleaseComObject(slideShowWindow);
+                SafeReleaseComObject(slideShowWindows);
+                SafeReleaseComObject(activeWindow);
             }
         }
 
