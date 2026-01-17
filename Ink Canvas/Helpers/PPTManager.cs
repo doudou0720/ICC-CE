@@ -280,9 +280,30 @@ namespace Ink_Canvas.Helpers
                         }
                     }
 
-                    if (PPTApplication != null && _pptActivePresentation != null)
+                    if (PPTApplication != null)
                     {
-                        CheckPresentationAndSlideShowState();
+                        // 即使 _pptActivePresentation 为 null，也要检查（可能在轮询模式下需要初始化）
+                        if (_pptActivePresentation == null)
+                        {
+                            try
+                            {
+                                dynamic app = PPTApplication;
+                                _pptActivePresentation = app.ActivePresentation;
+                                if (_pptActivePresentation != null)
+                                {
+                                    LogHelper.WriteLogToFile("轮询模式：初始化_pptActivePresentation", LogHelper.LogType.Trace);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"轮询模式：无法获取ActivePresentation: {ex.Message}", LogHelper.LogType.Trace);
+                            }
+                        }
+                        
+                        if (_pptActivePresentation != null)
+                        {
+                            CheckPresentationAndSlideShowState();
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -310,6 +331,7 @@ namespace Ink_Canvas.Helpers
 
                     if (activePresentation != null && _pptActivePresentation != null && !PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation))
                     {
+                        LogHelper.WriteLogToFile("检测到演示文稿切换，断开连接", LogHelper.LogType.Trace);
                         DisconnectFromPPT();
                         return;
                     }
@@ -356,9 +378,13 @@ namespace Ink_Canvas.Helpers
                             if (slideShowWindows != null && slideShowWindows.Count > 0)
                             {
                                 isSlideShowActive = true;
+                                LogHelper.WriteLogToFile($"检测到放映模式，轮询模式={_forcePolling}", LogHelper.LogType.Trace);
                             }
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"检查SlideShowWindows失败: {ex.Message}", LogHelper.LogType.Trace);
+                        }
                     }
 
                     if (isSlideShowActive && activePresentation != null)
@@ -400,61 +426,82 @@ namespace Ink_Canvas.Helpers
                 {
                     // 在轮询模式下，更频繁地检查（每500ms，与定时器同步）
                     // 否则每3秒检查一次
-                    if (_forcePolling || (DateTime.Now - _updateTime).TotalMilliseconds > 3000)
+                    bool shouldPoll = _forcePolling || (DateTime.Now - _updateTime).TotalMilliseconds > 3000;
+                    
+                    if (shouldPoll)
                     {
+                        LogHelper.WriteLogToFile($"开始轮询检查: forcePolling={_forcePolling}, 距离上次更新={(DateTime.Now - _updateTime).TotalMilliseconds}ms", LogHelper.LogType.Trace);
+                        
                         try
                         {
                             dynamic pres = _pptActivePresentation;
-                            slideShowWindow = pres.SlideShowWindow;
-
-                            int tempTotalPage = -1;
-                            if (slideShowWindow != null)
+                            if (pres == null)
                             {
-                                tempTotalPage = GetTotalSlideIndex(_pptActivePresentation);
-                            }
-
-                            if (tempTotalPage == -1)
-                            {
-                                SlidesCount = 0;
-                                _polling = 0;
+                                LogHelper.WriteLogToFile("_pptActivePresentation为null，无法轮询", LogHelper.LogType.Warning);
                             }
                             else
                             {
-                                try
-                                {
-                                    int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
-                                    SlidesCount = tempTotalPage;
-                                    if (currentPage >= tempTotalPage) _polling = 1;
-                                    else _polling = 0;
+                                slideShowWindow = pres.SlideShowWindow;
 
-                                    // 在轮询模式下，检测页码变化并触发事件
-                                    if (_forcePolling && _lastPolledSlideNumber != -1 && currentPage != _lastPolledSlideNumber)
-                                    {
-                                        try
-                                        {
-                                            LogHelper.WriteLogToFile($"轮询模式检测到页码变化: {_lastPolledSlideNumber} -> {currentPage}", LogHelper.LogType.Trace);
-                                            SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Trace);
-                                        }
-                                    }
-                                    
-                                    _lastPolledSlideNumber = currentPage;
+                                int tempTotalPage = -1;
+                                if (slideShowWindow != null)
+                                {
+                                    tempTotalPage = GetTotalSlideIndex(_pptActivePresentation);
                                 }
-                                catch (Exception ex)
+
+                                if (tempTotalPage == -1)
                                 {
                                     SlidesCount = 0;
-                                    _polling = 1;
-                                    LogHelper.WriteLogToFile($"获取当前页数失败: {ex}", LogHelper.LogType.Warning);
+                                    _polling = 0;
+                                    LogHelper.WriteLogToFile("轮询: 无法获取总页数", LogHelper.LogType.Trace);
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        if (_pptSlideShowWindow == null)
+                                        {
+                                            LogHelper.WriteLogToFile("轮询: _pptSlideShowWindow为null", LogHelper.LogType.Warning);
+                                        }
+                                        else
+                                        {
+                                            int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
+                                            SlidesCount = tempTotalPage;
+                                            if (currentPage >= tempTotalPage) _polling = 1;
+                                            else _polling = 0;
+
+                                            LogHelper.WriteLogToFile($"轮询: 当前页={currentPage}, 总页={tempTotalPage}, 上次页={_lastPolledSlideNumber}, forcePolling={_forcePolling}", LogHelper.LogType.Trace);
+
+                                            // 在轮询模式下，检测页码变化并触发事件
+                                            if (_forcePolling && _lastPolledSlideNumber != -1 && currentPage != _lastPolledSlideNumber)
+                                            {
+                                                try
+                                                {
+                                                    LogHelper.WriteLogToFile($"轮询模式检测到页码变化: {_lastPolledSlideNumber} -> {currentPage}，触发事件", LogHelper.LogType.Trace);
+                                                    SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Warning);
+                                                }
+                                            }
+                                            
+                                            _lastPolledSlideNumber = currentPage;
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        SlidesCount = 0;
+                                        _polling = 1;
+                                        LogHelper.WriteLogToFile($"获取当前页数失败: {ex}", LogHelper.LogType.Warning);
+                                    }
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
                             SlidesCount = 0;
-                            LogHelper.WriteLogToFile($"获取总页数失败: {ex.Message}", LogHelper.LogType.Warning);
+                            LogHelper.WriteLogToFile($"轮询检查异常: {ex.Message}", LogHelper.LogType.Warning);
                         }
                         finally
                         {
