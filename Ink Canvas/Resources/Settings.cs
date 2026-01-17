@@ -140,6 +140,7 @@ namespace Ink_Canvas
     public enum UpdateChannel
     {
         Release,
+        Preview,
         Beta
     }
 

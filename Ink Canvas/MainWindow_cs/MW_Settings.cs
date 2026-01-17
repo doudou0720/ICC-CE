@@ -3827,7 +3827,9 @@ namespace Ink_Canvas
             if (radioButton != null)
             {
                 string channel = radioButton.Tag.ToString();
-                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta : UpdateChannel.Release;
+                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta 
+                    : channel == "Preview" ? UpdateChannel.Preview 
+                    : UpdateChannel.Release;
 
                 // 如果通道没有变化，不需要执行更新检查
                 if (Settings.Startup.UpdateChannel == newChannel)

@@ -128,6 +128,9 @@
                             <Border x:Name="UpdateChannelReleaseBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UpdateChannel_Release" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="稳定版"/>
                             </Border>
+                            <Border x:Name="UpdateChannelPreviewBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UpdateChannel_Preview" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                                <TextBlock Foreground="#2e3436" FontSize="14" Text="预览版"/>
+                            </Border>
                             <Border x:Name="UpdateChannelBetaBorder" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UpdateChannel_Beta" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" Text="测试版"/>
                             </Border>

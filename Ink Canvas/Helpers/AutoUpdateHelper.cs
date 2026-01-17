@@ -105,6 +105,71 @@ namespace Ink_Canvas.Helpers
                     }
                 }
             },
+            { UpdateChannel.Preview, new List<UpdateLineGroup>
+                {
+                    new UpdateLineGroup
+                    {
+                        GroupName = "GitHub主线",
+                        VersionUrl = "https://github.com/InkCanvasForClass/community-beta/raw/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://github.com/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://github.com/InkCanvasForClass/community-beta/raw/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "bgithub备用",
+                        VersionUrl = "https://bgithub.xyz/InkCanvasForClass/community-beta/raw/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://bgithub.xyz/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://bgithub.xyz/InkCanvasForClass/community-beta/raw/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "kkgithub线路",
+                        VersionUrl = "https://kkgithub.com/InkCanvasForClass/community-beta/raw/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://kkgithub.com/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://kkgithub.com/InkCanvasForClass/community-beta/raw/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "智教联盟",
+                        DownloadUrlFormat = "https://get.smart-teach.cn/d/Ningbo-S3/shared/jiangling/community-beta/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://bgithub.xyz/InkCanvasForClass/community-beta/raw/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "inkeys",
+                        DownloadUrlFormat = "https://iccce.inkeys.top/Beta/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://bgithub.xyz/InkCanvasForClass/community-beta/raw/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "gh-proxy",
+                        VersionUrl = "https://gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://gh-proxy.org/https://github.com/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "hk.gh-proxy",
+                        VersionUrl = "https://hk.gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://hk.gh-proxy.org/https://github.com/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://hk.gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "cdn.gh-proxy",
+                        VersionUrl = "https://cdn.gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://cdn.gh-proxy.org/https://github.com/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://cdn.gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/UpdateLog.md"
+                    },
+                    new UpdateLineGroup
+                    {
+                        GroupName = "edgeone.gh-proxy",
+                        VersionUrl = "https://edgeone.gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/AutomaticUpdateVersionControl.txt",
+                        DownloadUrlFormat = "https://edgeone.gh-proxy.org/https://github.com/InkCanvasForClass/community-beta/releases/download/{0}/InkCanvasForClass.CE.{0}.zip",
+                        LogUrl = "https://edgeone.gh-proxy.org/https://raw.githubusercontent.com/InkCanvasForClass/community-beta/refs/heads/main/UpdateLog.md"
+                    }
+                }
+            },
             { UpdateChannel.Beta, new List<UpdateLineGroup>
                 {
                     new UpdateLineGroup
@@ -527,7 +592,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                string apiUrl = channel == UpdateChannel.Beta
+                string apiUrl = (channel == UpdateChannel.Beta || channel == UpdateChannel.Preview)
                     ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases"
                     : "https://api.github.com/repos/InkCanvasForClass/community/releases";
                 using (var client = new HttpClient())
@@ -569,28 +634,58 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                string apiUrl = channel == UpdateChannel.Beta
-                    ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases/latest"
-                    : "https://api.github.com/repos/InkCanvasForClass/community/releases/latest";
-                using (var client = new HttpClient())
+                if (channel == UpdateChannel.Beta)
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "ICC-CE Auto Updater");
-                    LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
-                    var response = await client.GetStringAsync(apiUrl);
-                    var json = JObject.Parse(response);
-                    string version = json["tag_name"]?.ToString();
-                    string releaseNotes = json["body"]?.ToString();
-                    string downloadUrl = json["assets"]?.First?["browser_download_url"]?.ToString();
-
-                    // 解析发布时间
-                    DateTime? releaseTime = null;
-                    if (json["published_at"] != null && DateTime.TryParse(json["published_at"].ToString(), out DateTime parsedTime))
+                    string apiUrl = "https://api.github.com/repos/InkCanvasForClass/community-beta/releases";
+                    using (var client = new HttpClient())
                     {
-                        releaseTime = parsedTime;
+                        client.DefaultRequestHeaders.Add("User-Agent", "ICC-CE Auto Updater");
+                        LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
+                        var response = await client.GetStringAsync(apiUrl);
+                        var releases = JArray.Parse(response);
+                        
+                        if (releases.Count > 0)
+                        {
+                            var latestRelease = releases[0];
+                            string version = latestRelease["tag_name"]?.ToString();
+                            string releaseNotes = latestRelease["body"]?.ToString();
+                            string downloadUrl = latestRelease["assets"]?.First?["browser_download_url"]?.ToString();
+                            
+                            DateTime? releaseTime = null;
+                            if (latestRelease["published_at"] != null && DateTime.TryParse(latestRelease["published_at"].ToString(), out DateTime parsedTime))
+                            {
+                                releaseTime = parsedTime;
+                            }
+                            
+                            if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
+                                return (version, downloadUrl, releaseNotes, releaseTime);
+                        }
                     }
+                }
+                else
+                {
+                    string apiUrl = channel == UpdateChannel.Preview
+                        ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases/latest"
+                        : "https://api.github.com/repos/InkCanvasForClass/community/releases/latest";
+                    using (var client = new HttpClient())
+                    {
+                        client.DefaultRequestHeaders.Add("User-Agent", "ICC-CE Auto Updater");
+                        LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
+                        var response = await client.GetStringAsync(apiUrl);
+                        var json = JObject.Parse(response);
+                        string version = json["tag_name"]?.ToString();
+                        string releaseNotes = json["body"]?.ToString();
+                        string downloadUrl = json["assets"]?.First?["browser_download_url"]?.ToString();
 
-                    if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
-                        return (version, downloadUrl, releaseNotes, releaseTime);
+                        DateTime? releaseTime = null;
+                        if (json["published_at"] != null && DateTime.TryParse(json["published_at"].ToString(), out DateTime parsedTime))
+                        {
+                            releaseTime = parsedTime;
+                        }
+
+                        if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
+                            return (version, downloadUrl, releaseNotes, releaseTime);
+                    }
                 }
             }
             catch (Exception ex)
@@ -2023,7 +2118,7 @@ namespace Ink_Canvas.Helpers
             var result = new List<(string, string, string)>();
             try
             {
-                string apiUrl = channel == UpdateChannel.Beta
+                string apiUrl = (channel == UpdateChannel.Beta || channel == UpdateChannel.Preview)
                     ? "https://api.github.com/repos/InkCanvasForClass/community-beta/releases"
                     : "https://api.github.com/repos/InkCanvasForClass/community/releases";
                 using (var client = new HttpClient())

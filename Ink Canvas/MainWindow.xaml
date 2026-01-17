@@ -642,10 +642,12 @@
                                         <ui:RadioButtons x:Name="UpdateChannelSelector" Margin="0,4,0,0">
                                             <RadioButton Content="稳定版 (Release)" GroupName="UpdateChannel" 
                                                            Tag="Release" Checked="UpdateChannelSelector_Checked"/>
+                                            <RadioButton Content="预览版 (Preview)" GroupName="UpdateChannel" 
+                                                           Tag="Preview" Checked="UpdateChannelSelector_Checked"/>
                                             <RadioButton Content="测试版 (Beta)" GroupName="UpdateChannel" 
                                                            Tag="Beta" Checked="UpdateChannelSelector_Checked"/>
                                         </ui:RadioButtons>
-                                        <TextBlock Text="# 稳定版提供可靠更新，测试版提供新功能抢先体验" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                        <TextBlock Text="# 稳定版提供可靠更新，预览版提供新功能体验同时拥有相较Beta版更强的稳定性，测试版提供新功能抢先体验" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     </ui:SimpleStackPanel>
                                     
                                     <!-- 手动更新按钮 -->

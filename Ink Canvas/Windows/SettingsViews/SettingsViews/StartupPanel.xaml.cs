@@ -182,11 +182,15 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 更新通道
                 if (MainWindow.Settings.Startup.UpdateChannel == UpdateChannel.Release)
                 {
-                    UpdateUpdateChannelButtons(true);
+                    UpdateUpdateChannelButtons(UpdateChannel.Release);
+                }
+                else if (MainWindow.Settings.Startup.UpdateChannel == UpdateChannel.Preview)
+                {
+                    UpdateUpdateChannelButtons(UpdateChannel.Preview);
                 }
                 else
                 {
-                    UpdateUpdateChannelButtons(false);
+                    UpdateUpdateChannelButtons(UpdateChannel.Beta);
                 }
 
                 // 仅PPT模式
@@ -356,7 +360,20 @@ namespace Ink_Canvas.Windows.SettingsViews
                     MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked", 
                         new System.Windows.Controls.RadioButton { Tag = "Release" }, e);
                     // 更新UI状态
-                    UpdateUpdateChannelButtons(true);
+                    UpdateUpdateChannelButtons(UpdateChannel.Release);
+                    break;
+
+                case "UpdateChannel_Preview":
+                    // 选择预览版
+                    MainWindowSettingsHelper.UpdateSettingDirectly(() =>
+                    {
+                        MainWindow.Settings.Startup.UpdateChannel = UpdateChannel.Preview;
+                    }, "UpdateChannelSelector");
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked", 
+                        new System.Windows.Controls.RadioButton { Tag = "Preview" }, e);
+                    // 更新UI状态
+                    UpdateUpdateChannelButtons(UpdateChannel.Preview);
                     break;
 
                 case "UpdateChannel_Beta":
@@ -369,7 +386,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked", 
                         new System.Windows.Controls.RadioButton { Tag = "Beta" }, e);
                     // 更新UI状态
-                    UpdateUpdateChannelButtons(false);
+                    UpdateUpdateChannelButtons(UpdateChannel.Beta);
                     break;
             }
         }
@@ -377,34 +394,46 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// <summary>
         /// 更新更新通道按钮状态
         /// </summary>
-        private void UpdateUpdateChannelButtons(bool isReleaseSelected)
+        private void UpdateUpdateChannelButtons(UpdateChannel selectedChannel)
         {
             try
             {
                 bool isDarkTheme = ThemeHelper.IsDarkTheme;
+                var selectedBrush = isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                var unselectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(35, 35, 35)) : new SolidColorBrush(Colors.Transparent);
                 
                 if (UpdateChannelReleaseBorder != null)
                 {
-                    UpdateChannelReleaseBorder.Background = isReleaseSelected
-                        ? (isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225)))
-                        : (isDarkTheme ? new SolidColorBrush(Color.FromRgb(35, 35, 35)) : new SolidColorBrush(Colors.Transparent));
+                    bool isSelected = selectedChannel == UpdateChannel.Release;
+                    UpdateChannelReleaseBorder.Background = isSelected ? selectedBrush : unselectedBrush;
                     var textBlock = UpdateChannelReleaseBorder.Child as TextBlock;
                     if (textBlock != null)
                     {
-                        textBlock.FontWeight = isReleaseSelected ? FontWeights.Bold : FontWeights.Normal;
+                        textBlock.FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal;
+                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                    }
+                }
+                
+                if (UpdateChannelPreviewBorder != null)
+                {
+                    bool isSelected = selectedChannel == UpdateChannel.Preview;
+                    UpdateChannelPreviewBorder.Background = isSelected ? selectedBrush : unselectedBrush;
+                    var textBlock = UpdateChannelPreviewBorder.Child as TextBlock;
+                    if (textBlock != null)
+                    {
+                        textBlock.FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal;
                         textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                     }
                 }
                 
                 if (UpdateChannelBetaBorder != null)
                 {
-                    UpdateChannelBetaBorder.Background = !isReleaseSelected
-                        ? (isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225)))
-                        : (isDarkTheme ? new SolidColorBrush(Color.FromRgb(35, 35, 35)) : new SolidColorBrush(Colors.Transparent));
+                    bool isSelected = selectedChannel == UpdateChannel.Beta;
+                    UpdateChannelBetaBorder.Background = isSelected ? selectedBrush : unselectedBrush;
                     var textBlock = UpdateChannelBetaBorder.Child as TextBlock;
                     if (textBlock != null)
                     {
-                        textBlock.FontWeight = !isReleaseSelected ? FontWeights.Bold : FontWeights.Normal;
+                        textBlock.FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal;
                         textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                     }
                 }
@@ -478,11 +507,22 @@ namespace Ink_Canvas.Windows.SettingsViews
                         textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                     }
                 }
+                if (UpdateChannelPreviewBorder != null)
+                {
+                    UpdateChannelPreviewBorder.Background = isDarkTheme 
+                        ? ThemeHelper.GetButtonBackgroundBrush() 
+                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                    var textBlock = UpdateChannelPreviewBorder.Child as TextBlock;
+                    if (textBlock != null)
+                    {
+                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                    }
+                }
                 if (UpdateChannelBetaBorder != null)
                 {
                     UpdateChannelBetaBorder.Background = isDarkTheme 
-                        ? new SolidColorBrush(Color.FromRgb(35, 35, 35)) 
-                        : new SolidColorBrush(Colors.Transparent);
+                        ? ThemeHelper.GetButtonBackgroundBrush() 
+                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
                     var textBlock = UpdateChannelBetaBorder.Child as TextBlock;
                     if (textBlock != null)
                     {
