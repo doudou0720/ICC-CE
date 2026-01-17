@@ -120,11 +120,15 @@
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
                     <Grid Height="54">
-                        <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0" MaxWidth="350">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="更新通道" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择更新通道：稳定版提供可靠更新，测试版提供新功能抢先体验" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择更新通道：稳定版提供可靠更新，测试版提供新功能抢先体验" HorizontalAlignment="Left" TextWrapping="Wrap"/>
                         </StackPanel>
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Grid.Column="1">
                             <Border x:Name="UpdateChannelReleaseBorder" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UpdateChannel_Release" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
                                 <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="稳定版"/>
                             </Border>
