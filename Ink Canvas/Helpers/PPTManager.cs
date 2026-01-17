@@ -398,7 +398,9 @@ namespace Ink_Canvas.Helpers
 
                 if (isSlideShowActive)
                 {
-                    if ((DateTime.Now - _updateTime).TotalMilliseconds > 3000 || _forcePolling)
+                    // 在轮询模式下，更频繁地检查（每500ms，与定时器同步）
+                    // 否则每3秒检查一次
+                    if (_forcePolling || (DateTime.Now - _updateTime).TotalMilliseconds > 3000)
                     {
                         try
                         {
@@ -425,10 +427,12 @@ namespace Ink_Canvas.Helpers
                                     if (currentPage >= tempTotalPage) _polling = 1;
                                     else _polling = 0;
 
-                                    if (_forcePolling && currentPage != _lastPolledSlideNumber && _lastPolledSlideNumber != -1)
+                                    // 在轮询模式下，检测页码变化并触发事件
+                                    if (_forcePolling && _lastPolledSlideNumber != -1 && currentPage != _lastPolledSlideNumber)
                                     {
                                         try
                                         {
+                                            LogHelper.WriteLogToFile($"轮询模式检测到页码变化: {_lastPolledSlideNumber} -> {currentPage}", LogHelper.LogType.Trace);
                                             SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
                                         }
                                         catch (Exception ex)
@@ -436,6 +440,7 @@ namespace Ink_Canvas.Helpers
                                             LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Trace);
                                         }
                                     }
+                                    
                                     _lastPolledSlideNumber = currentPage;
                                 }
                                 catch (Exception ex)
@@ -464,10 +469,13 @@ namespace Ink_Canvas.Helpers
                         try
                         {
                             int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
-                            if (_forcePolling && currentPage != _lastPolledSlideNumber && _lastPolledSlideNumber != -1)
+                            
+                            // 在轮询模式下，检测页码变化并触发事件
+                            if (_forcePolling && _lastPolledSlideNumber != -1 && currentPage != _lastPolledSlideNumber)
                             {
                                 try
                                 {
+                                    LogHelper.WriteLogToFile($"轮询模式检测到页码变化: {_lastPolledSlideNumber} -> {currentPage}", LogHelper.LogType.Trace);
                                     SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
                                 }
                                 catch (Exception ex)
@@ -475,6 +483,7 @@ namespace Ink_Canvas.Helpers
                                     LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Trace);
                                 }
                             }
+                            
                             _lastPolledSlideNumber = currentPage;
                             UpdateCurrentPresentationInfo();
                             _polling = 2;
@@ -1099,6 +1108,7 @@ namespace Ink_Canvas.Helpers
             {
                 _updateTime = DateTime.Now;
                 _pptSlideShowWindow = wn;
+                _lastPolledSlideNumber = -1; // 重置页码跟踪
 
                 try
                 {
@@ -1111,11 +1121,13 @@ namespace Ink_Canvas.Helpers
                         else _polling = 0;
                         
                         SlidesCount = totalPage;
+                        _lastPolledSlideNumber = currentPage; // 初始化页码跟踪
                     }
                 }
                 catch
                 {
                     _polling = 1;
+                    _lastPolledSlideNumber = -1;
                 }
 
                 UpdateCurrentPresentationInfo();
@@ -1142,6 +1154,8 @@ namespace Ink_Canvas.Helpers
                         
                         if (currentPage >= totalPage) _polling = 1;
                         else _polling = 0;
+                        
+                        _lastPolledSlideNumber = currentPage; // 更新页码跟踪
                     }
                 }
                 catch
