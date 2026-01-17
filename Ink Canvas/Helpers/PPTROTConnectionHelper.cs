@@ -112,8 +112,8 @@ namespace Ink_Canvas.Helpers
         }
         #endregion
 
-        #region Private Methods
-        private static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
+        #region Public Methods
+        public static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
             IEnumMoniker enumMoniker = null;
@@ -317,7 +317,7 @@ namespace Ink_Canvas.Helpers
             return bestApp;
         }
 
-        private static bool AreComObjectsEqual(object o1, object o2)
+        public static bool AreComObjectsEqual(object o1, object o2)
         {
             if (o1 == null || o2 == null) return false;
             if (ReferenceEquals(o1, o2)) return true;
@@ -419,7 +419,7 @@ namespace Ink_Canvas.Helpers
             return hwnd;
         }
 
-        private static void SafeReleaseComObject(object comObj)
+        public static void SafeReleaseComObject(object comObj)
         {
             if (comObj == null) return;
 
@@ -441,6 +441,34 @@ namespace Ink_Canvas.Helpers
                 Marshal.ReleaseComObject(moniker);
             if (bindCtx != null)
                 Marshal.ReleaseComObject(bindCtx);
+        }
+
+        public static int GetSlideShowWindowsCount(Microsoft.Office.Interop.PowerPoint.Application pptApp)
+        {
+            try
+            {
+                if (pptApp == null) return 0;
+                return pptApp.SlideShowWindows.Count;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public static bool IsValidSlideShowWindow(SlideShowWindow pptSlideShowWindow)
+        {
+            if (pptSlideShowWindow == null) return false;
+
+            try
+            {
+                var _ = pptSlideShowWindow.Active;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
         #endregion
     }
