@@ -133,7 +133,6 @@ namespace Ink_Canvas
                 _pptManager.SlideShowNextSlide += OnPPTSlideShowNextSlide;
                 _pptManager.SlideShowEnd += OnPPTSlideShowEnd;
                 _pptManager.PresentationOpen += OnPPTPresentationOpen;
-                _pptManager.PresentationClose += OnPPTPresentationClose;
                 _pptManager.SlideShowStateChanged += OnPPTSlideShowStateChanged;
 
                 _singlePPTInkManager = new PPTInkManager();
@@ -990,7 +989,8 @@ namespace Ink_Canvas
                         {
                             if (_pptManager?.PPTApplication != null)
                             {
-                                if (_pptManager.PPTApplication.SlideShowWindows.Count >= 1)
+                                dynamic pptApp = _pptManager.PPTApplication;
+                                if (pptApp.SlideShowWindows.Count >= 1)
                                 {
                                     pres.SlideShowWindow.View.GotoSlide(page);
                                 }

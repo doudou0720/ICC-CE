@@ -23,7 +23,6 @@ namespace Ink_Canvas.Helpers
         public event Action<SlideShowWindow> SlideShowNextSlide;
         public event Action<Presentation> SlideShowEnd;
         public event Action<Presentation> PresentationOpen;
-        public event Action<Presentation> PresentationClose;
         public event Action<bool> PPTConnectionChanged;
         public event Action<bool> SlideShowStateChanged;
         #endregion
@@ -75,7 +74,8 @@ namespace Ink_Canvas.Helpers
                 {
                     if (PPTApplication == null || !Marshal.IsComObject(PPTApplication)) return false;
 
-                    slideShowWindows = PPTApplication.SlideShowWindows;
+                    dynamic app = PPTApplication;
+                    slideShowWindows = app.SlideShowWindows;
                     if (slideShowWindows == null) return false;
                     
                     dynamic ssw = slideShowWindows;
@@ -149,8 +149,6 @@ namespace Ink_Canvas.Helpers
         private bool _forcePolling = false;
         private bool _bindingEvents = false;
         private DateTime _updateTime;
-        private Thread _monitoringThread;
-        private bool _shouldStopMonitoring = false;
         #endregion
 
         #region Constructor & Initialization
@@ -338,7 +336,8 @@ namespace Ink_Canvas.Helpers
                     dynamic app = PPTApplication;
                     activePresentation = app.ActivePresentation;
 
-                    if (activePresentation != null && PPTROTConnectionHelper.GetSlideShowWindowsCount(PPTApplication) > 0)
+                    Microsoft.Office.Interop.PowerPoint.Application pptAppForCount = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                    if (activePresentation != null && pptAppForCount != null && PPTROTConnectionHelper.GetSlideShowWindowsCount(pptAppForCount) > 0)
                     {
                         isSlideShowActive = true;
 
@@ -829,7 +828,8 @@ namespace Ink_Canvas.Helpers
                                 }
                                 else
                                 {
-                                    activeWindow = PPTApplication.ActiveWindow;
+                                    dynamic app = PPTApplication;
+                                    activeWindow = app.ActiveWindow;
                                     if (activeWindow != null)
                                     {
                                         dynamic aw = activeWindow;
@@ -929,7 +929,8 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        _pptActivePresentation = PPTApplication.ActivePresentation;
+                        dynamic app = PPTApplication;
+                        _pptActivePresentation = app.ActivePresentation;
                         _updateTime = DateTime.Now;
                     }
                     catch { }
@@ -1086,7 +1087,8 @@ namespace Ink_Canvas.Helpers
 
                 if (IsInSlideShow)
                 {
-                    slideShowWindows = PPTApplication.SlideShowWindows;
+                    dynamic app = PPTApplication;
+                    slideShowWindows = app.SlideShowWindows;
                     if (slideShowWindows != null)
                     {
                         dynamic ssw = slideShowWindows;
@@ -1170,7 +1172,8 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        object slideShowWindows = PPTApplication.SlideShowWindows;
+                        dynamic app = PPTApplication;
+                        object slideShowWindows = app.SlideShowWindows;
                         if (slideShowWindows != null)
                         {
                             dynamic ssw = slideShowWindows;
@@ -1233,7 +1236,8 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        object slideShowWindows = PPTApplication.SlideShowWindows;
+                        dynamic app = PPTApplication;
+                        object slideShowWindows = app.SlideShowWindows;
                         if (slideShowWindows != null)
                         {
                             dynamic ssw = slideShowWindows;
@@ -1294,7 +1298,8 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || !IsInSlideShow || PPTApplication == null) return false;
                 if (!Marshal.IsComObject(PPTApplication)) return false;
 
-                slideShowWindows = PPTApplication.SlideShowWindows;
+                dynamic app = PPTApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
@@ -1382,7 +1387,8 @@ namespace Ink_Canvas.Helpers
 
                 if (IsInSlideShow)
                 {
-                    slideShowWindows = PPTApplication.SlideShowWindows;
+                    dynamic pptAppForSSW = PPTApplication;
+                    slideShowWindows = pptAppForSSW.SlideShowWindows;
                     if (slideShowWindows != null)
                     {
                         dynamic ssw = slideShowWindows;
@@ -1409,7 +1415,8 @@ namespace Ink_Canvas.Helpers
                     }
                 }
 
-                activeWindow = PPTApplication.ActiveWindow;
+                dynamic app = PPTApplication;
+                activeWindow = app.ActiveWindow;
                 if (activeWindow != null)
                 {
                     dynamic aw = activeWindow;
@@ -1521,7 +1528,8 @@ namespace Ink_Canvas.Helpers
                     }
                 }
 
-                activeWindow = PPTApplication.ActiveWindow;
+                dynamic app = PPTApplication;
+                activeWindow = app.ActiveWindow;
                 if (activeWindow != null)
                 {
                     dynamic aw = activeWindow;
@@ -1643,7 +1651,8 @@ namespace Ink_Canvas.Helpers
                     return false;
                 }
 
-                slideShowWindows = PPTApplication.SlideShowWindows;
+                dynamic app = PPTApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
@@ -1716,11 +1725,12 @@ namespace Ink_Canvas.Helpers
                 Process wpsProcess = null;
 
                 // 方法1：通过应用程序路径检测
-                if (PPTApplication.Path.Contains("Kingsoft\\WPS Office\\") ||
-                    PPTApplication.Path.Contains("WPS Office\\"))
+                dynamic app = PPTApplication;
+                if (app.Path.Contains("Kingsoft\\WPS Office\\") ||
+                    app.Path.Contains("WPS Office\\"))
                 {
                     uint processId;
-                    GetWindowThreadProcessId((IntPtr)PPTApplication.HWND, out processId);
+                    GetWindowThreadProcessId((IntPtr)app.HWND, out processId);
                     wpsProcess = Process.GetProcessById((int)processId);
                 }
 
@@ -1976,9 +1986,10 @@ namespace Ink_Canvas.Helpers
                 {
                     if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
                     {
-                        if (PPTApplication.SlideShowWindows?.Count > 0)
+                        dynamic app = PPTApplication;
+                        if (app.SlideShowWindows?.Count > 0)
                         {
-                            pptActWindow = PPTApplication.SlideShowWindows[1];
+                            pptActWindow = app.SlideShowWindows[1];
                         }
                     }
                 }
@@ -2005,7 +2016,7 @@ namespace Ink_Canvas.Helpers
                 }
 
                 // 第三步：释放 pptApp 对象（PPTApplication）
-                Microsoft.Office.Interop.PowerPoint.Application pptApp = PPTApplication;
+                Microsoft.Office.Interop.PowerPoint.Application pptApp = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
                 if (pptApp != null)
                 {
                     Marshal.ReleaseComObject(pptApp);
