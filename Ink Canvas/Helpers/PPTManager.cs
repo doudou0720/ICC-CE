@@ -463,16 +463,16 @@ namespace Ink_Canvas.Helpers
                                     try
                                     {
                                         int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
-                                        _lastPolledSlideNumber = currentPage;
+                                        int lastPage = _lastPolledSlideNumber;
 
                                         if (currentPage >= GetTotalSlideIndex(_pptActivePresentation)) _polling = 1;
                                         else _polling = 0;
 
-                                        if (_lastPolledSlideNumber != -1 && currentPage != _lastPolledSlideNumber)
+                                        if (lastPage != -1 && currentPage != lastPage)
                                         {
                                             try
                                             {
-                                                LogHelper.WriteLogToFile($"轮询模式检测到页码变化: {_lastPolledSlideNumber} -> {currentPage}，触发事件", LogHelper.LogType.Trace);
+                                                LogHelper.WriteLogToFile($"轮询模式检测到页码变化: {lastPage} -> {currentPage}，触发事件", LogHelper.LogType.Trace);
                                                 SlideShowNextSlide?.Invoke(_pptSlideShowWindow);
                                             }
                                             catch (Exception ex)
@@ -480,6 +480,8 @@ namespace Ink_Canvas.Helpers
                                                 LogHelper.WriteLogToFile($"触发轮询模式幻灯片切换事件失败: {ex.Message}", LogHelper.LogType.Warning);
                                             }
                                         }
+
+                                        _lastPolledSlideNumber = currentPage;
                                     }
                                     catch (Exception ex)
                                     {
