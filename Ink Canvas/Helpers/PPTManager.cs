@@ -305,20 +305,6 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToPowerPointViaROT()
-        {
-            try
-            {
-                var pptApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
-                return pptApp;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"ROT 备用方法连接异常: {ex}", LogHelper.LogType.Error);
-                return null;
-            }
-        }
-
         private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPS()
         {
             try
@@ -342,20 +328,6 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception)
             {
-                return null;
-            }
-        }
-
-        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPSViaROT()
-        {
-            try
-            {
-                var wpsApp = PPTROTConnectionHelper.TryConnectViaROT(true);
-                return wpsApp;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"ROT 备用方法连接 WPS 异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
