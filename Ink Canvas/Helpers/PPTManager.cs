@@ -913,107 +913,127 @@ namespace Ink_Canvas.Helpers
 
         public bool TryNavigateNext()
         {
-            object slideShowWindows = null;
-            object slideShowWindow = null;
-            object view = null;
             try
             {
                 if (!IsConnected || !IsInSlideShow || PPTApplication == null) return false;
                 if (!Marshal.IsComObject(PPTApplication)) return false;
 
-                slideShowWindows = PPTApplication.SlideShowWindows;
-                if (slideShowWindows != null)
+                // 在新线程中执行翻页操作，避免等待动画完成
+                new Thread(() =>
                 {
-                    dynamic ssw = slideShowWindows;
-                    slideShowWindow = ssw[1];
-                    if (slideShowWindow != null)
+                    try
                     {
-                        dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
-                        view = sswObj.View;
-                        if (view != null)
+                        object slideShowWindows = PPTApplication.SlideShowWindows;
+                        if (slideShowWindows != null)
                         {
-                            dynamic viewObj = view;
-                            viewObj.Next();
-                            return true;
+                            dynamic ssw = slideShowWindows;
+                            object slideShowWindow = ssw[1];
+                            if (slideShowWindow != null)
+                            {
+                                dynamic sswObj = slideShowWindow;
+                                try
+                                {
+                                    sswObj.Activate();
+                                }
+                                catch { }
+                                try
+                                {
+                                    object view = sswObj.View;
+                                    if (view != null)
+                                    {
+                                        dynamic viewObj = view;
+                                        viewObj.Next();
+                                    }
+                                }
+                                catch { }
+                                SafeReleaseComObject(slideShowWindow);
+                            }
+                            SafeReleaseComObject(slideShowWindows);
                         }
                     }
-                }
-                return false;
-            }
-            catch (COMException comEx)
-            {
-                var hr = (uint)comEx.HResult;
-                if (hr == 0x8001010E || hr == 0x80004005)
-                {
-                    DisconnectFromPPT();
-                }
-                LogHelper.WriteLogToFile($"切换到下一页失败: {comEx.Message}", LogHelper.LogType.Error);
-                return false;
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        if (hr == 0x8001010E || hr == 0x80004005)
+                        {
+                            DisconnectFromPPT();
+                        }
+                        LogHelper.WriteLogToFile($"切换到下一页失败: {comEx.Message}", LogHelper.LogType.Error);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"切换到下一页失败: {ex}", LogHelper.LogType.Error);
+                    }
+                }).Start();
+                return true;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"切换到下一页失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"启动下一页线程失败: {ex}", LogHelper.LogType.Error);
                 return false;
-            }
-            finally
-            {
-                SafeReleaseComObject(view);
-                SafeReleaseComObject(slideShowWindow);
-                SafeReleaseComObject(slideShowWindows);
             }
         }
 
         public bool TryNavigatePrevious()
         {
-            object slideShowWindows = null;
-            object slideShowWindow = null;
-            object view = null;
             try
             {
                 if (!IsConnected || !IsInSlideShow || PPTApplication == null) return false;
                 if (!Marshal.IsComObject(PPTApplication)) return false;
 
-                slideShowWindows = PPTApplication.SlideShowWindows;
-                if (slideShowWindows != null)
+                // 在新线程中执行翻页操作，避免等待动画完成
+                new Thread(() =>
                 {
-                    dynamic ssw = slideShowWindows;
-                    slideShowWindow = ssw[1];
-                    if (slideShowWindow != null)
+                    try
                     {
-                        dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
-                        view = sswObj.View;
-                        if (view != null)
+                        object slideShowWindows = PPTApplication.SlideShowWindows;
+                        if (slideShowWindows != null)
                         {
-                            dynamic viewObj = view;
-                            viewObj.Previous();
-                            return true;
+                            dynamic ssw = slideShowWindows;
+                            object slideShowWindow = ssw[1];
+                            if (slideShowWindow != null)
+                            {
+                                dynamic sswObj = slideShowWindow;
+                                try
+                                {
+                                    sswObj.Activate();
+                                }
+                                catch { }
+                                try
+                                {
+                                    object view = sswObj.View;
+                                    if (view != null)
+                                    {
+                                        dynamic viewObj = view;
+                                        viewObj.Previous();
+                                    }
+                                }
+                                catch { }
+                                SafeReleaseComObject(slideShowWindow);
+                            }
+                            SafeReleaseComObject(slideShowWindows);
                         }
                     }
-                }
-                return false;
-            }
-            catch (COMException comEx)
-            {
-                var hr = (uint)comEx.HResult;
-                if (hr == 0x8001010E || hr == 0x80004005)
-                {
-                    DisconnectFromPPT();
-                }
-                LogHelper.WriteLogToFile($"切换到上一页失败: {comEx.Message}", LogHelper.LogType.Error);
-                return false;
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        if (hr == 0x8001010E || hr == 0x80004005)
+                        {
+                            DisconnectFromPPT();
+                        }
+                        LogHelper.WriteLogToFile($"切换到上一页失败: {comEx.Message}", LogHelper.LogType.Error);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"切换到上一页失败: {ex}", LogHelper.LogType.Error);
+                    }
+                }).Start();
+                return true;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"切换到上一页失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"启动上一页线程失败: {ex}", LogHelper.LogType.Error);
                 return false;
-            }
-            finally
-            {
-                SafeReleaseComObject(view);
-                SafeReleaseComObject(slideShowWindow);
-                SafeReleaseComObject(slideShowWindows);
             }
         }
 
