@@ -69,7 +69,13 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
+                        Type appType = typeof(Microsoft.Office.Interop.PowerPoint.Application);
+                        Microsoft.Office.Interop.PowerPoint.Application pptApp = null;
+                        
+                        if (appType.IsInstanceOfType(bestApp))
+                        {
+                            pptApp = (Microsoft.Office.Interop.PowerPoint.Application)bestApp;
+                        }
                         
                         if (pptApp != null)
                         {

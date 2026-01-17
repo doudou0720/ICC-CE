@@ -30,9 +30,9 @@ namespace Ink_Canvas.Helpers
 
         #region Properties
         public object PPTApplication { get; private set; }
-        public Presentation CurrentPresentation { get; private set; }
-        public Slides CurrentSlides { get; private set; }
-        public Slide CurrentSlide { get; private set; }
+        public dynamic CurrentPresentation { get; private set; }
+        public dynamic CurrentSlides { get; private set; }
+        public dynamic CurrentSlide { get; private set; }
         public int SlidesCount { get; private set; }
         public bool IsConnected
         {
@@ -593,33 +593,50 @@ namespace Ink_Canvas.Helpers
 
                     try
                     {
-                        Microsoft.Office.Interop.PowerPoint.Application pptAppForEvents = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
-
-                        if (pptAppForEvents != null)
+                        if (PPTApplication != null)
                         {
-                            pptAppForEvents.SlideShowNextSlide += new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
-                            pptAppForEvents.SlideShowBegin += new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
-                            pptAppForEvents.SlideShowEnd += new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
-
                             try
                             {
-                                pptAppForEvents.PresentationBeforeClose += new EApplication_PresentationBeforeCloseEventHandler(OnPresentationBeforeClose);
+                                Type appType = typeof(Microsoft.Office.Interop.PowerPoint.Application);
+                                if (appType.IsInstanceOfType(PPTApplication))
+                                {
+                                    Microsoft.Office.Interop.PowerPoint.Application pptAppForEvents = (Microsoft.Office.Interop.PowerPoint.Application)PPTApplication;
+                                    pptAppForEvents.SlideShowNextSlide += new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
+                                    pptAppForEvents.SlideShowBegin += new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
+                                    pptAppForEvents.SlideShowEnd += new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
+
+                                    try
+                                    {
+                                        pptAppForEvents.PresentationBeforeClose += new EApplication_PresentationBeforeCloseEventHandler(OnPresentationBeforeClose);
+                                    }
+                                    catch
+                                    {
+                                        LogHelper.WriteLogToFile("无法注册PresentationBeforeClose事件", LogHelper.LogType.Warning);
+                                    }
+
+                                    _bindingEvents = true;
+                                    _forcePolling = false;
+
+                                    LogHelper.WriteLogToFile("PPT事件注册成功", LogHelper.LogType.Trace);
+                                }
+                                else
+                                {
+                                    _bindingEvents = false;
+                                    _forcePolling = true;
+                                    LogHelper.WriteLogToFile("无法转换为强类型Application，使用轮询模式", LogHelper.LogType.Trace);
+                                }
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                LogHelper.WriteLogToFile("无法注册PresentationBeforeClose事件", LogHelper.LogType.Warning);
+                                _bindingEvents = false;
+                                _forcePolling = true;
+                                LogHelper.WriteLogToFile($"事件注册失败: {ex.Message}，使用轮询模式", LogHelper.LogType.Trace);
                             }
-
-                            _bindingEvents = true;
-                            _forcePolling = false;
-
-                            LogHelper.WriteLogToFile("PPT事件注册成功", LogHelper.LogType.Trace);
                         }
                         else
                         {
                             _bindingEvents = false;
                             _forcePolling = true;
-                            LogHelper.WriteLogToFile("无法转换为强类型Application，使用轮询模式", LogHelper.LogType.Trace);
                         }
                     }
                     catch (Exception ex)
@@ -670,10 +687,10 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        Microsoft.Office.Interop.PowerPoint.Application app = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
-
-                        if (app != null)
+                        Type appType = typeof(Microsoft.Office.Interop.PowerPoint.Application);
+                        if (appType.IsInstanceOfType(PPTApplication))
                         {
+                            Microsoft.Office.Interop.PowerPoint.Application app = (Microsoft.Office.Interop.PowerPoint.Application)PPTApplication;
                             app.SlideShowNextSlide -= new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
                             app.SlideShowBegin -= new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
                             app.SlideShowEnd -= new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
@@ -836,21 +853,15 @@ namespace Ink_Canvas.Helpers
                         {
                             try
                             {
-                                CurrentPresentation = _pptActivePresentation as Presentation;
-                                if (CurrentPresentation != null)
-                                {
-                                    CurrentSlides = CurrentPresentation.Slides;
-                                }
-                                else
-                                {
-                                    dynamic pres = _pptActivePresentation;
-                                    CurrentSlides = pres.Slides as Slides;
-                                }
-                            }
-                            catch
-                            {
                                 dynamic pres = _pptActivePresentation;
-                                CurrentSlides = pres.Slides as Slides;
+                                CurrentPresentation = pres;
+                                CurrentSlides = pres.Slides;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"访问演示文稿属性失败: {ex.Message}", LogHelper.LogType.Warning);
+                                CurrentPresentation = null;
+                                CurrentSlides = null;
                             }
 
                             if (CurrentSlides != null)
@@ -886,10 +897,13 @@ namespace Ink_Canvas.Helpers
                                             if (view != null)
                                             {
                                                 dynamic viewObj = view;
-                                                CurrentSlide = viewObj.Slide as Slide;
+                                                CurrentSlide = viewObj.Slide;
                                             }
                                         }
-                                        catch { }
+                                        catch (Exception ex)
+                                        {
+                                            LogHelper.WriteLogToFile($"获取SlideShowWindow的Slide失败: {ex.Message}", LogHelper.LogType.Trace);
+                                        }
                                     }
                                     else
                                     {
@@ -1022,10 +1036,10 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        Microsoft.Office.Interop.PowerPoint.Application app = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
-
-                        if (app != null)
+                        Type appType = typeof(Microsoft.Office.Interop.PowerPoint.Application);
+                        if (appType.IsInstanceOfType(PPTApplication))
                         {
+                            Microsoft.Office.Interop.PowerPoint.Application app = (Microsoft.Office.Interop.PowerPoint.Application)PPTApplication;
                             app.SlideShowNextSlide -= new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
                             app.SlideShowBegin -= new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
                             app.SlideShowEnd -= new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
@@ -2547,4 +2561,5 @@ namespace Ink_Canvas.Helpers
         #endregion
     }
 }
+
 
