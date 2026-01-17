@@ -53,29 +53,25 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             try
             {
-                var lastCheckTimePath = Path.Combine(App.RootPath, "last_update_check.dat");
-                if (File.Exists(lastCheckTimePath))
+                var lastCheckTime = DeviceIdentifier.GetLastUpdateCheck();
+                if (lastCheckTime != DateTime.MinValue)
                 {
-                    var timeStr = File.ReadAllText(lastCheckTimePath);
-                    if (DateTime.TryParse(timeStr, out var lastCheckTime))
+                    var now = DateTime.Now;
+                    var timeDiff = now - lastCheckTime;
+                    
+                    if (timeDiff.TotalDays < 1 && lastCheckTime.Date == now.Date)
                     {
-                        var now = DateTime.Now;
-                        var timeDiff = now - lastCheckTime;
-                        
-                        if (timeDiff.TotalDays < 1 && lastCheckTime.Date == now.Date)
-                        {
-                            LastCheckTimeText.Text = $"上次检查时间: 今天, {lastCheckTime:HH:mm}";
-                        }
-                        else if (timeDiff.TotalDays < 2 && lastCheckTime.Date == now.Date.AddDays(-1))
-                        {
-                            LastCheckTimeText.Text = $"上次检查时间: 昨天, {lastCheckTime:HH:mm}";
-                        }
-                        else
-                        {
-                            LastCheckTimeText.Text = $"上次检查时间: {lastCheckTime:yyyy-MM-dd HH:mm}";
-                        }
-                        return;
+                        LastCheckTimeText.Text = $"上次检查时间: 今天, {lastCheckTime:HH:mm}";
                     }
+                    else if (timeDiff.TotalDays < 2 && lastCheckTime.Date == now.Date.AddDays(-1))
+                    {
+                        LastCheckTimeText.Text = $"上次检查时间: 昨天, {lastCheckTime:HH:mm}";
+                    }
+                    else
+                    {
+                        LastCheckTimeText.Text = $"上次检查时间: {lastCheckTime:yyyy-MM-dd HH:mm}";
+                    }
+                    return;
                 }
                 LastCheckTimeText.Text = "上次检查时间: 从未";
             }
@@ -89,8 +85,7 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             try
             {
-                var lastCheckTimePath = Path.Combine(App.RootPath, "last_update_check.dat");
-                File.WriteAllText(lastCheckTimePath, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                DeviceIdentifier.RecordUpdateCheck();
                 LoadLastCheckTime();
             }
             catch (Exception ex)

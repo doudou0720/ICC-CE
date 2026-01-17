@@ -960,6 +960,23 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 获取上次更新检查时间
+        /// </summary>
+        public static DateTime GetLastUpdateCheck()
+        {
+            try
+            {
+                var stats = LoadUsageStats();
+                return stats.LastUpdateCheck;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"DeviceIdentifier | 获取上次更新检查时间失败: {ex.Message}", LogHelper.LogType.Error);
+                return DateTime.MinValue;
+            }
+        }
+
 
         /// <summary>
         /// 从备份文件恢复使用统计数据
