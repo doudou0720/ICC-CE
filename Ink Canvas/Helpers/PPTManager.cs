@@ -29,7 +29,7 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Properties
-        public Microsoft.Office.Interop.PowerPoint.Application PPTApplication { get; private set; }
+        public object PPTApplication { get; private set; }
         public Presentation CurrentPresentation { get; private set; }
         public Slides CurrentSlides { get; private set; }
         public Slide CurrentSlide { get; private set; }
@@ -44,7 +44,8 @@ namespace Ink_Canvas.Helpers
                     if (!Marshal.IsComObject(PPTApplication)) return false;
 
                     // 尝试访问一个简单的属性来验证连接是否有效
-                    var _ = PPTApplication.Name;
+                    dynamic app = PPTApplication;
+                    var _ = app.Name;
                     return true;
                 }
                 catch (COMException comEx)
@@ -253,12 +254,20 @@ namespace Ink_Canvas.Helpers
                         {
                             if (wait) Thread.Sleep(1000);
 
-                            Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
-                            if (pptApp != null)
+                            try
                             {
-                                ConnectToPPT(pptApp);
+                                Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
+                                if (pptApp != null)
+                                {
+                                    ConnectToPPT(pptApp);
+                                }
+                                else
+                                {
+                                    PPTApplication = bestApp;
+                                    ConnectToPPT(null);
+                                }
                             }
-                            else
+                            catch
                             {
                                 PPTROTConnectionHelper.SafeReleaseComObject(bestApp);
                             }
@@ -298,7 +307,8 @@ namespace Ink_Canvas.Helpers
 
                 try
                 {
-                    activePresentation = PPTApplication.ActivePresentation;
+                    dynamic app = PPTApplication;
+                    activePresentation = app.ActivePresentation;
 
                     if (activePresentation != null && !PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation))
                     {
@@ -325,7 +335,8 @@ namespace Ink_Canvas.Helpers
                 bool isSlideShowActive = false;
                 try
                 {
-                    activePresentation = PPTApplication.ActivePresentation;
+                    dynamic app = PPTApplication;
+                    activePresentation = app.ActivePresentation;
 
                     if (activePresentation != null && PPTROTConnectionHelper.GetSlideShowWindowsCount(PPTApplication) > 0)
                     {
@@ -488,11 +499,15 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                PPTApplication = pptApp;
+                if (pptApp != null)
+                {
+                    PPTApplication = pptApp;
+                }
 
                 try
                 {
-                    _pptActivePresentation = PPTApplication.ActivePresentation;
+                    dynamic pptAppDynamic = PPTApplication;
+                    _pptActivePresentation = pptAppDynamic.ActivePresentation;
                     _updateTime = DateTime.Now;
 
                     int tempTotalPage = -1;
@@ -537,17 +552,17 @@ namespace Ink_Canvas.Helpers
 
                     try
                     {
-                        Microsoft.Office.Interop.PowerPoint.Application app = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                        Microsoft.Office.Interop.PowerPoint.Application pptAppForEvents = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
 
-                        if (app != null)
+                        if (pptAppForEvents != null)
                         {
-                            app.SlideShowNextSlide += new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
-                            app.SlideShowBegin += new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
-                            app.SlideShowEnd += new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
+                            pptAppForEvents.SlideShowNextSlide += new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
+                            pptAppForEvents.SlideShowBegin += new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
+                            pptAppForEvents.SlideShowEnd += new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
 
                             try
                             {
-                                app.PresentationBeforeClose += new EApplication_PresentationBeforeCloseEventHandler(OnPresentationBeforeClose);
+                                pptAppForEvents.PresentationBeforeClose += new EApplication_PresentationBeforeCloseEventHandler(OnPresentationBeforeClose);
                             }
                             catch
                             {
@@ -580,7 +595,15 @@ namespace Ink_Canvas.Helpers
 
                     PPTConnectionChanged?.Invoke(true);
 
-                    LogHelper.WriteLogToFile($"成功绑定! {PPTApplication.Name}", LogHelper.LogType.Event);
+                    try
+                    {
+                        dynamic pptAppDynamic2 = PPTApplication;
+                        LogHelper.WriteLogToFile($"成功绑定! {pptAppDynamic2.Name}", LogHelper.LogType.Event);
+                    }
+                    catch
+                    {
+                        LogHelper.WriteLogToFile("成功绑定!", LogHelper.LogType.Event);
+                    }
                 }
                 catch
                 {
