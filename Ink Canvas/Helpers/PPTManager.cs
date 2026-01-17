@@ -389,9 +389,46 @@ namespace Ink_Canvas.Helpers
                                     {
                                         if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptSlideShowWindow, slideShowWindow))
                                         {
+                                            bool isNewWindow = _pptSlideShowWindow == null;
                                             PPTROTConnectionHelper.SafeReleaseComObject(_pptSlideShowWindow);
                                             _pptSlideShowWindow = slideShowWindow;
                                             LogHelper.WriteLogToFile("发现窗口，成功设置 slideshowwindow", LogHelper.LogType.Trace);
+                                            
+                                            if (isNewWindow)
+                                            {
+                                                try
+                                                {
+                                                    _updateTime = DateTime.Now;
+                                                    _lastPolledSlideNumber = -1;
+                                                    
+                                                    if (_pptActivePresentation != null)
+                                                    {
+                                                        try
+                                                        {
+                                                            int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
+                                                            int totalPage = GetTotalSlideIndex(_pptActivePresentation);
+                                                            
+                                                            if (currentPage >= totalPage) _polling = 1;
+                                                            else _polling = 0;
+                                                            
+                                                            SlidesCount = totalPage;
+                                                            _lastPolledSlideNumber = currentPage;
+                                                        }
+                                                        catch
+                                                        {
+                                                            _polling = 1;
+                                                            _lastPolledSlideNumber = -1;
+                                                        }
+                                                    }
+                                                    
+                                                    UpdateCurrentPresentationInfo();
+                                                    SlideShowBegin?.Invoke(_pptSlideShowWindow);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    LogHelper.WriteLogToFile($"手动触发SlideShowBegin失败: {ex.Message}", LogHelper.LogType.Warning);
+                                                }
+                                            }
                                         }
                                     }
                                 }
