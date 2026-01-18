@@ -132,24 +132,15 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2.0.1
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.x'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
-
-      - name: Cache NuGet global packages
-        id: cache-nuget
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.nuget/packages
-            ~\AppData\Local\NuGet\Cache
-          key: ${{ runner.os }}-nuget-v2-${{ hashFiles('**/*.csproj', '**/packages.config', '**/*.sln', '**/nuget.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-v2-
-
-
 
       # Removed caching of obj/ folders to avoid cross-version incremental build issues
       # NuGet packages will still be cached; always run restore to ensure packages are present
@@ -158,10 +149,7 @@ jobs:
           Write-Host "📥 正在恢复 NuGet 包（始终运行以确保依赖可用）..." -ForegroundColor Yellow
 
           # 恢复解决方案级别的包
-          nuget restore "Ink Canvas.sln" -Verbosity minimal
-
-          # 恢复项目级别的包（兼容 packages.config）
-          msbuild -t:restore "Ink Canvas/InkCanvasForClass.csproj" /p:GitFlow="Github Action" /p:RestorePackagesConfig=true /verbosity:minimal
+          dotnet restore "Ink Canvas.sln" --locked-mode
 
           Write-Host "✅ NuGet 包恢复完成" -ForegroundColor Green
 
