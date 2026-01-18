@@ -20,10 +20,10 @@ namespace Ink_Canvas.Helpers
     public class PPTManager : IDisposable
     {
         #region Events
-        public event Action<SlideShowWindow> SlideShowBegin;
-        public event Action<SlideShowWindow> SlideShowNextSlide;
-        public event Action<Presentation> SlideShowEnd;
-        public event Action<Presentation> PresentationOpen;
+        public event Action<object> SlideShowBegin;
+        public event Action<object> SlideShowNextSlide;
+        public event Action<object> SlideShowEnd;
+        public event Action<object> PresentationOpen;
         public event Action<bool> PPTConnectionChanged;
         public event Action<bool> SlideShowStateChanged;
         #endregion
@@ -398,31 +398,7 @@ namespace Ink_Canvas.Helpers
                                             {
                                                 try
                                                 {
-                                                    _updateTime = DateTime.Now;
-                                                    _lastPolledSlideNumber = -1;
-                                                    
-                                                    if (_pptActivePresentation != null)
-                                                    {
-                                                        try
-                                                        {
-                                                            int currentPage = GetCurrentSlideIndex(_pptSlideShowWindow);
-                                                            int totalPage = GetTotalSlideIndex(_pptActivePresentation);
-                                                            
-                                                            if (currentPage >= totalPage) _polling = 1;
-                                                            else _polling = 0;
-                                                            
-                                                            SlidesCount = totalPage;
-                                                            _lastPolledSlideNumber = currentPage;
-                                                        }
-                                                        catch
-                                                        {
-                                                            _polling = 1;
-                                                            _lastPolledSlideNumber = -1;
-                                                        }
-                                                    }
-                                                    
-                                                    UpdateCurrentPresentationInfo();
-                                                    SlideShowBegin?.Invoke(_pptSlideShowWindow);
+                                                    OnSlideShowBegin(_pptSlideShowWindow);
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -1500,7 +1476,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private void OnSlideShowBegin(SlideShowWindow wn)
+        private void OnSlideShowBegin(object wn)
         {
             try
             {

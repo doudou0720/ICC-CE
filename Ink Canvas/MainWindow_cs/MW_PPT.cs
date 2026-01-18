@@ -519,7 +519,7 @@ namespace Ink_Canvas
             }
         }
 
-        private void OnPPTPresentationOpen(Presentation pres)
+        private void OnPPTPresentationOpen(object pres)
         {
             try
             {
@@ -610,7 +610,7 @@ namespace Ink_Canvas
             }
         }
 
-        private async void OnPPTSlideShowBegin(SlideShowWindow wn)
+        private async void OnPPTSlideShowBegin(object wn)
         {
             try
             {
@@ -785,7 +785,7 @@ namespace Ink_Canvas
             }
         }
 
-        private void OnPPTSlideShowNextSlide(SlideShowWindow wn)
+        private void OnPPTSlideShowNextSlide(object wn)
         {
             try
             {
@@ -815,7 +815,7 @@ namespace Ink_Canvas
             }
         }
 
-        private async void OnPPTSlideShowEnd(Presentation pres)
+        private async void OnPPTSlideShowEnd(object pres)
         {
             try
             {
