@@ -5,7 +5,7 @@ title: "[Feature Request] "
 type: Feature
 ---
 
-<!---请注意，你正在使用Markdown格式的Issue模板，如果你删除该模板的框架或者不按照规范填写，你的Issue可能被直接关闭，如果你对Markdown不熟悉，请使用位于该选项上方的反馈入口继续反馈，感谢配合！-->
+<!---请注意，你正在使用Markdown格式的Issue模板，如果你删除该模板的框架、更改问题的tag/类型/受理人或者不按照规范填写，你的Issue可能被直接关闭，如果你对Markdown不熟悉，请使用位于该选项下方的反馈入口继续反馈，感谢配合！-->
 
 <!---感谢你的建议！请详细描述你的需求。-->
 <!---Thank you for your suggestion! Please describe your needs in detail.-->

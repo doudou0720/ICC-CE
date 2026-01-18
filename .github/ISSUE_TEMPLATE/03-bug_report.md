@@ -5,10 +5,12 @@ title: "[Version x.x.x] <your title>"
 type: Bug
 ---
 
-<!---请注意，你正在使用Markdown格式的Issue模板，如果你删除该模板的框架或者不按照规范填写，你的Issue可能被直接关闭，如果你对Markdown不熟悉，请使用位于该选项上方的反馈入口继续反馈，感谢配合！-->
+<!---请注意，你正在使用Markdown格式的Issue模板，如果你删除该模板的框架、更改问题的tag/类型/受理人或者不按照规范填写，你的Issue可能被直接关闭，如果你对Markdown>
+不熟悉，请使用位于该选项下方的反馈入口继续反馈，感谢配合！-->
 
 <!---感谢你的反馈！请详细填写以下内容，便于我们定位问题。-->
 <!---Thank you for your feedback! Please fill out the following information to help us locate the issue.-->
+
 <!---在报告问题之前，请确保你的软件已经更新到最新Beta版本，否则我们可能会无条件直接关闭该Issue，感谢配合！-->
 <!---Before reporting the issue, please make sure your software has been updated to the latest Beta version. Otherwise, we may unconditionally close this Issue without any further notice. Thank you for your cooperation!-->
 
