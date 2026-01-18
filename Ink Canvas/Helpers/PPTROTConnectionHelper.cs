@@ -394,21 +394,21 @@ namespace Ink_Canvas.Helpers
 
                 if (fgPid == sswPid) return true;
 
-                try
-                {
-                    using (Process fgProc = Process.GetProcessById((int)fgPid))
-                    using (Process appProc = Process.GetProcessById((int)sswPid))
+                    try
                     {
-                        string fgName = fgProc.ProcessName.ToLower();
-                        string appName = appProc.ProcessName.ToLower();
-
-                        if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
+                        using (Process fgProc = Process.GetProcessById((int)fgPid))
+                        using (Process appProc = Process.GetProcessById((int)sswPid))
                         {
-                            return true;
+                            string fgName = fgProc.ProcessName.ToLower();
+                            string appName = appProc.ProcessName.ToLower();
+
+                            if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
+                            {
+                                return true;
+                            }
                         }
                     }
-                }
-                catch { }
+                    catch { }
 
                 return false;
             }

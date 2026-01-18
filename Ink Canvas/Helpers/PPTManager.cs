@@ -543,8 +543,36 @@ namespace Ink_Canvas.Helpers
                         }
                         else
                         {
-                            _lastPolledSlideNumber = -1;
-                            SlidesCount = 0;
+                            if (_lastSlideShowState)
+                            {
+                                LogHelper.WriteLogToFile("轮询检测到放映已结束", LogHelper.LogType.Trace);
+                                
+                                PPTROTConnectionHelper.SafeReleaseComObject(_pptSlideShowWindow);
+                                _pptSlideShowWindow = null;
+                                _lastPolledSlideNumber = -1;
+                                _polling = 1;
+                                SlidesCount = 0;
+                                
+                                _lastSlideShowState = false;
+                                SlideShowStateChanged?.Invoke(false);
+                                
+                                if (_pptActivePresentation != null)
+                                {
+                                    try
+                                    {
+                                        OnSlideShowEnd(_pptActivePresentation);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogHelper.WriteLogToFile($"触发SlideShowEnd事件失败: {ex.Message}", LogHelper.LogType.Warning);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                _lastPolledSlideNumber = -1;
+                                SlidesCount = 0;
+                            }
                         }
                     }
                     else
@@ -878,7 +906,35 @@ namespace Ink_Canvas.Helpers
                 }
                 else
                 {
-                    SlidesCount = 0;
+                    if (_lastSlideShowState)
+                    {
+                        LogHelper.WriteLogToFile("轮询检测到放映已结束", LogHelper.LogType.Trace);
+                        
+                        PPTROTConnectionHelper.SafeReleaseComObject(_pptSlideShowWindow);
+                        _pptSlideShowWindow = null;
+                        _lastPolledSlideNumber = -1;
+                        _polling = 1;
+                        SlidesCount = 0;
+                        
+                        _lastSlideShowState = false;
+                        SlideShowStateChanged?.Invoke(false);
+                        
+                        if (_pptActivePresentation != null)
+                        {
+                            try
+                            {
+                                OnSlideShowEnd(_pptActivePresentation);
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"触发SlideShowEnd事件失败: {ex.Message}", LogHelper.LogType.Warning);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        SlidesCount = 0;
+                    }
                 }
             }
             catch (Exception ex)
