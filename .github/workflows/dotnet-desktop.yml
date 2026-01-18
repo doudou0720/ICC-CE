@@ -132,24 +132,14 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v2.0.1
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.x'
+          cache: true
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
-
-      - name: Cache NuGet global packages
-        id: cache-nuget
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.nuget/packages
-            ~\AppData\Local\NuGet\Cache
-          key: ${{ runner.os }}-nuget-v2-${{ hashFiles('**/*.csproj', '**/packages.config', '**/*.sln', '**/nuget.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-v2-
-
-
 
       # Removed caching of obj/ folders to avoid cross-version incremental build issues
       # NuGet packages will still be cached; always run restore to ensure packages are present
