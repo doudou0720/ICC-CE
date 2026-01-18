@@ -1510,6 +1510,13 @@ namespace Ink_Canvas.Helpers
                 }
 
                 UpdateCurrentPresentationInfo();
+
+                if (!_lastSlideShowState)
+                {
+                    _lastSlideShowState = true;
+                    SlideShowStateChanged?.Invoke(true);
+                }
+
                 SlideShowBegin?.Invoke(wn);
             }
             catch (Exception ex)
@@ -1570,6 +1577,13 @@ namespace Ink_Canvas.Helpers
                 }
 
                 UpdateCurrentPresentationInfo();
+
+                if (_lastSlideShowState)
+                {
+                    _lastSlideShowState = false;
+                    SlideShowStateChanged?.Invoke(false);
+                }
+
                 SlideShowEnd?.Invoke(pres);
             }
             catch (Exception ex)
