@@ -275,7 +275,7 @@ namespace Ink_Canvas.Windows
                     var presentationOpenEvent = pptManager.GetType().GetEvent("PresentationOpen");
                     if (presentationOpenEvent != null)
                     {
-                        var openHandler = new Action<Microsoft.Office.Interop.PowerPoint.Presentation>(OnPPTPresentationOpen);
+                        var openHandler = new Action<object>(OnPPTPresentationOpen);
                         presentationOpenEvent.AddEventHandler(pptManager, openHandler);
                     }
                     
@@ -283,7 +283,7 @@ namespace Ink_Canvas.Windows
                     var slideShowBeginEvent = pptManager.GetType().GetEvent("SlideShowBegin");
                     if (slideShowBeginEvent != null)
                     {
-                        var beginHandler = new Action<Microsoft.Office.Interop.PowerPoint.SlideShowWindow>(OnPPTSlideShowBegin);
+                        var beginHandler = new Action<object>(OnPPTSlideShowBegin);
                         slideShowBeginEvent.AddEventHandler(pptManager, beginHandler);
                     }
                     
@@ -291,7 +291,7 @@ namespace Ink_Canvas.Windows
                     var slideShowNextSlideEvent = pptManager.GetType().GetEvent("SlideShowNextSlide");
                     if (slideShowNextSlideEvent != null)
                     {
-                        var handler = new Action<Microsoft.Office.Interop.PowerPoint.SlideShowWindow>(OnPPTSlideChanged);
+                        var handler = new Action<object>(OnPPTSlideChanged);
                         slideShowNextSlideEvent.AddEventHandler(pptManager, handler);
                     }
                     
@@ -299,7 +299,7 @@ namespace Ink_Canvas.Windows
                     var slideShowEndEvent = pptManager.GetType().GetEvent("SlideShowEnd");
                     if (slideShowEndEvent != null)
                     {
-                        var handler = new Action<Microsoft.Office.Interop.PowerPoint.Presentation>(OnPPTSlideShowEnd);
+                        var handler = new Action<object>(OnPPTSlideShowEnd);
                         slideShowEndEvent.AddEventHandler(pptManager, handler);
                     }
                 }
@@ -310,7 +310,7 @@ namespace Ink_Canvas.Windows
             }
         }
         
-        private void OnPPTPresentationOpen(Microsoft.Office.Interop.PowerPoint.Presentation presentation)
+        private void OnPPTPresentationOpen(object presentation)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -326,7 +326,7 @@ namespace Ink_Canvas.Windows
             }), DispatcherPriority.Normal);
         }
         
-        private void OnPPTSlideShowBegin(Microsoft.Office.Interop.PowerPoint.SlideShowWindow window)
+        private void OnPPTSlideShowBegin(object window)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
             {
@@ -369,7 +369,7 @@ namespace Ink_Canvas.Windows
             }), DispatcherPriority.Normal);
         }
         
-        private void OnPPTSlideChanged(Microsoft.Office.Interop.PowerPoint.SlideShowWindow window)
+        private void OnPPTSlideChanged(object window)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
             {
@@ -420,7 +420,7 @@ namespace Ink_Canvas.Windows
             }), DispatcherPriority.Normal);
         }
         
-        private void OnPPTSlideShowEnd(Microsoft.Office.Interop.PowerPoint.Presentation presentation)
+        private void OnPPTSlideShowEnd(object presentation)
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {

@@ -303,6 +303,11 @@ namespace Ink_Canvas.Helpers
                             PPTROTConnectionHelper.SafeReleaseComObject(bestApp);
                             bestApp = null;
                         }
+                        else if (bestApp == null && PPTApplication != null)
+                        {
+                            LogHelper.WriteLogToFile("检测到PPT已关闭，断开连接", LogHelper.LogType.Trace);
+                            DisconnectFromPPT();
+                        }
                     }
 
                     if (PPTApplication != null && _pptActivePresentation != null)
