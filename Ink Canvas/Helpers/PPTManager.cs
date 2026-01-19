@@ -317,6 +317,25 @@ namespace Ink_Canvas.Helpers
 
                         try
                         {
+                            // 检查COM对象是否仍然有效
+                            if (!System.Runtime.InteropServices.Marshal.IsComObject(PPTApplication))
+                            {
+                                DisconnectFromPPT();
+                                continue;
+                            }
+                            
+                            try
+                            {
+                                var _ = System.Runtime.InteropServices.Marshal.GetIUnknownForObject(PPTApplication);
+                                System.Runtime.InteropServices.Marshal.Release(_);
+                            }
+                            catch (System.Runtime.InteropServices.InvalidComObjectException)
+                            {
+                                // COM对象已失效
+                                DisconnectFromPPT();
+                                continue;
+                            }
+                            
                             activePresentation = PPTApplication.ActivePresentation;
 
                             if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptActivePresentation, activePresentation))
@@ -326,14 +345,30 @@ namespace Ink_Canvas.Helpers
                                 continue;
                             }
                         }
+                        catch (System.Runtime.InteropServices.InvalidComObjectException)
+                        {
+                            // COM对象已失效
+                            LogHelper.WriteLogToFile("检测到COM对象失效，断开连接", LogHelper.LogType.Trace);
+                            DisconnectFromPPT();
+                            continue;
+                        }
                         catch (COMException ex) when ((uint)ex.ErrorCode == 0x8001010A)
                         {
                             LogHelper.WriteLogToFile("PowerPoint 忙，稍后重试", LogHelper.LogType.Trace);
                         }
+                        catch (COMException comEx)
+                        {
+                            // COM异常，对象可能已失效
+                            var hr = (uint)comEx.HResult;
+                            LogHelper.WriteLogToFile($"检查演示文稿状态COM异常: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                            DisconnectFromPPT();
+                            continue;
+            }
             catch (Exception ex)
             {
                             LogHelper.WriteLogToFile($"检查演示文稿状态失败: {ex.Message}", LogHelper.LogType.Warning);
-                            break;
+                            DisconnectFromPPT();
+                            continue;
                         }
                         finally
                         {
@@ -590,9 +625,21 @@ namespace Ink_Canvas.Helpers
                     Thread.Sleep(500);
                 }
             }
+            catch (InvalidComObjectException ex)
+            {
+                LogHelper.WriteLogToFile($"PptComService异常: COM对象已失效 - {ex.Message}", LogHelper.LogType.Error);
+                DisconnectFromPPT();
+            }
+            catch (COMException comEx)
+            {
+                var hr = (uint)comEx.HResult;
+                LogHelper.WriteLogToFile($"PptComService异常: COM异常 (HR: 0x{hr:X8}) - {comEx.Message}", LogHelper.LogType.Error);
+                DisconnectFromPPT();
+            }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"PptComService异常: {ex.Message}", LogHelper.LogType.Error);
+                DisconnectFromPPT();
             }
         }
 
@@ -681,9 +728,22 @@ namespace Ink_Canvas.Helpers
                         }
                     }
                 }
+                catch (InvalidComObjectException)
+                {
+                    // COM对象已失效，断开连接
+                    LogHelper.WriteLogToFile("检测到COM对象失效，断开连接", LogHelper.LogType.Trace);
+                        DisconnectFromPPT();
+                    }
+                catch (COMException comEx)
+                    {
+                    // COM异常，记录并断开连接
+                    var hr = (uint)comEx.HResult;
+                    LogHelper.WriteLogToFile($"PPT连接检查COM异常: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                        DisconnectFromPPT();
+                }
                 catch (Exception ex)
                 {
-                    LogHelper.WriteLogToFile($"PPT连接检查异常: {ex}", LogHelper.LogType.Error);
+                    LogHelper.WriteLogToFile($"PptComService异常: {ex.Message}", LogHelper.LogType.Error);
                     if (PPTApplication != null)
                     {
                         DisconnectFromPPT();
@@ -696,6 +756,24 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
+                // 检查COM对象是否仍然有效
+                if (PPTApplication == null || !System.Runtime.InteropServices.Marshal.IsComObject(PPTApplication))
+                {
+                    return;
+                }
+                
+                try
+                {
+                    var _ = System.Runtime.InteropServices.Marshal.GetIUnknownForObject(PPTApplication);
+                    System.Runtime.InteropServices.Marshal.Release(_);
+                }
+                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                {
+                    // COM对象已失效
+                    DisconnectFromPPT();
+                    return;
+                }
+                
                 dynamic activePresentation = null;
                 dynamic slideShowWindow = null;
 
@@ -710,9 +788,24 @@ namespace Ink_Canvas.Helpers
                         return;
                     }
                 }
+                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                {
+                    // COM对象已失效
+                    LogHelper.WriteLogToFile("检测到COM对象失效，断开连接", LogHelper.LogType.Trace);
+                    DisconnectFromPPT();
+                    return;
+                }
                 catch (COMException ex) when ((uint)ex.HResult == 0x8001010A)
                 {
                     LogHelper.WriteLogToFile("PowerPoint 忙，稍后重试", LogHelper.LogType.Trace);
+                    return;
+                }
+                catch (COMException comEx)
+                {
+                    // COM异常，对象可能已失效
+                    var hr = (uint)comEx.HResult;
+                    LogHelper.WriteLogToFile($"检查演示文稿状态COM异常: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                    DisconnectFromPPT();
                     return;
             }
             catch (Exception ex)
@@ -1199,14 +1292,28 @@ namespace Ink_Canvas.Helpers
             {
                 UnbindEvents();
 
+                // 安全释放所有COM对象，即使它们已失效也不会抛出异常
                 SafeReleaseComObject(_pptSlideShowWindow, "_pptSlideShowWindow");
                 SafeReleaseComObject(_pptActivePresentation, "_pptActivePresentation");
                     SafeReleaseComObject(CurrentSlide, "CurrentSlide");
                     SafeReleaseComObject(CurrentSlides, "CurrentSlides");
                     SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
                     
-                    if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
+                // 释放PPTApplication
+                if (PPTApplication != null)
+                {
+                    try
                     {
+                        // 检查是否为有效的COM对象
+                        if (Marshal.IsComObject(PPTApplication))
+                        {
+                            // 检查COM对象是否仍然有效
+                            try
+                            {
+                                var _ = Marshal.GetIUnknownForObject(PPTApplication);
+                                Marshal.Release(_);
+                                
+                                // 对象有效，尝试释放
                         try
                         {
                             Marshal.FinalReleaseComObject(PPTApplication);
@@ -1222,9 +1329,27 @@ namespace Ink_Canvas.Helpers
                                 }
                             }
                             catch { }
+                        }
+                            }
+                            catch (InvalidComObjectException)
+                            {
+                                // COM对象已失效，直接设置为null
+                                LogHelper.WriteLogToFile("PPTApplication COM对象已失效，跳过释放", LogHelper.LogType.Trace);
+                            }
+                        }
+                    }
+                    catch (InvalidComObjectException)
+                    {
+                        // COM对象已失效，这是正常的
+                        LogHelper.WriteLogToFile("PPTApplication COM对象已失效，跳过释放", LogHelper.LogType.Trace);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"释放PPTApplication时发生异常: {ex.Message}", LogHelper.LogType.Warning);
                     }
                 }
 
+                // 清空所有引用
                 PPTApplication = null;
                 _pptActivePresentation = null;
                 _pptSlideShowWindow = null;
@@ -1293,11 +1418,36 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                if (comObject != null && Marshal.IsComObject(comObject))
+                if (comObject != null)
                 {
+                    // 检查是否为有效的COM对象
+                    if (!Marshal.IsComObject(comObject))
+                    {
+                        return; // 不是COM对象，无需释放
+                    }
+
+                    // 检查COM对象是否仍然有效
+                    try
+                    {
+                        // 尝试访问对象以验证其有效性
+                        var _ = Marshal.GetIUnknownForObject(comObject);
+                        Marshal.Release(_);
+                    }
+                    catch (InvalidComObjectException)
+                    {
+                        // COM对象已失效，直接返回
+                        LogHelper.WriteLogToFile($"COM对象 {objectName} 已失效，跳过释放", LogHelper.LogType.Trace);
+                        return;
+                    }
+
                     int refCount = Marshal.ReleaseComObject(comObject);
                     LogHelper.WriteLogToFile($"已释放COM对象 {objectName}，引用计数: {refCount}", LogHelper.LogType.Trace);
                 }
+            }
+            catch (InvalidComObjectException)
+            {
+                // COM对象已失效，这是正常的，无需记录错误
+                LogHelper.WriteLogToFile($"COM对象 {objectName} 已失效，跳过释放", LogHelper.LogType.Trace);
             }
             catch (COMException comEx)
             {
@@ -1327,9 +1477,36 @@ namespace Ink_Canvas.Helpers
                         {
                             try
                             {
-                                dynamic pres = _pptActivePresentation;
-                                CurrentPresentation = pres;
-                                CurrentSlides = pres.Slides;
+                                // 检查COM对象是否仍然有效
+                                if (!Marshal.IsComObject(_pptActivePresentation))
+                                {
+                                    CurrentPresentation = null;
+                                    CurrentSlides = null;
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        var _ = Marshal.GetIUnknownForObject(_pptActivePresentation);
+                                        Marshal.Release(_);
+                                    }
+                                    catch (InvalidComObjectException)
+                                    {
+                                        CurrentPresentation = null;
+                                        CurrentSlides = null;
+                                        return;
+                                    }
+                                    
+                                    dynamic pres = _pptActivePresentation;
+                                    CurrentPresentation = pres;
+                                    CurrentSlides = pres.Slides;
+                                }
+                            }
+                            catch (InvalidComObjectException)
+                            {
+                                LogHelper.WriteLogToFile($"访问演示文稿属性失败: COM对象已失效", LogHelper.LogType.Warning);
+                                CurrentPresentation = null;
+                                CurrentSlides = null;
                             }
                             catch (Exception ex)
                             {
@@ -1454,6 +1631,14 @@ namespace Ink_Canvas.Helpers
                     CurrentSlide = null;
                     SlidesCount = 0;
                 }
+            }
+            catch (InvalidComObjectException)
+            {
+                LogHelper.WriteLogToFile($"更新演示文稿信息失败: COM对象已失效", LogHelper.LogType.Warning);
+                CurrentPresentation = null;
+                CurrentSlides = null;
+                CurrentSlide = null;
+                SlidesCount = 0;
             }
             catch (Exception ex)
             {
@@ -1960,6 +2145,18 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || PPTApplication == null) return null;
                 if (!Marshal.IsComObject(PPTApplication)) return null;
 
+                // 检查COM对象是否仍然有效
+                try
+                {
+                    var _ = Marshal.GetIUnknownForObject(PPTApplication);
+                    Marshal.Release(_);
+                }
+                catch (InvalidComObjectException)
+                {
+                    // COM对象已失效
+                    return null;
+                }
+
                 if (IsInSlideShow)
                 {
                     dynamic pptAppForSSW = PPTApplication;
@@ -2047,11 +2244,28 @@ namespace Ink_Canvas.Helpers
             try
             {
                 if (slideShowWindow == null) return 0;
+                
+                // 检查COM对象是否有效
+                if (!Marshal.IsComObject(slideShowWindow))
+                {
+                    return 0;
+                }
+                
+                try
+                {
+                    var _ = Marshal.GetIUnknownForObject(slideShowWindow);
+                    Marshal.Release(_);
+                }
+                catch (InvalidComObjectException)
+                {
+                    return 0;
+                }
+                
                 dynamic ssw = slideShowWindow;
                 view = ssw.View;
-                if (view != null)
-                {
-                    dynamic viewObj = view;
+                                if (view != null)
+                                {
+                                    dynamic viewObj = view;
                     slide = viewObj.Slide;
                     if (slide != null)
                     {
@@ -2059,6 +2273,20 @@ namespace Ink_Canvas.Helpers
                         return slideObj.SlideIndex;
                     }
                 }
+                return 0;
+            }
+            catch (COMException comEx)
+            {
+                // 处理 0x80048240: SlideShowView.Slide : Invalid request. No slide is currently in view.
+                var hr = (uint)comEx.HResult;
+                if (hr == 0x80048240)
+                {
+                    return 0;
+                }
+                throw;
+            }
+            catch (InvalidComObjectException)
+            {
                 return 0;
             }
             finally

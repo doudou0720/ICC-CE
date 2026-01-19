@@ -1389,23 +1389,104 @@ namespace Ink_Canvas.Windows
                         
                         if (pptManager != null)
                         {
-                            // 获取当前演示文稿
-                            var getCurrentActivePresentationMethod = pptManager.GetType().GetMethod("GetCurrentActivePresentation");
-                            var presentation = getCurrentActivePresentationMethod?.Invoke(pptManager, null) as Microsoft.Office.Interop.PowerPoint.Presentation;
+                            // 尝试获取当前演示文稿，使用重试机制
+                            Microsoft.Office.Interop.PowerPoint.Presentation presentation = null;
+                            
+                            // 首先尝试使用 CurrentPresentation 属性（可能是缓存的）
+                            try
+                            {
+                                var currentPresentationProperty = pptManager.GetType().GetProperty("CurrentPresentation", 
+                                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                                presentation = currentPresentationProperty?.GetValue(pptManager) as Microsoft.Office.Interop.PowerPoint.Presentation;
+                            }
+                            catch { }
+                            
+                            // 如果 CurrentPresentation 不可用，尝试 GetCurrentActivePresentation
+                            if (presentation == null)
+                            {
+                                try
+                                {
+                                    var getCurrentActivePresentationMethod = pptManager.GetType().GetMethod("GetCurrentActivePresentation");
+                                    presentation = getCurrentActivePresentationMethod?.Invoke(pptManager, null) as Microsoft.Office.Interop.PowerPoint.Presentation;
+                                }
+                                catch { }
+                            }
                             
                             if (presentation != null)
                             {
-                                // 生成演示文稿ID（与PPTInkManager一致）
-                                string presentationId = GeneratePresentationId(presentation);
-                                return Path.Combine(autoSaveLocation, "Auto Saved - Presentations", presentationId);
+                                try
+                                {
+                                    // 立即检查COM对象是否仍然有效
+                                    if (!System.Runtime.InteropServices.Marshal.IsComObject(presentation))
+                                    {
+                                        return null;
+                                    }
+                                    
+                                    // 尝试访问对象以验证其有效性
+                                    try
+                                    {
+                                        var _ = System.Runtime.InteropServices.Marshal.GetIUnknownForObject(presentation);
+                                        System.Runtime.InteropServices.Marshal.Release(_);
+                                    }
+                                    catch (System.Runtime.InteropServices.InvalidComObjectException)
+                                    {
+                                        // COM对象已失效，静默返回
+                                        return null;
+                                    }
+                                    
+                                    // 立即生成演示文稿ID（在对象失效前）
+                                    string presentationId = GeneratePresentationId(presentation);
+                                    if (string.IsNullOrEmpty(presentationId) || presentationId.StartsWith("unknown_") || presentationId.StartsWith("invalid_") || presentationId.StartsWith("com_error_"))
+                                    {
+                                        // 生成ID失败，返回null而不是抛出异常
+                                        return null;
+                                    }
+                                    
+                                    return Path.Combine(autoSaveLocation, "Auto Saved - Presentations", presentationId);
+                                }
+                                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                                {
+                                    // COM对象已失效，静默返回（不记录错误日志）
+                                    return null;
+                                }
+                                catch (System.Runtime.InteropServices.COMException)
+                                {
+                                    // COM异常，对象可能已失效，静默返回（不记录错误日志）
+                                    return null;
+                                }
+                                catch (Exception ex)
+                                {
+                                    // 其他异常，只记录非COM相关异常
+                                    if (!(ex is System.Runtime.InteropServices.InvalidComObjectException) && 
+                                        !(ex is System.Runtime.InteropServices.COMException))
+                                    {
+                                        LogHelper.WriteLogToFile($"获取PPT文件夹路径时发生非COM异常: {ex.Message}", LogHelper.LogType.Warning);
+                                    }
+                                    return null;
+                                }
                             }
                         }
                     }
                 }
             }
+            catch (System.Runtime.InteropServices.InvalidComObjectException)
+            {
+                // COM对象已失效，静默返回（不记录错误日志）
+                return null;
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // COM异常，对象可能已失效，静默返回（不记录错误日志）
+                return null;
+            }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"获取PPT文件夹路径失败: {ex.Message}", LogHelper.LogType.Error);
+                // 只记录非COM相关异常
+                if (!(ex is System.Runtime.InteropServices.InvalidComObjectException) && 
+                    !(ex is System.Runtime.InteropServices.COMException))
+                {
+                    LogHelper.WriteLogToFile($"获取PPT文件夹路径失败: {ex.Message}", LogHelper.LogType.Error);
+                }
             }
             
             return null;
@@ -1416,11 +1497,87 @@ namespace Ink_Canvas.Windows
         /// </summary>
         private string GeneratePresentationId(Microsoft.Office.Interop.PowerPoint.Presentation presentation)
         {
+            if (presentation == null)
+            {
+                return $"unknown_{DateTime.Now.Ticks}";
+            }
+            
             try
             {
-                var presentationPath = presentation.FullName;
+                // 检查COM对象是否仍然有效
+                if (!System.Runtime.InteropServices.Marshal.IsComObject(presentation))
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                
+                // 验证COM对象有效性
+                try
+                {
+                    var _ = System.Runtime.InteropServices.Marshal.GetIUnknownForObject(presentation);
+                    System.Runtime.InteropServices.Marshal.Release(_);
+                }
+                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                {
+                    // COM对象已失效
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                
+                // 逐个访问属性，每个都进行异常处理
+                string presentationName = null;
+                string presentationPath = null;
+                int slidesCount = 0;
+                
+                try
+                {
+                    presentationName = presentation.Name;
+                }
+                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                
+                try
+                {
+                    presentationPath = presentation.FullName;
+                }
+                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                
+                try
+                {
+                    slidesCount = presentation.Slides.Count;
+                }
+                catch (System.Runtime.InteropServices.InvalidComObjectException)
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    return $"unknown_{DateTime.Now.Ticks}";
+                }
+                
                 var fileHash = GetFileHash(presentationPath);
-                return $"{presentation.Name}_{presentation.Slides.Count}_{fileHash}";
+                return $"{presentationName}_{slidesCount}_{fileHash}";
+            }
+            catch (System.Runtime.InteropServices.InvalidComObjectException)
+            {
+                // COM对象已失效
+                return $"unknown_{DateTime.Now.Ticks}";
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // COM异常，对象可能已失效
+                return $"unknown_{DateTime.Now.Ticks}";
             }
             catch (Exception ex)
             {
