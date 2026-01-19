@@ -642,8 +642,8 @@ namespace Ink_Canvas
 
         async void App_Startup(object sender, StartupEventArgs e)
         {
-            // 初始化应用启动时间
             appStartTime = DateTime.Now;
+            appStartupStartTime = DateTime.Now;
 
             // 根据设置决定是否显示启动画面
             if (ShouldShowSplashScreen())
@@ -1078,40 +1078,42 @@ namespace Ink_Canvas
         private static bool isStartupComplete = false;
         private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
         private static DateTime splashScreenStartTime = DateTime.MinValue;
+        private static DateTime appStartupStartTime = DateTime.MinValue;
 
         private void StartHeartbeatMonitor()
         {
             heartbeatTimer = new Timer(_ => lastHeartbeat = DateTime.Now, null, 0, 1000);
             watchdogTimer = new Timer(_ =>
             {
-                if (_isSplashScreenShown && splashScreenStartTime != DateTime.MinValue)
+                if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
                 {
-                    if (!isStartupComplete)
+                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue 
+                        ? splashScreenStartTime 
+                        : appStartupStartTime;
+                    TimeSpan elapsedSinceStart = DateTime.Now - startTime;
+                    if (elapsedSinceStart.TotalMinutes >= 2)
                     {
-                        TimeSpan elapsedSinceSplashStart = DateTime.Now - splashScreenStartTime;
-                        if (elapsedSinceSplashStart.TotalMinutes >= 2)
+                        string timeType = _isSplashScreenShown ? "启动画面已显示" : "应用启动开始";
+                        LogHelper.WriteLogToFile($"检测到启动假死：{timeType}{elapsedSinceStart.TotalMinutes:F2}分钟，但未收到启动完成心跳，自动重启。", LogHelper.LogType.Error);
+                        SyncCrashActionFromSettings();
+                        if (CrashAction == CrashActionType.SilentRestart)
                         {
-                            LogHelper.WriteLogToFile($"检测到启动假死：启动画面已显示{elapsedSinceSplashStart.TotalMinutes:F2}分钟，但未收到启动完成心跳，自动重启。", LogHelper.LogType.Error);
-                            SyncCrashActionFromSettings();
-                            if (CrashAction == CrashActionType.SilentRestart)
+                            StartupCount.Increment();
+                            if (StartupCount.GetCount() >= 5)
                             {
-                                StartupCount.Increment();
-                                if (StartupCount.GetCount() >= 5)
-                                {
-                                    MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
-                                    StartupCount.Reset();
-                                    Environment.Exit(1);
-                                }
-                                try
-                                {
-                                    string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                                    Process.Start(exePath);
-                                }
-                                catch { }
+                                MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                                StartupCount.Reset();
                                 Environment.Exit(1);
                             }
-                            return;
+                            try
+                            {
+                                string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                                Process.Start(exePath);
+                            }
+                            catch { }
+                            Environment.Exit(1);
                         }
+                        return;
                     }
                 }
                 
