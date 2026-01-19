@@ -1075,14 +1075,13 @@ namespace Ink_Canvas.Helpers
                         {
                             try
                             {
-                                // 使用 as 操作符进行类型转换，与 inkeys 保持一致
                                 Microsoft.Office.Interop.PowerPoint.Application pptAppForEvents = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
                                 
                                 if (pptAppForEvents != null)
                                 {
                                     pptAppForEvents.SlideShowNextSlide += new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
                                     pptAppForEvents.SlideShowBegin += new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
-                                    pptAppForEvents.SlideShowEnd += new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
+                                    pptAppForEvents.SlideShowEnd += new EApplication_SlideShowEndEventHandler(OnSlideShowEndForComEvent);
 
                                     try
                                     {
@@ -1168,14 +1167,13 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        // 使用 as 操作符进行类型转换，与 inkeys 保持一致
                         Microsoft.Office.Interop.PowerPoint.Application app = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
                         
                         if (app != null)
                         {
                             app.SlideShowNextSlide -= new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
                             app.SlideShowBegin -= new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
-                            app.SlideShowEnd -= new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
+                            app.SlideShowEnd -= new EApplication_SlideShowEndEventHandler(OnSlideShowEndForComEvent);
                             app.PresentationBeforeClose -= new EApplication_PresentationBeforeCloseEventHandler(OnPresentationBeforeClose);
                         }
                                 }
@@ -1510,14 +1508,13 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        // 使用 as 操作符进行类型转换，与 inkeys 保持一致
                         Microsoft.Office.Interop.PowerPoint.Application app = PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
                         
                         if (app != null)
                         {
                             app.SlideShowNextSlide -= new EApplication_SlideShowNextSlideEventHandler(OnSlideShowNextSlide);
                             app.SlideShowBegin -= new EApplication_SlideShowBeginEventHandler(OnSlideShowBegin);
-                            app.SlideShowEnd -= new EApplication_SlideShowEndEventHandler(OnSlideShowEnd);
+                            app.SlideShowEnd -= new EApplication_SlideShowEndEventHandler(OnSlideShowEndForComEvent);
                             app.PresentationBeforeClose -= new EApplication_PresentationBeforeCloseEventHandler(OnPresentationBeforeClose);
                         }
                     }
@@ -1614,7 +1611,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private void OnSlideShowEnd(Presentation pres)
+        private void OnSlideShowEnd(object pres)
         {
             try
             {
@@ -1626,7 +1623,6 @@ namespace Ink_Canvas.Helpers
                 PPTROTConnectionHelper.SafeReleaseComObject(_pptSlideShowWindow);
                 _pptSlideShowWindow = null;
 
-                // 记录WPS进程用于后续管理
                 if (IsSupportWPS && PPTApplication != null)
                 {
                     RecordWpsProcessForManagement();
@@ -1646,6 +1642,11 @@ namespace Ink_Canvas.Helpers
             {
                 LogHelper.WriteLogToFile($"处理幻灯片放映结束事件失败: {ex}", LogHelper.LogType.Error);
             }
+        }
+
+        private void OnSlideShowEndForComEvent(Presentation pres)
+        {
+            OnSlideShowEnd(pres);
         }
         #endregion
 
