@@ -473,13 +473,14 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        public static bool IsValidSlideShowWindow(SlideShowWindow pptSlideShowWindow)
+        public static bool IsValidSlideShowWindow(object pptSlideShowWindow)
         {
             if (pptSlideShowWindow == null) return false;
 
             try
             {
-                var _ = pptSlideShowWindow.Active;
+                dynamic ssw = pptSlideShowWindow;
+                var _ = ssw.Active;
                 return true;
             }
             catch
