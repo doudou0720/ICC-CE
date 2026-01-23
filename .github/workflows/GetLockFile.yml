@@ -8,6 +8,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3.1
+    
     - name: Generate lock file
       run: |
         nuget restore "Ink Canvas.sln"
