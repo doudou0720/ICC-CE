@@ -137,6 +137,7 @@ jobs:
         with:
           dotnet-version: '6.x'
           cache: true
+          cache-dependency-path: '**/packages.lock.json'
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
