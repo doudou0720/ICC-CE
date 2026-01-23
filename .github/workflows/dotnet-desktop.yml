@@ -149,10 +149,7 @@ jobs:
           Write-Host "📥 正在恢复 NuGet 包（始终运行以确保依赖可用）..." -ForegroundColor Yellow
 
           # 恢复解决方案级别的包
-          nuget restore "Ink Canvas.sln" -Verbosity minimal
-
-          # 恢复项目级别的包（兼容 packages.config）
-          msbuild -t:restore "Ink Canvas/InkCanvasForClass.csproj" /p:GitFlow="Github Action" /p:RestorePackagesConfig=true /verbosity:minimal
+          nuget restore "Ink Canvas.sln"
 
           Write-Host "✅ NuGet 包恢复完成" -ForegroundColor Green
 
