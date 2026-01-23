@@ -149,7 +149,7 @@ jobs:
           Write-Host "📥 正在恢复 NuGet 包（始终运行以确保依赖可用）..." -ForegroundColor Yellow
 
           # 恢复解决方案级别的包
-          nuget restore "Ink Canvas.sln" --locked-mode
+          dotnet restore "Ink Canvas.sln" --locked-mode
 
           Write-Host "✅ NuGet 包恢复完成" -ForegroundColor Green
 
