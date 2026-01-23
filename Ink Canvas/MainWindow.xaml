@@ -851,6 +851,16 @@
                                         <TextBlock Foreground="#fafafa" Text="{Binding ElementName=InkFadeTimeSlider, Path=Value, StringFormat={}{0:0}ms}" 
                                                    VerticalAlignment="Center" FontSize="14" Margin="16,0,0,0" />
                                     </ui:SimpleStackPanel>
+                                    <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
+                                          StrokeThickness="1" Margin="0,4,0,4" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="在笔工具菜单中隐藏墨迹渐隐控制" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchHideInkFadeControlInPenMenu"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchHideInkFadeControlInPenMenu_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关，可以有效防止课间老是有人玩墨迹渐隐功能" TextWrapping="Wrap" Foreground="#a1a1aa" />
 
                                 </ui:SimpleStackPanel>
                             </GroupBox>
@@ -5296,7 +5306,7 @@
                                                                             IsOn="{Binding ElementName=ToggleSwitchEnableInkToShape, Path=IsOn}" />
                                                                     </ui:SimpleStackPanel>
                                                                     <ui:SimpleStackPanel Orientation="Horizontal"
-                                                                        Width="100">
+                                                                        Width="100" x:Name="InkFadeControlPanel1">
                                                                         <Label Margin="0,0,10,0" Content="墨迹渐隐"
                                                                             Foreground="{DynamicResource FloatBarForeground}"
                                                                             FontSize="12"
@@ -8320,7 +8330,7 @@
                                                                         IsOn="{Binding ElementName=ToggleSwitchEnableInkToShape, Path=IsOn}" />
                                                                 </ui:SimpleStackPanel>
                                                                 <ui:SimpleStackPanel Orientation="Horizontal"
-                                                                    Width="100">
+                                                                    Width="100" x:Name="InkFadeControlPanel2">
                                                                     <Label Margin="0,0,10,0" Content="墨迹渐隐"
                                                                            Foreground="{DynamicResource FloatBarForeground}"
                                                                            FontSize="12" VerticalAlignment="Center" />
