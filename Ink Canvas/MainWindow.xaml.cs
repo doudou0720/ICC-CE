@@ -2693,6 +2693,57 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 在笔工具菜单中隐藏墨迹渐隐控制开关切换事件处理
+        /// </summary>
+        private void ToggleSwitchHideInkFadeControlInPenMenu_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (isLoaded)
+                {
+                    Settings.Canvas.HideInkFadeControlInPenMenu = ToggleSwitchHideInkFadeControlInPenMenu.IsOn;
+                    SaveSettingsToFile();
+                }
+
+                // 立即更新墨迹渐隐控制开关的可见性
+                UpdateInkFadeControlVisibility();
+
+                LogHelper.WriteLogToFile($"在笔工具菜单中隐藏墨迹渐隐控制开关已{(Settings.Canvas.HideInkFadeControlInPenMenu ? "启用" : "禁用")}", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换在笔工具菜单中隐藏墨迹渐隐控制开关时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新墨迹渐隐控制开关的可见性
+        /// </summary>
+        private void UpdateInkFadeControlVisibility()
+        {
+            try
+            {
+                bool isHidden = Settings.Canvas.HideInkFadeControlInPenMenu;
+
+                // 控制 InkFadeControlPanel1（批注子面板中）的可见性
+                if (InkFadeControlPanel1 != null)
+                {
+                    InkFadeControlPanel1.Visibility = isHidden ? Visibility.Collapsed : Visibility.Visible;
+                }
+
+                // 控制 InkFadeControlPanel2（普通画笔面板中）的可见性
+                if (InkFadeControlPanel2 != null)
+                {
+                    InkFadeControlPanel2.Visibility = isHidden ? Visibility.Collapsed : Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新墨迹渐隐控制面板可见性时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
         /// PPT放映模式显示手势按钮开关切换事件处理
         /// </summary>
         private void ToggleSwitchShowGestureButtonInSlideShow_Toggled(object sender, RoutedEventArgs e)

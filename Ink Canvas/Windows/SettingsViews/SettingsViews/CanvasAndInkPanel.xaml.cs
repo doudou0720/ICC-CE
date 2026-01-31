@@ -360,6 +360,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                     break;
 
+                case "HideInkFadeControlInPenMenu":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchHideInkFadeControlInPenMenu", newState);
+                    break;
+
                 case "EnableAutoSaveStrokes":
                     // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnableAutoSaveStrokes", newState);
