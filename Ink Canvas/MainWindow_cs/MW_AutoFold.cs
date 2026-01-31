@@ -63,6 +63,8 @@ namespace Ink_Canvas
                 foldFloatingBarByUser = true;
             unfoldFloatingBarByUser = false;
 
+            if (isFloatingBarFolded) return;
+
             if (isFloatingBarChangingHideMode) return;
 
             await Dispatcher.InvokeAsync(() =>

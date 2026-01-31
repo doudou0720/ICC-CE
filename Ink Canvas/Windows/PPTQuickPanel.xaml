@@ -170,27 +170,52 @@
                                 </Separator.Background>
                             </Separator>
                             
-                            <!-- 图片插入按钮 -->
-                            <Button x:Name="InsertImageButton"
-                                    Content="插入图片"
-                                    FontSize="11"
-                                    Height="30"
-                                    Background="#3b82f6"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Cursor="Hand"
-                                    Click="InsertImageButton_Click"
-                                    Margin="0,0,0,8">
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border Background="{TemplateBinding Background}" 
-                                                CornerRadius="4"
-                                                Padding="{TemplateBinding Padding}">
-                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
+                            <!-- 图片插入按钮区域 -->
+                            <StackPanel Orientation="Vertical" Margin="0,0,0,8">
+                                <!-- 选择文件按钮 -->
+                                <Button x:Name="InsertImageSelectFileButton"
+                                        Content="选择文件"
+                                        FontSize="11"
+                                        Height="30"
+                                        Background="#3b82f6"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Click="InsertImageSelectFileButton_Click"
+                                        Margin="0,0,0,4">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                
+                                <!-- 截图插入按钮 -->
+                                <Button x:Name="InsertImageScreenshotButton"
+                                        Content="截图插入"
+                                        FontSize="11"
+                                        Height="30"
+                                        Background="#3b82f6"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        Click="InsertImageScreenshotButton_Click"
+                                        Margin="0,0,0,0">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    CornerRadius="4"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </StackPanel>
                             
                             <!-- 聚焦放大镜（暂未设计）- 暂时隐藏 -->
                             <Border x:Name="MagnifierSection" Margin="0,0,0,8" Visibility="Collapsed">
@@ -215,4 +240,5 @@
         </Canvas>
     </Grid>
 </UserControl>
+
 

@@ -71,14 +71,14 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 随机点名
                 new SettingItem { Title = "随机点名", Category = "随机点名", ItemName = "LuckyRandomItem", Type = SettingItemType.Category },
                 
-                // 存储空间
-                new SettingItem { Title = "存储空间", Category = "存储空间", ItemName = "StorageItem", Type = SettingItemType.Category },
+                // 高级选项
+                new SettingItem { Title = "高级选项", Category = "高级选项", ItemName = "AdvancedItem", Type = SettingItemType.Category },
                 
                 // 截图和屏幕捕捉
                 new SettingItem { Title = "截图和屏幕捕捉", Category = "截图和屏幕捕捉", ItemName = "SnapshotItem", Type = SettingItemType.Category },
                 
-                // 高级选项
-                new SettingItem { Title = "高级选项", Category = "高级选项", ItemName = "AdvancedItem", Type = SettingItemType.Category },
+                // 更新中心
+                new SettingItem { Title = "更新中心", Category = "更新中心", ItemName = "UpdateCenterItem", Type = SettingItemType.Category },
                 
                 // 关于
                 new SettingItem { Title = "关于 InkCanvasForClass", Category = "关于", ItemName = "AboutItem", Type = SettingItemType.Category },
@@ -379,6 +379,196 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             SearchTextBox.Text = text;
             PerformSearch(text);
+        }
+        
+        /// <summary>
+        /// 应用主题
+        /// </summary>
+        public void ApplyTheme()
+        {
+            try
+            {
+                bool isDarkTheme = ThemeHelper.IsDarkTheme;
+
+                // 更新主背景
+                if (SearchPanelMainGrid != null)
+                {
+                    SearchPanelMainGrid.Background = ThemeHelper.GetBackgroundPrimaryBrush();
+                }
+
+                // 更新顶部栏背景
+                if (SearchPanelTopBarBorder != null)
+                {
+                    SearchPanelTopBarBorder.Background = ThemeHelper.GetBackgroundPrimaryBrush();
+                }
+
+                // 更新搜索输入框
+                if (SearchInputBorder != null)
+                {
+                    SearchInputBorder.Background = ThemeHelper.GetTextBoxBackgroundBrush();
+                    SearchInputBorder.BorderBrush = ThemeHelper.GetTextBoxBorderBrush();
+                }
+
+                // 更新搜索框文字颜色
+                if (SearchTextBox != null)
+                {
+                    SearchTextBox.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+
+                // 更新标题文字颜色
+                if (ExactMatchTitle != null)
+                {
+                    ExactMatchTitle.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+                if (FuzzyMatchTitle != null)
+                {
+                    FuzzyMatchTitle.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+                if (RelatedItemsTitle != null)
+                {
+                    RelatedItemsTitle.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                }
+
+                // 更新无结果提示文字颜色
+                if (NoResultsText != null)
+                {
+                    NoResultsText.Foreground = ThemeHelper.GetTextSecondaryBrush();
+                }
+
+                // 更新搜索框中的图标颜色
+                UpdateSearchIconColor(isDarkTheme);
+
+                // 使用 ThemeHelper 递归更新其他元素（如搜索结果项）
+                ThemeHelper.ApplyThemeToControl(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SearchPanel 应用主题时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 更新搜索框中的图标颜色
+        /// </summary>
+        private void UpdateSearchIconColor(bool isDarkTheme)
+        {
+            try
+            {
+                Color iconColor = isDarkTheme 
+                    ? Color.FromRgb(243, 243, 243) // 深色主题使用浅色图标 #F3F3F3
+                    : Color.FromRgb(34, 34, 34);   // 浅色主题使用深色图标 #222222
+
+                // 查找搜索输入框中的图标
+                if (SearchInputBorder != null)
+                {
+                    var image = FindVisualChild<Image>(SearchInputBorder);
+                    if (image != null && image.Source is DrawingImage drawingImage)
+                    {
+                        if (drawingImage.Drawing is DrawingGroup drawingGroup)
+                        {
+                            var clonedDrawing = CloneDrawingGroup(drawingGroup, iconColor);
+                            image.Source = new DrawingImage { Drawing = clonedDrawing };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新搜索图标颜色时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 克隆 DrawingGroup 并更新颜色
+        /// </summary>
+        private DrawingGroup CloneDrawingGroup(DrawingGroup source, Color newColor)
+        {
+            var cloned = new DrawingGroup();
+            cloned.ClipGeometry = source.ClipGeometry?.Clone();
+            cloned.Opacity = source.Opacity;
+            cloned.Transform = source.Transform?.Clone();
+
+            foreach (var drawing in source.Children)
+            {
+                if (drawing is GeometryDrawing geometryDrawing)
+                {
+                    var clonedGeometry = geometryDrawing.Geometry?.Clone();
+                    var clonedBrush = CloneBrush(geometryDrawing.Brush, newColor);
+                    var clonedPen = geometryDrawing.Pen != null 
+                        ? ClonePen(geometryDrawing.Pen, newColor) 
+                        : null;
+
+                    cloned.Children.Add(new GeometryDrawing(clonedBrush, clonedPen, clonedGeometry));
+                }
+                else if (drawing is DrawingGroup subGroup)
+                {
+                    cloned.Children.Add(CloneDrawingGroup(subGroup, newColor));
+                }
+                else
+                {
+                    cloned.Children.Add(drawing);
+                }
+            }
+
+            return cloned;
+        }
+
+        /// <summary>
+        /// 克隆 Brush 并更新颜色
+        /// </summary>
+        private Brush CloneBrush(Brush source, Color newColor)
+        {
+            if (source is SolidColorBrush solidBrush)
+            {
+                var originalColor = solidBrush.Color;
+                if (originalColor.R == 34 && originalColor.G == 34 && originalColor.B == 34) // #222222
+                {
+                    return new SolidColorBrush(newColor) { Opacity = solidBrush.Opacity };
+                }
+                else if (originalColor.A > 0 && originalColor != Colors.Transparent && 
+                         originalColor.R < 50 && originalColor.G < 50 && originalColor.B < 50) // 深色
+                {
+                    return new SolidColorBrush(newColor) { Opacity = solidBrush.Opacity };
+                }
+                return new SolidColorBrush(originalColor) { Opacity = solidBrush.Opacity };
+            }
+            return source?.Clone();
+        }
+
+        /// <summary>
+        /// 克隆 Pen 并更新颜色
+        /// </summary>
+        private Pen ClonePen(Pen source, Color newColor)
+        {
+            var clonedBrush = CloneBrush(source.Brush, newColor);
+            return new Pen(clonedBrush, source.Thickness)
+            {
+                StartLineCap = source.StartLineCap,
+                EndLineCap = source.EndLineCap,
+                LineJoin = source.LineJoin,
+                MiterLimit = source.MiterLimit
+            };
+        }
+
+        /// <summary>
+        /// 在视觉树中查找指定类型的子元素
+        /// </summary>
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T result)
+                {
+                    return result;
+                }
+                var childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                {
+                    return childOfChild;
+                }
+            }
+            return null;
         }
     }
 

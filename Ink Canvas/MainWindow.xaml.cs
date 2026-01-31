@@ -66,13 +66,13 @@ namespace Ink_Canvas
         private WindowOverviewModel _windowOverviewModel;
 
         // 设置面板相关状态
-        private bool userChangedNoFocusModeInSettings;
         private bool isTemporarilyDisablingNoFocusMode = false;
 
         // 全屏处理状态标志
         public bool isFullScreenApplied = false;
 
-
+        private static Cursor _cachedPenCursor = null;
+        private static readonly object _cursorLock = new object();
 
         #region Window Initialization
 
@@ -342,7 +342,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 根据DPI缩放因子调整TimerContainer的尺寸
         /// </summary>
-        private void AdjustTimerContainerSize()
+        public void AdjustTimerContainerSize()
         {
             try
             {
@@ -1363,9 +1363,31 @@ namespace Ink_Canvas
                 }
                 else if (canvas.EditingMode == InkCanvasEditingMode.Ink)
                 {
-                    var sri = Application.GetResourceStream(new Uri("Resources/Cursors/Pen.cur", UriKind.Relative));
-                    if (sri != null)
-                        canvas.Cursor = new Cursor(sri.Stream);
+                    if (_cachedPenCursor == null)
+                    {
+                        lock (_cursorLock)
+                        {
+                            if (_cachedPenCursor == null)
+                            {
+                                try
+                                {
+                                    var sri = Application.GetResourceStream(new Uri("Resources/Cursors/Pen.cur", UriKind.Relative));
+                                    if (sri != null)
+                                    {
+                                        _cachedPenCursor = new Cursor(sri.Stream);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogHelper.WriteLogToFile($"加载 Pen 光标资源失败: {ex.Message}", LogHelper.LogType.Error);
+                                }
+                            }
+                        }
+                    }
+                    if (_cachedPenCursor != null)
+                    {
+                        canvas.Cursor = _cachedPenCursor;
+                    }
                 }
 
                 // 确保光标可见，无论是鼠标、触控还是手写笔
@@ -2441,11 +2463,6 @@ namespace Ink_Canvas
                 ApplyAlwaysOnTop();
             }
 
-            // 如果当前在设置面板中，标记用户已修改无焦点模式设置
-            if (BorderSettings.Visibility == Visibility.Visible)
-            {
-                userChangedNoFocusModeInSettings = true;
-            }
         }
 
         private void ToggleSwitchAlwaysOnTop_Toggled(object sender, RoutedEventArgs e)
@@ -2940,6 +2957,12 @@ namespace Ink_Canvas
         {
             try
             {
+                // 如果切换到非橡皮擦模式，禁用橡皮擦覆盖层并重置橡皮擦状态
+                if (newMode != InkCanvasEditingMode.EraseByPoint && newMode != InkCanvasEditingMode.EraseByStroke)
+                {
+                    DisableEraserOverlay();
+                }
+
                 // 执行模式切换
                 inkCanvas.EditingMode = newMode;
 

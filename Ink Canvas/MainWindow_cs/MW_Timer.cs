@@ -1,6 +1,5 @@
 using Ink_Canvas.Helpers;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -14,7 +13,6 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using WinForms = System.Windows.Forms;
 
 namespace Ink_Canvas
 {
@@ -59,18 +57,18 @@ namespace Ink_Canvas
 
     public partial class MainWindow : Window
     {
-        private System.Timers.Timer timerCheckPPT = new System.Timers.Timer();
-        private System.Timers.Timer timerKillProcess = new System.Timers.Timer();
-        private System.Timers.Timer timerCheckAutoFold = new System.Timers.Timer();
+        private Timer timerCheckPPT = new Timer();
+        private Timer timerKillProcess = new Timer();
+        private Timer timerCheckAutoFold = new Timer();
         private string AvailableLatestVersion;
-        private System.Timers.Timer timerCheckAutoUpdateWithSilence = new System.Timers.Timer();
-        private System.Timers.Timer timerCheckAutoUpdateRetry = new System.Timers.Timer();
+        private Timer timerCheckAutoUpdateWithSilence = new Timer();
+        private Timer timerCheckAutoUpdateRetry = new Timer();
         private bool isHidingSubPanelsWhenInking; // 避免书写时触发二次关闭二级菜单导致动画不连续
         private int updateCheckRetryCount = 0;
         private const int MAX_UPDATE_CHECK_RETRIES = 6;
-        private System.Timers.Timer timerDisplayTime = new System.Timers.Timer();
-        private System.Timers.Timer timerDisplayDate = new System.Timers.Timer();
-        private System.Timers.Timer timerNtpSync = new System.Timers.Timer();
+        private Timer timerDisplayTime = new Timer();
+        private Timer timerDisplayDate = new Timer();
+        private Timer timerNtpSync = new Timer();
 
         private TimeViewModel nowTimeVM = new TimeViewModel();
         private DateTime cachedNetworkTime = DateTime.Now;
@@ -509,21 +507,391 @@ namespace Ink_Canvas
             return windowTitle.Length == 0 && windowRect.Height < 500;
         }
 
+        /// <summary>
+        /// 检查是否存在应当被收纳应用的全屏窗口
+        /// </summary>
+        /// <returns>如果存在应当被收纳应用的全屏窗口返回true，否则返回false</returns>
+        private bool HasFullScreenWindowOfAutoFoldApps()
+        {
+            if (_windowOverviewModel == null) return false;
+
+            try
+            {
+                var fullScreenWindows = _windowOverviewModel.GetFullScreenWindows();
+                if (fullScreenWindows == null || fullScreenWindows.Count == 0) return false;
+
+                foreach (var window in fullScreenWindows)
+                {
+                    var windowProcessName = window.ProcessName;
+                    var windowRect = window.Rect;
+
+                    if (windowProcessName == "EasiNote")
+                    {
+                        if (window.ProcessPath != "Unknown")
+                        {
+                            try
+                            {
+                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
+                                string version = versionInfo.FileVersion;
+                                string prodName = versionInfo.ProductName;
+
+                                if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
+                                {
+                                    return true;
+                                }
+                                else if (version.StartsWith("3.") && Settings.Automation.IsAutoFoldInEasiNote3)
+                                {
+                                    return true;
+                                }
+                                else if (prodName.Contains("3C") && Settings.Automation.IsAutoFoldInEasiNote3C)
+                                {
+                                    return true;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    else if (Settings.Automation.IsAutoFoldInEasiCamera && windowProcessName == "EasiCamera")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInEasiNote5C && windowProcessName == "EasiNote5C")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                             (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInHiteCamera && windowProcessName == "HiteCamera")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInHiteTouchPro && windowProcessName == "HiteTouchPro")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInWxBoardMain && windowProcessName == "WxBoardMain")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                             (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInHiteLightBoard && windowProcessName == "HiteLightBoard")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInAdmoxWhiteboard && windowProcessName == "Amdox.WhiteBoard")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInAdmoxBooth && windowProcessName == "Amdox.Booth")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInQPoint && windowProcessName == "QPoint")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInYiYunVisualPresenter && windowProcessName == "YiYunVisualPresenter")
+                    {
+                        return true;
+                    }
+                    else if (Settings.Automation.IsAutoFoldInMaxHubWhiteboard && windowProcessName == "WhiteBoard")
+                    {
+                        if (window.ProcessPath != "Unknown")
+                        {
+                            try
+                            {
+                                var versionInfo = FileVersionInfo.GetVersionInfo(window.ProcessPath);
+                                var version = versionInfo.FileVersion;
+                                var prodName = versionInfo.ProductName;
+                                if (version.StartsWith("6.") && prodName == "WhiteBoard")
+                                {
+                                    return true;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                }
+
+                if (Settings.Automation.IsAutoFoldInOldZyBoard &&
+                    (WinTabWindowsChecker.IsWindowExisted("WhiteBoard - DrawingWindow") ||
+                     WinTabWindowsChecker.IsWindowExisted("InstantAnnotationWindow")))
+                {
+                    var oldZyWindows = _windowOverviewModel.Windows.Where(w =>
+                        (w.Title.Contains("WhiteBoard - DrawingWindow") || w.Title.Contains("InstantAnnotationWindow")) &&
+                        w.IsFullScreen).ToList();
+                    if (oldZyWindows.Count > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"检查全屏窗口失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 使用窗口预览模型检测前台窗口是否符合自动收纳要求（仅用于检测，不执行任何操作）
+        /// </summary>
+        /// <returns>如果符合自动收纳要求返回true，否则返回false</returns>
+        private bool CheckShouldAutoFoldByWindowPreview()
+        {
+            if (_windowOverviewModel == null) return false;
+
+            try
+            {
+                // 从窗口预览模型中获取窗口列表（已按ZOrder排序，最上层在前）
+                var windows = _windowOverviewModel.Windows;
+                if (windows == null || windows.Count == 0) return false;
+
+                // 获取前台窗口（ZOrder最小的窗口，即最上层）
+                var foregroundWindow = windows.FirstOrDefault();
+                if (foregroundWindow == null) return false;
+
+                var windowProcessName = foregroundWindow.ProcessName;
+                var windowTitle = foregroundWindow.Title;
+                var windowRect = foregroundWindow.Rect;
+
+                // 检查EasiNote
+                if (windowProcessName == "EasiNote")
+                {
+                    if (foregroundWindow.ProcessPath != "Unknown")
+                    {
+                        try
+                        {
+                            var versionInfo = FileVersionInfo.GetVersionInfo(foregroundWindow.ProcessPath);
+                            string version = versionInfo.FileVersion;
+                            string prodName = versionInfo.ProductName;
+
+                            if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
+                            {
+                                bool isAnnotationWindow = windowTitle.Length == 0 && windowRect.Height < 500;
+                                if (Settings.Automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno && isAnnotationWindow)
+                                {
+                                    return true;
+                                }
+                                else if (!isAnnotationWindow)
+                                {
+                                    return true;
+                                }
+                            }
+                            else if (version.StartsWith("3.") && Settings.Automation.IsAutoFoldInEasiNote3)
+                            {
+                                return true;
+                            }
+                            else if (prodName.Contains("3C") && Settings.Automation.IsAutoFoldInEasiNote3C &&
+                                     windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                                     windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                            {
+                                return true;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                // 检查EasiCamera
+                else if (Settings.Automation.IsAutoFoldInEasiCamera && windowProcessName == "EasiCamera" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查EasiNote5C
+                else if (Settings.Automation.IsAutoFoldInEasiNote5C && windowProcessName == "EasiNote5C" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查SeewoPinco
+                else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                         (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
+                {
+                    return true;
+                }
+                // 检查HiteCamera
+                else if (Settings.Automation.IsAutoFoldInHiteCamera && windowProcessName == "HiteCamera" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查HiteTouchPro
+                else if (Settings.Automation.IsAutoFoldInHiteTouchPro && windowProcessName == "HiteTouchPro" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查WxBoardMain
+                else if (Settings.Automation.IsAutoFoldInWxBoardMain && windowProcessName == "WxBoardMain" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查MSWhiteboard
+                else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                         (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
+                {
+                    return true;
+                }
+                // 检查OldZyBoard
+                else if (Settings.Automation.IsAutoFoldInOldZyBoard &&
+                         (WinTabWindowsChecker.IsWindowExisted("WhiteBoard - DrawingWindow") ||
+                          WinTabWindowsChecker.IsWindowExisted("InstantAnnotationWindow")))
+                {
+                    return true;
+                }
+                // 检查HiteLightBoard
+                else if (Settings.Automation.IsAutoFoldInHiteLightBoard && windowProcessName == "HiteLightBoard" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查AdmoxWhiteboard
+                else if (Settings.Automation.IsAutoFoldInAdmoxWhiteboard && windowProcessName == "Amdox.WhiteBoard" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查AdmoxBooth
+                else if (Settings.Automation.IsAutoFoldInAdmoxBooth && windowProcessName == "Amdox.Booth" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查QPoint
+                else if (Settings.Automation.IsAutoFoldInQPoint && windowProcessName == "QPoint" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查YiYunVisualPresenter
+                else if (Settings.Automation.IsAutoFoldInYiYunVisualPresenter && windowProcessName == "YiYunVisualPresenter" &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    return true;
+                }
+                // 检查MaxHubWhiteboard
+                else if (Settings.Automation.IsAutoFoldInMaxHubWhiteboard && windowProcessName == "WhiteBoard" &&
+                         WinTabWindowsChecker.IsWindowExisted("白板书写") &&
+                         windowRect.Height >= SystemParameters.WorkArea.Height - 16 &&
+                         windowRect.Width >= SystemParameters.WorkArea.Width - 16)
+                {
+                    if (foregroundWindow.ProcessPath != "Unknown")
+                    {
+                        try
+                        {
+                            var versionInfo = FileVersionInfo.GetVersionInfo(foregroundWindow.ProcessPath);
+                            var version = versionInfo.FileVersion;
+                            var prodName = versionInfo.ProductName;
+                            if (version.StartsWith("6.") && prodName == "WhiteBoard")
+                            {
+                                return true;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"窗口预览模型检测失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            return false;
+        }
+
         private void timerCheckAutoFold_Elapsed(object sender, ElapsedEventArgs e)
         {
             if (isFloatingBarChangingHideMode) return;
             try
             {
-                // 优先使用窗口概览模型进行检测
-                if (_windowOverviewModel != null)
+                if (HasFullScreenWindowOfAutoFoldApps())
                 {
-                    CheckAutoFoldWithWindowOverviewModel();
+                    if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
                     return;
                 }
 
-                // 如果窗口概览模型未初始化，回退到传统的进程检测方式
+                bool shouldAutoFold = CheckShouldAutoFoldByWindowPreview();
                 var windowProcessName = ForegroundWindowInfo.ProcessName();
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
+                
+                if (shouldAutoFold)
+                {
+                    if (windowProcessName == "EasiNote")
+                    {
+                        if (ForegroundWindowInfo.ProcessPath() != "Unknown")
+                        {
+                            var versionInfo = FileVersionInfo.GetVersionInfo(ForegroundWindowInfo.ProcessPath());
+                            string version = versionInfo.FileVersion;
+                            string prodName = versionInfo.ProductName;
+                            
+                            if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
+                            {
+                                bool isAnnotationWindow = windowTitle.Length == 0 && ForegroundWindowInfo.WindowRect().Height < 500;
+                                if (Settings.Automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno && isAnnotationWindow)
+                                {
+                                    if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                                }
+                                else if (!isAnnotationWindow)
+                                {
+                                    if (!unfoldFloatingBarByUser && !isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                                }
+                            }
+                            else if (version.StartsWith("3.") && Settings.Automation.IsAutoFoldInEasiNote3)
+                            {
+                                if (!unfoldFloatingBarByUser && !isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                            }
+                            else if (prodName.Contains("3C") && Settings.Automation.IsAutoFoldInEasiNote3C &&
+                                     ForegroundWindowInfo.WindowRect().Height >= SystemParameters.WorkArea.Height - 16 &&
+                                     ForegroundWindowInfo.WindowRect().Width >= SystemParameters.WorkArea.Width - 16)
+                            {
+                                if (!unfoldFloatingBarByUser && !isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                            }
+                        }
+                    }
+                    // 处理其他需要检测批注窗口的情况
+                    else if ((Settings.Automation.IsAutoFoldInEasiCamera && windowProcessName == "EasiCamera") ||
+                             (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher")) ||
+                             (Settings.Automation.IsAutoFoldInHiteCamera && windowProcessName == "HiteCamera") ||
+                             (Settings.Automation.IsAutoFoldInHiteTouchPro && windowProcessName == "HiteTouchPro") ||
+                             (Settings.Automation.IsAutoFoldInHiteLightBoard && windowProcessName == "HiteLightBoard"))
+                    {
+                        if (IsAnnotationWindow())
+                        {
+                            if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                        }
+                        else
+                        {
+                            if (!unfoldFloatingBarByUser && !isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                        }
+                    }
+                    // 处理其他普通情况
+                    else
+                    {
+                        if (!unfoldFloatingBarByUser && !isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                    }
+                    return;
+                }
+
                 //LogHelper.WriteLogToFile("windowTitle | " + windowTitle + " | windowProcessName | " + windowProcessName);
 
                 if (windowProcessName == "EasiNote")
@@ -720,11 +1088,24 @@ namespace Ink_Canvas
                 else if (WinTabWindowsChecker.IsWindowExisted("幻灯片放映", false))
                 {
                     // 处于幻灯片放映状态
+                    if (HasFullScreenWindowOfAutoFoldApps())
+                    {
+                        if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                        return;
+                    }
+                    
                     if (!Settings.Automation.IsAutoFoldInPPTSlideShow && isFloatingBarFolded && !foldFloatingBarByUser)
                         UnFoldFloatingBar_MouseUp(new object(), null);
                 }
                 else
                 {
+                    if (HasFullScreenWindowOfAutoFoldApps())
+                    {
+                        if (!isFloatingBarFolded) FoldFloatingBar_MouseUp(null, null);
+                        unfoldFloatingBarByUser = false;
+                        return;
+                    }
+
                     // 检查是否启用了软件退出后保持收纳模式
                     if (Settings.Automation.KeepFoldAfterSoftwareExit)
                     {
@@ -740,224 +1121,6 @@ namespace Ink_Canvas
                 }
             }
             catch { }
-        }
-
-        /// <summary>
-        /// 检查进程是否在用户的自动收纳设置中启用
-        /// </summary>
-        private bool IsProcessInAutoFoldSettings(string processName, WindowInfo windowInfo = null)
-        {
-            // 根据进程名和窗口信息检查是否在自动收纳设置中
-            switch (processName)
-            {
-                case "EasiNote":
-                    // EasiNote需要检查版本
-                    if (windowInfo != null && !string.IsNullOrEmpty(windowInfo.ProcessPath) && windowInfo.ProcessPath != "Unknown")
-                    {
-                        try
-                        {
-                            var versionInfo = FileVersionInfo.GetVersionInfo(windowInfo.ProcessPath);
-                            string version = versionInfo.FileVersion;
-                            string prodName = versionInfo.ProductName;
-                            
-                            if (version != null && version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
-                                return true;
-                            if (version != null && version.StartsWith("3.") && Settings.Automation.IsAutoFoldInEasiNote3)
-                                return true;
-                            if (prodName != null && prodName.Contains("3C") && Settings.Automation.IsAutoFoldInEasiNote3C)
-                                return true;
-                        }
-                        catch { }
-                    }
-                    return false;
-                    
-                case "EasiCamera":
-                    return Settings.Automation.IsAutoFoldInEasiCamera;
-                    
-                case "EasiNote5C":
-                    return Settings.Automation.IsAutoFoldInEasiNote5C;
-                    
-                case "BoardService":
-                case "seewoPincoTeacher":
-                    return Settings.Automation.IsAutoFoldInSeewoPincoTeacher;
-                    
-                case "HiteCamera":
-                    return Settings.Automation.IsAutoFoldInHiteCamera;
-                    
-                case "HiteTouchPro":
-                    return Settings.Automation.IsAutoFoldInHiteTouchPro;
-                    
-                case "HiteLightBoard":
-                    return Settings.Automation.IsAutoFoldInHiteLightBoard;
-                    
-                case "WxBoardMain":
-                    return Settings.Automation.IsAutoFoldInWxBoardMain;
-                    
-                case "MicrosoftWhiteboard":
-                case "msedgewebview2":
-                    return Settings.Automation.IsAutoFoldInMSWhiteboard;
-                    
-                case "Amdox.WhiteBoard":
-                    return Settings.Automation.IsAutoFoldInAdmoxWhiteboard;
-                    
-                case "Amdox.Booth":
-                    return Settings.Automation.IsAutoFoldInAdmoxBooth;
-                    
-                case "QPoint":
-                    return Settings.Automation.IsAutoFoldInQPoint;
-                    
-                case "YiYunVisualPresenter":
-                    return Settings.Automation.IsAutoFoldInYiYunVisualPresenter;
-                    
-                case "WhiteBoard":
-                    // MaxHub需要检查窗口标题
-                    if (windowInfo != null && !string.IsNullOrEmpty(windowInfo.Title) && 
-                        windowInfo.Title.Contains("白板书写") && Settings.Automation.IsAutoFoldInMaxHubWhiteboard)
-                    {
-                        if (!string.IsNullOrEmpty(windowInfo.ProcessPath) && windowInfo.ProcessPath != "Unknown")
-                        {
-                            try
-                            {
-                                var versionInfo = FileVersionInfo.GetVersionInfo(windowInfo.ProcessPath);
-                                if (versionInfo.FileVersion != null && versionInfo.FileVersion.StartsWith("6.") && 
-                                    versionInfo.ProductName == "WhiteBoard")
-                                    return true;
-                            }
-                            catch { }
-                        }
-                    }
-                    return false;
-                    
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
-        /// 使用窗口概览模型检测是否需要自动收纳
-        /// </summary>
-        private void CheckAutoFoldWithWindowOverviewModel()
-        {
-            try
-            {
-                if (_windowOverviewModel == null) return;
-
-                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-                {
-                    try
-                    {
-                        var floatingBarMargin = ViewboxFloatingBar.Margin;
-                        var floatingBarWidth = ViewboxFloatingBar.ActualWidth;
-                        var floatingBarHeight = ViewboxFloatingBar.ActualHeight;
-
-                        // 如果浮动栏未显示或大小为0，跳过检测
-                        if (floatingBarWidth <= 0 || floatingBarHeight <= 0) return;
-
-                        // 计算浮动栏在屏幕上的位置（考虑DPI缩放）
-                        var screen = WinForms.Screen.PrimaryScreen;
-                        var dpiScaleX = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-                        var dpiScaleY = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
-
-                        // 将WPF坐标转换为屏幕坐标
-                        var point = ViewboxFloatingBar.PointToScreen(new System.Windows.Point(0, 0));
-                        int left = (int)(point.X);
-                        int top = (int)(point.Y);
-                        int right = left + (int)(floatingBarWidth * dpiScaleX);
-                        int bottom = top + (int)(floatingBarHeight * dpiScaleY);
-
-                        // 创建检测区域（稍微扩大一点，确保检测到覆盖）
-                        var detectionArea = new WindowRect
-                        {
-                            Left = left - 5,
-                            Top = top - 5,
-                            Right = right + 5,
-                            Bottom = bottom + 5
-                        };
-
-                        // 排除当前应用程序的进程
-                        var excludeProcesses = new List<string> { "InkCanvasForClass", "Ink Canvas" };
-
-                        // 检查 OldZyBoard（通过窗口标题检测）
-                        bool isOldZyBoardWindowExisted = Settings.Automation.IsAutoFoldInOldZyBoard &&
-                            (WinTabWindowsChecker.IsWindowExisted("WhiteBoard - DrawingWindow") ||
-                             WinTabWindowsChecker.IsWindowExisted("InstantAnnotationWindow"));
-                        
-                        if (isOldZyBoardWindowExisted)
-                        {
-                            if (!isFloatingBarFolded)
-                            {
-                                FoldFloatingBar_MouseUp(new object(), null);
-                            }
-                        }
-                        else if (!isOldZyBoardWindowExisted && isFloatingBarFolded && !foldFloatingBarByUser)
-                        {
-                            // OldZyBoard窗口退出时，如果未开启保持收纳模式，则展开
-                            if (!Settings.Automation.KeepFoldAfterSoftwareExit)
-                            {
-                                UnFoldFloatingBar_MouseUp(new object(), null);
-                            }
-                            return; // OldZyBoard 使用特殊检测方式，处理完后直接返回
-                        }
-                        
-                        if (isOldZyBoardWindowExisted)
-                        {
-                            return; // OldZyBoard 窗口存在时，直接返回，不继续检测其他窗口
-                        }
-                        
-                        // 获取覆盖浮动栏的所有窗口
-                        var coveringWindows = _windowOverviewModel.GetCoveringWindows(detectionArea, excludeProcesses, 0.1);
-                        
-                        // 检查是否有覆盖窗口在用户的自动收纳设置中
-                        bool shouldFold = false;
-                        
-                        foreach (var window in coveringWindows)
-                        {
-                            // 检查窗口是否全屏（全屏窗口优先）
-                            bool isFullScreen = window.IsFullScreen;
-                            
-                            // 检查窗口大小是否接近全屏（用于检测二级菜单等）
-                            bool isNearFullScreen = false;
-                            try
-                            {
-                                var screenBounds = WinForms.Screen.FromHandle(window.Handle).Bounds;
-                                isNearFullScreen = window.Rect.Width >= screenBounds.Width - 16 &&
-                                                  window.Rect.Height >= screenBounds.Height - 16;
-                            }
-                            catch { }
-                            
-                            // 如果窗口是全屏或接近全屏，且进程在自动收纳设置中，则应该收纳
-                            if ((isFullScreen || isNearFullScreen) && IsProcessInAutoFoldSettings(window.ProcessName, window))
-                            {
-                                shouldFold = true;
-                                break; // 找到匹配的窗口就退出
-                            }
-                        }
-                        
-                        // 如果检测到应该收纳的窗口，且当前未收纳，则收纳
-                        if (shouldFold && !isFloatingBarFolded)
-                        {
-                            FoldFloatingBar_MouseUp(new object(), null);
-                        }
-                        // 如果未检测到应该收纳的窗口，且当前已收纳（且不是用户手动收纳），则展开
-                        else if (!shouldFold && isFloatingBarFolded && !foldFloatingBarByUser)
-                        {
-                            // 检查是否启用了软件退出后保持收纳模式
-                            if (!Settings.Automation.KeepFoldAfterSoftwareExit)
-                            {
-                                UnFoldFloatingBar_MouseUp(new object(), null);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"窗口概览模型检测失败: {ex.Message}", LogHelper.LogType.Error);
-                    }
-                }));
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"窗口概览模型自动收纳检测异常: {ex.Message}", LogHelper.LogType.Error);
-            }
         }
 
         private void timerCheckAutoUpdateWithSilence_Elapsed(object sender, ElapsedEventArgs e)

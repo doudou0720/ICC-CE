@@ -681,6 +681,8 @@ namespace Ink_Canvas.Windows
             var mainWindow = Application.Current.MainWindow as MainWindow;
             if (mainWindow != null)
             {
+                mainWindow.AdjustTimerContainerSize();
+                
                 // 显示主计时器窗口
                 var timerContainer = mainWindow.FindName("TimerContainer") as FrameworkElement;
                 if (timerContainer != null)

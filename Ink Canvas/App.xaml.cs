@@ -449,6 +449,7 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile("启动画面对象创建成功，准备显示...");
                 _splashScreen.Show();
                 _isSplashScreenShown = true;
+                splashScreenStartTime = DateTime.Now;
                 LogHelper.WriteLogToFile("启动画面已显示");
             }
             catch (Exception ex)
@@ -994,6 +995,10 @@ namespace Ink_Canvas
             // 主窗口加载完成后关闭启动画面
             mainWindow.Loaded += (s, args) =>
             {
+                isStartupComplete = true;
+                startupCompleteHeartbeat = DateTime.Now;
+                LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {(startupCompleteHeartbeat - splashScreenStartTime).TotalSeconds:F2}秒");
+                
                 if (_isSplashScreenShown)
                 {
                     SetSplashMessage("完成初始化...");
@@ -1070,18 +1075,50 @@ namespace Ink_Canvas
         private static Timer heartbeatTimer;
         private static DateTime lastHeartbeat = DateTime.Now;
         private static Timer watchdogTimer;
+        private static bool isStartupComplete = false;
+        private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
+        private static DateTime splashScreenStartTime = DateTime.MinValue;
 
         private void StartHeartbeatMonitor()
         {
-            // 主线程定时更新心跳
             heartbeatTimer = new Timer(_ => lastHeartbeat = DateTime.Now, null, 0, 1000);
-            // 辅助线程检测心跳超时
             watchdogTimer = new Timer(_ =>
             {
-                if ((DateTime.Now - lastHeartbeat).TotalSeconds > 10)
+                if (_isSplashScreenShown && splashScreenStartTime != DateTime.MinValue)
+                {
+                    if (!isStartupComplete)
+                    {
+                        TimeSpan elapsedSinceSplashStart = DateTime.Now - splashScreenStartTime;
+                        if (elapsedSinceSplashStart.TotalMinutes >= 2)
+                        {
+                            LogHelper.WriteLogToFile($"检测到启动假死：启动画面已显示{elapsedSinceSplashStart.TotalMinutes:F2}分钟，但未收到启动完成心跳，自动重启。", LogHelper.LogType.Error);
+                            SyncCrashActionFromSettings();
+                            if (CrashAction == CrashActionType.SilentRestart)
+                            {
+                                StartupCount.Increment();
+                                if (StartupCount.GetCount() >= 5)
+                                {
+                                    MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    StartupCount.Reset();
+                                    Environment.Exit(1);
+                                }
+                                try
+                                {
+                                    string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                                    Process.Start(exePath);
+                                }
+                                catch { }
+                                Environment.Exit(1);
+                            }
+                            return;
+                        }
+                    }
+                }
+                
+                if (isStartupComplete && (DateTime.Now - lastHeartbeat).TotalSeconds > 10)
                 {
                     LogHelper.NewLog("检测到主线程无响应，自动重启。");
-                    SyncCrashActionFromSettings(); // 新增：心跳检测时同步最新设置
+                    SyncCrashActionFromSettings();
                     if (CrashAction == CrashActionType.SilentRestart)
                     {
                         StartupCount.Increment();

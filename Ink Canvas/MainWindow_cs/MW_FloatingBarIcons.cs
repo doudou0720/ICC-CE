@@ -40,31 +40,12 @@ namespace Ink_Canvas
         {
             if (TwoFingerGestureBorder.Visibility == Visibility.Visible)
             {
-                AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                AnimationsHelper.HideWithSlideAndFade(PenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
                 AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
                 AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
             }
             else
             {
-                AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                AnimationsHelper.HideWithSlideAndFade(PenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+                HideSubPanels();
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(TwoFingerGestureBorder);
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardTwoFingerGestureBorder);
             }
@@ -285,9 +266,16 @@ namespace Ink_Canvas
             BoardBorderLeftPageListView.Visibility = Visibility.Collapsed;
             BoardBorderRightPageListView.Visibility = Visibility.Collapsed;
             BoardImageOptionsPanel.Visibility = Visibility.Collapsed;
+            TwoFingerGestureBorder.Visibility = Visibility.Collapsed;
+            BoardTwoFingerGestureBorder.Visibility = Visibility.Collapsed;
             // 添加隐藏图形工具的二级菜单面板
             BorderDrawShape.Visibility = Visibility.Collapsed;
             BoardBorderDrawShape.Visibility = Visibility.Collapsed;
+
+            if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is Border bgPalette)
+            {
+                bgPalette.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
@@ -361,6 +349,8 @@ namespace Ink_Canvas
             AnimationsHelper.HideWithSlideAndFade(BoardBorderLeftPageListView);
             AnimationsHelper.HideWithSlideAndFade(BoardBorderRightPageListView);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
+            AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
+            AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
 
             // 隐藏背景设置面板
             if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is Border bgPalette)
@@ -431,8 +421,9 @@ namespace Ink_Canvas
                     LassoSelectIconGeometry.Brush = new SolidColorBrush(FloatBarForegroundColor);
                     LassoSelectIconGeometry.Geometry = Geometry.Parse(GetCorrectIcon("lassoSelect", false));
 
-                    // 根据主题设置颜色
-                    if (Settings.Appearance.Theme == 1) // 深色主题
+                    bool isDarkThemeForButtons = Settings.Appearance.Theme == 1 ||
+                                                 (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                    if (isDarkThemeForButtons)
                     {
                         BoardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
                         BoardSelect.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
@@ -447,7 +438,7 @@ namespace Ink_Canvas
                         BoardEraser.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
                         BoardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
                     }
-                    else // 浅色主题或跟随系统
+                    else
                     {
                         BoardPen.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
                         BoardSelect.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
@@ -539,15 +530,16 @@ namespace Ink_Canvas
                             CursorIconGeometry.Brush = new SolidColorBrush(highlightColor);
                             CursorIconGeometry.Geometry =
                                 Geometry.Parse(GetCorrectIcon("cursor", true));
-                            // 根据主题设置颜色
-                            if (Settings.Appearance.Theme == 1) // 深色主题
+                            bool isDarkThemeForCursor = Settings.Appearance.Theme == 1 ||
+                                                        (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                            if (isDarkThemeForCursor)
                             {
                                 BoardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
                                 BoardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(85, 85, 85));
                                 BoardPenGeometry.Brush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
                                 BoardPenLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 255, 255));
                             }
-                            else // 浅色主题或跟随系统
+                            else
                             {
                                 BoardPen.Background = new SolidColorBrush(Color.FromRgb(244, 244, 245));
                                 BoardPen.BorderBrush = new SolidColorBrush(Color.FromRgb(161, 161, 170));
@@ -709,49 +701,48 @@ namespace Ink_Canvas
                     BlackBoardWaterMark.Visibility = Visibility.Collapsed;
                 }
 
-                try
+                _ = UpdateChickenSoupTextAsync().ContinueWith(t =>
                 {
-                    _ = UpdateChickenSoupTextAsync();
-                }
-                catch (Exception ex)
-                {
-                    try
-                    {
-                        LogHelper.WriteLogToFile($"进入白板模式时更新名言失败: {ex.Message}", LogHelper.LogType.Warning);
-                    }
-                    catch
-                    {
-                    }
-                    if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource != 3)
+                    if (t.IsFaulted)
                     {
                         try
                         {
-                            if (Settings.Appearance.ChickenSoupSource == 0)
-                            {
-                                int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
-                                BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
-                            }
-                            else if (Settings.Appearance.ChickenSoupSource == 1)
-                            {
-                                int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
-                                BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
-                            }
-                            else if (Settings.Appearance.ChickenSoupSource == 2)
-                            {
-                                int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
-                                BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
-                            }
+                            LogHelper.WriteLogToFile($"进入白板模式时更新名言失败: {t.Exception?.GetBaseException().Message}", LogHelper.LogType.Warning);
                         }
                         catch
                         {
-                            BlackBoardWaterMark.Visibility = Visibility.Collapsed;
+                        }
+                        if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource != 3)
+                        {
+                            try
+                            {
+                                if (Settings.Appearance.ChickenSoupSource == 0)
+                                {
+                                    int randChickenSoupIndex = new Random().Next(ChickenSoup.OSUPlayerYuLu.Length);
+                                    BlackBoardWaterMark.Text = ChickenSoup.OSUPlayerYuLu[randChickenSoupIndex];
+                                }
+                                else if (Settings.Appearance.ChickenSoupSource == 1)
+                                {
+                                    int randChickenSoupIndex = new Random().Next(ChickenSoup.MingYanJingJu.Length);
+                                    BlackBoardWaterMark.Text = ChickenSoup.MingYanJingJu[randChickenSoupIndex];
+                                }
+                                else if (Settings.Appearance.ChickenSoupSource == 2)
+                                {
+                                    int randChickenSoupIndex = new Random().Next(ChickenSoup.GaoKaoPhrases.Length);
+                                    BlackBoardWaterMark.Text = ChickenSoup.GaoKaoPhrases[randChickenSoupIndex];
+                                }
+                            }
+                            catch
+                            {
+                                BlackBoardWaterMark.Visibility = Visibility.Collapsed;
+                            }
+                        }
+                        else if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource == 3)
+                        {
+                            BlackBoardWaterMark.Text = "一言功能不可用";
                         }
                     }
-                    else if (Settings.Appearance.EnableChickenSoupInWhiteboardMode && Settings.Appearance.ChickenSoupSource == 3)
-                    {
-                        BlackBoardWaterMark.Text = "一言功能不可用";
-                    }
-                }
+                }, TaskScheduler.FromCurrentSynchronizationContext());
 
                 if (Settings.Canvas.UsingWhiteboard)
                 {
@@ -1566,37 +1557,16 @@ namespace Ink_Canvas
 
             if (BorderTools.Visibility == Visibility.Visible)
             {
-                AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
                 AnimationsHelper.HideWithSlideAndFade(BorderTools);
                 AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                AnimationsHelper.HideWithSlideAndFade(PenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
-                AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
-                AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
             }
             else
             {
-                AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                AnimationsHelper.HideWithSlideAndFade(PenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
-                AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
-                AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
+                HideSubPanels();
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BorderTools);
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardBorderTools);
             }
-            
+
             if (sender == ToolsFloatingBarBtn)
             {
                 lastBorderMouseDownObject = null;
@@ -2256,33 +2226,12 @@ namespace Ink_Canvas
 
                     if (PenPalette.Visibility == Visibility.Visible)
                     {
-                        AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                        AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
                         AnimationsHelper.HideWithSlideAndFade(PenPalette);
                         AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                        AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                        AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                        AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                        AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
-                        AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
-                        AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
                     }
                     else
                     {
-                        AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                        AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
-                        AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
-                        AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
-                        AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
-                        AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);
-                        AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
-                        AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
+                        HideSubPanels();
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(PenPalette);
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardPenPalette);
                     }
@@ -2872,6 +2821,7 @@ namespace Ink_Canvas
 
         private bool isOpeningOrHidingSettingsPane;
         private bool wasNoFocusModeBeforeSettings;
+        private bool userChangedNoFocusModeInSettings;
 
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -3125,7 +3075,9 @@ namespace Ink_Canvas
                         ViewboxFloatingBar.Visibility = Visibility.Visible;
 
                         // 退出白板时自动收纳功能 - 等待浮动栏完全展开后再收纳
-                        if (Settings.Automation.IsAutoFoldWhenExitWhiteboard && !isFloatingBarFolded)
+                        // 当处于PPT放映模式时，不自动收纳
+                        if (Settings.Automation.IsAutoFoldWhenExitWhiteboard && !isFloatingBarFolded &&
+                            BtnPPTSlideShowEnd.Visibility != Visibility.Visible)
                         {
                             // 使用异步延迟，等待浮动栏展开动画完成后再收纳
                             Task.Run(async () =>
@@ -3414,7 +3366,7 @@ namespace Ink_Canvas
             else
             {
                 // Panel was hidden, so hide other panels and show this one
-                HideSubPanelsImmediately();
+                HideSubPanels();
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardImageOptionsPanel);
             }
         }

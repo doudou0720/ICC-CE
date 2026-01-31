@@ -108,6 +108,21 @@ namespace Ink_Canvas
             if (!isLoaded) return;
 
             Settings.PowerPointSettings.PowerPointSupport = ToggleSwitchSupportPowerPoint.IsOn;
+            
+            if (!Settings.PowerPointSettings.PowerPointSupport)
+            {
+                if (Settings.PowerPointSettings.IsSupportWPS)
+                {
+                    Settings.PowerPointSettings.IsSupportWPS = false;
+                    ToggleSwitchSupportWPS.IsOn = false;
+                    
+                    if (_pptManager != null)
+                    {
+                        _pptManager.IsSupportWPS = false;
+                    }
+                }
+            }
+            
             SaveSettingsToFile();
 
             // 使用新的PPT管理器
@@ -671,18 +686,13 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void ToggleSwitchSkipAnimationsWhenGoNext_OnToggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            Settings.PowerPointSettings.SkipAnimationsWhenGoNext = ToggleSwitchSkipAnimationsWhenGoNext.IsOn;
-            SaveSettingsToFile();
-        }
-
         private void PPTLSButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTLSButtonOpacityValueSlider.Value, 1);
+            PPTLSButtonOpacityValueSlider.ValueChanged -= PPTLSButtonOpacityValueSlider_ValueChanged;
             PPTLSButtonOpacityValueSlider.Value = roundedValue;
+            PPTLSButtonOpacityValueSlider.ValueChanged += PPTLSButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTLSButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -698,7 +708,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTRSButtonOpacityValueSlider.Value, 1);
+            PPTRSButtonOpacityValueSlider.ValueChanged -= PPTRSButtonOpacityValueSlider_ValueChanged;
             PPTRSButtonOpacityValueSlider.Value = roundedValue;
+            PPTRSButtonOpacityValueSlider.ValueChanged += PPTRSButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTRSButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -714,7 +726,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTLBButtonOpacityValueSlider.Value, 1);
+            PPTLBButtonOpacityValueSlider.ValueChanged -= PPTLBButtonOpacityValueSlider_ValueChanged;
             PPTLBButtonOpacityValueSlider.Value = roundedValue;
+            PPTLBButtonOpacityValueSlider.ValueChanged += PPTLBButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTLBButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -730,7 +744,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             double roundedValue = Math.Round(PPTRBButtonOpacityValueSlider.Value, 1);
+            PPTRBButtonOpacityValueSlider.ValueChanged -= PPTRBButtonOpacityValueSlider_ValueChanged;
             PPTRBButtonOpacityValueSlider.Value = roundedValue;
+            PPTRBButtonOpacityValueSlider.ValueChanged += PPTRBButtonOpacityValueSlider_ValueChanged;
             Settings.PowerPointSettings.PPTRBButtonOpacity = roundedValue;
             SaveSettingsToFile();
             // 更新PPT UI管理器设置
@@ -2742,7 +2758,7 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
-        private void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
+        public void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -3811,7 +3827,9 @@ namespace Ink_Canvas
             if (radioButton != null)
             {
                 string channel = radioButton.Tag.ToString();
-                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta : UpdateChannel.Release;
+                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta 
+                    : channel == "Preview" ? UpdateChannel.Preview 
+                    : UpdateChannel.Release;
 
                 // 如果通道没有变化，不需要执行更新检查
                 if (Settings.Startup.UpdateChannel == newChannel)

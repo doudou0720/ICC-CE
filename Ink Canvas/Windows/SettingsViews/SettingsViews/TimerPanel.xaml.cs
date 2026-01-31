@@ -5,11 +5,11 @@ using System.Windows.Controls;
 namespace Ink_Canvas.Windows.SettingsViews
 {
     /// <summary>
-    /// CrashActionPanel.xaml 的交互逻辑
+    /// TimerPanel.xaml 的交互逻辑
     /// </summary>
-    public partial class CrashActionPanel : UserControl
+    public partial class TimerPanel : UserControl
     {
-        public CrashActionPanel()
+        public TimerPanel()
         {
             InitializeComponent();
         }
@@ -41,7 +41,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"CrashActionPanel 应用主题时出错: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"TimerPanel 应用主题时出错: {ex.Message}");
             }
         }
     }

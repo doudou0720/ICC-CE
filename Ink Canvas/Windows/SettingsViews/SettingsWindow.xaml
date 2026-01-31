@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         xmlns:settingsViews="clr-namespace:Ink_Canvas.Windows.SettingsViews"
         WindowStartupLocation="CenterScreen" d:DesignHeight="19198"
         mc:Ignorable="d" WindowStyle="None" ResizeMode="CanMinimize" Background="Transparent"
@@ -91,11 +92,39 @@
         </DrawingImage>
         <DrawingImage x:Key="AppearanceIcon">
             <DrawingImage.Drawing>
-                <DrawingGroup ClipGeometry="M0,0 V16 H17 V0 H0 Z">
-                    <DrawingGroup.Transform>
-                        <TranslateTransform X="0" Y="0.0078125" />
-                    </DrawingGroup.Transform>
-                    <GeometryDrawing Brush="#FF222222" Geometry="F1 M17,16z M0,0z M14.3604,-0.0078125L10.8916,3.44922C11.5752,3.80469,12.126,4.35937,12.4814,5.03906L12.6533,4.86719 12.6611,4.87518 16.9619,0.574219 16.9619,-0.0078125 14.3604,-0.0078125z M3.96191,0.992188C2.31738,0.992188,0.961914,2.34766,0.961914,3.99219L0.961914,9.99219C0.961914,11.6367,2.31738,12.9922,3.96191,12.9922L13.9619,12.9922C15.6064,12.9922,16.9619,11.6367,16.9619,9.99219L16.9619,3.99219C16.9619,3.42188,16.7939,2.89062,16.5127,2.43359L14.9619,3.98828 14.9619,9.99219C14.9619,10.5625,14.5322,10.9922,13.9619,10.9922L3.96191,10.9922C3.3916,10.9922,2.96191,10.5625,2.96191,9.99219L2.96191,3.99219C2.96191,3.42188,3.3916,2.99219,3.96191,2.99219L9.93066,2.99219 11.9385,0.992188 3.96191,0.992188z M8.96191,3.99219C7.30566,3.99219,5.96191,5.33203,5.96191,6.99219L5.96191,9.99219 8.96191,9.99219C10.6221,10.0002 11.9619,8.64844 11.9619,6.99219 11.9619,5.33203 10.6221,3.99219 8.96191,3.99219z M5.96191,13.9922C4.85644,13.9922,3.96191,14.8867,3.96191,15.9922L13.9619,15.9922C13.9619,14.8867,13.0674,13.9922,11.9619,13.9922L5.96191,13.9922z" />
+                <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                    <GeometryDrawing Brush="Transparent">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M12 21C9.61305 21 7.32387 20.0518 5.63604 18.364C3.94821 16.6761 3 14.3869 3 12C3 9.61305 3.94821 7.32387 5.63604 5.63604C7.32387 3.94821 9.61305 3 12 3C16.97 3 21 6.582 21 11C21 12.06 20.526 13.078 19.682 13.828C18.838 14.578 17.693 15 16.5 15H14C13.5539 14.9928 13.1181 15.135 12.7621 15.404C12.4061 15.673 12.1503 16.0533 12.0353 16.4844C11.9203 16.9155 11.9528 17.3727 12.1276 17.7833C12.3025 18.1938 12.6095 18.5341 13 18.75C13.1997 18.9342 13.3366 19.1764 13.3915 19.4425C13.4465 19.7085 13.4167 19.9851 13.3064 20.2334C13.196 20.4816 13.0107 20.6891 12.7764 20.8266C12.5421 20.9641 12.2705 21.0247 12 21Z" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="Transparent">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M7.5 10.5C7.5 10.7652 7.60536 11.0196 7.79289 11.2071C7.98043 11.3946 8.23478 11.5 8.5 11.5C8.76522 11.5 9.01957 11.3946 9.20711 11.2071C9.39464 11.0196 9.5 10.7652 9.5 10.5C9.5 10.2348 9.39464 9.98043 9.20711 9.79289C9.01957 9.60536 8.76522 9.5 8.5 9.5C8.23478 9.5 7.98043 9.60536 7.79289 9.79289C7.60536 9.98043 7.5 10.2348 7.5 10.5Z" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="Transparent">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M11.5 7.5C11.5 7.76522 11.6054 8.01957 11.7929 8.20711C11.9804 8.39464 12.2348 8.5 12.5 8.5C12.7652 8.5 13.0196 8.39464 13.2071 8.20711C13.3946 8.01957 13.5 7.76522 13.5 7.5C13.5 7.23478 13.3946 6.98043 13.2071 6.79289C13.0196 6.60536 12.7652 6.5 12.5 6.5C12.2348 6.5 11.9804 6.60536 11.7929 6.79289C11.6054 6.98043 11.5 7.23478 11.5 7.5Z" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="Transparent">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M15.5 10.5C15.5 10.7652 15.6054 11.0196 15.7929 11.2071C15.9804 11.3946 16.2348 11.5 16.5 11.5C16.7652 11.5 17.0196 11.3946 17.2071 11.2071C17.3946 11.0196 17.5 10.7652 17.5 10.5C17.5 10.2348 17.3946 9.98043 17.2071 9.79289C17.0196 9.60536 16.7652 9.5 16.5 9.5C16.2348 9.5 15.9804 9.60536 15.7929 9.79289C15.6054 9.98043 15.5 10.2348 15.5 10.5Z" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
                 </DrawingGroup>
             </DrawingImage.Drawing>
         </DrawingImage>
@@ -167,10 +196,113 @@
                 </DrawingGroup>
             </DrawingImage.Drawing>
         </DrawingImage>
+        <DrawingImage x:Key="UpdateCenterIcon">
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FF222222" Geometry="F1 M16,16z M0,0z M8,0C3.58172,0 0,3.58172 0,8 0,12.4183 3.58172,16 8,16 12.4183,16 16,12.4183 16,8 16,3.58172 12.4183,0 8,0z M8,14C4.68629,14 2,11.3137 2,8 2,4.68629 4.68629,2 8,2 11.3137,2 14,4.68629 14,8 14,11.3137 11.3137,14 8,14z M8,4C5.79086,4 4,5.79086 4,8 4,10.2091 5.79086,12 8,12 10.2091,12 12,10.2091 12,8 12,5.79086 10.2091,4 8,4z M8,10C6.89543,10 6,9.10457 6,8 6,6.89543 6.89543,6 8,6 9.10457,6 10,6.89543 10,8 10,9.10457 9.10457,10 8,10z"/>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
         <DrawingImage x:Key="AboutIcon">
             <DrawingImage.Drawing>
                 <DrawingGroup ClipGeometry="M0,0 V16 H16 V0 H0 Z">
                     <GeometryDrawing Brush="#FF222222" Geometry="F0 M16,16z M0,0z M2.35343,2.37395C5.46789,-0.74052 10.5333,-0.740541 13.6478,2.37392 16.7623,5.48839 16.7623,10.5539 13.6478,13.6683 10.5333,16.7828 5.46789,16.7828 2.35343,13.6683 -0.761038,10.5539 -0.761039,5.48841 2.35343,2.37395z M12.0389,12.0594C14.2904,9.80781 14.2904,6.23442 12.0389,3.98287 9.78731,1.73169 6.21255,1.72957 3.96099,3.98113 1.70944,6.23268 1.70944,9.80882 3.96099,12.0604 6.21254,14.3123 9.7873,14.3109 12.0389,12.0594z M10.1211,3.87906C9.58613,3.34403 8.88007,3.04362 8.15234,3.00601 7.71571,2.98341 7.27096,3.05492 6.85156,3.22867 5.73316,3.69199 5,4.78958 5,6.00015L7,6.00015C7,5.59265 7.24089,5.23221 7.61719,5.07632 7.99349,4.92043 8.41898,5.00502 8.70703,5.29312 8.99503,5.58121 9.07974,6.0065 8.92383,6.38296 8.76792,6.75942 8.40728,7.00015 8,7.00015 7.44771,7.00015 7,7.44786 7,8.00015L7,10.0002 9,10.0002 9,8.82046C9.7862,8.54081 10.4413,7.94595 10.7715,7.14859 11.2347,6.03014 10.977,4.73513 10.1211,3.87906z M9,12.0002C9,11.4479 8.55229,11.0002 8,11.0002 7.44771,11.0002 7,11.4479 7,12.0002 7,12.5524 7.44771,13.0002 8,13.0002 8.55229,13.0002 9,12.5524 9,12.0002z" />
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <DrawingImage x:Key="ShortcutsIcon">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                    <!-- 键盘外框 -->
+                    <GeometryDrawing Brush="Transparent">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M2,8 C2,7.46957 2.21071,6.96086 2.58579,6.58579 C2.96086,6.21071 3.46957,6 4,6 L20,6 C20.5304,6 21.0391,6.21071 21.4142,6.58579 C21.7893,6.96086 22,7.46957 22,8 L22,16 C22,16.5304 21.7893,17.0391 21.4142,17.4142 C21.0391,17.7893 20.5304,18 20,18 L4,18 C3.46957,18 2.96086,17.7893 2.58579,17.4142 C2.21071,17.0391 2,16.5304 2,16 L2,8 Z" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <!-- 第一行按键点 -->
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M6,10 L6,10.01" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M10,10 L10,10.01" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M14,10 L14,10.01" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M18,10 L18,10.01" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <!-- 第二行按键 -->
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M6,14 L6,14.01" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M18,14 L18,14.01" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <!-- 中间长按键 -->
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M10,14 L14,14" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+        <DrawingImage x:Key="CrashActionIcon">
+            <DrawingImage.Drawing>
+                <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                    <GeometryDrawing Brush="Transparent">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M17.6698,17.667 C16.1271,19.2844 14.1634,20.4387 11.9998,21 C10.443,20.5962 8.98331,19.8836 7.70738,18.9045 C6.43144,17.9254 5.36534,16.6998 4.57243,15.3005 C3.77952,13.9013 3.27597,12.3569 3.09171,10.7592 C2.90745,9.16147 3.04624,7.54302 3.49983,6 C4.29383,6.036 5.08283,5.994 5.85683,5.876 M8.98483,4.95 C10.082,4.45493 11.0983,3.79757 11.9998,3 C14.3357,5.06658 17.3843,6.14257 20.4998,6 C20.9575,7.55707 21.0946,9.19081 20.9028,10.8024 C20.7109,12.4139 20.1942,13.9699 19.3838,15.376" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M3,3 L21,21" />
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="#FF222222" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round" />
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
                 </DrawingGroup>
             </DrawingImage.Drawing>
         </DrawingImage>
@@ -493,13 +625,13 @@
         <WindowChrome GlassFrameThickness="-1" ResizeBorderThickness="0" CaptionHeight="0" CornerRadius="0" />
     </WindowChrome.WindowChrome>
     <Grid>
-        <Border Background="#fafafa" CornerRadius="7" BorderBrush="#3584e4" BorderThickness="2" Margin="8">
+        <Border x:Name="MainBorder" Background="#fafafa" CornerRadius="7" BorderBrush="#3584e4" BorderThickness="2" Margin="8">
             <Grid>
                 <!--Sidebar-->
-                <Border Width="250" Background="#ebebeb" BorderBrush="#e1e1e1" CornerRadius="7,0,0,7" BorderThickness="0,0,2,0" HorizontalAlignment="Left">
+                <Border x:Name="SidebarBorder" Width="250" Background="#ebebeb" BorderBrush="#e1e1e1" CornerRadius="7,0,0,7" BorderThickness="0,0,2,0" HorizontalAlignment="Left">
                     <Grid>
                         <Grid Height="48" VerticalAlignment="Top">
-                            <Border CornerRadius="8" Background="#d9d9d9" Width="34" Height="34" Margin="8,0,0,0" HorizontalAlignment="Left" MouseLeftButtonDown="SearchButton_Click" Cursor="Hand">
+                            <Border x:Name="SearchButtonBorder" CornerRadius="8" Background="#d9d9d9" Width="34" Height="34" Margin="8,0,0,0" HorizontalAlignment="Left" MouseLeftButtonDown="SearchButton_Click" Cursor="Hand">
                                 <Image Width="16" Height="16">
                                     <Image.Source>
                                         <DrawingImage>
@@ -512,8 +644,8 @@
                                     </Image.Source>
                                 </Image>
                             </Border>
-                            <TextBlock FontSize="15" Text="软件设置" Foreground="#2e3436" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <Border CornerRadius="8" Background="#d9d9d9" Width="34" Height="34" Margin="0,0,8,0" HorizontalAlignment="Right" MouseLeftButtonDown="MenuButton_Click" Cursor="Hand">
+                            <TextBlock x:Name="TitleTextBlock" FontSize="15" Text="软件设置" Foreground="#2e3436" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <Border CornerRadius="8" Background="#d9d9d9" Width="34" Height="34" Margin="0,0,8,0" HorizontalAlignment="Right" PreviewMouseLeftButtonDown="MenuButton_Click" Cursor="Hand" x:Name="MenuButtonBorder">
                                 <Image Width="16" Height="16">
                                     <Image.Source>
                                         <DrawingImage>
@@ -525,6 +657,70 @@
                                         </DrawingImage>
                                     </Image.Source>
                                 </Image>
+                                <Border.ContextMenu>
+                                    <ContextMenu x:Name="MenuButtonContextMenu" ui:ThemeManager.RequestedTheme="Light" Padding="6">
+                                        <MenuItem Header="退出软件" Click="MenuItemExit_Click">
+                                            <MenuItem.Icon>
+                                                <Image Width="16" Height="16">
+                                                    <Image.Source>
+                                                        <DrawingImage>
+                                                            <DrawingImage.Drawing>
+                                                                <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M13,2C13,1.44772 12.5523,1 12,1 11.4477,1 11,1.44772 11,2L11,12C11,12.5523 11.4477,13 12,13 12.5523,13 13,12.5523 13,12L13,2z" />
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M19.1073,5.89303C18.7168,5.50243 18.0837,5.50232 17.6931,5.89277 17.3025,6.28322 17.3024,6.91639 17.6928,7.30698 18.8098,8.42441 19.571,9.84758 19.8802,11.397 20.1894,12.9464 20.0329,14.5528 19.4305,16.0134 18.828,17.474 17.8065,18.7235 16.4948,19.6043 15.1831,20.4851 13.64,20.9578 12.06,20.9628 10.48,20.9677 8.93392,20.5047 7.61674,19.6321 6.29956,18.7595 5.27025,17.5164 4.65863,16.0596 4.04701,14.6028 3.88046,12.9975 4.17999,11.4462 4.47952,9.89485 5.23171,8.46694 6.3417,7.34254 6.7297,6.9495 6.72562,6.31635 6.33258,5.92835 5.93955,5.54036 5.3064,5.54444 4.9184,5.93747 3.5309,7.34298 2.59067,9.12786 2.21626,11.067 1.84185,13.0062 2.05003,15.0128 2.81456,16.8338 3.57909,18.6549 4.86572,20.2087 6.5122,21.2994 8.15867,22.3902 10.0913,22.9689 12.0662,22.9627 14.0412,22.9566 15.9701,22.3657 17.6098,21.2647 19.2494,20.1637 20.5262,18.6018 21.2793,16.776 22.0324,14.9502 22.2281,12.9424 21.8415,11.0056 21.455,9.06878 20.5036,7.28981 19.1073,5.89303z" />
+                                                                </DrawingGroup>
+                                                            </DrawingImage.Drawing>
+                                                        </DrawingImage>
+                                                    </Image.Source>
+                                                </Image>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="重启软件" Click="MenuItemRestart_Click">
+                                            <MenuItem.Icon>
+                                                <Image Width="16" Height="16">
+                                                    <Image.Source>
+                                                        <DrawingImage>
+                                                            <DrawingImage.Drawing>
+                                                                <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M6.34315,6.34315C7.84299,4.8433 9.87707,4.0005 11.9981,4 14.2527,4.00897 16.4167,4.88785 18.039,6.45324L18.5858,7 16,7C15.4477,7 15,7.44772 15,8 15,8.55228 15.4477,9 16,9L21,9C21.1356,9 21.2649,8.97301 21.3828,8.92412 21.5007,8.87532 21.6112,8.80298 21.7071,8.70711 21.8902,8.52405 21.9874,8.28768 21.9989,8.04797 21.9996,8.03199 22,8.016 22,8L22,3C22,2.44772 21.5523,2 21,2 20.4477,2 20,2.44772 20,3L20,5.58579 19.4471,5.03289 19.435,5.02103C17.4405,3.09289,14.7779,2.01044,12.0038,2L12,2C9.34784,2 6.8043,3.05357 4.92893,4.92893 3.05357,6.8043 2,9.34784 2,12 2,12.5523 2.44772,13 3,13 3.55228,13 4,12.5523 4,12 4,9.87827 4.84285,7.84344 6.34315,6.34315z" />
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M22,12C22,14.6522 20.9464,17.1957 19.0711,19.0711 17.1957,20.9464 14.6522,22 12,22L11.9962,22C9.22213,21.9896,6.55946,20.9071,4.56496,18.979L4.55289,18.9671 4,18.4142 4,21C4,21.5523 3.55228,22 3,22 2.44772,22 2,21.5523 2,21L2,16.0002C2,15.8646 2.02699,15.7351 2.07588,15.6172 2.12432,15.5001 2.19595,15.3904 2.29078,15.295 2.29219,15.2936 2.2936,15.2922 2.29502,15.2908 2.48924,15.0977 2.74301,15.0008 2.997,15 2.998,15 2.999,15 3,15L8,15C8.55228,15 9,15.4477 9,16 9,16.5523 8.55228,17 8,17L5.41421,17 5.96095,17.5467C7.5833,19.1122 9.74736,19.9911 12.002,20 14.123,19.9995 16.157,19.1567 17.6569,17.6569 19.1571,16.1566 20,14.1217 20,12 20,11.4477 20.4477,11 21,11 21.5523,11 22,11.4477 22,12z" />
+                                                                </DrawingGroup>
+                                                            </DrawingImage.Drawing>
+                                                        </DrawingImage>
+                                                    </Image.Source>
+                                                </Image>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <MenuItem Header="重置配置" Click="MenuItemReset_Click">
+                                            <MenuItem.Icon>
+                                                <Image Width="16" Height="16">
+                                                    <Image.Source>
+                                                        <DrawingImage>
+                                                            <DrawingImage.Drawing>
+                                                                <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M2,6C2,5.44772,2.44772,5,3,5L21,5C21.5523,5 22,5.44772 22,6 22,6.55228 21.5523,7 21,7L3,7C2.44772,7,2,6.55228,2,6z" />
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M2,12C2,11.4477,2.44772,11,3,11L7,11C7.55228,11 8,11.4477 8,12 8,12.5523 7.55228,13 7,13L3,13C2.44772,13,2,12.5523,2,12z" />
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M3,17C2.44772,17 2,17.4477 2,18 2,18.5523 2.44772,19 3,19L7,19C7.55228,19 8,18.5523 8,18 8,17.4477 7.55228,17 7,17L3,17z" />
+                                                                    <GeometryDrawing Brush="#FF222222"
+                                                                        Geometry="F1 M24,24z M0,0z M12.3829,11.2029C13.4335,10.1522 14.8952,9.5 16.5,9.5 17.9587,9.5 19.3576,10.0795 20.3891,11.1109 21.4205,12.1424 22,13.5413 22,15 22,16.2593 21.6038,17.4867 20.8675,18.5083 20.1311,19.5299 19.092,20.2939 17.8974,20.6921 16.7027,21.0903 15.413,21.1026 14.211,20.7271 13.009,20.3516 11.9556,19.6074 11.2,18.6 10.8686,18.1582 10.9582,17.5314 11.4,17.2 11.8418,16.8686 12.4686,16.9582 12.8,17.4 13.3037,18.0716 14.006,18.5677 14.8073,18.8181 15.6087,19.0684 16.4685,19.0602 17.2649,18.7947 18.0614,18.5292 18.7541,18.0199 19.245,17.3388 19.7359,16.6578 20,15.8395 20,15 20,14.0717 19.6313,13.1815 18.9749,12.5251 18.3185,11.8687 17.4283,11.5 16.5,11.5 15.4448,11.5 14.4865,11.9278 13.7971,12.6171L13.4142,13 15,13C15.5523,13 16,13.4477 16,14 16,14.5523 15.5523,15 15,15L11.0007,15C10.9997,15 10.998,15 10.997,15 10.8625,14.9996 10.7343,14.9727 10.6172,14.9241 10.5001,14.8757 10.3904,14.804 10.295,14.7092 10.2936,14.7078 10.2922,14.7064 10.2908,14.705 10.196,14.6096 10.1243,14.4999 10.0759,14.3828 10.027,14.2649 10,14.1356 10,14L10,10C10,9.44772 10.4477,9 11,9 11.5523,9 12,9.44772 12,10L12,11.5858 12.3829,11.2029z" />
+                                                                </DrawingGroup>
+                                                            </DrawingImage.Drawing>
+                                                        </DrawingImage>
+                                                    </Image.Source>
+                                                </Image>
+                                            </MenuItem.Icon>
+                                        </MenuItem>
+                                        <Separator/>
+                                        <MenuItem Header="切换到老设置" Click="MenuItemSwitchToOldSettings_Click"/>
+                                    </ContextMenu>
+                                </Border.ContextMenu>
                             </Border>
                         </Grid>
                         <ItemsControl Name="SidebarItemsControl">
@@ -536,14 +732,14 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <Line Visibility="{Binding _spVisibility}" Margin="0,6" HorizontalAlignment="Center" X1="0" X2="234" Y1="0" Y2="0" Stroke="#d3d3d3" StrokeThickness="1" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                        <Line Visibility="{Binding _spVisibility}" Margin="0,6" HorizontalAlignment="Center" X1="0" X2="234" Y1="0" Y2="0" Stroke="{Binding _spStroke}" StrokeThickness="1" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                                         <Border MouseDown="SidebarItem_MouseDown" MouseUp="SidebarItem_MouseUp" MouseLeave="SidebarItem_MouseLeave"
                                                 Tag="{Binding}" Visibility="{Binding _siVisibility}" Background="{Binding _siBackground}" Height="40" Margin="6,0,6,0" CornerRadius="7">
                                             <Grid>
                                                 <Border Height="40" CornerRadius="7" Background="#09090b" IsHitTestVisible="false" Opacity="0" Name="MouseFeedbackBorder"/>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Image Width="18" Height="18" Margin="14,0,9,0" VerticalAlignment="Center" Source="{Binding IconSource}"/>
-                                                    <TextBlock FontSize="14" VerticalAlignment="Center" Text="{Binding Title}" Foreground="#FF222222"/>
+                                                    <TextBlock FontSize="14" VerticalAlignment="Center" Text="{Binding Title}" Foreground="{Binding _siForeground}"/>
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -553,6 +749,11 @@
                         </ItemsControl>
                     </Grid>
                 </Border>
+                <!--UpdateCenterPanel-->
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="UpdateCenterPane">
+                    <settingsViews:UpdateCenterPanel x:Name="UpdateCenterPanel"/>
+                </Grid>
+
                 <!--AboutPanel-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AboutPane">
                     <settingsViews:AboutPanel x:Name="SettingsAboutPanel"/>
@@ -607,19 +808,14 @@
                     <settingsViews:LuckyRandomPanel x:Name="LuckyRandomPanel"/>
                 </Grid>
 
-                <!--存储面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StoragePane">
-                    <settingsViews:StoragePanel x:Name="StoragePanel"/>
+                <!--高级面板-->
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
+                    <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
                 <!--截图面板-->
                 <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SnapshotPane">
                     <settingsViews:SnapshotPanel x:Name="SnapshotPanel"/>
-                </Grid>
-
-                <!--高级面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
-                    <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
                 <!--SearchPanel-->
@@ -629,11 +825,11 @@
                 
                 <!--Topbar-->
                 <Grid Height="48" VerticalAlignment="Top" Margin="250,0,0,0">
-                    <Border Height="48" CornerRadius="0,6,0,0" Background="#fafafa">
+                    <Border x:Name="TopBarBorder" Height="48" CornerRadius="0,6,0,0" Background="#fafafa">
                         <Border.Clip>
                             <RectangleGeometry Rect="0,0,640,56"/>
                         </Border.Clip>
-                        <Border Height="48" CornerRadius="0,6,0,0" Background="#fafafa" >
+                        <Border x:Name="TopBarBackgroundBorder" Height="48" CornerRadius="0,6,0,0" Background="#fafafa" >
                             <Border.Effect>
                                 <DropShadowEffect Direction="-90" ShadowDepth="3" BlurRadius="4" Color="#000000" Opacity="0.25" x:Name="DropShadowEffectTopBar"/>
                             </Border.Effect>
