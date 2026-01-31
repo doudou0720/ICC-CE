@@ -106,6 +106,8 @@ namespace Ink_Canvas
         public bool EnableInkFade { get; set; } = false;
         [JsonProperty("inkFadeTime")]
         public int InkFadeTime { get; set; } = 3000; // 墨迹渐隐时间（毫秒）
+        [JsonProperty("hideInkFadeControlInPenMenu")]
+        public bool HideInkFadeControlInPenMenu { get; set; } = false; // 是否在笔工具菜单中隐藏墨迹渐隐控制开关
 
     }
 

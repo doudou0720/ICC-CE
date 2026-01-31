@@ -1205,6 +1205,15 @@ namespace Ink_Canvas
                     _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
                 }
 
+                // 同步在笔工具菜单中隐藏墨迹渐隐控制开关的设置
+                if (ToggleSwitchHideInkFadeControlInPenMenu != null)
+                {
+                    ToggleSwitchHideInkFadeControlInPenMenu.IsOn = Settings.Canvas.HideInkFadeControlInPenMenu;
+                }
+
+                // 根据设置更新墨迹渐隐控制开关的可见性
+                UpdateInkFadeControlVisibility();
+
                 LogHelper.WriteLogToFile("墨迹渐隐设置已加载", LogHelper.LogType.Event);
             }
             catch (Exception ex)
