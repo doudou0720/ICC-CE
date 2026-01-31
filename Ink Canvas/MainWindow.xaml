@@ -860,7 +860,7 @@
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchHideInkFadeControlInPenMenu_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关，可以有效防止课间老是有人玩墨迹渐隐功能" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="# 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关" TextWrapping="Wrap" Foreground="#a1a1aa" />
 
                                 </ui:SimpleStackPanel>
                             </GroupBox>
