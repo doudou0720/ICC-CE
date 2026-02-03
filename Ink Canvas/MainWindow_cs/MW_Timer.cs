@@ -117,7 +117,7 @@ namespace Ink_Canvas
             timerKillProcess.Elapsed += TimerKillProcess_Elapsed;
             timerKillProcess.Interval = 2000;
             timerCheckAutoFold.Elapsed += timerCheckAutoFold_Elapsed;
-            timerCheckAutoFold.Interval = 200;
+            timerCheckAutoFold.Interval = 500;
             timerCheckAutoUpdateWithSilence.Elapsed += timerCheckAutoUpdateWithSilence_Elapsed;
             timerCheckAutoUpdateWithSilence.Interval = 1000 * 60 * 10;
             timerCheckAutoUpdateRetry.Elapsed += timerCheckAutoUpdateRetry_Elapsed;
@@ -821,9 +821,7 @@ namespace Ink_Canvas
 
         private void timerCheckAutoFold_Elapsed(object sender, ElapsedEventArgs e)
         {
-            // 如果正在切换动画中，记录一下并返回
             if (isFloatingBarChangingHideMode) return;
-
             try
             {
                 bool hasFullScreen = HasFullScreenWindowOfAutoFoldApps();
@@ -831,32 +829,28 @@ namespace Ink_Canvas
                 var windowProcessName = ForegroundWindowInfo.ProcessName();
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
 
-                // 使用 Dispatcher 安全访问 UI 元素
-                Dispatcher.Invoke(() =>
-                {
-                    var currentMargin = ViewboxFloatingBar.Margin;
-                    
-                    // 只有在状态可能发生变化或异常时才详细记录，或者根据需要开启
-                    // LogHelper.WriteLogToFile($"[AutoFold Check] 前台进程: {windowProcessName} | UI边距: L:{currentMargin.Left} | 逻辑收纳状态: {isFloatingBarFolded}", LogHelper.LogType.Trace);
-
-                    if (hasFullScreen)
-                    {
-                        if (!isFloatingBarFolded) 
-                        {
-                            LogHelper.WriteLogToFile($"[AutoFold] 触发收纳：检测到全屏目标软件 {windowProcessName}", LogHelper.LogType.Event);
-                            FoldFloatingBar_MouseUp(null, null);
-                        }
-                        // 补救逻辑：如果逻辑上认为已收纳，但 UI 实际还在屏幕内（Left 边距大于 -50）
-                        else if (currentMargin.Left > -50 && !isFloatingBarChangingHideMode)
-                        {
-                            LogHelper.WriteLogToFile($"[AutoFold] 补救：逻辑为收纳态但UI显示异常(L:{currentMargin.Left})，重新执行收纳动画", LogHelper.LogType.Warning);
-                            _ = FoldFloatingBar(null); 
-                        }
-                    }
+                // 使用 Dispatcher 线程安全地获取 UI 状态
+                Thickness currentMargin = new Thickness();
+                Dispatcher.Invoke(() => {
+                    currentMargin = ViewboxFloatingBar.Margin;
                 });
 
-                // hasFullScreen 成立时上面已经处理并返回了，这里处理非全屏情况
-                if (hasFullScreen) return;
+                LogHelper.WriteLogToFile($"[AutoFold Check] 前台: {windowProcessName} | 标题: {windowTitle} | UI边距: L:{currentMargin.Left} R:{currentMargin.Right} | 预览识别: {shouldAutoFold} | 全屏识别: {hasFullScreen} | 逻辑收纳态: {isFloatingBarFolded}", LogHelper.LogType.Trace);
+
+                if (hasFullScreen)
+                {
+                    if (!isFloatingBarFolded) 
+                    {
+                        LogHelper.WriteLogToFile($"[AutoFold] 触发收纳：检测到全屏目标软件 {windowProcessName}", LogHelper.LogType.Event);
+                        FoldFloatingBar_MouseUp(null, null);
+                    }
+                    else if (currentMargin.Left > -50 && !isFloatingBarChangingHideMode)
+                    {
+                        LogHelper.WriteLogToFile("[AutoFold] 补救：逻辑为收纳态但UI仍在显示，重新执行收纳动画", LogHelper.LogType.Warning);
+                        FoldFloatingBar(null); 
+                    }
+                    return;
+                }
 
                 if (shouldAutoFold)
                 {
@@ -885,8 +879,13 @@ namespace Ink_Canvas
                                         LogHelper.WriteLogToFile("[AutoFold] 触发收纳：希沃5主窗口", LogHelper.LogType.Event);
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
+                                    else if (unfoldFloatingBarByUser)
+                                    {
+                                        // LogHelper.WriteLogToFile("[AutoFold] 阻止收纳：用户最近手动展开过", LogHelper.LogType.Trace);
+                                    }
                                 }
                             }
+                            // ... 省略其他 EasiNote 子版本处理逻辑，原理相同
                         }
                     }
                     // 处理其他目标软件
