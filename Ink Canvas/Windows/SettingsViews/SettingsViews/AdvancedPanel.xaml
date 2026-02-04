@@ -449,7 +449,7 @@
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后可通过 icc://fold (收纳) 或 icc://unfold (展开) 等命令控制" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchIsEnableUriScheme" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableUriScheme" MouseLeftButtonDown="ToggleSwitch_Click"
-                                Focusable="True" IsTabStop="True" KeyDown="ToggleSwitch_KeyDown"
+                                Focusable="True" KeyboardNavigation.IsTabStop="True" KeyDown="ToggleSwitch_KeyDown"
                                 AutomationProperties.Name="启用外部协议 (icc://)"
                                 AutomationProperties.HelpText="开启后可通过 icc://fold (收纳) 或 icc://unfold (展开) 等命令控制">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
