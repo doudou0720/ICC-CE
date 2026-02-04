@@ -430,10 +430,32 @@
                     <TextBlock Text="管理.icstk文件的关联设置，双击.icstk文件可直接在Ink Canvas中打开" 
                                TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                        <Button x:Name="BtnUnregisterFileAssociation" Content="取消文件关联" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White"/>
-                        <Button x:Name="BtnCheckFileAssociation" Content="检查关联状态" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White"/>
-                        <Button x:Name="BtnRegisterFileAssociation" Content="重新注册关联" Padding="15,5" Background="#2563eb" Foreground="White"/>
+                        <Button x:Name="BtnUnregisterFileAssociation" Content="取消文件关联" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
+                        <Button x:Name="BtnCheckFileAssociation" Content="检查关联状态" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
+                        <Button x:Name="BtnRegisterFileAssociation" Content="重新注册关联" Padding="15,5" Background="#2563eb" Foreground="White" Click="Button_Click"/>
                     </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- 外部协议调用 -->
+            <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
+                <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <TextBlock Text="外部协议调用" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <TextBlock Text="允许通过 icc:// 协议调用软件，支持从浏览器或其他应用快速控制软件" 
+                               TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
+                    <Grid Height="54">
+                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用外部协议 (icc://)" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后可通过 icc://fold (收纳) 或 icc://unfold (展开) 等命令控制" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Border x:Name="ToggleSwitchIsEnableUriScheme" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableUriScheme" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
+                                </Border.Effect>
+                            </Border>
+                        </Border>
+                    </Grid>
                 </StackPanel>
             </Border>
             

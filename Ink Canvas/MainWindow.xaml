@@ -2417,6 +2417,9 @@
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsSpecialScreen"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchIsSpecialScreen_OnToggled" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsEnableUriScheme"
+                                                         Visibility="Collapsed" IsOn="False"
+                                                         Toggled="ToggleSwitchIsEnableUriScheme_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock Foreground="#fafafa" Text="触摸倍数" VerticalAlignment="Center"
