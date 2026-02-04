@@ -417,8 +417,8 @@
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                        <Button x:Name="BtnManualBackup" Content="手动备份" Padding="12,6" Margin="0,0,12,0" Background="#2563eb" Foreground="White"/>
-                        <Button x:Name="BtnRestoreBackup" Content="还原备份" Padding="12,6" Background="#2563eb" Foreground="White"/>
+                        <Button x:Name="BtnManualBackup" Tag="manual_backup" Content="手动备份" Padding="12,6" Margin="0,0,12,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
+                        <Button x:Name="BtnRestoreBackup" Tag="restore_backup" Content="还原备份" Padding="12,6" Background="#2563eb" Foreground="White" Click="Button_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -430,9 +430,9 @@
                     <TextBlock Text="管理.icstk文件的关联设置，双击.icstk文件可直接在Ink Canvas中打开" 
                                TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                        <Button x:Name="BtnUnregisterFileAssociation" Content="取消文件关联" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
-                        <Button x:Name="BtnCheckFileAssociation" Content="检查关联状态" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
-                        <Button x:Name="BtnRegisterFileAssociation" Content="重新注册关联" Padding="15,5" Background="#2563eb" Foreground="White" Click="Button_Click"/>
+                        <Button x:Name="BtnUnregisterFileAssociation" Tag="unregister" Content="取消文件关联" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
+                        <Button x:Name="BtnCheckFileAssociation" Tag="check" Content="检查关联状态" Padding="15,5" Margin="0,0,8,0" Background="#2563eb" Foreground="White" Click="Button_Click"/>
+                        <Button x:Name="BtnRegisterFileAssociation" Tag="register" Content="重新注册关联" Padding="15,5" Background="#2563eb" Foreground="White" Click="Button_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -448,7 +448,10 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用外部协议 (icc://)" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后可通过 icc://fold (收纳) 或 icc://unfold (展开) 等命令控制" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchIsEnableUriScheme" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableUriScheme" MouseLeftButtonDown="ToggleSwitch_Click">
+                        <Border x:Name="ToggleSwitchIsEnableUriScheme" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="IsEnableUriScheme" MouseLeftButtonDown="ToggleSwitch_Click"
+                                Focusable="True" KeyboardNavigation.IsTabStop="True" KeyDown="ToggleSwitch_KeyDown"
+                                AutomationProperties.Name="启用外部协议 (icc://)"
+                                AutomationProperties.HelpText="开启后可通过 icc://fold (收纳) 或 icc://unfold (展开) 等命令控制">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -658,7 +661,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="Dlass设置管理" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
-                    <Button x:Name="BtnDlassSettingsManage" Content="Dlass设置管理" Padding="15,5" HorizontalAlignment="Left" Background="#2563eb" Foreground="White"/>
+                    <Button x:Name="BtnDlassSettingsManage" Tag="dlass_settings" Content="Dlass设置管理" Padding="15,5" HorizontalAlignment="Left" Background="#2563eb" Foreground="White" Click="Button_Click"/>
                 </StackPanel>
             </Border>
         </StackPanel>

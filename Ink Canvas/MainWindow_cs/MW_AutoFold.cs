@@ -115,6 +115,15 @@ namespace Ink_Canvas
                 HideSubPanels("cursor");
                 SidePannelMarginAnimation(-10);
             });
+
+            // 新增：如果开启了彻底隐藏，则隐藏主窗口
+            if (Settings.Automation.ThoroughlyHideWhenFolded)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    this.Visibility = Visibility.Hidden;
+                });
+            }
         }
 
         private async void LeftUnFoldButtonDisplayQuickPanel_MouseUp(object sender, MouseButtonEventArgs e)
@@ -240,6 +249,15 @@ namespace Ink_Canvas
 
         public async Task UnFoldFloatingBar(object sender)
         {
+            // 新增：如果之前彻底隐藏了，先恢复显示
+            if (this.Visibility != Visibility.Visible)
+            {
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    this.Visibility = Visibility.Visible;
+                });
+            }
+
             await Dispatcher.InvokeAsync(() =>
             {
                 LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;

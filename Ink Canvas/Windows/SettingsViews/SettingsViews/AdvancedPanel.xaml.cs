@@ -331,6 +331,18 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
 
         /// <summary>
+        /// ToggleSwitch键盘事件处理
+        /// </summary>
+        private void ToggleSwitch_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Space || e.Key == System.Windows.Input.Key.Enter)
+            {
+                ToggleSwitch_Click(sender, new RoutedEventArgs());
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
         /// Slider值变化事件处理
         /// </summary>
         private void TouchMultiplierSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -466,31 +478,39 @@ namespace Ink_Canvas.Windows.SettingsViews
             var button = sender as Button;
             if (button == null) return;
 
-            string name = button.Name;
+            string action = button.Tag?.ToString();
+            if (string.IsNullOrEmpty(action)) action = button.Name;
+
             // 这些按钮的功能可能需要调用 MainWindow 中的方法
             // 暂时先留空，后续可以根据需要实现
-            switch (name)
+            switch (action)
             {
+                case "manual_backup":
                 case "BtnManualBackup":
                     // TODO: 调用 MainWindow 的备份方法
                     break;
 
+                case "restore_backup":
                 case "BtnRestoreBackup":
                     // TODO: 调用 MainWindow 的还原方法
                     break;
 
+                case "unregister":
                 case "BtnUnregisterFileAssociation":
                     // TODO: 调用 MainWindow 的取消文件关联方法
                     break;
 
+                case "check":
                 case "BtnCheckFileAssociation":
-                    // TODO: 调用 MainWindow 的检查文件关联方法
+                    // TODO: 调用 MainWindow 的检查文件关联状态方法
                     break;
 
+                case "register":
                 case "BtnRegisterFileAssociation":
                     // TODO: 调用 MainWindow 的注册文件关联方法
                     break;
 
+                case "dlass_settings":
                 case "BtnDlassSettingsManage":
                     // TODO: 调用 MainWindow 的 Dlass 设置管理方法
                     break;
