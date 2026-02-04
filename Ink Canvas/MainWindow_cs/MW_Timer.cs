@@ -847,7 +847,7 @@ namespace Ink_Canvas
                     else if (currentMargin.Left > -50 && !isFloatingBarChangingHideMode)
                     {
                         LogHelper.WriteLogToFile("[AutoFold] 补救：逻辑为收纳态但UI仍在显示，重新执行收纳动画", LogHelper.LogType.Warning);
-                        FoldFloatingBar(null); 
+                        FoldFloatingBar_MouseUp(null, null); 
                     }
                     return;
                 }
