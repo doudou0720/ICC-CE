@@ -54,7 +54,11 @@ namespace Ink_Canvas
                 if (sender == Fold_Icon && lastBorderMouseDownObject != Fold_Icon) isShouldRejectAction = true;
             });
 
-            if (isShouldRejectAction) return;
+            if (isShouldRejectAction) 
+            {
+                LogHelper.WriteLogToFile("[Fold] 动作被拒绝：重复触发或对象不匹配", LogHelper.LogType.Trace);
+                return;
+            }
 
             // FloatingBarIcons_MouseUp_New(sender);
             if (sender == null)
@@ -65,7 +69,13 @@ namespace Ink_Canvas
 
             if (isFloatingBarFolded) return;
 
-            if (isFloatingBarChangingHideMode) return;
+            if (isFloatingBarChangingHideMode) 
+            {
+                LogHelper.WriteLogToFile("[Fold] 动作被跳过：当前正在执行切换动画", LogHelper.LogType.Trace);
+                return;
+            }
+
+            LogHelper.WriteLogToFile($"[Fold] 开始执行收纳过程 (UserTriggered: {foldFloatingBarByUser})", LogHelper.LogType.Event);
 
             await Dispatcher.InvokeAsync(() =>
             {
@@ -259,8 +269,14 @@ namespace Ink_Canvas
                 unfoldFloatingBarByUser = true;
             foldFloatingBarByUser = false;
 
-            if (isFloatingBarChangingHideMode) return;
+            if (isFloatingBarChangingHideMode) 
+            {
+                LogHelper.WriteLogToFile("[UnFold] 动作被跳过：当前正在执行切换动画", LogHelper.LogType.Trace);
+                return;
+            }
 
+            LogHelper.WriteLogToFile($"[UnFold] 开始执行展开过程 (UserTriggered: {unfoldFloatingBarByUser})", LogHelper.LogType.Event);
+            
             await Dispatcher.InvokeAsync(() =>
             {
                 isFloatingBarChangingHideMode = true;
