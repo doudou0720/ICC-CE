@@ -141,6 +141,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchIsAutoBackupEnabled"), advanced.IsAutoBackupEnabled);
                 SetOptionButtonState("AutoBackupInterval", advanced.AutoBackupIntervalDays);
 
+                // 外部协议
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchIsEnableUriScheme"), advanced.IsEnableUriScheme);
+
                 // 悬浮窗拦截
                 // 注意：IsEnableFloatingWindowInterception 可能不在 Advanced 类中，需要确认
                 // 这里先假设它在 Advanced 类中，如果不在，需要调整
@@ -318,6 +321,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 case "IsAutoBackupEnabled":
                     // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchIsAutoBackupEnabled", newState);
+                    break;
+
+                case "IsEnableUriScheme":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchIsEnableUriScheme", newState);
                     break;
             }
         }

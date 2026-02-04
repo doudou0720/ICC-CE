@@ -629,6 +629,9 @@ namespace Ink_Canvas
         [JsonProperty("enableUIAccessTopMost")]
         public bool EnableUIAccessTopMost { get; set; } = false;
 
+        [JsonProperty("isEnableUriScheme")]
+        public bool IsEnableUriScheme { get; set; } = false;
+
         [JsonProperty("windowMode")]
         public bool WindowMode { get; set; } = true;
     }

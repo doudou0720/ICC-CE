@@ -857,6 +857,7 @@ namespace Ink_Canvas
                 ToggleSwitchIsSecondConfimeWhenShutdownApp.IsOn = Settings.Advanced.IsSecondConfirmWhenShutdownApp;
                 ToggleSwitchWindowMode.IsOn = Settings.Advanced.WindowMode;
                 ToggleSwitchIsSpecialScreen.IsOn = Settings.Advanced.IsSpecialScreen;
+                ToggleSwitchIsEnableUriScheme.IsOn = Settings.Advanced.IsEnableUriScheme;
                 ToggleSwitchIsQuadIR.IsOn = Settings.Advanced.IsQuadIR;
                 ToggleSwitchEraserBindTouchMultiplier.IsOn = Settings.Advanced.EraserBindTouchMultiplier;
                 ToggleSwitchIsEnableFullScreenHelper.IsOn = Settings.Advanced.IsEnableFullScreenHelper;

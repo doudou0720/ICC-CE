@@ -26,6 +26,7 @@ namespace Ink_Canvas.Helpers
         private const string IpcFilePrefix = "InkCanvasFileAssociation_";
         private const string IpcBoardModePrefix = "InkCanvasBoardMode_";
         private const string IpcShowModePrefix = "InkCanvasShowMode_";
+        private const string IpcUriCommandPrefix = "InkCanvasUriCommand_";
         private const int IpcTimeout = 5000; // 5秒超时
 
         /// <summary>
@@ -362,6 +363,57 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
+        /// 尝试通过IPC将URI命令发送给已运行的实例
+        /// </summary>
+        /// <param name="uri">URI命令</param>
+        /// <returns>是否成功发送</returns>
+        public static bool TrySendUriCommandToExistingInstance(string uri)
+        {
+            try
+            {
+                LogHelper.WriteLogToFile($"尝试通过IPC发送URI命令给已运行实例: {uri}", LogHelper.LogType.Event);
+
+                // 创建IPC文件
+                string tempDir = Path.GetTempPath();
+                string ipcFileName = IpcUriCommandPrefix + Guid.NewGuid().ToString("N") + ".tmp";
+                string ipcFilePath = Path.Combine(tempDir, ipcFileName);
+
+                // 写入URI命令到IPC文件
+                File.WriteAllText(ipcFilePath, uri, Encoding.UTF8);
+
+                // 创建事件通知已运行实例
+                using (EventWaitHandle ipcEvent = new EventWaitHandle(false, EventResetMode.ManualReset, IpcEventName))
+                {
+                    ipcEvent.Set();
+                }
+
+                // 等待一段时间让已运行实例处理命令
+                Thread.Sleep(1000);
+
+                // 清理IPC文件
+                try
+                {
+                    if (File.Exists(ipcFilePath))
+                    {
+                        File.Delete(ipcFilePath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"清理IPC文件失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+
+                LogHelper.WriteLogToFile("IPC URI命令发送完成", LogHelper.LogType.Event);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"通过IPC发送URI命令失败: {ex.Message}", LogHelper.LogType.Error);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 启动IPC监听器，等待其他实例发送文件路径
         /// </summary>
         public static void StartIpcListener()
@@ -564,6 +616,56 @@ namespace Ink_Canvas.Helpers
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"处理展开浮动栏IPC文件失败: {ex.Message}", LogHelper.LogType.Warning);
+
+                        // 尝试删除损坏的IPC文件
+                        try
+                        {
+                            if (File.Exists(ipcFile))
+                            {
+                                File.Delete(ipcFile);
+                            }
+                        }
+                        catch { }
+                    }
+                }
+
+                // 处理URI命令IPC文件
+                string[] uriCommandFiles = Directory.GetFiles(tempDir, IpcUriCommandPrefix + "*.tmp");
+                foreach (string ipcFile in uriCommandFiles)
+                {
+                    try
+                    {
+                        // 读取命令内容
+                        string uri = File.ReadAllText(ipcFile, Encoding.UTF8);
+
+                        if (!string.IsNullOrEmpty(uri))
+                        {
+                            LogHelper.WriteLogToFile($"IPC接收到URI命令: {uri}", LogHelper.LogType.Event);
+
+                            // 在UI线程中处理URI命令
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                try
+                                {
+                                    // 获取主窗口并处理URI命令
+                                    if (Application.Current.MainWindow is MainWindow mainWindow)
+                                    {
+                                        mainWindow.HandleUriCommand(uri);
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogHelper.WriteLogToFile($"IPC处理URI命令失败: {ex.Message}", LogHelper.LogType.Error);
+                                }
+                            }));
+                        }
+
+                        // 删除IPC文件
+                        File.Delete(ipcFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"处理URI命令IPC文件失败: {ex.Message}", LogHelper.LogType.Warning);
 
                         // 尝试删除损坏的IPC文件
                         try

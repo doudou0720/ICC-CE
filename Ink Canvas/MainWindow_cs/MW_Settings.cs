@@ -2853,6 +2853,29 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchIsEnableUriScheme_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.Advanced.IsEnableUriScheme = ToggleSwitchIsEnableUriScheme.IsOn;
+
+            if (Settings.Advanced.IsEnableUriScheme)
+            {
+                if (!UriSchemeHelper.IsUriSchemeRegistered())
+                {
+                    UriSchemeHelper.RegisterUriScheme();
+                }
+            }
+            else
+            {
+                if (UriSchemeHelper.IsUriSchemeRegistered())
+                {
+                    UriSchemeHelper.UnregisterUriScheme();
+                }
+            }
+
+            SaveSettingsToFile();
+        }
+
         private void TouchMultiplierSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
