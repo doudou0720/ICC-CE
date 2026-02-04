@@ -929,6 +929,22 @@ namespace Ink_Canvas
                             LogHelper.WriteLogToFile("通过IPC发送展开浮动栏命令失败", LogHelper.LogType.Warning);
                         }
                     }
+                    // 检查是否有URI参数
+                    else if (e.Args.Any(a => a.StartsWith("icc:", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        string uriArg = e.Args.FirstOrDefault(a => a.StartsWith("icc:", StringComparison.OrdinalIgnoreCase));
+                        LogHelper.WriteLogToFile($"检测到已运行实例且有URI参数: {uriArg}", LogHelper.LogType.Event);
+
+                        // 尝试通过IPC发送URI命令给已运行实例
+                        if (FileAssociationManager.TrySendUriCommandToExistingInstance(uriArg))
+                        {
+                            LogHelper.WriteLogToFile("URI命令已通过IPC发送给已运行实例", LogHelper.LogType.Event);
+                        }
+                        else
+                        {
+                            LogHelper.WriteLogToFile("通过IPC发送URI命令失败", LogHelper.LogType.Warning);
+                        }
+                    }
                     else
                     {
                         LogHelper.WriteLogToFile("检测到已运行实例，但无文件参数", LogHelper.LogType.Event);
@@ -1020,6 +1036,21 @@ namespace Ink_Canvas
             };
 
             mainWindow.Show();
+
+            // 处理启动时的URI参数
+            string startupUriArg = e.Args.FirstOrDefault(a => a.StartsWith("icc:", StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrEmpty(startupUriArg))
+            {
+                LogHelper.WriteLogToFile($"App | 处理启动URI参数: {startupUriArg}", LogHelper.LogType.Event);
+                // 延迟一点执行，确保窗口初始化完成
+                Task.Delay(1000).ContinueWith(_ =>
+                {
+                    mainWindow.Dispatcher.Invoke(() =>
+                    {
+                        mainWindow.HandleUriCommand(startupUriArg);
+                    });
+                });
+            }
 
             // 注册.icstk文件关联
             try
