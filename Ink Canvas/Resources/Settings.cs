@@ -496,6 +496,9 @@ namespace Ink_Canvas
         [JsonProperty("autoSaveStrokesIntervalMinutes")]
         public int AutoSaveStrokesIntervalMinutes { get; set; } = 5;
 
+        [JsonProperty("thoroughlyHideWhenFolded")]
+        public bool ThoroughlyHideWhenFolded { get; set; } = false;
+
         [JsonProperty("floatingWindowInterceptor")]
         public FloatingWindowInterceptorSettings FloatingWindowInterceptor { get; set; } = new FloatingWindowInterceptorSettings();
     }

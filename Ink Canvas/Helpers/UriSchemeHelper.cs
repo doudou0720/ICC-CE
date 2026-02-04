@@ -75,8 +75,38 @@ namespace Ink_Canvas.Helpers
                     {
                         if (shellKey == null) return false;
                         string command = shellKey.GetValue("") as string;
-                        string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                        return !string.IsNullOrEmpty(command) && command.Contains(exePath);
+                        if (string.IsNullOrEmpty(command)) return false;
+
+                        // 提取第一个标记作为可执行文件路径（处理带引号的情况）
+                        string registeredExePath = "";
+                        if (command.StartsWith("\""))
+                        {
+                            int nextQuote = command.IndexOf("\"", 1);
+                            if (nextQuote > 1)
+                            {
+                                registeredExePath = command.Substring(1, nextQuote - 1);
+                            }
+                        }
+                        else
+                        {
+                            int firstSpace = command.IndexOf(" ");
+                            registeredExePath = firstSpace > 0 ? command.Substring(0, firstSpace) : command;
+                        }
+
+                        if (string.IsNullOrEmpty(registeredExePath)) return false;
+
+                        string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
+
+                        try
+                        {
+                            string normalizedRegisteredPath = System.IO.Path.GetFullPath(registeredExePath);
+                            string normalizedCurrentPath = System.IO.Path.GetFullPath(currentExePath);
+                            return string.Equals(normalizedRegisteredPath, normalizedCurrentPath, StringComparison.OrdinalIgnoreCase);
+                        }
+                        catch
+                        {
+                            return string.Equals(registeredExePath, currentExePath, StringComparison.OrdinalIgnoreCase);
+                        }
                     }
                 }
             }

@@ -2417,8 +2417,10 @@
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsSpecialScreen"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchIsSpecialScreen_OnToggled" />
-                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsEnableUriScheme"
+                                        <ui:ToggleSwitch OnContent="开" OffContent="关" Name="ToggleSwitchIsEnableUriScheme"
                                                          Visibility="Collapsed" IsOn="False"
+                                                         AutomationProperties.Name="外部协议调用 (icc://)"
+                                                         ToolTip="通过 icc:// 协议从外部控制软件"
                                                          Toggled="ToggleSwitchIsEnableUriScheme_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <StackPanel Orientation="Vertical">

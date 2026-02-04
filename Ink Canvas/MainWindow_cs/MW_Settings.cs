@@ -2856,24 +2856,55 @@ namespace Ink_Canvas
         private void ToggleSwitchIsEnableUriScheme_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
-            Settings.Advanced.IsEnableUriScheme = ToggleSwitchIsEnableUriScheme.IsOn;
 
-            if (Settings.Advanced.IsEnableUriScheme)
+            bool newState = ToggleSwitchIsEnableUriScheme.IsOn;
+            bool success = false;
+
+            try
             {
-                if (!UriSchemeHelper.IsUriSchemeRegistered())
+                if (newState)
                 {
-                    UriSchemeHelper.RegisterUriScheme();
+                    if (!UriSchemeHelper.IsUriSchemeRegistered())
+                    {
+                        success = UriSchemeHelper.RegisterUriScheme();
+                    }
+                    else
+                    {
+                        success = true;
+                    }
                 }
+                else
+                {
+                    if (UriSchemeHelper.IsUriSchemeRegistered())
+                    {
+                        success = UriSchemeHelper.UnregisterUriScheme();
+                    }
+                    else
+                    {
+                        success = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换URI Scheme状态失败: {ex.Message}", LogHelper.LogType.Error);
+                success = false;
+            }
+
+            if (success)
+            {
+                Settings.Advanced.IsEnableUriScheme = newState;
+                SaveSettingsToFile();
             }
             else
             {
-                if (UriSchemeHelper.IsUriSchemeRegistered())
-                {
-                    UriSchemeHelper.UnregisterUriScheme();
-                }
-            }
+                // 回滚 UI 状态
+                isLoaded = false;
+                ToggleSwitchIsEnableUriScheme.IsOn = !newState;
+                isLoaded = true;
 
-            SaveSettingsToFile();
+                ShowNotification("设置外部协议失败，请检查权限或日志");
+            }
         }
 
         private void TouchMultiplierSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
