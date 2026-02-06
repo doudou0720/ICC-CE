@@ -41,7 +41,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 var automation = MainWindow.Settings.Automation;
 
-                // 设置所有 ToggleSwitch 的状态
+                // 自动收纳相关
                 SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNote", automation.IsAutoFoldInEasiNote);
                 SetToggleSwitchState("ToggleSwitchAutoFoldInEasiCamera", automation.IsAutoFoldInEasiCamera);
                 SetToggleSwitchState("ToggleSwitchAutoFoldInHiteTouchPro", automation.IsAutoFoldInHiteTouchPro);
@@ -62,10 +62,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                 SetToggleSwitchState("ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno", automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno);
                 SetToggleSwitchState("ToggleSwitchAutoFoldInOldZyBoard", automation.IsAutoFoldInOldZyBoard);
                 SetToggleSwitchState("ToggleSwitchKeepFoldAfterSoftwareExit", automation.KeepFoldAfterSoftwareExit);
+
+                // 自动查杀相关
+                SetToggleSwitchState("ToggleSwitchAutoKillPptService", automation.IsAutoKillPptService);
+                SetToggleSwitchState("ToggleSwitchAutoKillEasiNote", automation.IsAutoKillEasiNote);
+                SetToggleSwitchState("ToggleSwitchAutoKillHiteAnnotation", automation.IsAutoKillHiteAnnotation);
+                SetToggleSwitchState("ToggleSwitchAutoEnterAnnotationAfterKillHite", automation.IsAutoEnterAnnotationAfterKillHite);
+                SetToggleSwitchState("ToggleSwitchAutoKillVComYouJiao", automation.IsAutoKillVComYouJiao);
+                SetToggleSwitchState("ToggleSwitchAutoKillSeewoLauncher2DesktopAnnotation", automation.IsAutoKillSeewoLauncher2DesktopAnnotation);
+                SetToggleSwitchState("ToggleSwitchAutoKillInkCanvas", automation.IsAutoKillInkCanvas);
+                SetToggleSwitchState("ToggleSwitchAutoKillICA", automation.IsAutoKillICA);
+                SetToggleSwitchState("ToggleSwitchAutoKillIDT", automation.IsAutoKillIDT);
+
+                _isLoaded = true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"AutomationPanel 加载设置时出错: {ex.Message}");
+                _isLoaded = true;
             }
         }
 
