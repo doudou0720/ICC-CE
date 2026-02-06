@@ -534,7 +534,6 @@ namespace Ink_Canvas
             // 初始化Dlass上传队列（恢复上次的上传队列）
             DlassNoteUploader.InitializeQueue();
 
-            // 根据用户设置上传匿名使用数据（usage_stats.enc / Crashes）
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
 
             // 检查保存路径是否可用，不可用则修正

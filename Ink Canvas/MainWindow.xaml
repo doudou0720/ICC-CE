@@ -3902,7 +3902,7 @@
                                                 <TextBlock Text="匿名使用数据上传：" Foreground="#a1a1aa" FontSize="12"
                                                            VerticalAlignment="Center" />
                                                 <ComboBox x:Name="ComboBoxTelemetryUploadLevel"
-                                                          Width="160"
+                                                          Width="230"
                                                           Margin="8,0,0,0"
                                                           SelectionChanged="ComboBoxTelemetryUploadLevel_SelectionChanged">
                                                     <ComboBoxItem Tag="0">关闭（不上传）</ComboBoxItem>

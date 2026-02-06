@@ -426,6 +426,9 @@ namespace Ink_Canvas.Helpers
             [JsonProperty("lastModified")]
             public DateTime LastModified { get; set; }
 
+            [JsonProperty("updateChannel")]
+            public Ink_Canvas.UpdateChannel UpdateChannel { get; set; } = Ink_Canvas.UpdateChannel.Release;
+
             // 每周统计数据（秒级精度）
             [JsonProperty("weeklyLaunchCount")]
             public int WeeklyLaunchCount { get; set; }
@@ -1000,6 +1003,40 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"DeviceIdentifier | 保存使用统计到文件失败 ({filePath}): {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        public static void UpdateUsageChannel(Ink_Canvas.UpdateChannel channel)
+        {
+            try
+            {
+                lock (fileLock)
+                {
+                    var stats = LoadUsageStats();
+                    if (stats == null)
+                    {
+                        stats = new UsageStats
+                        {
+                            DeviceId = DeviceId,
+                            LastLaunchTime = DateTime.Now,
+                            LaunchCount = 0,
+                            TotalUsageSeconds = 0,
+                            AverageSessionSeconds = 0,
+                            LastUpdateCheck = DateTime.MinValue,
+                            UpdatePriority = UpdatePriority.Medium,
+                            UsageFrequency = UsageFrequency.Medium
+                        };
+                    }
+
+                    stats.UpdateChannel = channel;
+                    SaveUsageStats(stats);
+
+                    LogHelper.WriteLogToFile($"DeviceIdentifier | 更新使用统计中的通道信息: {channel}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"DeviceIdentifier | 更新通道信息到使用统计失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

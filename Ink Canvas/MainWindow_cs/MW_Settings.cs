@@ -3956,6 +3956,7 @@ namespace Ink_Canvas
                 }
 
                 Settings.Startup.UpdateChannel = newChannel;
+                DeviceIdentifier.UpdateUsageChannel(newChannel);
                 LogHelper.WriteLogToFile($"Settings | Update channel changed to {Settings.Startup.UpdateChannel}");
                 SaveSettingsToFile();
 
