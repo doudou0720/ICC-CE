@@ -57,7 +57,6 @@ namespace Ink_Canvas
                     break;
             }
 
-            // 关闭遥测时：若当前处于 Preview/Beta 通道，则提示用户将切回正式通道
             if (newLevel == TelemetryUploadLevel.None &&
                 oldLevel != TelemetryUploadLevel.None &&
                 Settings.Startup.UpdateChannel != UpdateChannel.Release)
@@ -70,7 +69,6 @@ namespace Ink_Canvas
 
                 if (result != MessageBoxResult.Yes)
                 {
-                    // 回滚下拉框选择
                     _isChangingTelemetryInternally = true;
                     try
                     {
@@ -96,7 +94,6 @@ namespace Ink_Canvas
                     return;
                 }
 
-                // 用户确认关闭：切回正式通道
                 _isChangingUpdateChannelInternally = true;
                 try
                 {
@@ -237,7 +234,72 @@ namespace Ink_Canvas
             }
             else
             {
-                // 用户主动取消勾选，关闭隐私同意
+                // 用户主动取消勾选，提示会关闭遥测并切回正式通道
+                var result = MessageBox.Show(
+                    "取消同意隐私说明后，将关闭匿名使用数据上传，并切回正式通道（Release）。\n\n是否确认？",
+                    "确认取消隐私同意",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes)
+                {
+                    // 撤销取消操作，恢复为已勾选
+                    _isChangingTelemetryPrivacyInternally = true;
+                    try
+                    {
+                        CheckBoxTelemetryPrivacyAccepted.IsChecked = true;
+                    }
+                    finally
+                    {
+                        _isChangingTelemetryPrivacyInternally = false;
+                    }
+                    return;
+                }
+
+                // 1. 关闭遥测等级
+                _isChangingTelemetryInternally = true;
+                try
+                {
+                    Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.None;
+                    if (ComboBoxTelemetryUploadLevel != null)
+                    {
+                        ComboBoxTelemetryUploadLevel.SelectedIndex = 0;
+                    }
+                }
+                finally
+                {
+                    _isChangingTelemetryInternally = false;
+                }
+
+                // 2. 若当前不是 Release 通道，则切回 Release
+                if (Settings.Startup.UpdateChannel != UpdateChannel.Release)
+                {
+                    _isChangingUpdateChannelInternally = true;
+                    try
+                    {
+                        Settings.Startup.UpdateChannel = UpdateChannel.Release;
+                        DeviceIdentifier.UpdateUsageChannel(UpdateChannel.Release);
+
+                        if (UpdateChannelSelector != null)
+                        {
+                            foreach (var u in UpdateChannelSelector.Items)
+                            {
+                                var rb = u as RadioButton;
+                                if (rb != null && rb.Tag != null && rb.Tag.ToString() == "Release")
+                                {
+                                    rb.IsChecked = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _isChangingUpdateChannelInternally = false;
+                    }
+                }
+
+                // 3. 最后真正取消隐私同意并保存
                 Settings.Startup.HasAcceptedTelemetryPrivacy = false;
                 SaveSettingsToFile();
             }
