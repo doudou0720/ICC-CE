@@ -78,6 +78,7 @@ jobs:
 
       - name: Create Summary
         if: always()
+        shell: bash
         run: |
           echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
