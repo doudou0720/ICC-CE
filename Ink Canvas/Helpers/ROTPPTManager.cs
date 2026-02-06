@@ -1284,64 +1284,62 @@ namespace Ink_Canvas.Helpers
 
         private void DisconnectFromPPT()
         {
-            if (PPTApplication == null && _pptActivePresentation == null)
+            if (PPTApplication == null && _pptActivePresentation == null && _pptSlideShowWindow == null &&
+                CurrentPresentation == null && CurrentSlides == null && CurrentSlide == null)
             {
                 return;
             }
+
+            _isModuleUnloading = true;
 
             try
             {
                 UnbindEvents();
 
-                // 安全释放所有COM对象，即使它们已失效也不会抛出异常
                 SafeReleaseComObject(_pptSlideShowWindow, "_pptSlideShowWindow");
                 SafeReleaseComObject(_pptActivePresentation, "_pptActivePresentation");
-                    SafeReleaseComObject(CurrentSlide, "CurrentSlide");
-                    SafeReleaseComObject(CurrentSlides, "CurrentSlides");
-                    SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
-                    
-                // 释放PPTApplication
+                SafeReleaseComObject(CurrentSlide, "CurrentSlide");
+                SafeReleaseComObject(CurrentSlides, "CurrentSlides");
+                SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
+
                 if (PPTApplication != null)
                 {
                     try
                     {
-                        // 检查是否为有效的COM对象
                         if (Marshal.IsComObject(PPTApplication))
                         {
-                            // 检查COM对象是否仍然有效
                             try
                             {
-                                var _ = Marshal.GetIUnknownForObject(PPTApplication);
-                                Marshal.Release(_);
-                                
-                                // 对象有效，尝试释放
-                        try
-                        {
-                            Marshal.FinalReleaseComObject(PPTApplication);
-                        }
-                        catch
-                        {
-                            try
-                            {
-                                int refCount = Marshal.ReleaseComObject(PPTApplication);
-                                while (refCount > 0)
+                                var unk = Marshal.GetIUnknownForObject(PPTApplication);
+                                Marshal.Release(unk);
+
+                                try
                                 {
-                                    refCount = Marshal.ReleaseComObject(PPTApplication);
+                                    Marshal.FinalReleaseComObject(PPTApplication);
                                 }
-                            }
-                            catch { }
-                        }
+                                catch
+                                {
+                                    try
+                                    {
+                                        int refCount = Marshal.ReleaseComObject(PPTApplication);
+                                        while (refCount > 0)
+                                        {
+                                            refCount = Marshal.ReleaseComObject(PPTApplication);
+                                        }
+                                    }
+                                    catch
+                                    {
+                                    }
+                                }
                             }
                             catch (InvalidComObjectException)
                             {
-                                // COM对象已失效，直接设置为null
                                 LogHelper.WriteLogToFile("PPTApplication COM对象已失效，跳过释放", LogHelper.LogType.Trace);
                             }
                         }
                     }
                     catch (InvalidComObjectException)
                     {
-                        // COM对象已失效，这是正常的
                         LogHelper.WriteLogToFile("PPTApplication COM对象已失效，跳过释放", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
@@ -1350,7 +1348,6 @@ namespace Ink_Canvas.Helpers
                     }
                 }
 
-                // 清空所有引用
                 PPTApplication = null;
                 _pptActivePresentation = null;
                 _pptSlideShowWindow = null;
@@ -1362,33 +1359,22 @@ namespace Ink_Canvas.Helpers
                 _forcePolling = true;
                 _bindingEvents = false;
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-
                 PPTConnectionChanged?.Invoke(false);
 
-                LogHelper.WriteLogToFile("已断开PPT连接，暂时卸载模块以确保COM完全释放", LogHelper.LogType.Event);
+                LogHelper.WriteLogToFile("已断开PPT连接，并显式释放所有COM对象", LogHelper.LogType.Event);
 
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
                     try
                     {
                         Thread.Sleep(2000);
-                        
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        GC.Collect();
-                        
-                        Thread.Sleep(1000);
-                        
                         _isModuleUnloading = false;
-                        
-                        LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
+
+                        LogHelper.WriteLogToFile("PPT联动模块已允许重新连接", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"重新加载PPT联动模块失败: {ex}", LogHelper.LogType.Error);
+                        LogHelper.WriteLogToFile($"重新启用PPT联动模块失败: {ex}", LogHelper.LogType.Error);
                         _isModuleUnloading = false;
                     }
                 });
