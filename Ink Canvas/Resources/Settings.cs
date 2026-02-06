@@ -146,6 +146,25 @@ namespace Ink_Canvas
         Beta
     }
 
+    /// <summary>
+    /// 遥测上传等级
+    /// </summary>
+    public enum TelemetryUploadLevel
+    {
+        /// <summary>
+        /// 不上传任何匿名使用数据
+        /// </summary>
+        None = 0,
+        /// <summary>
+        /// 仅上传基础数据
+        /// </summary>
+        Basic = 1,
+        /// <summary>
+        /// 上传基础数据 + 可选数据
+        /// </summary>
+        Extended = 2
+    }
+
     public class Startup
     {
         [JsonProperty("isAutoUpdate")]
@@ -168,6 +187,8 @@ namespace Ink_Canvas
         public bool IsFoldAtStartup { get; set; }
         [JsonProperty("crashAction")]
         public int CrashAction { get; set; }
+        [JsonProperty("telemetryUploadLevel")]
+        public TelemetryUploadLevel TelemetryUploadLevel { get; set; } = TelemetryUploadLevel.None;
     }
 
     public class Appearance

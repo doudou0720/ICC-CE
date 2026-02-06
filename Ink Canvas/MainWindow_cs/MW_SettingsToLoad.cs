@@ -144,6 +144,34 @@ namespace Ink_Canvas
 
             try
             {
+                if (ComboBoxTelemetryUploadLevel != null && Settings?.Startup != null)
+                {
+                    int idx = 0;
+                    switch (Settings.Startup.TelemetryUploadLevel)
+                    {
+                        case TelemetryUploadLevel.None:
+                            idx = 0;
+                            break;
+                        case TelemetryUploadLevel.Basic:
+                            idx = 1;
+                            break;
+                        case TelemetryUploadLevel.Extended:
+                            idx = 2;
+                            break;
+                        default:
+                            idx = 0;
+                            break;
+                    }
+
+                    ComboBoxTelemetryUploadLevel.SelectedIndex = idx;
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
                 if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup) +
                                 "\\Ink Canvas Annotation.lnk"))
                 {

@@ -30,6 +30,30 @@ namespace Ink_Canvas
     {
         #region Behavior
 
+        private void ComboBoxTelemetryUploadLevel_SelectionChanged(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            var item = ComboBoxTelemetryUploadLevel?.SelectedItem as ComboBoxItem;
+            if (item == null) return;
+
+            var tag = item.Tag?.ToString() ?? "0";
+            switch (tag)
+            {
+                case "1":
+                    Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
+                    break;
+                case "2":
+                    Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Extended;
+                    break;
+                default:
+                    Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.None;
+                    break;
+            }
+
+            SaveSettingsToFile();
+            ShowNotification("匿名使用数据上传设置已保存");
+        }
+
         private void ToggleSwitchIsAutoUpdate_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
