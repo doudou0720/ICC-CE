@@ -36,8 +36,10 @@ jobs:
           dotnet-version: '10.x'
           cache: true
           cache-dependency-path: '**/packages.lock.json'
-
-
+      
+      - name: Restore Package 
+        run: dotnet restore "Ink Canvas.sln" --locked-mode
+      
       - name: Build the Solution
         run: msbuild /p:platform="AnyCPU" /p:configuration="Debug" /p:GitFlow="$GITFLOW" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal
 
