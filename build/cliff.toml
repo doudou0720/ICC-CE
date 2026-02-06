@@ -13,12 +13,14 @@ body = """
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | striptags | trim | upper_first }}
-    {% for commit in commits %}
-        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
-            {% if commit.breaking %}[**breaking**] {% endif %}\
-            {{ commit.message | upper_first }} ({{commit.id}} by {{commit.author.name}})\
+    {% for commit in commits | unique(attribute="message") %}
+        * {{ commit.message | split(pat="\n") | first | trim }}\
+            {% if commit.remote.username %} by @{{ commit.remote.username }}{%- endif %}\
+            {% if commit.remote.pr_number %} in #{{ commit.remote.pr_number }}{%- endif %}
     {% endfor %}
 {% endfor %}
+
+感谢 {% for contributor in github.contributors %} @{{ contributor.username }} {%- endfor -%} 为本版本做出了贡献
 """
 # Remove leading and trailing whitespaces from the changelog's body.
 trim = true
