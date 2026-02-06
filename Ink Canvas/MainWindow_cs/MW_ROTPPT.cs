@@ -184,8 +184,17 @@ namespace Ink_Canvas
 
         private void StopPPTMonitoring()
         {
-            _pptManager?.StopMonitoring();
-            LogHelper.WriteLogToFile("PPT监控已停止", LogHelper.LogType.Event);
+            try
+            {
+                _pptManager?.StopMonitoring();
+                _pptManager?.Dispose();
+                _pptManager = null;
+                LogHelper.WriteLogToFile("PPT监控已停止并释放当前 PPT 管理器实例", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"停止PPT监控或释放PPT管理器失败: {ex}", LogHelper.LogType.Error);
+            }
         }
 
         #region PowerPoint Application Management

@@ -149,7 +149,30 @@ namespace Ink_Canvas
 
             try
             {
+                StopPPTMonitoring();
+                if (Settings.PowerPointSettings.UseRotPptLink &&
+                    Settings.PowerPointSettings.EnablePowerPointEnhancement)
+                {
+                    Settings.PowerPointSettings.EnablePowerPointEnhancement = false;
+                    if (ToggleSwitchPowerPointEnhancement != null)
+                    {
+                        ToggleSwitchPowerPointEnhancement.IsOn = false;
+                    }
+                    StopPowerPointProcessMonitoring();
+
+                    SaveSettingsToFile();
+                }
+
                 InitializePPTManagers();
+
+                if (Settings.PowerPointSettings.PowerPointSupport)
+                {
+                    StartPPTMonitoring();
+                }
+
+                LogHelper.WriteLogToFile(
+                    $"已切换 PPT 联动架构为 {(Settings.PowerPointSettings.UseRotPptLink ? "ROT" : "COM")}",
+                    LogHelper.LogType.Event);
             }
             catch (Exception ex)
             {
