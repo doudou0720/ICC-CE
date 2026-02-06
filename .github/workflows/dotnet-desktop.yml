@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4.5.0
         with:
           name: InkCanvasForClass.CE.debug
-          path: "Ink Canvas\bin\Debug\net472\*"
+          path: "Ink Canvas/bin/Debug/net472/*"
 
       - name: Create Summary
         if: always()
