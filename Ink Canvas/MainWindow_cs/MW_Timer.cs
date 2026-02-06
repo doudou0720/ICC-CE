@@ -829,24 +829,19 @@ namespace Ink_Canvas
                 var windowProcessName = ForegroundWindowInfo.ProcessName();
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
 
-                // 使用 Dispatcher 线程安全地获取 UI 状态
                 Thickness currentMargin = new Thickness();
                 Dispatcher.Invoke(() => {
                     currentMargin = ViewboxFloatingBar.Margin;
                 });
-
-                LogHelper.WriteLogToFile($"[AutoFold Check] 前台: {windowProcessName} | 标题: {windowTitle} | UI边距: L:{currentMargin.Left} R:{currentMargin.Right} | 预览识别: {shouldAutoFold} | 全屏识别: {hasFullScreen} | 逻辑收纳态: {isFloatingBarFolded}", LogHelper.LogType.Trace);
-
+                
                 if (hasFullScreen)
                 {
                     if (!isFloatingBarFolded) 
                     {
-                        LogHelper.WriteLogToFile($"[AutoFold] 触发收纳：检测到全屏目标软件 {windowProcessName}", LogHelper.LogType.Event);
                         FoldFloatingBar_MouseUp(null, null);
                     }
                     else if (currentMargin.Left > -50 && !isFloatingBarChangingHideMode)
                     {
-                        LogHelper.WriteLogToFile("[AutoFold] 补救：逻辑为收纳态但UI仍在显示，重新执行收纳动画", LogHelper.LogType.Warning);
                         FoldFloatingBar_MouseUp(null, null); 
                     }
                     return;
@@ -868,7 +863,6 @@ namespace Ink_Canvas
                                 {
                                     if (!isFloatingBarFolded) 
                                     {
-                                        LogHelper.WriteLogToFile("[AutoFold] 触发收纳：希沃5批注窗口且开启了忽略设置", LogHelper.LogType.Event);
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
                                 }
@@ -876,28 +870,23 @@ namespace Ink_Canvas
                                 {
                                     if (!unfoldFloatingBarByUser && !isFloatingBarFolded) 
                                     {
-                                        LogHelper.WriteLogToFile("[AutoFold] 触发收纳：希沃5主窗口", LogHelper.LogType.Event);
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
                                     else if (unfoldFloatingBarByUser)
                                     {
-                                        // LogHelper.WriteLogToFile("[AutoFold] 阻止收纳：用户最近手动展开过", LogHelper.LogType.Trace);
                                     }
                                 }
                             }
-                            // ... 省略其他 EasiNote 子版本处理逻辑，原理相同
                         }
                     }
                     // 处理其他目标软件
                     else if (!unfoldFloatingBarByUser && !isFloatingBarFolded)
                     {
-                        LogHelper.WriteLogToFile($"[AutoFold] 触发收纳：检测到目标软件 {windowProcessName}", LogHelper.LogType.Event);
                         FoldFloatingBar_MouseUp(null, null);
                     }
                     return;
                 }
 
-                // 自动恢复逻辑日志
                 if (!WinTabWindowsChecker.IsWindowExisted("幻灯片放映", false))
                 {
                     if (isFloatingBarFolded && !foldFloatingBarByUser)
@@ -909,7 +898,6 @@ namespace Ink_Canvas
                         }
                         else
                         {
-                            LogHelper.WriteLogToFile($"[AutoFold] 触发展开：前台进程为 {windowProcessName}，不再是目标软件", LogHelper.LogType.Event);
                             UnFoldFloatingBar_MouseUp(new object(), null);
                             unfoldFloatingBarByUser = false;
                         }
