@@ -1,5 +1,4 @@
 using System;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 using Ink_Canvas.Windows.SettingsViews;
@@ -97,12 +96,14 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 border.Background = isOn
                     ? new SolidColorBrush(Color.FromRgb(0x35, 0x84, 0xE4))
-                    : new SolidColorBrush(Color.FromRgb(0xE1, 0xE1, 0xE1));
+                    : (ThemeHelper.IsDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(0xE1, 0xE1, 0xE1)));
 
                 var innerBorder = border.Child as Border;
                 if (innerBorder != null)
                 {
                     innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                    // 保持滑块为白色（主题切换时也更稳定）
+                    innerBorder.Background = new SolidColorBrush(Colors.White);
                 }
             }
             catch (Exception ex)
