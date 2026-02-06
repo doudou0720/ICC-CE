@@ -20,6 +20,14 @@ body = """
     {% endfor %}
 {% endfor %}
 
+- 该版本有 {{ statistics.commit_count }} 次提交
+- 在提交中检测到 {{ statistics.links | length }} 个关联议题
+{%- if statistics.links | length > 0 %}
+	{%- for link in statistics.links %}
+        {{ "  " }}- [{{ link.text }}]({{ link.href }}) (referenced {{ link.count }} time(s))
+	{%- endfor %}
+{%- endif %}
+
 感谢 {% for contributor in github.contributors %} @{{ contributor.username }} {%- endfor -%} 为本版本做出了贡献
 
 """
