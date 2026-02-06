@@ -144,26 +144,34 @@ namespace Ink_Canvas
 
             try
             {
-                if (ComboBoxTelemetryUploadLevel != null && Settings?.Startup != null)
+                if (Settings?.Startup != null)
                 {
-                    int idx = 0;
-                    switch (Settings.Startup.TelemetryUploadLevel)
+                    if (ComboBoxTelemetryUploadLevel != null)
                     {
-                        case TelemetryUploadLevel.None:
-                            idx = 0;
-                            break;
-                        case TelemetryUploadLevel.Basic:
-                            idx = 1;
-                            break;
-                        case TelemetryUploadLevel.Extended:
-                            idx = 2;
-                            break;
-                        default:
-                            idx = 0;
-                            break;
+                        int idx = 0;
+                        switch (Settings.Startup.TelemetryUploadLevel)
+                        {
+                            case TelemetryUploadLevel.None:
+                                idx = 0;
+                                break;
+                            case TelemetryUploadLevel.Basic:
+                                idx = 1;
+                                break;
+                            case TelemetryUploadLevel.Extended:
+                                idx = 2;
+                                break;
+                            default:
+                                idx = 0;
+                                break;
+                        }
+
+                        ComboBoxTelemetryUploadLevel.SelectedIndex = idx;
                     }
 
-                    ComboBoxTelemetryUploadLevel.SelectedIndex = idx;
+                    if (CheckBoxTelemetryPrivacyAccepted != null)
+                    {
+                        CheckBoxTelemetryPrivacyAccepted.IsChecked = Settings.Startup.HasAcceptedTelemetryPrivacy;
+                    }
                 }
             }
             catch

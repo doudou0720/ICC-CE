@@ -189,6 +189,8 @@ namespace Ink_Canvas
         public int CrashAction { get; set; }
         [JsonProperty("telemetryUploadLevel")]
         public TelemetryUploadLevel TelemetryUploadLevel { get; set; } = TelemetryUploadLevel.None;
+        [JsonProperty("hasAcceptedTelemetryPrivacy")]
+        public bool HasAcceptedTelemetryPrivacy { get; set; } = false;
     }
 
     public class Appearance

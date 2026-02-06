@@ -3898,7 +3898,20 @@
                                             <Line X1="0" Y1="0" X2="460" Y2="0" Stroke="#3f3f46"
                                                   StrokeThickness="1" Margin="0,6,0,6" />
 
-                                            <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <CheckBox x:Name="CheckBoxTelemetryPrivacyAccepted"
+                                                      Margin="0,0,0,2"
+                                                      Foreground="#a1a1aa"
+                                                      FontSize="12"
+                                                      Checked="CheckBoxTelemetryPrivacyAccepted_Checked"
+                                                      Unchecked="CheckBoxTelemetryPrivacyAccepted_Checked">
+                                                <TextBlock>
+                                                    <Run Text="我已阅读并同意 " />
+                                                    <Run Text="privacy" FontWeight="Bold" />
+                                                    <Run Text=" 中的隐私说明" />
+                                                </TextBlock>
+                                            </CheckBox>
+
+                                            <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,0">
                                                 <TextBlock Text="匿名使用数据上传：" Foreground="#a1a1aa" FontSize="12"
                                                            VerticalAlignment="Center" />
                                                 <ComboBox x:Name="ComboBoxTelemetryUploadLevel"
