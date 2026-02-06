@@ -1456,11 +1456,20 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="PowerPoint 联动增强(目前已不推荐使用)" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="PowerPoint 联动增强" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchPowerPointEnhancement"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchPowerPointEnhancement_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
+                                               Height="28" VerticalAlignment="Center" />
+                                        <TextBlock Foreground="#fafafa" Text="使用 ROT 联动（关闭为默认 COM 联动）" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchUseRotPptLink"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchUseRotPptLink_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/WPS.png" Margin="0,0,6,0" Width="28"

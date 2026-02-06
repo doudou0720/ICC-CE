@@ -469,6 +469,11 @@ namespace Ink_Canvas
 
                 ToggleSwitchShowCanvasAtNewSlideShow.IsOn = Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow;
 
+                if (ToggleSwitchUseRotPptLink != null)
+                {
+                    ToggleSwitchUseRotPptLink.IsOn = Settings.PowerPointSettings.UseRotPptLink;
+                }
+
                 ToggleSwitchEnableTwoFingerGestureInPresentationMode.IsOn =
                     Settings.PowerPointSettings.IsEnableTwoFingerGestureInPresentationMode;
 

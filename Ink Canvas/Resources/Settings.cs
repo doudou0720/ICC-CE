@@ -340,6 +340,8 @@ namespace Ink_Canvas
         public bool EnablePPTTimeCapsule { get; set; } = true;
         [JsonProperty("pptTimeCapsulePosition")]
         public int PPTTimeCapsulePosition { get; set; } = 1; 
+        [JsonProperty("useRotPptLink")]
+        public bool UseRotPptLink { get; set; } = false;
     }
 
     public class Automation

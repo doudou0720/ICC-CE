@@ -140,6 +140,23 @@ namespace Ink_Canvas
             }
         }
 
+        private void ToggleSwitchUseRotPptLink_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.PowerPointSettings.UseRotPptLink = ToggleSwitchUseRotPptLink.IsOn;
+            SaveSettingsToFile();
+
+            try
+            {
+                InitializePPTManagers();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换 PPT 联动架构失败: {ex}", LogHelper.LogType.Error);
+            }
+        }
+
         private void ToggleSwitchShowCanvasAtNewSlideShow_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
