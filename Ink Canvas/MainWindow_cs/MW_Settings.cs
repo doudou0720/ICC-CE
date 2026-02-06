@@ -30,6 +30,8 @@ namespace Ink_Canvas
     {
         #region Behavior
 
+        private bool _isChangingUpdateChannelInternally;
+
         private void ComboBoxTelemetryUploadLevel_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3941,9 +3943,11 @@ namespace Ink_Canvas
         private async void UpdateChannelSelector_Checked(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
+            if (_isChangingUpdateChannelInternally) return;
             var radioButton = sender as RadioButton;
             if (radioButton != null)
             {
+                var oldChannel = Settings.Startup.UpdateChannel;
                 string channel = radioButton.Tag.ToString();
                 UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta 
                     : channel == "Preview" ? UpdateChannel.Preview 
@@ -3953,6 +3957,53 @@ namespace Ink_Canvas
                 if (Settings.Startup.UpdateChannel == newChannel)
                 {
                     return;
+                }
+
+                bool isTestChannel = newChannel == UpdateChannel.Preview || newChannel == UpdateChannel.Beta;
+                if (isTestChannel && Settings.Startup.TelemetryUploadLevel == TelemetryUploadLevel.None)
+                {
+                    var result = MessageBox.Show(
+                        "加入预览 / 测试通道需要开启匿名基础数据上传。\n\n是否立即开启匿名基础数据上传？",
+                        "需要开启匿名使用数据上传",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
+                        if (ComboBoxTelemetryUploadLevel != null)
+                        {
+                            ComboBoxTelemetryUploadLevel.SelectedIndex = 1;
+                        }
+                        LogHelper.WriteLogToFile("Settings | Telemetry enabled (Basic) for preview/beta update channel");
+                    }
+                    else
+                    {
+                        _isChangingUpdateChannelInternally = true;
+                        try
+                        {
+                            Settings.Startup.UpdateChannel = oldChannel;
+                            if (UpdateChannelSelector != null)
+                            {
+                                foreach (var item in UpdateChannelSelector.Items)
+                                {
+                                    if (item is RadioButton rb && rb.Tag != null &&
+                                        string.Equals(rb.Tag.ToString(), oldChannel.ToString(), StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        rb.IsChecked = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            _isChangingUpdateChannelInternally = false;
+                        }
+
+                        LogHelper.WriteLogToFile("Settings | User declined telemetry, reverted update channel");
+                        return;
+                    }
                 }
 
                 Settings.Startup.UpdateChannel = newChannel;
