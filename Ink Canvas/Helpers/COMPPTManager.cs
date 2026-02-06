@@ -13,20 +13,21 @@ namespace Ink_Canvas.Helpers
     /// <summary>
     /// 基于 COM 的 PPT 联动管理器
     /// </summary>
-    public class ComPPTManager : IDisposable
+    public class ComPPTManager : IPPTLinkManager
     {
         #region Events
-        public event Action<SlideShowWindow> SlideShowBegin;
-        public event Action<SlideShowWindow> SlideShowNextSlide;
-        public event Action<Presentation> SlideShowEnd;
-        public event Action<Presentation> PresentationOpen;
-        public event Action<Presentation> PresentationClose;
+        public event Action<object> SlideShowBegin;
+        public event Action<object> SlideShowNextSlide;
+        public event Action<object> SlideShowEnd;
+        public event Action<object> PresentationOpen;
+        public event Action<object> PresentationClose;
         public event Action<bool> PPTConnectionChanged;
         public event Action<bool> SlideShowStateChanged;
         #endregion
 
         #region Properties
         public Microsoft.Office.Interop.PowerPoint.Application PPTApplication { get; private set; }
+        object IPPTLinkManager.PPTApplication => PPTApplication;
         public Presentation CurrentPresentation { get; private set; }
         public Slides CurrentSlides { get; private set; }
         public Slide CurrentSlide { get; private set; }
@@ -961,7 +962,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        public Presentation GetCurrentActivePresentation()
+        public object GetCurrentActivePresentation()
         {
             try
             {

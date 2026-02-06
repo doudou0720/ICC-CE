@@ -105,14 +105,13 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Managers
-        private PPTManager _pptManager;
+        private IPPTLinkManager _pptManager;
         private PPTInkManager _singlePPTInkManager;
         private PPTUIManager _pptUIManager;
 
-        /// <summary>
-        /// 获取PPT管理器实例
-        /// </summary>
-        public PPTManager PPTManager => _pptManager;
+        private bool IsUsingRotPptLink => Settings.PowerPointSettings.UseRotPptLink;
+
+        public IPPTLinkManager PPTManager => _pptManager;
         #endregion
 
         #region PPT Manager Initialization
@@ -120,11 +119,25 @@ namespace Ink_Canvas
         {
             try
             {
+                try
+                {
+                    _pptManager?.StopMonitoring();
+                }
+                catch
+                {
+                }
+
                 // 初始化长按定时器
                 InitializeLongPressTimer();
 
-                // 初始化PPT管理器
-                _pptManager = new PPTManager();
+                if (IsUsingRotPptLink)
+                {
+                    _pptManager = new PPTManager();
+                }
+                else
+                {
+                    _pptManager = new ComPPTManager();
+                }
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
 
                 // 注册事件

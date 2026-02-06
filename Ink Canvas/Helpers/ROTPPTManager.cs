@@ -17,13 +17,14 @@ namespace Ink_Canvas.Helpers
     /// <summary>
     /// PPT联动管理器 - 统一管理PPT和WPS的连接、事件处理和进程管理
     /// </summary>
-    public class PPTManager : IDisposable
+    public class PPTManager : IPPTLinkManager
     {
         #region Events
         public event Action<object> SlideShowBegin;
         public event Action<object> SlideShowNextSlide;
         public event Action<object> SlideShowEnd;
         public event Action<object> PresentationOpen;
+        public event Action<object> PresentationClose;
         public event Action<bool> PPTConnectionChanged;
         public event Action<bool> SlideShowStateChanged;
         #endregion
