@@ -530,6 +530,7 @@ namespace Ink_Canvas
             //加载设置
             LoadSettings(true);
             AutoBackupManager.Initialize(Settings);
+            CheckUpdateChannelAndTelemetryConsistency();
 
             // 初始化Dlass上传队列（恢复上次的上传队列）
             DlassNoteUploader.InitializeQueue();
