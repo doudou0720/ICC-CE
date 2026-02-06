@@ -20,6 +20,7 @@ using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using SplashScreen = Ink_Canvas.Windows.SplashScreen;
 using Timer = System.Threading.Timer;
+using Sentry;
 
 namespace Ink_Canvas
 {
@@ -70,6 +71,26 @@ namespace Ink_Canvas
             }
             catch
             {
+            }
+
+            try
+            {
+                var dsn = GetDlassTelemetryDsn();
+                if (!string.IsNullOrWhiteSpace(dsn))
+                {
+                    SentrySdk.Init(options =>
+                    {
+                        options.Dsn = dsn;
+                        options.Debug = false;
+                        options.SendDefaultPii = true;
+                        options.TracesSampleRate = 1.0;
+                        options.IsGlobalModeEnabled = true;
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化 Dlass 遥测失败: {ex}", LogHelper.LogType.Warning);
             }
 
             // 配置TLS协议以支持Windows 7
@@ -1235,6 +1256,24 @@ namespace Ink_Canvas
                 }
                 catch { }
                 Environment.Exit(0);
+            }
+        }
+
+        internal static string GetDlassTelemetryDsn()
+        {
+            try
+            {
+                var envDsn = Environment.GetEnvironmentVariable("DLASS_SENTRY_DSN");
+                if (!string.IsNullOrWhiteSpace(envDsn))
+                {
+                    return envDsn;
+                }
+
+                return "https://9aa07b78ee2a43edae34cc6c116ce90a@iccce.dlass.tech/2";
+            }
+            catch
+            {
+                return string.Empty;
             }
         }
 
