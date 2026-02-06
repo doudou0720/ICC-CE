@@ -115,6 +115,15 @@ namespace Ink_Canvas.Helpers
                         }
                     }
 
+                    SentrySdk.ConfigureScope(scope =>
+                    {
+                        if (scope.User == null)
+                        {
+                            scope.User = new Sentry.User();
+                        }
+                        scope.User.Id = deviceId;
+                    });
+
                     // 通过 Sentry 上报一个包含遥测信息的事件
                     var evt = new SentryEvent
                     {
