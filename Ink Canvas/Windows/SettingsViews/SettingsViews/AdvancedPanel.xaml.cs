@@ -200,7 +200,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             var button = this.FindDescendantByName($"{group}{buttonName}Border") as Border;
             if (button != null)
             {
-                // 清除同组其他按钮的选中状态
+                bool isDarkTheme = ThemeHelper.IsDarkTheme;
+                var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                var unselectedBrush = new SolidColorBrush(Colors.Transparent);
+
                 var parent = button.Parent as Panel;
                 if (parent != null)
                 {
@@ -211,23 +214,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                             string childTag = childBorder.Tag?.ToString();
                             if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                             {
-                                childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                                childBorder.Background = unselectedBrush;
                                 var textBlock = childBorder.Child as TextBlock;
                                 if (textBlock != null)
                                 {
                                     textBlock.FontWeight = FontWeights.Normal;
+                                    textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                                 }
                             }
                         }
                     }
                 }
 
-                // 设置当前按钮为选中状态
-                button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                button.Background = selectedBrush;
                 var currentTextBlock = button.Child as TextBlock;
                 if (currentTextBlock != null)
                 {
                     currentTextBlock.FontWeight = FontWeights.Bold;
+                    currentTextBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                 }
             }
         }
@@ -450,7 +454,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             string group = parts[0];
             string value = parts[1];
 
-            // 清除同组其他按钮的选中状态
+            bool isDarkTheme = ThemeHelper.IsDarkTheme;
+            var selectedBrush = isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            var unselectedBrush = new SolidColorBrush(Colors.Transparent);
+
             var parent = border.Parent as Panel;
             if (parent != null)
             {
@@ -461,23 +468,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                            childBorder.Background = unselectedBrush;
                             var textBlock = childBorder.Child as TextBlock;
                             if (textBlock != null)
                             {
                                 textBlock.FontWeight = FontWeights.Normal;
+                                textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                             }
                         }
                     }
                 }
             }
 
-            // 设置当前按钮为选中状态
-            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            border.Background = selectedBrush;
             var currentTextBlock = border.Child as TextBlock;
             if (currentTextBlock != null)
             {
                 currentTextBlock.FontWeight = FontWeights.Bold;
+                currentTextBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
             }
 
             if (MainWindow.Settings.Advanced == null) return;

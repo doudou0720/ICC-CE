@@ -440,8 +440,8 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 bool isDarkTheme = ThemeHelper.IsDarkTheme;
-                var selectedBrush = isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                var unselectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(35, 35, 35)) : new SolidColorBrush(Colors.Transparent);
+                var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                var unselectedBrush = new SolidColorBrush(Colors.Transparent);
                 
                 if (UpdateChannelReleaseBorder != null)
                 {
@@ -536,39 +536,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 bool isDarkTheme = ThemeHelper.IsDarkTheme;
 
-                // 更新更新通道按钮
-                if (UpdateChannelReleaseBorder != null)
+                if (MainWindow.Settings?.Startup != null)
                 {
-                    UpdateChannelReleaseBorder.Background = isDarkTheme 
-                        ? ThemeHelper.GetButtonBackgroundBrush() 
-                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                    var textBlock = UpdateChannelReleaseBorder.Child as TextBlock;
-                    if (textBlock != null)
-                    {
-                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
-                    }
-                }
-                if (UpdateChannelPreviewBorder != null)
-                {
-                    UpdateChannelPreviewBorder.Background = isDarkTheme 
-                        ? ThemeHelper.GetButtonBackgroundBrush() 
-                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                    var textBlock = UpdateChannelPreviewBorder.Child as TextBlock;
-                    if (textBlock != null)
-                    {
-                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
-                    }
-                }
-                if (UpdateChannelBetaBorder != null)
-                {
-                    UpdateChannelBetaBorder.Background = isDarkTheme 
-                        ? ThemeHelper.GetButtonBackgroundBrush() 
-                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                    var textBlock = UpdateChannelBetaBorder.Child as TextBlock;
-                    if (textBlock != null)
-                    {
-                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
-                    }
+                    UpdateUpdateChannelButtons(MainWindow.Settings.Startup.UpdateChannel);
                 }
 
                 // 更新按钮
