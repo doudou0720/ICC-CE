@@ -53,6 +53,64 @@ namespace Ink_Canvas
             }
         }
 
+        private static string FindPrivacyFile()
+        {
+            // 先尝试从文件系统读取
+            string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string[] searchPaths = new string[]
+            {
+                App.RootPath,
+                assemblyDir,
+                Path.GetDirectoryName(assemblyDir) // One level up from assembly directory
+            };
+
+            string foundPath = null;
+            foreach (string searchPath in searchPaths)
+            {
+                if (string.IsNullOrEmpty(searchPath)) continue;
+
+                string testPathTxt = Path.Combine(searchPath, "privacy.txt");
+                string testPathNoExt = Path.Combine(searchPath, "privacy");
+
+                if (File.Exists(testPathTxt))
+                {
+                    foundPath = testPathTxt;
+                    break;
+                }
+                else if (File.Exists(testPathNoExt))
+                {
+                    foundPath = testPathNoExt;
+                    break;
+                }
+            }
+
+            if (foundPath != null && File.Exists(foundPath))
+            {
+                return foundPath;
+            }
+
+            // 回退到嵌入资源
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var resourceName = "Ink_Canvas.privacy.txt";
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    if (stream != null)
+                    {
+                        // 返回特殊字符串表示来自嵌入资源
+                        return "embedded";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"从程序集资源查找隐私说明失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+
+            return null;
+        }
+
         private void CheckUpdateChannelAndTelemetryConsistency()
         {
             var currentChannel = Settings.Startup.UpdateChannel;
@@ -77,7 +135,10 @@ namespace Ink_Canvas
                 {
                     try
                     {
-                        if (!PrivacyFileExists())
+                        // 使用 FindPrivacyFile 方法，支持文件系统和嵌入资源
+                        string privacyPath = FindPrivacyFile();
+
+                        if (string.IsNullOrEmpty(privacyPath))
                         {
                             MessageBox.Show(
                                 "未找到隐私说明文件（privacy.txt 或 privacy）。\n\n将切换回正式通道。",
@@ -93,25 +154,44 @@ namespace Ink_Canvas
 
                             if (dialogResult == true && privacyWindow.UserAccepted)
                             {
+                                // 用户同意，保存设置
                                 Settings.Startup.HasAcceptedTelemetryPrivacy = true;
                                 Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
                                 
-                                if (isLoaded)
+                                // 更新UI，即使 isLoaded 为 false（启动时）
+                                // 使用标志避免触发事件处理程序
+                                // 使用 Dispatcher 确保在 UI 线程上更新
+                                Dispatcher.BeginInvoke(new Action(() =>
                                 {
-                                    if (CheckBoxTelemetryPrivacyAccepted != null)
+                                    _isChangingTelemetryPrivacyInternally = true;
+                                    _isChangingTelemetryInternally = true;
+                                    try
                                     {
-                                        CheckBoxTelemetryPrivacyAccepted.IsChecked = true;
+                                        if (CheckBoxTelemetryPrivacyAccepted != null)
+                                        {
+                                            CheckBoxTelemetryPrivacyAccepted.IsChecked = true;
+                                        }
+                                        if (ComboBoxTelemetryUploadLevel != null)
+                                        {
+                                            ComboBoxTelemetryUploadLevel.SelectedIndex = 1;
+                                        }
                                     }
-                                    if (ComboBoxTelemetryUploadLevel != null)
+                                    finally
                                     {
-                                        ComboBoxTelemetryUploadLevel.SelectedIndex = 1;
+                                        _isChangingTelemetryPrivacyInternally = false;
+                                        _isChangingTelemetryInternally = false;
                                     }
-                                }
+                                }), DispatcherPriority.Normal);
 
                                 SaveSettingsToFile();
                                 DeviceIdentifier.UpdateUsageChannel(currentChannel);
                                 LogHelper.WriteLogToFile($"启动检测 | 用户同意隐私协议并启用基础遥测，保持 {currentChannel} 通道");
-                                return;
+                                return; // 用户同意，直接返回，不执行后面的切换通道逻辑
+                            }
+                            else
+                            {
+                                // 用户取消或关闭窗口，切换回正式通道
+                                LogHelper.WriteLogToFile($"启动检测 | 用户取消隐私协议，将切换回 Release 通道");
                             }
                         }
                     }
@@ -125,7 +205,13 @@ namespace Ink_Canvas
                             MessageBoxImage.Error);
                     }
                 }
+                else
+                {
+                    // 用户选择"否"，切换回正式通道
+                    LogHelper.WriteLogToFile($"启动检测 | 用户选择不同意隐私协议，将切换回 Release 通道");
+                }
 
+                // 只有在用户不同意或取消的情况下，才切换回正式通道
                 Settings.Startup.UpdateChannel = UpdateChannel.Release;
                 DeviceIdentifier.UpdateUsageChannel(UpdateChannel.Release);
                 SaveSettingsToFile();
