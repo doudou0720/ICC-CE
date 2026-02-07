@@ -76,6 +76,7 @@ namespace Ink_Canvas
                         else
                         {
                             var privacyWindow = new PrivacyAgreementWindow();
+                            privacyWindow.Owner = this;
                             bool? dialogResult = privacyWindow.ShowDialog();
 
                             if (dialogResult == true && privacyWindow.UserAccepted)
@@ -356,6 +357,7 @@ namespace Ink_Canvas
                 }
 
                 var privacyWindow = new PrivacyAgreementWindow();
+                privacyWindow.Owner = this;
                 bool? dialogResult = privacyWindow.ShowDialog();
 
                 if (dialogResult == true && privacyWindow.UserAccepted)

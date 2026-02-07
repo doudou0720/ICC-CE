@@ -2,26 +2,76 @@ using Ink_Canvas.Helpers;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Ink_Canvas
 {
     public partial class PrivacyAgreementWindow : Window
     {
         public bool UserAccepted { get; private set; } = false;
+        private bool wasSettingsPanelVisible = false;
 
         public PrivacyAgreementWindow()
         {
             InitializeComponent();
+            this.Topmost = true;
             AnimationsHelper.ShowWithSlideFromBottomAndFade(this, 0.25);
             ApplyTheme();
+            HideSettingsPanel();
+        }
+
+        private void HideSettingsPanel()
+        {
+            try
+            {
+                if (Application.Current.MainWindow is MainWindow mainWindow)
+                {
+                    var borderSettings = mainWindow.FindName("BorderSettings") as Border;
+                    var borderSettingsMask = mainWindow.FindName("BorderSettingsMask") as Border;
+
+                    if (borderSettings != null)
+                    {
+                        wasSettingsPanelVisible = borderSettings.Visibility == Visibility.Visible;
+                        if (wasSettingsPanelVisible)
+                        {
+                            borderSettings.Visibility = Visibility.Hidden;
+                        }
+                    }
+
+                    if (borderSettingsMask != null)
+                    {
+                        if (wasSettingsPanelVisible)
+                        {
+                            borderSettingsMask.Visibility = Visibility.Hidden;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"隐藏设置面板失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
+                this.Topmost = true;
+                
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    this.Activate();
+                    this.Focus();
+                    this.Topmost = true;
+                    SetForegroundWindow(new WindowInteropHelper(this).Handle);
+                }), DispatcherPriority.Loaded);
+
                 string privacyText = null;
                 string pathTxt = Path.Combine(App.RootPath, "privacy.txt");
                 string pathNoExt = Path.Combine(App.RootPath, "privacy");
@@ -49,8 +99,36 @@ namespace Ink_Canvas
             }
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (wasSettingsPanelVisible)
+            {
+                try
+                {
+                    if (Application.Current.MainWindow is MainWindow mainWindow)
+                    {
+                        var borderSettings = mainWindow.FindName("BorderSettings") as Border;
+                        var borderSettingsMask = mainWindow.FindName("BorderSettingsMask") as Border;
+
+                        if (borderSettings != null)
+                        {
+                            borderSettings.Visibility = Visibility.Visible;
+                        }
+
+                        if (borderSettingsMask != null)
+                        {
+                            borderSettingsMask.Visibility = Visibility.Visible;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"恢复设置面板失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+            }
         }
 
         private void ButtonCancel_Click(object sender, RoutedEventArgs e)
