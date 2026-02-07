@@ -32,7 +32,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 LoadSettings();
                 SwitchTab("Update");
                 CheckUpdateStatus();
-                LoadUpdateLog(MainWindow.Settings?.Startup?.UpdateChannel ?? UpdateChannel.Release);
                 ApplyTheme();
             }
         }
@@ -283,7 +282,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         else
                         {
-                            LoadUpdateLog(updateChannel);
+                            LoadUpdateLogAsFallback(updateChannel);
                         }
                         
                         if (manualCheck)
@@ -308,7 +307,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             });
         }
 
-        private async void LoadUpdateLog(UpdateChannel channel)
+        private async Task LoadUpdateLogAsFallback(UpdateChannel channel)
         {
             try
             {
@@ -326,6 +325,28 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 System.Diagnostics.Debug.WriteLine($"加载更新日志失败: {ex.Message}");
                 UpdateLogViewer.Markdown = "加载更新日志失败";
+            }
+        }
+
+        private async void LoadUpdateLogWithPriority(UpdateChannel channel)
+        {
+            try
+            {
+                var (remoteVersion, lineGroup, releaseNotes) = await AutoUpdateHelper.CheckForUpdates(channel, false, false);
+                
+                if (!string.IsNullOrEmpty(releaseNotes))
+                {
+                    UpdateLogViewer.Markdown = releaseNotes;
+                }
+                else
+                {
+                    await LoadUpdateLogAsFallback(channel);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载更新日志失败: {ex.Message}");
+                await LoadUpdateLogAsFallback(channel);
             }
         }
 
@@ -447,7 +468,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         new System.Windows.Controls.RadioButton { Tag = "Release" }, e);
                     UpdateUpdateChannelButtons(UpdateChannel.Release);
                     LoadHistoryVersions();
-                    LoadUpdateLog(UpdateChannel.Release);
+                    LoadUpdateLogWithPriority(UpdateChannel.Release);
                     break;
 
                 case "UpdateChannel_Preview":
@@ -459,7 +480,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         new System.Windows.Controls.RadioButton { Tag = "Preview" }, e);
                     UpdateUpdateChannelButtons(UpdateChannel.Preview);
                     LoadHistoryVersions();
-                    LoadUpdateLog(UpdateChannel.Preview);
+                    LoadUpdateLogWithPriority(UpdateChannel.Preview);
                     break;
 
                 case "UpdateChannel_Beta":
@@ -471,7 +492,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         new System.Windows.Controls.RadioButton { Tag = "Beta" }, e);
                     UpdateUpdateChannelButtons(UpdateChannel.Beta);
                     LoadHistoryVersions();
-                    LoadUpdateLog(UpdateChannel.Beta);
+                    LoadUpdateLogWithPriority(UpdateChannel.Beta);
                     break;
             }
         }
