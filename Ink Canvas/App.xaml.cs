@@ -1269,7 +1269,30 @@ namespace Ink_Canvas
                     return envDsn;
                 }
 
-                return "https://9aa07b78ee2a43edae34cc6c116ce90a@iccce.dlass.tech/2";
+                string assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                string currentDir = Path.GetDirectoryName(assemblyLocation);
+                
+                for (int i = 0; i < 5; i++)
+                {
+                    string dsnFilePath = Path.Combine(currentDir, "telemetry_dsn.txt");
+                    if (File.Exists(dsnFilePath))
+                    {
+                        string dsn = File.ReadAllText(dsnFilePath, System.Text.Encoding.UTF8).Trim();
+                        if (!string.IsNullOrWhiteSpace(dsn))
+                        {
+                            return dsn;
+                        }
+                    }
+                    
+                    DirectoryInfo parentDir = Directory.GetParent(currentDir);
+                    if (parentDir == null)
+                    {
+                        break;
+                    }
+                    currentDir = parentDir.FullName;
+                }
+
+                return string.Empty;
             }
             catch
             {
