@@ -362,12 +362,12 @@ namespace Ink_Canvas.Windows.SettingsViews
                     
                     HistoryLogViewer.Markdown = markdown.ToString();
 
-                    foreach (var (version, downloadUrl, releaseNotes) in _historyVersions)
+                    foreach (var versionInfo in _historyVersions)
                     {
                         var item = new ComboBoxItem
                         {
-                            Content = version,
-                            Tag = (version, downloadUrl, releaseNotes)
+                            Content = versionInfo.version,
+                            Tag = versionInfo
                         };
                         RollbackVersionComboBox.Items.Add(item);
                     }
@@ -386,8 +386,12 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         private void RollbackVersionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (RollbackVersionComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is (string version, string downloadUrl, string releaseNotes))
+            if (RollbackVersionComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is ValueTuple<string, string, string> versionInfo)
             {
+                var version = versionInfo.Item1;
+                var downloadUrl = versionInfo.Item2;
+                var releaseNotes = versionInfo.Item3;
+                
                 if (!string.IsNullOrEmpty(releaseNotes))
                 {
                     HistoryLogViewer.Markdown = $"# {version}\n\n{releaseNotes}";

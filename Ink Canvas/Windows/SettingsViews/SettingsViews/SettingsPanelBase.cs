@@ -268,9 +268,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        /// <summary>
-        /// 处理选项变化 - 子类需要实现
-        /// </summary>
         protected abstract void HandleOptionChange(string group, string value);
     }
 }
