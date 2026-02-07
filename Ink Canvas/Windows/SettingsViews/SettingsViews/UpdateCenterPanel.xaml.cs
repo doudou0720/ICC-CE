@@ -1,4 +1,6 @@
 using iNKORE.UI.WPF.Helpers;
+using iNKORE.UI.WPF.Modern;
+using iNKORE.UI.WPF.Modern.Controls;
 using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
@@ -424,21 +426,154 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        private void RollbackButton_Click(object sender, RoutedEventArgs e)
+        private async void RollbackButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var updateChannel = UpdateChannel.Release;
-                if (MainWindow.Settings?.Startup != null)
+                if (RollbackVersionComboBox.SelectedItem is ComboBoxItem selectedItem && selectedItem.Tag is ValueTuple<string, string, string> versionInfo)
                 {
-                    updateChannel = MainWindow.Settings.Startup.UpdateChannel;
+                    var version = versionInfo.Item1;
+                    var downloadUrl = versionInfo.Item2;
+                    var releaseNotes = versionInfo.Item3;
+
+                    var updateChannel = UpdateChannel.Release;
+                    if (MainWindow.Settings?.Startup != null)
+                    {
+                        updateChannel = MainWindow.Settings.Startup.UpdateChannel;
+                    }
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = "暂停自动更新",
+                        PrimaryButtonText = "确定",
+                        SecondaryButtonText = "取消"
+                    };
+
+                    var panel = new iNKORE.UI.WPF.Modern.Controls.SimpleStackPanel
+                    {
+                        Spacing = 16,
+                        Margin = new Thickness(0, 10, 0, 0)
+                    };
+
+                    var textBlock = new TextBlock
+                    {
+                        Text = "请选择在回滚后多久不再接收自动更新：",
+                        FontSize = 14,
+                        Foreground = ThemeHelper.GetTextPrimaryBrush()
+                    };
+
+                    var daysComboBox = new ComboBox
+                    {
+                        Width = 200,
+                        Height = 36,
+                        HorizontalAlignment = HorizontalAlignment.Left
+                    };
+
+                    for (int i = 0; i <= 7; i++)
+                    {
+                        daysComboBox.Items.Add(new ComboBoxItem
+                        {
+                            Content = $"{i} 天",
+                            Tag = i
+                        });
+                    }
+
+                    daysComboBox.SelectedIndex = 0;
+
+                    panel.Children.Add(textBlock);
+                    panel.Children.Add(daysComboBox);
+                    dialog.Content = panel;
+
+                    var dialogResult = await dialog.ShowAsync();
+
+                    if (dialogResult == ContentDialogResult.Primary)
+                    {
+                        int days = 0;
+                        if (daysComboBox.SelectedItem is ComboBoxItem selectedItemCombo &&
+                            selectedItemCombo.Tag != null &&
+                            int.TryParse(selectedItemCombo.Tag.ToString(), out int selectedDays))
+                        {
+                            days = selectedDays;
+                        }
+
+                        if (days == 0)
+                        {
+                            MainWindow.Settings.Startup.AutoUpdatePauseUntilDate = "";
+                        }
+                        else
+                        {
+                            DateTime pauseUntilDate = DateTime.Now.AddDays(days);
+                            MainWindow.Settings.Startup.AutoUpdatePauseUntilDate = pauseUntilDate.ToString("yyyy-MM-dd");
+                            LogHelper.WriteLogToFile($"UpdateCenter | 用户选择暂停自动更新 {days} 天，截止日期: {pauseUntilDate:yyyy-MM-dd}");
+                        }
+
+                        MainWindow.SaveSettingsToFile();
+                        LogHelper.WriteLogToFile($"UpdateCenter | 用户确认回滚，目标版本: {version}");
+                    }
+                    else
+                    {
+                        LogHelper.WriteLogToFile("UpdateCenter | 用户取消了回滚操作");
+                        return;
+                    }
+
+                    {
+                        RollbackButton.IsEnabled = false;
+                        RollbackVersionComboBox.IsEnabled = false;
+
+                        try
+                        {
+                            bool downloadSuccess = await AutoUpdateHelper.StartManualDownloadAndInstall(
+                                version,
+                                updateChannel,
+                                (percent, text) =>
+                                {
+                                    Dispatcher.BeginInvoke(new Action(() =>
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"回滚进度: {percent}% - {text}");
+                                    }));
+                                }
+                            );
+
+                            if (!downloadSuccess)
+                            {
+                                MessageBox.Show(
+                                    "回滚失败，请检查网络连接后重试。",
+                                    "回滚失败",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                                RollbackButton.IsEnabled = true;
+                                RollbackVersionComboBox.IsEnabled = true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(
+                                $"回滚过程中发生错误：{ex.Message}",
+                                "回滚错误",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error);
+                            RollbackButton.IsEnabled = true;
+                            RollbackVersionComboBox.IsEnabled = true;
+                        }
+                    }
                 }
-                var rollbackWindow = new HistoryRollbackWindow(updateChannel);
-                rollbackWindow.ShowDialog();
+                else
+                {
+                    MessageBox.Show(
+                        "请先选择一个要回滚的版本。",
+                        "提示",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"打开历史版本回滚窗口失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"回滚操作失败: {ex.Message}");
+                MessageBox.Show(
+                    $"回滚操作失败：{ex.Message}",
+                    "错误",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 
