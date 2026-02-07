@@ -1,16 +1,16 @@
 using iNKORE.UI.WPF.Helpers;
-using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using MessageBox = System.Windows.MessageBox;
+using static Ink_Canvas.Helpers.AutoUpdateHelper;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
@@ -19,6 +19,8 @@ namespace Ink_Canvas.Windows.SettingsViews
         private bool _isLoaded = false;
         private string _currentTab = "Update";
         private List<(string version, string downloadUrl, string releaseNotes)> _historyVersions = new List<(string, string, string)>();
+        private string _availableVersion = null;
+        private UpdateLineGroup _availableLineGroup = null;
 
         public UpdateCenterPanel()
         {
@@ -216,15 +218,169 @@ namespace Ink_Canvas.Windows.SettingsViews
             CheckUpdateStatus(true);
         }
 
-        private void UpdateNowButton_Click(object sender, RoutedEventArgs e)
+        private async void UpdateNowButton_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(_availableVersion))
+            {
+                MessageBox.Show("没有可用的更新版本。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             try
             {
-                MainWindowSettingsHelper.InvokeMainWindowMethod("ManualUpdateButton_Click", sender, e);
+                UpdateNowButton.IsEnabled = false;
+                UpdateLaterButton.IsEnabled = false;
+                SkipVersionButton.IsEnabled = false;
+
+                var updateChannel = UpdateChannel.Release;
+                if (MainWindow.Settings?.Startup != null)
+                {
+                    updateChannel = MainWindow.Settings.Startup.UpdateChannel;
+                }
+
+                var groups = _availableLineGroup != null ? new List<UpdateLineGroup> { _availableLineGroup } : AutoUpdateHelper.ChannelLineGroups[updateChannel];
+                
+                bool downloadSuccess = await AutoUpdateHelper.DownloadSetupFileWithFallback(_availableVersion, groups, (percent, text) =>
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        System.Diagnostics.Debug.WriteLine($"下载进度: {percent}% - {text}");
+                    }));
+                });
+
+                if (downloadSuccess)
+                {
+                    AutoUpdateHelper.InstallNewVersionApp(_availableVersion, true);
+                    App.IsAppExitByUser = true;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Application.Current.Shutdown();
+                    });
+                }
+                else
+                {
+                    MessageBox.Show("下载失败，请检查网络连接后重试。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                    UpdateNowButton.IsEnabled = true;
+                    UpdateLaterButton.IsEnabled = true;
+                    SkipVersionButton.IsEnabled = true;
+                }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"立即更新失败: {ex.Message}");
+                MessageBox.Show($"更新过程中发生错误：{ex.Message}", "更新错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateNowButton.IsEnabled = true;
+                UpdateLaterButton.IsEnabled = true;
+                SkipVersionButton.IsEnabled = true;
+            }
+        }
+
+        private async void UpdateLaterButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_availableVersion))
+            {
+                MessageBox.Show("没有可用的更新版本。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                UpdateNowButton.IsEnabled = false;
+                UpdateLaterButton.IsEnabled = false;
+                SkipVersionButton.IsEnabled = false;
+
+                var updateChannel = UpdateChannel.Release;
+                if (MainWindow.Settings?.Startup != null)
+                {
+                    updateChannel = MainWindow.Settings.Startup.UpdateChannel;
+                }
+
+                var groups = _availableLineGroup != null ? new List<AutoUpdateHelper.UpdateLineGroup> { _availableLineGroup } : AutoUpdateHelper.ChannelLineGroups[updateChannel];
+                
+                bool downloadSuccess = await AutoUpdateHelper.DownloadSetupFileWithFallback(_availableVersion, groups, (percent, text) =>
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        System.Diagnostics.Debug.WriteLine($"下载进度: {percent}% - {text}");
+                    }));
+                });
+
+                if (downloadSuccess)
+                {
+                    MainWindow.Settings.Startup.IsAutoUpdate = true;
+                    MainWindow.Settings.Startup.IsAutoUpdateWithSilence = true;
+                    MainWindow.SaveSettingsToFile();
+
+                    var mainWindow = Application.Current.MainWindow as MainWindow;
+                    if (mainWindow != null)
+                    {
+                        var field = typeof(MainWindow).GetField("AvailableLatestVersion", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (field != null)
+                        {
+                            field.SetValue(mainWindow, _availableVersion);
+                        }
+
+                        var timerField = typeof(MainWindow).GetField("timerCheckAutoUpdateWithSilence", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (timerField != null)
+                        {
+                            var timer = timerField.GetValue(mainWindow);
+                            if (timer != null)
+                            {
+                                var startMethod = timer.GetType().GetMethod("Start");
+                                if (startMethod != null)
+                                {
+                                    startMethod.Invoke(timer, null);
+                                }
+                            }
+                        }
+                    }
+
+                    MessageBox.Show("更新已下载完成，将在软件关闭时自动安装。", "更新已准备就绪", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("下载失败，请检查网络连接后重试。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+                UpdateNowButton.IsEnabled = true;
+                UpdateLaterButton.IsEnabled = true;
+                SkipVersionButton.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"稍后更新失败: {ex.Message}");
+                MessageBox.Show($"更新过程中发生错误：{ex.Message}", "更新错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                UpdateNowButton.IsEnabled = true;
+                UpdateLaterButton.IsEnabled = true;
+                SkipVersionButton.IsEnabled = true;
+            }
+        }
+
+        private void SkipVersionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_availableVersion))
+            {
+                MessageBox.Show("没有可用的更新版本。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                MainWindow.Settings.Startup.SkippedVersion = _availableVersion;
+                MainWindow.SaveSettingsToFile();
+
+                UpdateAvailablePanel.Visibility = Visibility.Collapsed;
+                UpdateStatusText.Text = "已跳过该版本";
+
+                MessageBox.Show($"已设置跳过版本 {_availableVersion}，在下次发布新版本之前不会再提示更新。",
+                               "已跳过此版本",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"跳过版本失败: {ex.Message}");
+                MessageBox.Show($"跳过版本时发生错误：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -247,6 +403,19 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                     var (remoteVersion, lineGroup, releaseNotes) = await AutoUpdateHelper.CheckForUpdates(updateChannel, manualCheck, false);
                     
+                    if (manualCheck)
+                    {
+                        var mainWindow = Application.Current.MainWindow as MainWindow;
+                        if (mainWindow != null)
+                        {
+                            var field = typeof(MainWindow).GetField("AvailableLatestVersion", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            if (field != null)
+                            {
+                                field.SetValue(mainWindow, null);
+                            }
+                        }
+                    }
+                    
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         StopLoadingAnimation();
@@ -265,17 +434,23 @@ namespace Ink_Canvas.Windows.SettingsViews
                                 UpdateStatusText.Text = "有可用更新";
                                 LatestVersionText.Text = $"版本 {remoteVersion} 现已可用";
                                 UpdateAvailablePanel.Visibility = Visibility.Visible;
+                                _availableVersion = remoteVersion;
+                                _availableLineGroup = lineGroup;
                             }
                             else
                             {
                                 UpdateStatusText.Text = "你使用的是最新版本";
                                 UpdateAvailablePanel.Visibility = Visibility.Collapsed;
+                                _availableVersion = null;
+                                _availableLineGroup = null;
                             }
                         }
                         else
                         {
                             UpdateStatusText.Text = "你使用的是最新版本";
                             UpdateAvailablePanel.Visibility = Visibility.Collapsed;
+                            _availableVersion = null;
+                            _availableLineGroup = null;
                         }
 
                         if (!string.IsNullOrEmpty(releaseNotes))
@@ -806,6 +981,20 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     UpdateNowButton.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212));
                     UpdateNowButton.Foreground = Brushes.White;
+                }
+
+                if (UpdateLaterButton != null)
+                {
+                    UpdateLaterButton.Background = ThemeHelper.GetButtonBackgroundBrush();
+                    UpdateLaterButton.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                    UpdateLaterButton.BorderBrush = ThemeHelper.GetBorderPrimaryBrush();
+                }
+
+                if (SkipVersionButton != null)
+                {
+                    SkipVersionButton.Background = Brushes.Transparent;
+                    SkipVersionButton.Foreground = new SolidColorBrush(Color.FromRgb(0, 120, 212));
+                    SkipVersionButton.BorderThickness = new Thickness(0);
                 }
 
                 if (RollbackButton != null)
