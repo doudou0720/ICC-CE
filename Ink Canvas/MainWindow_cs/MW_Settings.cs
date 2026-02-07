@@ -65,17 +65,20 @@ namespace Ink_Canvas
                             privacyPath = Path.Combine(App.RootPath, "privacy");
                         }
 
-                        if (File.Exists(privacyPath))
+                        if (!File.Exists(privacyPath))
                         {
-                            string privacyText = File.ReadAllText(privacyPath, System.Text.Encoding.UTF8);
-                            var confirmResult = MessageBox.Show(
-                                privacyText + "\n\n是否同意以上隐私说明并启用匿名使用数据上传？",
-                                "隐私说明确认",
-                                MessageBoxButton.YesNo,
-                                MessageBoxImage.Information,
-                                MessageBoxResult.No);
+                            MessageBox.Show(
+                                "未找到隐私说明文件（privacy.txt 或 privacy）。\n\n将切换回正式通道。",
+                                "隐私文件缺失",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                        }
+                        else
+                        {
+                            var privacyWindow = new PrivacyAgreementWindow();
+                            bool? dialogResult = privacyWindow.ShowDialog();
 
-                            if (confirmResult == MessageBoxResult.Yes)
+                            if (dialogResult == true && privacyWindow.UserAccepted)
                             {
                                 Settings.Startup.HasAcceptedTelemetryPrivacy = true;
                                 Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
@@ -97,14 +100,6 @@ namespace Ink_Canvas
                                 LogHelper.WriteLogToFile($"启动检测 | 用户同意隐私协议并启用基础遥测，保持 {currentChannel} 通道");
                                 return;
                             }
-                        }
-                        else
-                        {
-                            MessageBox.Show(
-                                "未找到隐私说明文件（privacy.txt 或 privacy）。\n\n将切换回正式通道。",
-                                "隐私文件缺失",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Warning);
                         }
                     }
                     catch (Exception ex)
@@ -334,28 +329,10 @@ namespace Ink_Canvas
 
             if (isChecked)
             {
-                // 读取 privacy 文本并展示给用户二次确认
-                string privacyText = null;
-                try
-                {
-                    string pathTxt = System.IO.Path.Combine(App.RootPath, "privacy.txt");
-                    string pathNoExt = System.IO.Path.Combine(App.RootPath, "privacy");
+                string pathTxt = System.IO.Path.Combine(App.RootPath, "privacy.txt");
+                string pathNoExt = System.IO.Path.Combine(App.RootPath, "privacy");
 
-                    if (System.IO.File.Exists(pathTxt))
-                    {
-                        privacyText = System.IO.File.ReadAllText(pathTxt);
-                    }
-                    else if (System.IO.File.Exists(pathNoExt))
-                    {
-                        privacyText = System.IO.File.ReadAllText(pathNoExt);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"Settings | 读取隐私说明失败: {ex.Message}", LogHelper.LogType.Warning);
-                }
-
-                if (string.IsNullOrWhiteSpace(privacyText))
+                if (!System.IO.File.Exists(pathTxt) && !System.IO.File.Exists(pathNoExt))
                 {
                     MessageBox.Show(
                         "未找到隐私说明文件（privacy / privacy.txt），暂时无法启用匿名使用数据上传。",
@@ -378,16 +355,16 @@ namespace Ink_Canvas
                     return;
                 }
 
-                var result = MessageBox.Show(
-                    privacyText + "\n\n是否同意以上隐私说明并启用匿名使用数据上传？",
-                    "隐私说明确认",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Information,
-                    MessageBoxResult.No);
+                var privacyWindow = new PrivacyAgreementWindow();
+                bool? dialogResult = privacyWindow.ShowDialog();
 
-                if (result != MessageBoxResult.Yes)
+                if (dialogResult == true && privacyWindow.UserAccepted)
                 {
-                    // 用户不同意，取消勾选
+                    Settings.Startup.HasAcceptedTelemetryPrivacy = true;
+                    SaveSettingsToFile();
+                }
+                else
+                {
                     _isChangingTelemetryPrivacyInternally = true;
                     try
                     {
@@ -400,12 +377,7 @@ namespace Ink_Canvas
 
                     Settings.Startup.HasAcceptedTelemetryPrivacy = false;
                     SaveSettingsToFile();
-                    return;
                 }
-
-                // 同意隐私说明
-                Settings.Startup.HasAcceptedTelemetryPrivacy = true;
-                SaveSettingsToFile();
             }
             else
             {
