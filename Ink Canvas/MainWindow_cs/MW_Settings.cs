@@ -3238,7 +3238,7 @@ namespace Ink_Canvas
                 isLoaded = false;
                 SetSettingsToRecommendation();
                 SaveSettingsToFile();
-                LoadSettings();
+                LoadSettings(isStartup: false, skipAutoUpdateCheck: true);
                 isLoaded = true;
 
                 ToggleSwitchRunAtStartup.IsOn = false;
@@ -3259,7 +3259,7 @@ namespace Ink_Canvas
                 Settings.Automation.AutoDelSavedFilesDaysThreshold = 15;
                 SetAutoSavedStrokesLocationToDiskDButton_Click(null, null);
                 SaveSettingsToFile();
-                LoadSettings();
+                LoadSettings(isStartup: false, skipAutoUpdateCheck: true);
                 isLoaded = true;
             }
             catch { }

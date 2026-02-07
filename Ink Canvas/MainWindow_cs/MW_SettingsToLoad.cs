@@ -21,7 +21,7 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
-        private void LoadSettings(bool isStartup = false)
+        private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             try
@@ -229,7 +229,7 @@ namespace Ink_Canvas
                 ToggleSwitchIsAutoUpdate.IsOn = Settings.Startup.IsAutoUpdate;
 
                 // 只有在启用了自动更新功能时才检查更新
-                if (Settings.Startup.IsAutoUpdate)
+                if (Settings.Startup.IsAutoUpdate && !skipAutoUpdateCheck)
                 {
                     if (isStartup)
                     {
