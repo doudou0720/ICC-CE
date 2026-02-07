@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Sentry;
+using Sentry.Protocol;
 
 namespace Ink_Canvas.Helpers
 {
@@ -103,11 +104,41 @@ namespace Ink_Canvas.Helpers
                         }
                     }
 
+                    var telemetryData = new
+                    {
+                        telemetry_level = level.ToString(),
+                        device_id = deviceId,
+                        update_channel = settings.Startup.UpdateChannel.ToString(),
+                        app_version = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                        os_version = Environment.OSVersion.VersionString,
+                        crash_files = crashFiles
+                    };
+
                     // 通过 Sentry 上报一个包含遥测信息的事件
+                    string userName = Environment.UserName;
+                    SentrySdk.ConfigureScope(scope =>
+                    {
+                        scope.User = new SentryUser
+                        {
+                            Id = deviceId,
+                            Username = userName,
+                            Email = $"{userName}", 
+                            IpAddress = "{{auto}}"
+                        };
+                    });
+
                     var evt = new SentryEvent
                     {
                         Message = "ICC CE Telemetry",
                         Level = SentryLevel.Info
+                    };
+
+                    evt.User = new SentryUser
+                    {
+                        Id = deviceId,
+                        Username = userName,
+                        Email = $"{userName}",  
+                        IpAddress = "{{auto}}"
                     };
 
                     evt.SetTag("telemetry_level", level.ToString());
@@ -115,6 +146,7 @@ namespace Ink_Canvas.Helpers
                     evt.SetTag("update_channel", settings.Startup.UpdateChannel.ToString());
                     evt.SetTag("app_version", Assembly.GetExecutingAssembly().GetName().Version.ToString());
                     evt.SetTag("os_version", Environment.OSVersion.VersionString);
+                   evt.SetExtra("telemetry_data", telemetryData);
 
                     if (crashFiles != null)
                     {
