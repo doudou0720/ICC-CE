@@ -1296,6 +1296,18 @@ namespace Ink_Canvas.Helpers
             {
                 UnbindEvents();
 
+                if (_pptActivePresentation != null)
+                {
+                    try
+                    {
+                        PresentationClose?.Invoke(_pptActivePresentation);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"触发PresentationClose事件失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+                }
+
                 SafeReleaseComObject(_pptSlideShowWindow, "_pptSlideShowWindow");
                 SafeReleaseComObject(_pptActivePresentation, "_pptActivePresentation");
                 SafeReleaseComObject(CurrentSlide, "CurrentSlide");
