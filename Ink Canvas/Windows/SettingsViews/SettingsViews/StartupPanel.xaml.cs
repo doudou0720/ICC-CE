@@ -222,11 +222,52 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
-            toggleSwitch.Background = isOn ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            toggleSwitch.Background = isOn
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228))
+                : (ThemeHelper.IsDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225)));
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
                 innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                innerBorder.Background = new SolidColorBrush(Colors.White);
+            }
+        }
+
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings == null) return false;
+
+            try
+            {
+                switch (tag)
+                {
+                    case "IsAutoUpdate":
+                        return MainWindow.Settings.Startup?.IsAutoUpdate ?? false;
+                    case "IsAutoUpdateWithSilence":
+                        return MainWindow.Settings.Startup?.IsAutoUpdateWithSilence ?? false;
+                    case "RunAtStartup":
+                        // 检查启动项是否存在
+                        return System.IO.File.Exists(
+                            Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "\\Ink Canvas Annotation.lnk");
+                    case "FoldAtStartup":
+                        return MainWindow.Settings.Startup?.IsFoldAtStartup ?? false;
+                    case "NoFocusMode":
+                        return MainWindow.Settings.Advanced?.IsNoFocusMode ?? false;
+                    case "WindowMode":
+                        return MainWindow.Settings.Advanced?.WindowMode ?? false;
+                    case "AlwaysOnTop":
+                        return MainWindow.Settings.Advanced?.IsAlwaysOnTop ?? false;
+                    case "UIAccessTopMost":
+                        return MainWindow.Settings.Advanced?.EnableUIAccessTopMost ?? false;
+                    case "Mode":
+                        return MainWindow.Settings.ModeSettings?.IsPPTOnlyMode ?? false;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -240,12 +281,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             switch (tag)
             {
@@ -399,8 +440,8 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 bool isDarkTheme = ThemeHelper.IsDarkTheme;
-                var selectedBrush = isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                var unselectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(35, 35, 35)) : new SolidColorBrush(Colors.Transparent);
+                var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                var unselectedBrush = new SolidColorBrush(Colors.Transparent);
                 
                 if (UpdateChannelReleaseBorder != null)
                 {
@@ -495,39 +536,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 bool isDarkTheme = ThemeHelper.IsDarkTheme;
 
-                // 更新更新通道按钮
-                if (UpdateChannelReleaseBorder != null)
+                if (MainWindow.Settings?.Startup != null)
                 {
-                    UpdateChannelReleaseBorder.Background = isDarkTheme 
-                        ? ThemeHelper.GetButtonBackgroundBrush() 
-                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                    var textBlock = UpdateChannelReleaseBorder.Child as TextBlock;
-                    if (textBlock != null)
-                    {
-                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
-                    }
-                }
-                if (UpdateChannelPreviewBorder != null)
-                {
-                    UpdateChannelPreviewBorder.Background = isDarkTheme 
-                        ? ThemeHelper.GetButtonBackgroundBrush() 
-                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                    var textBlock = UpdateChannelPreviewBorder.Child as TextBlock;
-                    if (textBlock != null)
-                    {
-                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
-                    }
-                }
-                if (UpdateChannelBetaBorder != null)
-                {
-                    UpdateChannelBetaBorder.Background = isDarkTheme 
-                        ? ThemeHelper.GetButtonBackgroundBrush() 
-                        : new SolidColorBrush(Color.FromRgb(225, 225, 225));
-                    var textBlock = UpdateChannelBetaBorder.Child as TextBlock;
-                    if (textBlock != null)
-                    {
-                        textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
-                    }
+                    UpdateUpdateChannelButtons(MainWindow.Settings.Startup.UpdateChannel);
                 }
 
                 // 更新按钮
@@ -549,6 +560,10 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 // 使用 ThemeHelper 递归更新其他元素
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {

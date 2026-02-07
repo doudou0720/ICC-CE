@@ -446,6 +446,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "ToggleSwitchIsEnableResolutionChangeDetection", "AdvancedPanel" },
                 { "ToggleSwitchIsAutoBackupBeforeUpdate", "AdvancedPanel" },
                 { "ToggleSwitchIsAutoBackupEnabled", "AdvancedPanel" },
+                { "ToggleSwitchIsEnableUriScheme", "AdvancedPanel" },
                 
                 // LuckyRandomPanel
                 { "ToggleSwitchDisplayRandWindowNamesInputBtn", "LuckyRandomPanel" },

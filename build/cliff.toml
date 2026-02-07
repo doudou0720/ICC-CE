@@ -13,12 +13,23 @@ body = """
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
     ### {{ group | striptags | trim | upper_first }}
-    {% for commit in commits %}
-        - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
-            {% if commit.breaking %}[**breaking**] {% endif %}\
-            {{ commit.message | upper_first }} ({{commit.id}} by {{commit.author.name}})\
+    {% for commit in commits | unique(attribute="message") %}
+        * {{ commit.message | split(pat="\n") | first | trim }}\
+            {% if commit.remote.username %} by @{{ commit.remote.username }}{%- endif %}\
+            {% if commit.remote.pr_number %} in #{{ commit.remote.pr_number }}{%- endif %}
     {% endfor %}
 {% endfor %}
+
+- 该版本有 {{ statistics.commit_count }} 次提交
+- 在提交中检测到 {{ statistics.links | length }} 个关联议题
+{%- if statistics.links | length > 0 %}
+	{%- for link in statistics.links %}
+        {{ "  " }}- [{{ link.text }}]({{ link.href }}) (referenced {{ link.count }} time(s))
+	{%- endfor %}
+{%- endif %}
+
+感谢 {% for contributor in github.contributors %} @{{ contributor.username }} {%- endfor -%} 为本版本做出了贡献
+
 """
 # Remove leading and trailing whitespaces from the changelog's body.
 trim = true

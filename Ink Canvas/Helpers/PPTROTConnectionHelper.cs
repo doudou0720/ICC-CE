@@ -69,7 +69,13 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        Microsoft.Office.Interop.PowerPoint.Application pptApp = bestApp as Microsoft.Office.Interop.PowerPoint.Application;
+                        Type appType = typeof(Microsoft.Office.Interop.PowerPoint.Application);
+                        Microsoft.Office.Interop.PowerPoint.Application pptApp = null;
+                        
+                        if (appType.IsInstanceOfType(bestApp))
+                        {
+                            pptApp = (Microsoft.Office.Interop.PowerPoint.Application)bestApp;
+                        }
                         
                         if (pptApp != null)
                         {
@@ -112,8 +118,8 @@ namespace Ink_Canvas.Helpers
         }
         #endregion
 
-        #region Private Methods
-        private static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
+        #region Public Methods
+        public static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
             IEnumMoniker enumMoniker = null;
@@ -262,6 +268,8 @@ namespace Ink_Canvas.Helpers
 
                             if (currentPriority > 0)
                             {
+                                LogHelper.WriteLogToFile($"ROT扫描: {displayName}: priority={currentPriority}", LogHelper.LogType.Trace);
+                                
                                 if (currentPriority > highestPriority)
                                 {
                                     highestPriority = currentPriority;
@@ -291,6 +299,15 @@ namespace Ink_Canvas.Helpers
                 }
 
                 bestPriority = highestPriority;
+                
+                if (bestApp != null)
+                {
+                    LogHelper.WriteLogToFile($"ROT扫描完成: 找到最佳应用, priority={bestPriority}", LogHelper.LogType.Trace);
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile($"ROT扫描完成: 未找到可用应用", LogHelper.LogType.Trace);
+                }
             }
             catch (Exception ex)
             {
@@ -317,7 +334,7 @@ namespace Ink_Canvas.Helpers
             return bestApp;
         }
 
-        private static bool AreComObjectsEqual(object o1, object o2)
+        public static bool AreComObjectsEqual(object o1, object o2)
         {
             if (o1 == null || o2 == null) return false;
             if (ReferenceEquals(o1, o2)) return true;
@@ -352,7 +369,7 @@ namespace Ink_Canvas.Helpers
             return false;
         }
 
-        private static bool IsSlideShowWindowActive(object sswObj)
+        public static bool IsSlideShowWindowActive(object sswObj)
         {
             try
             {
@@ -377,21 +394,21 @@ namespace Ink_Canvas.Helpers
 
                 if (fgPid == sswPid) return true;
 
-                try
-                {
-                    using (Process fgProc = Process.GetProcessById((int)fgPid))
-                    using (Process appProc = Process.GetProcessById((int)sswPid))
+                    try
                     {
-                        string fgName = fgProc.ProcessName.ToLower();
-                        string appName = appProc.ProcessName.ToLower();
-
-                        if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
+                        using (Process fgProc = Process.GetProcessById((int)fgPid))
+                        using (Process appProc = Process.GetProcessById((int)sswPid))
                         {
-                            return true;
+                            string fgName = fgProc.ProcessName.ToLower();
+                            string appName = appProc.ProcessName.ToLower();
+
+                            if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
+                            {
+                                return true;
+                            }
                         }
                     }
-                }
-                catch { }
+                    catch { }
 
                 return false;
             }
@@ -419,7 +436,7 @@ namespace Ink_Canvas.Helpers
             return hwnd;
         }
 
-        private static void SafeReleaseComObject(object comObj)
+        public static void SafeReleaseComObject(object comObj)
         {
             if (comObj == null) return;
 
@@ -441,6 +458,35 @@ namespace Ink_Canvas.Helpers
                 Marshal.ReleaseComObject(moniker);
             if (bindCtx != null)
                 Marshal.ReleaseComObject(bindCtx);
+        }
+
+        public static int GetSlideShowWindowsCount(Microsoft.Office.Interop.PowerPoint.Application pptApp)
+        {
+            try
+            {
+                if (pptApp == null) return 0;
+                return pptApp.SlideShowWindows.Count;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public static bool IsValidSlideShowWindow(object pptSlideShowWindow)
+        {
+            if (pptSlideShowWindow == null) return false;
+
+            try
+            {
+                dynamic ssw = pptSlideShowWindow;
+                var _ = ssw.Active;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
         #endregion
     }

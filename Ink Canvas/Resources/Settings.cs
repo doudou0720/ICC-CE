@@ -106,6 +106,8 @@ namespace Ink_Canvas
         public bool EnableInkFade { get; set; } = false;
         [JsonProperty("inkFadeTime")]
         public int InkFadeTime { get; set; } = 3000; // 墨迹渐隐时间（毫秒）
+        [JsonProperty("hideInkFadeControlInPenMenu")]
+        public bool HideInkFadeControlInPenMenu { get; set; } = false; // 是否在笔工具菜单中隐藏墨迹渐隐控制开关
 
     }
 
@@ -144,6 +146,25 @@ namespace Ink_Canvas
         Beta
     }
 
+    /// <summary>
+    /// 遥测上传等级
+    /// </summary>
+    public enum TelemetryUploadLevel
+    {
+        /// <summary>
+        /// 不上传任何匿名使用数据
+        /// </summary>
+        None = 0,
+        /// <summary>
+        /// 仅上传基础数据
+        /// </summary>
+        Basic = 1,
+        /// <summary>
+        /// 上传基础数据 + 可选数据
+        /// </summary>
+        Extended = 2
+    }
+
     public class Startup
     {
         [JsonProperty("isAutoUpdate")]
@@ -166,6 +187,10 @@ namespace Ink_Canvas
         public bool IsFoldAtStartup { get; set; }
         [JsonProperty("crashAction")]
         public int CrashAction { get; set; }
+        [JsonProperty("telemetryUploadLevel")]
+        public TelemetryUploadLevel TelemetryUploadLevel { get; set; } = TelemetryUploadLevel.None;
+        [JsonProperty("hasAcceptedTelemetryPrivacy")]
+        public bool HasAcceptedTelemetryPrivacy { get; set; } = false;
     }
 
     public class Appearance
@@ -338,6 +363,8 @@ namespace Ink_Canvas
         public bool EnablePPTTimeCapsule { get; set; } = true;
         [JsonProperty("pptTimeCapsulePosition")]
         public int PPTTimeCapsulePosition { get; set; } = 1; 
+        [JsonProperty("useRotPptLink")]
+        public bool UseRotPptLink { get; set; } = false;
     }
 
     public class Automation
@@ -494,6 +521,9 @@ namespace Ink_Canvas
         [JsonProperty("autoSaveStrokesIntervalMinutes")]
         public int AutoSaveStrokesIntervalMinutes { get; set; } = 5;
 
+        [JsonProperty("thoroughlyHideWhenFolded")]
+        public bool ThoroughlyHideWhenFolded { get; set; } = false;
+
         [JsonProperty("floatingWindowInterceptor")]
         public FloatingWindowInterceptorSettings FloatingWindowInterceptor { get; set; } = new FloatingWindowInterceptorSettings();
     }
@@ -626,6 +656,9 @@ namespace Ink_Canvas
 
         [JsonProperty("enableUIAccessTopMost")]
         public bool EnableUIAccessTopMost { get; set; } = false;
+
+        [JsonProperty("isEnableUriScheme")]
+        public bool IsEnableUriScheme { get; set; } = false;
 
         [JsonProperty("windowMode")]
         public bool WindowMode { get; set; } = true;

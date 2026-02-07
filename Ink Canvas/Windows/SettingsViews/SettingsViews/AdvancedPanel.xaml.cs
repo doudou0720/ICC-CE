@@ -141,6 +141,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchIsAutoBackupEnabled"), advanced.IsAutoBackupEnabled);
                 SetOptionButtonState("AutoBackupInterval", advanced.AutoBackupIntervalDays);
 
+                // 外部协议
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchIsEnableUriScheme"), advanced.IsEnableUriScheme);
+
                 // 悬浮窗拦截
                 // 注意：IsEnableFloatingWindowInterception 可能不在 Advanced 类中，需要确认
                 // 这里先假设它在 Advanced 类中，如果不在，需要调整
@@ -169,11 +172,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (toggleSwitch == null) return;
             toggleSwitch.Background = isOn 
                 ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
-                : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                : (ThemeHelper.IsDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225)));
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
             {
                 innerBorder.HorizontalAlignment = isOn ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+                innerBorder.Background = new SolidColorBrush(Colors.White);
             }
         }
 
@@ -196,7 +200,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             var button = this.FindDescendantByName($"{group}{buttonName}Border") as Border;
             if (button != null)
             {
-                // 清除同组其他按钮的选中状态
+                bool isDarkTheme = ThemeHelper.IsDarkTheme;
+                var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                var unselectedBrush = new SolidColorBrush(Colors.Transparent);
+
                 var parent = button.Parent as Panel;
                 if (parent != null)
                 {
@@ -207,24 +214,74 @@ namespace Ink_Canvas.Windows.SettingsViews
                             string childTag = childBorder.Tag?.ToString();
                             if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                             {
-                                childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                                childBorder.Background = unselectedBrush;
                                 var textBlock = childBorder.Child as TextBlock;
                                 if (textBlock != null)
                                 {
                                     textBlock.FontWeight = FontWeights.Normal;
+                                    textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                                 }
                             }
                         }
                     }
                 }
 
-                // 设置当前按钮为选中状态
-                button.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                button.Background = selectedBrush;
                 var currentTextBlock = button.Child as TextBlock;
                 if (currentTextBlock != null)
                 {
                     currentTextBlock.FontWeight = FontWeights.Bold;
+                    currentTextBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                 }
+            }
+        }
+
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings?.Advanced == null) return false;
+
+            try
+            {
+                var advanced = MainWindow.Settings.Advanced;
+                switch (tag)
+                {
+                    case "IsSpecialScreen":
+                        return advanced.IsSpecialScreen;
+                    case "EraserBindTouchMultiplier":
+                        return advanced.EraserBindTouchMultiplier;
+                    case "IsQuadIR":
+                        return advanced.IsQuadIR;
+                    case "IsLogEnabled":
+                        return advanced.IsLogEnabled;
+                    case "IsSaveLogByDate":
+                        return advanced.IsSaveLogByDate;
+                    case "IsSecondConfirmWhenShutdownApp":
+                        return advanced.IsSecondConfirmWhenShutdownApp;
+                    case "IsEnableFullScreenHelper":
+                        return advanced.IsEnableFullScreenHelper;
+                    case "IsEnableAvoidFullScreenHelper":
+                        return advanced.IsEnableAvoidFullScreenHelper;
+                    case "IsEnableEdgeGestureUtil":
+                        return advanced.IsEnableEdgeGestureUtil;
+                    case "IsEnableForceFullScreen":
+                        return advanced.IsEnableForceFullScreen;
+                    case "IsEnableDPIChangeDetection":
+                        return advanced.IsEnableDPIChangeDetection;
+                    case "IsEnableResolutionChangeDetection":
+                        return advanced.IsEnableResolutionChangeDetection;
+                    case "IsAutoBackupBeforeUpdate":
+                        return advanced.IsAutoBackupBeforeUpdate;
+                    case "IsAutoBackupEnabled":
+                        return advanced.IsAutoBackupEnabled;
+                    case "IsEnableUriScheme":
+                        return advanced.IsEnableUriScheme;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -238,12 +295,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             var advanced = MainWindow.Settings.Advanced;
             if (advanced == null) return;
@@ -319,6 +376,23 @@ namespace Ink_Canvas.Windows.SettingsViews
                     // 调用 MainWindow 中的方法
                     MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchIsAutoBackupEnabled", newState);
                     break;
+
+                case "IsEnableUriScheme":
+                    // 调用 MainWindow 中的方法
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchIsEnableUriScheme", newState);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// ToggleSwitch键盘事件处理
+        /// </summary>
+        private void ToggleSwitch_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Space || e.Key == System.Windows.Input.Key.Enter)
+            {
+                ToggleSwitch_Click(sender, new RoutedEventArgs());
+                e.Handled = true;
             }
         }
 
@@ -380,7 +454,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             string group = parts[0];
             string value = parts[1];
 
-            // 清除同组其他按钮的选中状态
+            bool isDarkTheme = ThemeHelper.IsDarkTheme;
+            var selectedBrush = isDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            var unselectedBrush = new SolidColorBrush(Colors.Transparent);
+
             var parent = border.Parent as Panel;
             if (parent != null)
             {
@@ -391,23 +468,24 @@ namespace Ink_Canvas.Windows.SettingsViews
                         string childTag = childBorder.Tag?.ToString();
                         if (!string.IsNullOrEmpty(childTag) && childTag.StartsWith(group + "_"))
                         {
-                            childBorder.Background = new SolidColorBrush(Colors.Transparent);
+                            childBorder.Background = unselectedBrush;
                             var textBlock = childBorder.Child as TextBlock;
                             if (textBlock != null)
                             {
                                 textBlock.FontWeight = FontWeights.Normal;
+                                textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                             }
                         }
                     }
                 }
             }
 
-            // 设置当前按钮为选中状态
-            border.Background = new SolidColorBrush(Color.FromRgb(225, 225, 225));
+            border.Background = selectedBrush;
             var currentTextBlock = border.Child as TextBlock;
             if (currentTextBlock != null)
             {
                 currentTextBlock.FontWeight = FontWeights.Bold;
+                currentTextBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
             }
 
             if (MainWindow.Settings.Advanced == null) return;
@@ -458,31 +536,39 @@ namespace Ink_Canvas.Windows.SettingsViews
             var button = sender as Button;
             if (button == null) return;
 
-            string name = button.Name;
+            string action = button.Tag?.ToString();
+            if (string.IsNullOrEmpty(action)) action = button.Name;
+
             // 这些按钮的功能可能需要调用 MainWindow 中的方法
             // 暂时先留空，后续可以根据需要实现
-            switch (name)
+            switch (action)
             {
+                case "manual_backup":
                 case "BtnManualBackup":
                     // TODO: 调用 MainWindow 的备份方法
                     break;
 
+                case "restore_backup":
                 case "BtnRestoreBackup":
                     // TODO: 调用 MainWindow 的还原方法
                     break;
 
+                case "unregister":
                 case "BtnUnregisterFileAssociation":
                     // TODO: 调用 MainWindow 的取消文件关联方法
                     break;
 
+                case "check":
                 case "BtnCheckFileAssociation":
-                    // TODO: 调用 MainWindow 的检查文件关联方法
+                    // TODO: 调用 MainWindow 的检查文件关联状态方法
                     break;
 
+                case "register":
                 case "BtnRegisterFileAssociation":
                     // TODO: 调用 MainWindow 的注册文件关联方法
                     break;
 
+                case "dlass_settings":
                 case "BtnDlassSettingsManage":
                     // TODO: 调用 MainWindow 的 Dlass 设置管理方法
                     break;
@@ -497,6 +583,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {
