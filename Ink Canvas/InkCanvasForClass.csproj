@@ -298,10 +298,7 @@
     <Resource Include="Resources\Icons-Fluent\ic_fluent_delete_24_regular.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\privacy.txt">
-      <Link>privacy.txt</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="privacy.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_cursorWITHdelete_24_regular.png" />

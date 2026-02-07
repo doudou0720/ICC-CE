@@ -2,6 +2,7 @@ using Ink_Canvas.Helpers;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -73,21 +74,30 @@ namespace Ink_Canvas
                 }), DispatcherPriority.Loaded);
 
                 string privacyText = null;
-                string pathTxt = Path.Combine(App.RootPath, "privacy.txt");
-                string pathNoExt = Path.Combine(App.RootPath, "privacy");
-
-                if (File.Exists(pathTxt))
+                
+                try
                 {
-                    privacyText = File.ReadAllText(pathTxt, System.Text.Encoding.UTF8);
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceName = "Ink_Canvas.privacy.txt";
+                    using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream != null)
+                        {
+                            using (StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8))
+                            {
+                                privacyText = reader.ReadToEnd();
+                            }
+                        }
+                    }
                 }
-                else if (File.Exists(pathNoExt))
+                catch (Exception ex)
                 {
-                    privacyText = File.ReadAllText(pathNoExt, System.Text.Encoding.UTF8);
+                    LogHelper.WriteLogToFile($"读取隐私说明失败: {ex.Message}", LogHelper.LogType.Warning);
                 }
 
                 if (string.IsNullOrWhiteSpace(privacyText))
                 {
-                    privacyText = "未找到隐私说明文件（privacy.txt 或 privacy）。";
+                    privacyText = "未找到隐私说明文件（privacy.txt）。";
                 }
 
                 TextBoxPrivacyContent.Text = privacyText;

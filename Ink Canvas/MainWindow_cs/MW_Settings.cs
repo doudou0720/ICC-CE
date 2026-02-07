@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,6 +36,23 @@ namespace Ink_Canvas
         private bool _isChangingTelemetryInternally;
         private bool _isChangingTelemetryPrivacyInternally;
 
+        private static bool PrivacyFileExists()
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var resourceName = "Ink_Canvas.privacy.txt";
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    return stream != null;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void CheckUpdateChannelAndTelemetryConsistency()
         {
             var currentChannel = Settings.Startup.UpdateChannel;
@@ -59,13 +77,7 @@ namespace Ink_Canvas
                 {
                     try
                     {
-                        string privacyPath = Path.Combine(App.RootPath, "privacy.txt");
-                        if (!File.Exists(privacyPath))
-                        {
-                            privacyPath = Path.Combine(App.RootPath, "privacy");
-                        }
-
-                        if (!File.Exists(privacyPath))
+                        if (!PrivacyFileExists())
                         {
                             MessageBox.Show(
                                 "未找到隐私说明文件（privacy.txt 或 privacy）。\n\n将切换回正式通道。",
@@ -330,10 +342,7 @@ namespace Ink_Canvas
 
             if (isChecked)
             {
-                string pathTxt = System.IO.Path.Combine(App.RootPath, "privacy.txt");
-                string pathNoExt = System.IO.Path.Combine(App.RootPath, "privacy");
-
-                if (!System.IO.File.Exists(pathTxt) && !System.IO.File.Exists(pathNoExt))
+                if (!PrivacyFileExists())
                 {
                     MessageBox.Show(
                         "未找到隐私说明文件（privacy / privacy.txt），暂时无法启用匿名使用数据上传。",
