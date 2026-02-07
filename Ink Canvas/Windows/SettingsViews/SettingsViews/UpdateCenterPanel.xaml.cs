@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using MessageBox = System.Windows.MessageBox;
+using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using static Ink_Canvas.Helpers.AutoUpdateHelper;
 
 namespace Ink_Canvas.Windows.SettingsViews
@@ -970,6 +970,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 ThemeHelper.ApplyThemeToControl(this);
                 
+                if (UpdateAvailableBorder != null)
+                {
+                    UpdateAvailableBorder.Background = ThemeHelper.GetBackgroundPrimaryBrush();
+                    UpdateAvailableBorder.BorderBrush = ThemeHelper.GetBorderPrimaryBrush();
+                }
+                
                 if (CheckUpdateButton != null)
                 {
                     CheckUpdateButton.Background = ThemeHelper.GetButtonBackgroundBrush();
@@ -979,7 +985,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 
                 if (UpdateNowButton != null)
                 {
-                    UpdateNowButton.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212));
+                    UpdateNowButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
                     UpdateNowButton.Foreground = Brushes.White;
                 }
 
@@ -993,7 +999,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (SkipVersionButton != null)
                 {
                     SkipVersionButton.Background = Brushes.Transparent;
-                    SkipVersionButton.Foreground = new SolidColorBrush(Color.FromRgb(0, 120, 212));
+                    SkipVersionButton.Foreground = ThemeHelper.GetTextSecondaryBrush();
                     SkipVersionButton.BorderThickness = new Thickness(0);
                 }
 
