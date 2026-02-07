@@ -220,6 +220,37 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings?.RandSettings == null) return false;
+
+            try
+            {
+                var randSettings = MainWindow.Settings.RandSettings;
+                switch (tag)
+                {
+                    case "DisplayRandWindowNamesInputBtn":
+                        return randSettings.DisplayRandWindowNamesInputBtn;
+                    case "ShowRandomAndSingleDraw":
+                        return randSettings.ShowRandomAndSingleDraw;
+                    case "EnableQuickDraw":
+                        return randSettings.EnableQuickDraw;
+                    case "ExternalCaller":
+                        return randSettings.DirectCallCiRand;
+                    case "UseNewRollCallUI":
+                        return randSettings.UseNewRollCallUI;
+                    case "EnableMLAvoidance":
+                        return randSettings.EnableMLAvoidance;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// ToggleSwitch点击事件处理
         /// </summary>
@@ -230,12 +261,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             var randSettings = MainWindow.Settings.RandSettings;
             if (randSettings == null) return;
@@ -435,6 +466,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {

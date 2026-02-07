@@ -311,6 +311,59 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings?.PowerPointSettings == null) return false;
+
+            try
+            {
+                var pptSettings = MainWindow.Settings.PowerPointSettings;
+                switch (tag)
+                {
+                    case "SupportPowerPoint":
+                        return pptSettings.PowerPointSupport;
+                    case "PowerPointEnhancement":
+                        return pptSettings.EnablePowerPointEnhancement;
+                    case "SupportWPS":
+                        return pptSettings.IsSupportWPS;
+                    case "EnableWppProcessKill":
+                        return pptSettings.EnableWppProcessKill;
+                    case "ShowPPTButton":
+                        return pptSettings.ShowPPTButton;
+                    case "EnablePPTButtonPageClickable":
+                        return pptSettings.EnablePPTButtonPageClickable;
+                    case "EnablePPTButtonLongPressPageTurn":
+                        return pptSettings.EnablePPTButtonLongPressPageTurn;
+                    case "SkipAnimationsWhenGoNext":
+                        return pptSettings.SkipAnimationsWhenGoNext;
+                    case "ShowCanvasAtNewSlideShow":
+                        return pptSettings.IsShowCanvasAtNewSlideShow;
+                    case "EnableTwoFingerGestureInPresentationMode":
+                        return pptSettings.IsEnableTwoFingerGestureInPresentationMode;
+                    case "EnableFingerGestureSlideShowControl":
+                        return pptSettings.IsEnableFingerGestureSlideShowControl;
+                    case "ShowGestureButtonInSlideShow":
+                        return pptSettings.ShowGestureButtonInSlideShow;
+                    case "EnablePPTTimeCapsule":
+                        return pptSettings.EnablePPTTimeCapsule;
+                    case "NotifyPreviousPage":
+                        return pptSettings.IsNotifyPreviousPage;
+                    case "AlwaysGoToFirstPageOnReenter":
+                        return pptSettings.IsAlwaysGoToFirstPageOnReenter;
+                    case "NotifyHiddenPage":
+                        return pptSettings.IsNotifyHiddenPage;
+                    case "NotifyAutoPlayPresentation":
+                        return pptSettings.IsNotifyAutoPlayPresentation;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// ToggleSwitch点击事件处理
         /// </summary>
@@ -321,12 +374,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             var pptSettings = MainWindow.Settings.PowerPointSettings;
             if (pptSettings == null) return;
@@ -639,6 +692,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {

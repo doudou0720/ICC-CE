@@ -232,6 +232,55 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings?.Advanced == null) return false;
+
+            try
+            {
+                var advanced = MainWindow.Settings.Advanced;
+                switch (tag)
+                {
+                    case "IsSpecialScreen":
+                        return advanced.IsSpecialScreen;
+                    case "EraserBindTouchMultiplier":
+                        return advanced.EraserBindTouchMultiplier;
+                    case "IsQuadIR":
+                        return advanced.IsQuadIR;
+                    case "IsLogEnabled":
+                        return advanced.IsLogEnabled;
+                    case "IsSaveLogByDate":
+                        return advanced.IsSaveLogByDate;
+                    case "IsSecondConfirmWhenShutdownApp":
+                        return advanced.IsSecondConfirmWhenShutdownApp;
+                    case "IsEnableFullScreenHelper":
+                        return advanced.IsEnableFullScreenHelper;
+                    case "IsEnableAvoidFullScreenHelper":
+                        return advanced.IsEnableAvoidFullScreenHelper;
+                    case "IsEnableEdgeGestureUtil":
+                        return advanced.IsEnableEdgeGestureUtil;
+                    case "IsEnableForceFullScreen":
+                        return advanced.IsEnableForceFullScreen;
+                    case "IsEnableDPIChangeDetection":
+                        return advanced.IsEnableDPIChangeDetection;
+                    case "IsEnableResolutionChangeDetection":
+                        return advanced.IsEnableResolutionChangeDetection;
+                    case "IsAutoBackupBeforeUpdate":
+                        return advanced.IsAutoBackupBeforeUpdate;
+                    case "IsAutoBackupEnabled":
+                        return advanced.IsAutoBackupEnabled;
+                    case "IsEnableUriScheme":
+                        return advanced.IsEnableUriScheme;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// ToggleSwitch点击事件处理
         /// </summary>
@@ -242,12 +291,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             var advanced = MainWindow.Settings.Advanced;
             if (advanced == null) return;
@@ -526,6 +575,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {

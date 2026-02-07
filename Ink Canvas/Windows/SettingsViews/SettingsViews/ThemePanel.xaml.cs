@@ -239,6 +239,44 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings == null) return false;
+
+            try
+            {
+                switch (tag)
+                {
+                    case "EnableSplashScreen":
+                        return MainWindow.Settings.Appearance?.EnableSplashScreen ?? false;
+                    case "EnableDisPlayNibModeToggle":
+                        return MainWindow.Settings.Appearance?.IsEnableDisPlayNibModeToggler ?? false;
+                    case "EnableTrayIcon":
+                        return MainWindow.Settings.Appearance?.EnableTrayIcon ?? false;
+                    case "EnableViewboxBlackBoardScaleTransform":
+                        return MainWindow.Settings.Appearance?.EnableViewboxBlackBoardScaleTransform ?? false;
+                    case "EnableTimeDisplayInWhiteboardMode":
+                        return MainWindow.Settings.Appearance?.EnableTimeDisplayInWhiteboardMode ?? false;
+                    case "EnableChickenSoupInWhiteboardMode":
+                        return MainWindow.Settings.Appearance?.EnableChickenSoupInWhiteboardMode ?? false;
+                    case "EnableQuickPanel":
+                        return MainWindow.Settings.Appearance?.IsShowQuickPanel ?? false;
+                    case "AutoEnterAnnotationModeWhenExitFoldMode":
+                        return MainWindow.Settings.Automation?.IsAutoEnterAnnotationModeWhenExitFoldMode ?? false;
+                    case "AutoFoldAfterPPTSlideShow":
+                        return MainWindow.Settings.Automation?.IsAutoFoldAfterPPTSlideShow ?? false;
+                    case "AutoFoldWhenExitWhiteboard":
+                        return MainWindow.Settings.Automation?.IsAutoFoldWhenExitWhiteboard ?? false;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// ToggleSwitch点击事件处理
         /// </summary>
@@ -249,12 +287,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             var appearance = MainWindow.Settings.Appearance;
             if (appearance == null) return;
@@ -798,6 +836,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {

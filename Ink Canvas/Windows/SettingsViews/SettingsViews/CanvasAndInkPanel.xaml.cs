@@ -230,6 +230,67 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings?.Canvas == null) return false;
+
+            try
+            {
+                var canvas = MainWindow.Settings.Canvas;
+                switch (tag)
+                {
+                    case "ShowCursor":
+                        return canvas.IsShowCursor;
+                    case "EnablePressureTouchMode":
+                        return canvas.EnablePressureTouchMode;
+                    case "DisablePressure":
+                        return canvas.DisablePressure;
+                    case "HideStrokeWhenSelecting":
+                        return canvas.HideStrokeWhenSelecting;
+                    case "ClearCanvasAndClearTimeMachine":
+                        return canvas.ClearCanvasAndClearTimeMachine;
+                    case "ClearCanvasAlsoClearImages":
+                        return canvas.ClearCanvasAlsoClearImages;
+                    case "CompressPicturesUploaded":
+                        return canvas.IsCompressPicturesUploaded;
+                    case "ShowCircleCenter":
+                        return canvas.ShowCircleCenter;
+                    case "FitToCurve":
+                        return canvas.FitToCurve && !canvas.UseAdvancedBezierSmoothing;
+                    case "AdvancedBezierSmoothing":
+                        return canvas.UseAdvancedBezierSmoothing;
+                    case "UseAsyncInkSmoothing":
+                        return canvas.UseAsyncInkSmoothing;
+                    case "UseHardwareAcceleration":
+                        return canvas.UseHardwareAcceleration;
+                    case "AutoStraightenLine":
+                        return canvas.AutoStraightenLine;
+                    case "HighPrecisionLineStraighten":
+                        return canvas.HighPrecisionLineStraighten;
+                    case "LineEndpointSnapping":
+                        return canvas.LineEndpointSnapping;
+                    case "EnableInkFade":
+                        return canvas.EnableInkFade;
+                    case "HideInkFadeControlInPenMenu":
+                        return canvas.HideInkFadeControlInPenMenu;
+                    case "EnableAutoSaveStrokes":
+                        return MainWindow.Settings.Automation?.IsEnableAutoSaveStrokes ?? false;
+                    case "SaveFullPageStrokes":
+                        return MainWindow.Settings.Automation?.IsSaveFullPageStrokes ?? false;
+                    case "SaveStrokesAsXML":
+                        return MainWindow.Settings.Automation?.IsSaveStrokesAsXML ?? false;
+                    case "AutoSaveStrokesInPowerPoint":
+                        return MainWindow.Settings.PowerPointSettings?.IsAutoSaveStrokesInPowerPoint ?? false;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// ToggleSwitch点击事件处理
         /// </summary>
@@ -240,12 +301,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             var canvas = MainWindow.Settings.Canvas;
             if (canvas == null) return;
@@ -602,6 +663,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {

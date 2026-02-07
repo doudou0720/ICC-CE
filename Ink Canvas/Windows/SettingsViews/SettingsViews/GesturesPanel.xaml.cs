@@ -172,6 +172,30 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
+        private bool GetCurrentSettingValue(string tag)
+        {
+            if (MainWindow.Settings == null) return false;
+
+            try
+            {
+                switch (tag)
+                {
+                    case "AutoSwitchTwoFingerGesture":
+                        return MainWindow.Settings.Gesture?.AutoSwitchTwoFingerGesture ?? false;
+                    case "EnableTwoFingerRotationOnSelection":
+                        return MainWindow.Settings.Gesture?.IsEnableTwoFingerRotationOnSelection ?? false;
+                    case "EnablePalmEraser":
+                        return MainWindow.Settings.Canvas?.EnablePalmEraser ?? false;
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// ToggleSwitch点击事件处理
         /// </summary>
@@ -182,12 +206,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             var border = sender as Border;
             if (border == null) return;
 
-            bool isOn = border.Background.ToString() == "#FF3584E4";
-            bool newState = !isOn;
-            SetToggleSwitchState(border, newState);
-
             string tag = border.Tag?.ToString();
             if (string.IsNullOrEmpty(tag)) return;
+
+            bool currentState = GetCurrentSettingValue(tag);
+            bool newState = !currentState;
+            SetToggleSwitchState(border, newState);
 
             switch (tag)
             {
@@ -316,6 +340,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
+                if (_isLoaded)
+                {
+                    LoadSettings();
+                }
             }
             catch (Exception ex)
             {
