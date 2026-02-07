@@ -299,6 +299,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="privacy.txt" />
+    <EmbeddedResource Include="telemetry_dsn.txt">
+      <Link>telemetry_dsn.txt</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons-Fluent\ic_fluent_cursorWITHdelete_24_regular.png" />

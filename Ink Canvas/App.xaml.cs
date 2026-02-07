@@ -1269,6 +1269,30 @@ namespace Ink_Canvas
                     return envDsn;
                 }
 
+                try
+                {
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceName = "Ink_Canvas.telemetry_dsn.txt";
+                    using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                    {
+                        if (stream != null)
+                        {
+                            using (StreamReader reader = new StreamReader(stream, System.Text.Encoding.UTF8))
+                            {
+                                string dsn = reader.ReadToEnd().Trim();
+                                if (!string.IsNullOrWhiteSpace(dsn))
+                                {
+                                    return dsn;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"从程序集资源读取遥测 DSN 失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+
                 string assemblyLocation = Assembly.GetExecutingAssembly().Location;
                 string currentDir = Path.GetDirectoryName(assemblyLocation);
                 
