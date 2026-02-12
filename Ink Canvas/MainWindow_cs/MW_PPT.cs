@@ -105,14 +105,14 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Managers
-        private PPTManager _pptManager;
+        private IPPTLinkManager _pptManager;
         private PPTInkManager _singlePPTInkManager;
         private PPTUIManager _pptUIManager;
 
         /// <summary>
         /// 获取PPT管理器实例
         /// </summary>
-        public PPTManager PPTManager => _pptManager;
+        public IPPTLinkManager PPTManager => _pptManager;
         #endregion
 
         #region PPT Manager Initialization
@@ -123,17 +123,34 @@ namespace Ink_Canvas
                 // 初始化长按定时器
                 InitializeLongPressTimer();
 
-                // 初始化PPT管理器
-                _pptManager = new PPTManager();
+                // 如有旧实例，先停止监控，避免重复
+                try
+                {
+                    _pptManager?.StopMonitoring();
+                }
+                catch
+                {
+                }
+
+                // 根据设置选择 COM / ROT 架构
+                if (Settings.PowerPointSettings.UseRotPptLink)
+                {
+                    _pptManager = new ROTPPTManager();
+                }
+                else
+                {
+                    _pptManager = new ComPPTLinkManager();
+                }
+
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
 
                 // 注册事件
                 _pptManager.PPTConnectionChanged += OnPPTConnectionChanged;
-                _pptManager.SlideShowBegin += OnPPTSlideShowBegin;
-                _pptManager.SlideShowNextSlide += OnPPTSlideShowNextSlide;
-                _pptManager.SlideShowEnd += OnPPTSlideShowEnd;
-                _pptManager.PresentationOpen += OnPPTPresentationOpen;
-                _pptManager.PresentationClose += OnPPTPresentationClose;
+                _pptManager.SlideShowBegin += o => OnPPTSlideShowBegin(o as SlideShowWindow);
+                _pptManager.SlideShowNextSlide += o => OnPPTSlideShowNextSlide(o as SlideShowWindow);
+                _pptManager.SlideShowEnd += o => OnPPTSlideShowEnd(o as Presentation);
+                _pptManager.PresentationOpen += o => OnPPTPresentationOpen(o as Presentation);
+                _pptManager.PresentationClose += o => OnPPTPresentationClose(o as Presentation);
                 _pptManager.SlideShowStateChanged += OnPPTSlideShowStateChanged;
 
                 _singlePPTInkManager = new PPTInkManager();
@@ -645,7 +662,7 @@ namespace Ink_Canvas
                     }
                     else
                     {
-                        activePresentation = _pptManager?.GetCurrentActivePresentation();
+                        activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
                         currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         totalSlides = _pptManager?.SlidesCount ?? 0;
                         // 初始化当前播放页码跟踪
@@ -988,9 +1005,10 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            if (_pptManager?.PPTApplication != null)
+                            var pptApp = _pptManager?.PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                            if (pptApp != null)
                             {
-                                if (_pptManager.PPTApplication.SlideShowWindows.Count >= 1)
+                                if (pptApp.SlideShowWindows.Count >= 1)
                                 {
                                     pres.SlideShowWindow.View.GotoSlide(page);
                                 }
