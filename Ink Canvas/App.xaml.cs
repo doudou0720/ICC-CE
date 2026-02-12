@@ -749,6 +749,21 @@ namespace Ink_Canvas
                 await Task.Delay(500);
             }
             DeviceIdentifier.RecordAppLaunch();
+            try
+            {
+                var systemVersion = DeviceIdentifier.GetSystemVersion();
+                if (!string.IsNullOrWhiteSpace(systemVersion))
+                {
+                    SentrySdk.ConfigureScope(scope =>
+                    {
+                        scope.SetTag("system_version", systemVersion);
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"App | 初始化系统版本遥测标签失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
             LogHelper.WriteLogToFile($"App | 设备ID: {DeviceIdentifier.GetDeviceId()}");
             LogHelper.WriteLogToFile($"App | 使用频率: {DeviceIdentifier.GetUsageFrequency()}");
             LogHelper.WriteLogToFile($"App | 更新优先级: {DeviceIdentifier.GetUpdatePriority()}");

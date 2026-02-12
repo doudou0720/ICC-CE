@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using OSVersionExtension;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -405,7 +406,9 @@ namespace Ink_Canvas.Helpers
             [JsonProperty("launchCount")]
             public int LaunchCount { get; set; }
 
-            // 新的秒级精度字段
+            [JsonProperty("systemVersion")]
+            public string SystemVersion { get; set; }
+
             [JsonProperty("totalUsageSeconds")]
             public long TotalUsageSeconds { get; set; }
 
@@ -567,6 +570,20 @@ namespace Ink_Canvas.Helpers
                     // 记录每周启动次数
                     stats.RecordWeeklyLaunch();
 
+                    try
+                    {
+                        var osName = OSVersion.GetOperatingSystem();
+                        var osVersion = OSVersion.GetOSVersion();
+                        string versionText = osVersion != null
+                            ? $"{osName} {osVersion.Version}"
+                            : osName.ToString();
+                        stats.SystemVersion = versionText;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"DeviceIdentifier | 刷新系统版本信息失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+
                     // 计算使用频率
                     CalculateUsageFrequency(stats);
 
@@ -602,8 +619,6 @@ namespace Ink_Canvas.Helpers
                         // 更新秒级精度数据
                         stats.TotalUsageSeconds += sessionSeconds;
 
-
-
                         // 记录每周使用时长（秒级精度）
                         stats.RecordWeeklyUsage(sessionSeconds);
 
@@ -611,7 +626,6 @@ namespace Ink_Canvas.Helpers
                         if (stats.LaunchCount > 0)
                         {
                             stats.AverageSessionSeconds = (double)stats.TotalUsageSeconds / stats.LaunchCount;
-
                         }
                     }
 
@@ -628,6 +642,20 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"DeviceIdentifier | 记录应用退出失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        public static string GetSystemVersion()
+        {
+            try
+            {
+                var stats = LoadUsageStats();
+                return stats.SystemVersion;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"DeviceIdentifier | 获取系统版本失败: {ex.Message}", LogHelper.LogType.Error);
+                return null;
             }
         }
 
