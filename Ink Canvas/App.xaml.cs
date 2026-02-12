@@ -678,7 +678,7 @@ namespace Ink_Canvas
                 Application.Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
             }
 
-            System.Threading.Thread.Sleep(500);
+            await Task.Delay(500);
             RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
             LogHelper.NewLog(string.Format("Ink Canvas Starting (Version: {0})", Assembly.GetExecutingAssembly().GetName().Version));
@@ -1011,7 +1011,7 @@ namespace Ink_Canvas
                 mutex = new Mutex(true, mutexName, out bool tempRet);
 
                 // 额外等待一小段时间确保更新进程完全退出
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
                 LogHelper.WriteLogToFile("App | 特殊模式等待完成，继续启动");
             }
 
@@ -1124,7 +1124,7 @@ namespace Ink_Canvas
         }
 
         // 心跳相关
-        private static Timer heartbeatTimer;
+        private static DispatcherTimer heartbeatTimer;
         private static DateTime lastHeartbeat = DateTime.Now;
         private static Timer watchdogTimer;
         private static bool isStartupComplete = false;
@@ -1134,7 +1134,13 @@ namespace Ink_Canvas
 
         private void StartHeartbeatMonitor()
         {
-            heartbeatTimer = new Timer(_ => lastHeartbeat = DateTime.Now, null, 0, 1000);
+            heartbeatTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+            heartbeatTimer.Tick += (_, __) => lastHeartbeat = DateTime.Now;
+            heartbeatTimer.Start();
+
             watchdogTimer = new Timer(_ =>
             {
                 if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
