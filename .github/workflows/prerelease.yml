@@ -629,5 +629,5 @@ jobs:
             /repos/InkCanvasForClass/community/contents/AutomaticUpdateVersionControl.txt \
             -f message="Update AutomaticUpdateVersionControl.txt" \
             -f content="$CONTENT" \
-            -f branch="main" \
+            -f branch="beta" \
             ${SHA:+-f sha="$SHA"}
