@@ -70,9 +70,9 @@ namespace Ink_Canvas
 
         #region PPT Application Variables
         public static Microsoft.Office.Interop.PowerPoint.Application pptApplication;
-        public static dynamic presentation;
-        public static dynamic slides;
-        public static dynamic slide;
+        public static Presentation presentation;
+        public static Slides slides;
+        public static Slide slide;
         public static int slidescount;
         #endregion
 
@@ -105,13 +105,14 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Managers
-        private IPPTLinkManager _pptManager;
+        private PPTManager _pptManager;
         private PPTInkManager _singlePPTInkManager;
         private PPTUIManager _pptUIManager;
 
-        private bool IsUsingRotPptLink => Settings.PowerPointSettings.UseRotPptLink;
-
-        public IPPTLinkManager PPTManager => _pptManager;
+        /// <summary>
+        /// 获取PPT管理器实例
+        /// </summary>
+        public PPTManager PPTManager => _pptManager;
         #endregion
 
         #region PPT Manager Initialization
@@ -119,25 +120,11 @@ namespace Ink_Canvas
         {
             try
             {
-                try
-                {
-                    _pptManager?.StopMonitoring();
-                }
-                catch
-                {
-                }
-
                 // 初始化长按定时器
                 InitializeLongPressTimer();
 
-                if (IsUsingRotPptLink)
-                {
-                    _pptManager = new PPTManager();
-                }
-                else
-                {
-                    _pptManager = new ComPPTManager();
-                }
+                // 初始化PPT管理器
+                _pptManager = new PPTManager();
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
 
                 // 注册事件
@@ -146,6 +133,7 @@ namespace Ink_Canvas
                 _pptManager.SlideShowNextSlide += OnPPTSlideShowNextSlide;
                 _pptManager.SlideShowEnd += OnPPTSlideShowEnd;
                 _pptManager.PresentationOpen += OnPPTPresentationOpen;
+                _pptManager.PresentationClose += OnPPTPresentationClose;
                 _pptManager.SlideShowStateChanged += OnPPTSlideShowStateChanged;
 
                 _singlePPTInkManager = new PPTInkManager();
@@ -184,17 +172,8 @@ namespace Ink_Canvas
 
         private void StopPPTMonitoring()
         {
-            try
-            {
-                _pptManager?.StopMonitoring();
-                _pptManager?.Dispose();
-                _pptManager = null;
-                LogHelper.WriteLogToFile("PPT监控已停止并释放当前 PPT 管理器实例", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"停止PPT监控或释放PPT管理器失败: {ex}", LogHelper.LogType.Error);
-            }
+            _pptManager?.StopMonitoring();
+            LogHelper.WriteLogToFile("PPT监控已停止", LogHelper.LogType.Event);
         }
 
         #region PowerPoint Application Management
@@ -541,11 +520,10 @@ namespace Ink_Canvas
             }
         }
 
-        private void OnPPTPresentationOpen(object pres)
+        private void OnPPTPresentationOpen(Presentation pres)
         {
             try
             {
-                dynamic presObj = pres;
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     // 在初始化墨迹管理器之前，先清理画布上的所有墨迹
@@ -557,26 +535,26 @@ namespace Ink_Canvas
                         TimeMachineHistories[0] = null;
                     }
 
-                    _singlePPTInkManager?.InitializePresentation(presObj as Presentation);
+                    _singlePPTInkManager?.InitializePresentation(pres);
 
                     // 处理跳转到首页或上次播放页的逻辑
-                    HandlePresentationOpenNavigation(presObj);
+                    HandlePresentationOpenNavigation(pres);
 
                     // 检查隐藏幻灯片
                     if (Settings.PowerPointSettings.IsNotifyHiddenPage)
                     {
-                        CheckAndNotifyHiddenSlides(presObj);
+                        CheckAndNotifyHiddenSlides(pres);
                     }
 
                     // 检查自动播放设置
                     if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation)
                     {
-                        CheckAndNotifyAutoPlaySettings(presObj);
+                        CheckAndNotifyAutoPlaySettings(pres);
                     }
 
                     _pptUIManager?.UpdateConnectionStatus(true);
 
-                    LogHelper.WriteLogToFile($"已打开新演示文稿: {presObj.Name}，墨迹状态已清理", LogHelper.LogType.Event);
+                    LogHelper.WriteLogToFile($"已打开新演示文稿: {pres.Name}，墨迹状态已清理", LogHelper.LogType.Event);
                 });
             }
             catch (Exception ex)
@@ -632,11 +610,10 @@ namespace Ink_Canvas
             }
         }
 
-        private async void OnPPTSlideShowBegin(object wn)
+        private async void OnPPTSlideShowBegin(SlideShowWindow wn)
         {
             try
             {
-                dynamic wnObj = wn;
                 if (Settings.Automation.IsAutoFoldInPPTSlideShow)
                 {
                     if (!isFloatingBarFolded)
@@ -654,14 +631,14 @@ namespace Ink_Canvas
 
                 await Application.Current.Dispatcher.InvokeAsync(async () =>
                 {
-                    dynamic activePresentation = null;
+                    Presentation activePresentation = null;
                     int currentSlide = 0;
                     int totalSlides = 0;
 
-                    if (wnObj?.View != null && wnObj.Presentation != null)
+                    if (wn?.View != null && wn.Presentation != null)
                     {
-                        activePresentation = wnObj.Presentation;
-                        currentSlide = wnObj.View.CurrentShowPosition;
+                        activePresentation = wn.Presentation;
+                        currentSlide = wn.View.CurrentShowPosition;
                         totalSlides = activePresentation.Slides.Count;
                         // 初始化当前播放页码跟踪
                         _currentSlideShowPosition = currentSlide;
@@ -681,7 +658,7 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                _singlePPTInkManager.InitializePresentation(activePresentation as Presentation);
+                                _singlePPTInkManager.InitializePresentation(activePresentation);
                             }
                             catch (Exception)
                             {
@@ -807,20 +784,19 @@ namespace Ink_Canvas
             }
         }
 
-        private void OnPPTSlideShowNextSlide(object wn)
+        private void OnPPTSlideShowNextSlide(SlideShowWindow wn)
         {
             try
             {
-                dynamic wnObj = wn;
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    if (wnObj?.View == null || wnObj.Presentation == null)
+                    if (wn?.View == null || wn.Presentation == null)
                     {
                         return;
                     }
 
-                    var currentSlide = wnObj.View.CurrentShowPosition;
-                    dynamic activePresentation = wnObj.Presentation;
+                    var currentSlide = wn.View.CurrentShowPosition;
+                    var activePresentation = wn.Presentation;
                     var totalSlides = activePresentation.Slides.Count;
 
                     // 更新当前播放页码
@@ -837,11 +813,10 @@ namespace Ink_Canvas
             }
         }
 
-        private async void OnPPTSlideShowEnd(object pres)
+        private async void OnPPTSlideShowEnd(Presentation pres)
         {
             try
             {
-                dynamic presObj = pres;
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
@@ -863,9 +838,9 @@ namespace Ink_Canvas
                         // 如果无法获取，尝试从演示文稿的SlideShowWindow获取
                         try
                         {
-                            if (presObj.SlideShowWindow != null && presObj.SlideShowWindow.View != null)
+                            if (pres.SlideShowWindow != null && pres.SlideShowWindow.View != null)
                             {
-                                currentPage = presObj.SlideShowWindow.View.CurrentShowPosition;
+                                currentPage = pres.SlideShowWindow.View.CurrentShowPosition;
                             }
                         }
                         catch { }
@@ -873,7 +848,7 @@ namespace Ink_Canvas
                 }
 
                 // 保存墨迹和位置信息
-                _singlePPTInkManager?.SaveAllStrokesToFile(presObj as Presentation, currentPage);
+                _singlePPTInkManager?.SaveAllStrokesToFile(pres, currentPage);
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -973,7 +948,7 @@ namespace Ink_Canvas
         #endregion
 
         #region Helper Methods
-        private void HandlePresentationOpenNavigation(dynamic pres)
+        private void HandlePresentationOpenNavigation(Presentation pres)
         {
             try
             {
@@ -992,7 +967,7 @@ namespace Ink_Canvas
             }
         }
 
-        private void ShowPreviousPageNotification(dynamic pres)
+        private void ShowPreviousPageNotification(Presentation pres)
         {
             try
             {
@@ -1006,7 +981,7 @@ namespace Ink_Canvas
 
                 if (!File.Exists(positionFile)) return;
 
-                if (int.TryParse(File.ReadAllText(positionFile), out int page) && page > 0)
+                if (int.TryParse(File.ReadAllText(positionFile), out var page) && page > 0)
                 {
                     _lastPlaybackPage = page;
                     new YesOrNoNotificationWindow($"上次播放到了第 {page} 页, 是否立即跳转", () =>
@@ -1015,8 +990,7 @@ namespace Ink_Canvas
                         {
                             if (_pptManager?.PPTApplication != null)
                             {
-                                dynamic pptApp = _pptManager.PPTApplication;
-                                if (pptApp.SlideShowWindows.Count >= 1)
+                                if (_pptManager.PPTApplication.SlideShowWindows.Count >= 1)
                                 {
                                     pres.SlideShowWindow.View.GotoSlide(page);
                                 }
@@ -1039,14 +1013,14 @@ namespace Ink_Canvas
             }
         }
 
-        private void CheckAndNotifyHiddenSlides(dynamic pres)
+        private void CheckAndNotifyHiddenSlides(Presentation pres)
         {
             try
             {
                 bool hasHiddenSlides = false;
                 if (pres?.Slides != null)
                 {
-                    foreach (dynamic slide in pres.Slides)
+                    foreach (Slide slide in pres.Slides)
                     {
                         if (slide.SlideShowTransition.Hidden == MsoTriState.msoTrue)
                         {
@@ -1066,7 +1040,7 @@ namespace Ink_Canvas
                             {
                                 if (pres?.Slides != null)
                                 {
-                                    foreach (dynamic slide in pres.Slides)
+                                    foreach (Slide slide in pres.Slides)
                                     {
                                         if (slide.SlideShowTransition.Hidden == MsoTriState.msoTrue)
                                             slide.SlideShowTransition.Hidden = MsoTriState.msoFalse;
@@ -1092,7 +1066,7 @@ namespace Ink_Canvas
             }
         }
 
-        private void CheckAndNotifyAutoPlaySettings(dynamic pres)
+        private void CheckAndNotifyAutoPlaySettings(Presentation pres)
         {
             try
             {
@@ -1101,7 +1075,7 @@ namespace Ink_Canvas
                 bool hasSlideTimings = false;
                 if (pres?.Slides != null)
                 {
-                    foreach (dynamic slide in pres.Slides)
+                    foreach (Slide slide in pres.Slides)
                     {
                         if (slide.SlideShowTransition.AdvanceOnTime == MsoTriState.msoTrue &&
                             slide.SlideShowTransition.AdvanceTime > 0)
@@ -1654,25 +1628,31 @@ namespace Ink_Canvas
                     });
                 }
 
-                Application.Current.Dispatcher.Invoke(() =>
+                // 结束放映
+                if (_pptManager?.TryEndSlideShow() == true)
                 {
-                    CursorIcon_Click(null, null);
-                });
-
-                await Task.Delay(100);
-                await Application.Current.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Background);
-
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    // 如果成功结束放映，等待OnPPTSlideShowEnd事件处理收纳状态恢复
+                }
+                else
                 {
-                    try
+                    LogHelper.WriteLogToFile("结束幻灯片放映失败", LogHelper.LogType.Warning);
+
+                    // 手动更新UI状态，防止事件未触发
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        _pptManager?.TryEndSlideShow();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"结束放映时发生异常: {ex}", LogHelper.LogType.Error);
-                    }
-                }), System.Windows.Threading.DispatcherPriority.Normal);
+                        _pptUIManager?.UpdateSlideShowStatus(false);
+                        _pptUIManager?.UpdateSidebarExitButtons(false);
+                        LogHelper.WriteLogToFile("手动更新放映结束UI状态", LogHelper.LogType.Trace);
+                    });
+
+                    // 手动处理自动收纳，因为OnPPTSlideShowEnd事件可能未触发
+                    await HandleManualSlideShowEnd();
+                }
+
+                HideSubPanels("cursor");
+                SetCurrentToolMode(InkCanvasEditingMode.None);
+
+                await Task.Delay(150);
                 if (!isFloatingBarFolded)
                 {
                     PureViewboxFloatingBarMarginAnimationInDesktopMode();
