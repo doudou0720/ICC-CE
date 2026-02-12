@@ -302,11 +302,9 @@ namespace Ink_Canvas.Helpers
                 
                 if (bestApp != null)
                 {
-                    LogHelper.WriteLogToFile($"ROT扫描完成: 找到最佳应用, priority={bestPriority}", LogHelper.LogType.Trace);
                 }
                 else
                 {
-                    LogHelper.WriteLogToFile($"ROT扫描完成: 未找到可用应用", LogHelper.LogType.Trace);
                 }
             }
             catch (Exception ex)

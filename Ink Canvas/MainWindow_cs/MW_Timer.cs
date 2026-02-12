@@ -904,9 +904,8 @@ namespace Ink_Canvas
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogHelper.WriteLogToFile($"[AutoFold Error] 定时检测发生异常: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

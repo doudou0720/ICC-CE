@@ -333,9 +333,6 @@ namespace Ink_Canvas.Helpers
                     }
                 }, DispatcherPriority.Normal);
 
-                // 停止频繁的连接检查，由状态定时器维持
-                _connectionCheckTimer?.Stop();
-
                 PPTConnectionChanged?.Invoke(true);
                 LogHelper.WriteLogToFile("[ROT] 成功连接到 PPT 应用程序", LogHelper.LogType.Event);
 
@@ -366,6 +363,13 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
+                _isModuleUnloading = true;
+                _connectionCheckTimer?.Stop();
+                _slideShowStateCheckTimer?.Stop();
+
+                PPTConnectionChanged?.Invoke(false);
+                LogHelper.WriteLogToFile("[ROT] 准备断开 PPT 连接，先卸载监控模块", LogHelper.LogType.Event);
+
                 if (_pptApplication != null)
                 {
                     try
@@ -426,14 +430,8 @@ namespace Ink_Canvas.Helpers
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 
-                _isModuleUnloading = true;
-                _connectionCheckTimer?.Stop();
-                _slideShowStateCheckTimer?.Stop();
+                LogHelper.WriteLogToFile("[ROT] 已断开 PPT 连接并尝试释放所有 COM 对象", LogHelper.LogType.Event);
 
-                PPTConnectionChanged?.Invoke(false);
-                LogHelper.WriteLogToFile("[ROT] 已断开 PPT 连接", LogHelper.LogType.Event);
-
-                // 一段时间后恢复监控状态
                 System.Threading.ThreadPool.QueueUserWorkItem(_ =>
                 {
                     try
@@ -450,7 +448,7 @@ namespace Ink_Canvas.Helpers
                         _connectionCheckTimer?.Start();
                         _slideShowStateCheckTimer?.Start();
 
-                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入监控状态", LogHelper.LogType.Trace);
+                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入联动状态", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
