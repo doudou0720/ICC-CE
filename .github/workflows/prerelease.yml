@@ -556,7 +556,7 @@ jobs:
           scope: InkCanvasForClass/downloads
           identity: repo-sync
       
-      - name: Sync downloads repos
+      - name: Sync downloads repos(Universal)
         env:
           GITHUB_TOKEN: ${{ steps.octo-sts-downloads.outputs.token }}
         run: |
@@ -569,6 +569,20 @@ jobs:
             -f content="$CONTENT" \
             -f branch="main"
           
+      - name: Sync downloads repos(Release Only)
+        if: ${{needs.prepare.outputs.is_prerelease == 'false'}}
+        env:
+          GITHUB_TOKEN: ${{ steps.octo-sts-downloads.outputs.token }}
+        run: |
+          CONTENT=$(base64 -w0 InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip)
+
+          gh api \
+            --method PUT \
+            /repos/InkCanvasForClass/downloads/contents/Beta/InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip \
+            -f message="Add files via upload" \
+            -f content="$CONTENT" \
+            -f branch="main"
+            
       - name: Update AutomaticUpdateVersionControl in beta repo
         env:
           GITHUB_TOKEN: ${{ steps.octo-sts-beta.outputs.token }}
