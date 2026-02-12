@@ -8,6 +8,9 @@ using Timer = System.Timers.Timer;
 
 namespace Ink_Canvas.Helpers
 {
+    /// <summary>
+    /// 基于 ROT 的 PPT 联动管理器实现。
+    /// </summary>
     public class ROTPPTManager : IPPTLinkManager
     {
         #region Events
@@ -22,7 +25,7 @@ namespace Ink_Canvas.Helpers
 
         #region Properties
         /// <summary>
-        /// 当前 PowerPoint 应用程序实例（通过 ROT 获取）。
+        /// 通过 ROT 获取到的 PowerPoint.Application 实例。
         /// </summary>
         public object PPTApplication => _pptApplication;
 
@@ -35,8 +38,9 @@ namespace Ink_Canvas.Helpers
                     if (_pptApplication == null) return false;
                     if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                    // 访问简单属性验证 COM 是否仍然有效
-                    var _ = _pptApplication.Name;
+                    // 访问 Name 属性验证 COM 是否仍然有效
+                    dynamic app = _pptApplication;
+                    var _ = app.Name;
                     return true;
                 }
                 catch (COMException comEx)
@@ -66,7 +70,8 @@ namespace Ink_Canvas.Helpers
                 {
                     if (_pptApplication == null || !Marshal.IsComObject(_pptApplication)) return false;
 
-                    slideShowWindows = _pptApplication.SlideShowWindows;
+                    dynamic app = _pptApplication;
+                    slideShowWindows = app.SlideShowWindows;
                     if (slideShowWindows == null) return false;
 
                     dynamic ssw = slideShowWindows;
@@ -100,12 +105,12 @@ namespace Ink_Canvas.Helpers
                     {
                         DisconnectFromPPT();
                     }
-                    LogHelper.WriteLogToFile($"检查 ROT PPT 放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.WriteLogToFile($"检查 ROT PPT 放映状态时发生意外错误: {ex}", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态时发生意外错误: {ex}", LogHelper.LogType.Warning);
                     return false;
                 }
                 finally
@@ -119,14 +124,43 @@ namespace Ink_Canvas.Helpers
 
         public bool IsSupportWPS { get; set; } = false;
 
-        public int SlidesCount { get; private set; }
+        /// <summary>
+        /// 当前演示文稿的总页数（每次按需计算，不缓存 COM 对象）。
+        /// </summary>
+        public int SlidesCount
+        {
+            get
+            {
+                object pres = null;
+                object slides = null;
+                try
+                {
+                    pres = GetCurrentActivePresentation();
+                    if (pres == null) return 0;
+
+                    dynamic dp = pres;
+                    slides = dp.Slides;
+                    if (slides == null) return 0;
+
+                    dynamic ds = slides;
+                    return (int)ds.Count;
+                }
+                catch
+                {
+                    return 0;
+                }
+                finally
+                {
+                    SafeReleaseComObject(slides);
+                    SafeReleaseComObject(pres);
+                }
+            }
+        }
         #endregion
 
         #region Private Fields
-        private Microsoft.Office.Interop.PowerPoint.Application _pptApplication;
-        private Presentation _currentPresentation;
-        private Slides _currentSlides;
-        private Slide _currentSlide;
+        // 唯一持久化的 COM 对象字段：PPT 应用程序实例
+        private object _pptApplication;
 
         private Timer _connectionCheckTimer;
         private Timer _slideShowStateCheckTimer;
@@ -160,7 +194,7 @@ namespace Ink_Canvas.Helpers
 
             _connectionCheckTimer?.Start();
             _slideShowStateCheckTimer?.Start();
-            LogHelper.WriteLogToFile("ROTPPTManager 监控已启动", LogHelper.LogType.Trace);
+            LogHelper.WriteLogToFile("[ROT] PPT 监控已启动", LogHelper.LogType.Trace);
         }
 
         public void StopMonitoring()
@@ -168,7 +202,7 @@ namespace Ink_Canvas.Helpers
             _connectionCheckTimer?.Stop();
             _slideShowStateCheckTimer?.Stop();
             DisconnectFromPPT();
-            LogHelper.WriteLogToFile("ROTPPTManager 监控已停止", LogHelper.LogType.Trace);
+            LogHelper.WriteLogToFile("[ROT] PPT 监控已停止", LogHelper.LogType.Trace);
         }
         #endregion
 
@@ -184,7 +218,7 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 连接检查失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] PPT 连接检查失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
@@ -199,13 +233,10 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 放映状态检查失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] PPT 放映状态检查失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
-        /// <summary>
-        /// 使用 ROT 尝试连接到 PowerPoint。
-        /// </summary>
         private void CheckAndConnectToPPTViaRot()
         {
             if (_isModuleUnloading) return;
@@ -216,36 +247,36 @@ namespace Ink_Canvas.Helpers
                 {
                     if (_isModuleUnloading) return;
 
-                    var pptApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
+                    // 使用 ROT 获取当前最佳 PPT 实例
+                    var bestApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
 
-                    if (pptApp != null && _pptApplication == null)
+                    if (bestApp != null && _pptApplication == null)
                     {
                         // 从未连接 -> 连接
-                        ConnectToPPT(pptApp);
+                        ConnectToPPT(bestApp);
                     }
-                    else if (pptApp == null && _pptApplication != null)
+                    else if (bestApp == null && _pptApplication != null)
                     {
                         // 原来有，现在没有 -> 断开
                         DisconnectFromPPT();
                     }
-                    else if (pptApp != null && _pptApplication != null)
+                    else if (bestApp != null && _pptApplication != null)
                     {
                         // 已连接，检查是否切换到了另一份 PPT
-                        if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptApplication, pptApp))
+                        if (!PPTROTConnectionHelper.AreComObjectsEqual(_pptApplication, bestApp))
                         {
                             DisconnectFromPPT();
-                            ConnectToPPT(pptApp);
+                            ConnectToPPT(bestApp);
                         }
                         else
                         {
-                            // 相同实例，释放多余引用
-                            PPTROTConnectionHelper.SafeReleaseComObject(pptApp);
+                            PPTROTConnectionHelper.SafeReleaseComObject(bestApp);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.WriteLogToFile($"ROTPPTManager 连接检查异常: {ex}", LogHelper.LogType.Error);
+                    LogHelper.WriteLogToFile($"[ROT] PPT 连接检查异常: {ex}", LogHelper.LogType.Error);
                     if (_pptApplication != null)
                     {
                         DisconnectFromPPT();
@@ -269,56 +300,64 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 检查 PPT 放映状态异常: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态异常: {ex}", LogHelper.LogType.Error);
             }
         }
 
-        private void ConnectToPPT(Microsoft.Office.Interop.PowerPoint.Application pptApp)
+        private void ConnectToPPT(object appObj)
         {
             try
             {
-                _pptApplication = pptApp;
+                _pptApplication = appObj;
 
-                // 在 UI 线程上注册事件
+                // 在 UI 线程上注册事件（使用 Interop 类型做内部绑定，不向外泄露）
                 Application.Current?.Dispatcher?.Invoke(() =>
                 {
                     try
                     {
-                        _pptApplication.PresentationOpen += OnPresentationOpenInternal;
-                        _pptApplication.PresentationClose += OnPresentationCloseInternal;
-                        _pptApplication.SlideShowBegin += OnSlideShowBeginInternal;
-                        _pptApplication.SlideShowNextSlide += OnSlideShowNextSlideInternal;
-                        _pptApplication.SlideShowEnd += OnSlideShowEndInternal;
+                        var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                        if (app == null) return;
 
-                        LogHelper.WriteLogToFile("ROTPPTManager 已注册 PPT 事件", LogHelper.LogType.Trace);
+                        app.PresentationOpen += OnPresentationOpenInternal;
+                        app.PresentationClose += OnPresentationCloseInternal;
+                        app.SlideShowBegin += OnSlideShowBeginInternal;
+                        app.SlideShowNextSlide += OnSlideShowNextSlideInternal;
+                        app.SlideShowEnd += OnSlideShowEndInternal;
+
+                        LogHelper.WriteLogToFile("[ROT] PPT 事件注册成功", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"ROTPPTManager 注册 PPT 事件失败: {ex}", LogHelper.LogType.Error);
+                        LogHelper.WriteLogToFile($"[ROT] PPT 事件注册失败: {ex}", LogHelper.LogType.Error);
                         throw;
                     }
                 }, DispatcherPriority.Normal);
 
-                UpdateCurrentPresentationInfo();
-
-                // 连接成功后暂停频繁的连接检查，由状态定时器维持
+                // 停止频繁的连接检查，由状态定时器维持
                 _connectionCheckTimer?.Stop();
 
                 PPTConnectionChanged?.Invoke(true);
-                LogHelper.WriteLogToFile("ROTPPTManager 成功连接到 PPT 应用程序", LogHelper.LogType.Event);
+                LogHelper.WriteLogToFile("[ROT] 成功连接到 PPT 应用程序", LogHelper.LogType.Event);
 
-                if (IsInSlideShow && _pptApplication.SlideShowWindows.Count > 0)
+                // 如果已在放映中，根据当前状态触发一次开始事件
+                if (IsInSlideShow)
                 {
-                    OnSlideShowBeginInternal(_pptApplication.SlideShowWindows[1]);
-                }
-                else if (_currentPresentation != null)
-                {
-                    OnPresentationOpenInternal(_currentPresentation);
+                    try
+                    {
+                        var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                        if (app != null && app.SlideShowWindows.Count > 0)
+                        {
+                            OnSlideShowBeginInternal(app.SlideShowWindows[1]);
+                        }
+                    }
+                    catch
+                    {
+                    }
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 连接 PPT 应用程序失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 连接 PPT 应用程序失败: {ex}", LogHelper.LogType.Error);
                 _pptApplication = null;
             }
         }
@@ -337,15 +376,19 @@ namespace Ink_Canvas.Helpers
                             {
                                 try
                                 {
-                                    _pptApplication.PresentationOpen -= OnPresentationOpenInternal;
-                                    _pptApplication.PresentationClose -= OnPresentationCloseInternal;
-                                    _pptApplication.SlideShowBegin -= OnSlideShowBeginInternal;
-                                    _pptApplication.SlideShowNextSlide -= OnSlideShowNextSlideInternal;
-                                    _pptApplication.SlideShowEnd -= OnSlideShowEndInternal;
+                                    var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                                    if (app != null)
+                                    {
+                                        app.PresentationOpen -= OnPresentationOpenInternal;
+                                        app.PresentationClose -= OnPresentationCloseInternal;
+                                        app.SlideShowBegin -= OnSlideShowBeginInternal;
+                                        app.SlideShowNextSlide -= OnSlideShowNextSlideInternal;
+                                        app.SlideShowEnd -= OnSlideShowEndInternal;
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
-                                    LogHelper.WriteLogToFile($"ROTPPTManager 取消 PPT 事件注册异常: {ex}", LogHelper.LogType.Warning);
+                                    LogHelper.WriteLogToFile($"[ROT] 取消 PPT 事件注册异常: {ex}", LogHelper.LogType.Warning);
                                     LogHelper.WriteLogToFile(ex.ToString(), LogHelper.LogType.Trace);
                                 }
                             }, DispatcherPriority.Normal);
@@ -353,12 +396,8 @@ namespace Ink_Canvas.Helpers
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"ROTPPTManager 取消 PPT 事件注册失败: {ex}", LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile($"[ROT] 取消 PPT 事件注册失败: {ex}", LogHelper.LogType.Warning);
                     }
-
-                    SafeReleaseComObject(_currentSlide);
-                    SafeReleaseComObject(_currentSlides);
-                    SafeReleaseComObject(_currentPresentation);
 
                     if (Marshal.IsComObject(_pptApplication))
                     {
@@ -382,10 +421,6 @@ namespace Ink_Canvas.Helpers
                 }
 
                 _pptApplication = null;
-                _currentPresentation = null;
-                _currentSlides = null;
-                _currentSlide = null;
-                SlidesCount = 0;
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -396,10 +431,9 @@ namespace Ink_Canvas.Helpers
                 _slideShowStateCheckTimer?.Stop();
 
                 PPTConnectionChanged?.Invoke(false);
+                LogHelper.WriteLogToFile("[ROT] 已断开 PPT 连接", LogHelper.LogType.Event);
 
-                LogHelper.WriteLogToFile("ROTPPTManager 已断开 PPT 连接", LogHelper.LogType.Event);
-
-                // 一段时间后重新尝试连接
+                // 一段时间后恢复监控状态
                 System.Threading.ThreadPool.QueueUserWorkItem(_ =>
                 {
                     try
@@ -416,38 +450,33 @@ namespace Ink_Canvas.Helpers
                         _connectionCheckTimer?.Start();
                         _slideShowStateCheckTimer?.Start();
 
-                        LogHelper.WriteLogToFile("ROTPPTManager 联动模块已重新进入监控状态", LogHelper.LogType.Trace);
+                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入监控状态", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"ROTPPTManager 重新进入监控状态失败: {ex}", LogHelper.LogType.Error);
+                        LogHelper.WriteLogToFile($"[ROT] 重新进入监控状态失败: {ex}", LogHelper.LogType.Error);
                         _isModuleUnloading = false;
                     }
                 });
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 断开 PPT 连接失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 断开 PPT 连接失败: {ex}", LogHelper.LogType.Error);
                 _isModuleUnloading = false;
             }
         }
         #endregion
 
-        #region PPT Event Handlers
+        #region PPT Event Handlers (internal, strong-typed)
         private void OnPresentationOpenInternal(Presentation pres)
         {
             try
             {
-                _currentPresentation = pres;
-                _currentSlides = pres.Slides;
-                _currentSlide = null;
-                SlidesCount = _currentSlides?.Count ?? 0;
-
                 PresentationOpen?.Invoke(pres);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 处理演示文稿打开事件失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 处理演示文稿打开事件失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
@@ -456,18 +485,6 @@ namespace Ink_Canvas.Helpers
             try
             {
                 PresentationClose?.Invoke(pres);
-
-                if (_currentPresentation != null && pres != null && ReferenceEquals(_currentPresentation, pres))
-                {
-                    SafeReleaseComObject(_currentSlide);
-                    SafeReleaseComObject(_currentSlides);
-                    SafeReleaseComObject(_currentPresentation);
-
-                    _currentPresentation = null;
-                    _currentSlides = null;
-                    _currentSlide = null;
-                    SlidesCount = 0;
-                }
             }
             catch (COMException comEx)
             {
@@ -486,18 +503,11 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                if (wn?.Presentation != null)
-                {
-                    _currentPresentation = wn.Presentation;
-                    _currentSlides = _currentPresentation.Slides;
-                    SlidesCount = _currentSlides?.Count ?? 0;
-                }
-
                 SlideShowBegin?.Invoke(wn);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 处理放映开始事件失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 处理放映开始事件失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
@@ -505,23 +515,11 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                if (wn?.View != null)
-                {
-                    try
-                    {
-                        _currentSlide = wn.View.Slide;
-                    }
-                    catch
-                    {
-                        _currentSlide = null;
-                    }
-                }
-
                 SlideShowNextSlide?.Invoke(wn);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 处理放映翻页事件失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 处理放映翻页事件失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
@@ -533,7 +531,7 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 处理放映结束事件失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 处理放映结束事件失败: {ex}", LogHelper.LogType.Error);
             }
         }
         #endregion
@@ -541,12 +539,26 @@ namespace Ink_Canvas.Helpers
         #region IPPTLinkManager Methods
         public bool TryStartSlideShow()
         {
+            object pres = null;
             try
             {
-                if (!IsConnected || _currentPresentation == null || _pptApplication == null) return false;
-                if (!Marshal.IsComObject(_pptApplication) || !Marshal.IsComObject(_currentPresentation)) return false;
+                if (!IsConnected || _pptApplication == null) return false;
+                if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                _currentPresentation.SlideShowSettings.Run();
+                dynamic app = _pptApplication;
+                try
+                {
+                    pres = app.ActivePresentation;
+                }
+                catch
+                {
+                    pres = null;
+                }
+
+                if (pres == null || !Marshal.IsComObject(pres)) return false;
+
+                dynamic dp = pres;
+                dp.SlideShowSettings.Run();
                 return true;
             }
             catch (COMException comEx)
@@ -556,13 +568,17 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 开始幻灯片放映失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 开始幻灯片放映失败: {comEx.Message}", LogHelper.LogType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 开始幻灯片放映失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 开始幻灯片放映失败: {ex}", LogHelper.LogType.Error);
                 return false;
+            }
+            finally
+            {
+                SafeReleaseComObject(pres);
             }
         }
 
@@ -576,19 +592,13 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || _pptApplication == null) return false;
                 if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                slideShowWindows = _pptApplication.SlideShowWindows;
+                dynamic app = _pptApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
                     int count = 0;
-                    try
-                    {
-                        count = ssw.Count;
-                    }
-                    catch
-                    {
-                        count = 0;
-                    }
+                    try { count = ssw.Count; } catch { count = 0; }
 
                     for (int i = 1; i <= count; i++)
                     {
@@ -608,7 +618,7 @@ namespace Ink_Canvas.Helpers
                         }
                         catch (Exception ex)
                         {
-                            LogHelper.WriteLogToFile($"ROTPPTManager 结束第 {i} 个放映窗口失败: {ex}", LogHelper.LogType.Warning);
+                            LogHelper.WriteLogToFile($"[ROT] 结束第 {i} 个放映窗口失败: {ex}", LogHelper.LogType.Warning);
                         }
                         finally
                         {
@@ -629,12 +639,12 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 结束幻灯片放映失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 结束幻灯片放映失败: {comEx.Message}", LogHelper.LogType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 结束幻灯片放映失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 结束幻灯片放映失败: {ex}", LogHelper.LogType.Error);
                 return false;
             }
             finally
@@ -655,7 +665,8 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || !IsInSlideShow || _pptApplication == null) return false;
                 if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                slideShowWindows = _pptApplication.SlideShowWindows;
+                dynamic app = _pptApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
@@ -682,12 +693,12 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 跳转到第 {slideNumber} 页失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 跳转到第 {slideNumber} 页失败: {comEx.Message}", LogHelper.LogType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 跳转到第 {slideNumber} 页失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 跳转到第 {slideNumber} 页失败: {ex}", LogHelper.LogType.Error);
                 return false;
             }
             finally
@@ -708,7 +719,8 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || !IsInSlideShow || _pptApplication == null) return false;
                 if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                slideShowWindows = _pptApplication.SlideShowWindows;
+                dynamic app = _pptApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
@@ -735,12 +747,12 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 切换到下一页失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 切换到下一页失败: {comEx.Message}", LogHelper.LogType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 切换到下一页失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 切换到下一页失败: {ex}", LogHelper.LogType.Error);
                 return false;
             }
             finally
@@ -761,7 +773,8 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || !IsInSlideShow || _pptApplication == null) return false;
                 if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                slideShowWindows = _pptApplication.SlideShowWindows;
+                dynamic app = _pptApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
@@ -788,12 +801,12 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 切换到上一页失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 切换到上一页失败: {comEx.Message}", LogHelper.LogType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 切换到上一页失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 切换到上一页失败: {ex}", LogHelper.LogType.Error);
                 return false;
             }
             finally
@@ -814,7 +827,8 @@ namespace Ink_Canvas.Helpers
                 if (!IsConnected || _pptApplication == null) return 0;
                 if (!Marshal.IsComObject(_pptApplication)) return 0;
 
-                slideShowWindows = _pptApplication.SlideShowWindows;
+                dynamic app = _pptApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
@@ -826,7 +840,7 @@ namespace Ink_Canvas.Helpers
                         if (view != null)
                         {
                             dynamic viewObj = view;
-                            return viewObj.CurrentShowPosition;
+                            return (int)viewObj.CurrentShowPosition;
                         }
                     }
                 }
@@ -839,12 +853,12 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 获取当前页码失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 获取当前页码失败: {comEx.Message}", LogHelper.LogType.Error);
                 return 0;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 获取当前页码失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 获取当前页码失败: {ex}", LogHelper.LogType.Error);
                 return 0;
             }
             finally
@@ -857,15 +871,23 @@ namespace Ink_Canvas.Helpers
 
         public string GetPresentationName()
         {
+            object pres = null;
             try
             {
-                var pres = GetCurrentActivePresentation() as Presentation;
-                return pres?.Name ?? "";
+                pres = GetCurrentActivePresentation();
+                if (pres == null) return "";
+
+                dynamic dp = pres;
+                return (string)dp.Name;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 获取演示文稿名称失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 获取演示文稿名称失败: {ex}", LogHelper.LogType.Error);
                 return "";
+            }
+            finally
+            {
+                SafeReleaseComObject(pres);
             }
         }
 
@@ -876,28 +898,29 @@ namespace Ink_Canvas.Helpers
             object slideNavigation = null;
             try
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 尝试显示幻灯片导航 - 连接状态: {IsConnected}, 放映状态: {IsInSlideShow}", LogHelper.LogType.Trace);
+                LogHelper.WriteLogToFile($"[ROT] 尝试显示幻灯片导航 - 连接状态: {IsConnected}, 放映状态: {IsInSlideShow}", LogHelper.LogType.Trace);
 
                 if (!IsConnected || !IsInSlideShow || _pptApplication == null)
                 {
-                    LogHelper.WriteLogToFile("ROTPPTManager: PPT 未连接或未在放映状态", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile("[ROT] PPT 未连接或未在放映状态", LogHelper.LogType.Warning);
                     return false;
                 }
 
                 if (!Marshal.IsComObject(_pptApplication))
                 {
-                    LogHelper.WriteLogToFile("ROTPPTManager: PPT 应用程序 COM 对象无效", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile("[ROT] PPT 应用程序 COM 对象无效", LogHelper.LogType.Warning);
                     return false;
                 }
 
-                slideShowWindows = _pptApplication.SlideShowWindows;
+                dynamic app = _pptApplication;
+                slideShowWindows = app.SlideShowWindows;
                 if (slideShowWindows != null)
                 {
                     dynamic ssw = slideShowWindows;
                     slideShowWindow = ssw[1];
                     if (slideShowWindow == null)
                     {
-                        LogHelper.WriteLogToFile("ROTPPTManager: 幻灯片放映窗口为空", LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile("[ROT] 幻灯片放映窗口为空", LogHelper.LogType.Warning);
                         return false;
                     }
 
@@ -909,11 +932,11 @@ namespace Ink_Canvas.Helpers
                         {
                             dynamic sn = slideNavigation;
                             sn.Visible = true;
-                            LogHelper.WriteLogToFile("ROTPPTManager: 成功显示幻灯片导航", LogHelper.LogType.Event);
+                            LogHelper.WriteLogToFile("[ROT] 成功显示幻灯片导航", LogHelper.LogType.Event);
                             return true;
                         }
 
-                        LogHelper.WriteLogToFile("ROTPPTManager: SlideNavigation 对象为空，可能当前环境不支持", LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile("[ROT] SlideNavigation 对象为空，可能当前环境不支持", LogHelper.LogType.Warning);
                         return false;
                     }
                     catch (COMException comEx)
@@ -921,7 +944,7 @@ namespace Ink_Canvas.Helpers
                         var hr = (uint)comEx.HResult;
                         if (hr == 0x80020006)
                         {
-                            LogHelper.WriteLogToFile("ROTPPTManager: 当前 PPT 实例不支持 SlideNavigation 功能", LogHelper.LogType.Warning);
+                            LogHelper.WriteLogToFile("[ROT] 当前 PPT 实例不支持 SlideNavigation 功能", LogHelper.LogType.Warning);
                             return false;
                         }
                         throw;
@@ -936,12 +959,12 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 显示幻灯片导航失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 显示幻灯片导航失败: {comEx.Message}", LogHelper.LogType.Error);
                 return false;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 显示幻灯片导航失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 显示幻灯片导航失败: {ex}", LogHelper.LogType.Error);
                 return false;
             }
             finally
@@ -954,38 +977,64 @@ namespace Ink_Canvas.Helpers
 
         public object GetCurrentActivePresentation()
         {
+            object pres = null;
+            object slideShowWindows = null;
+            object slideShowWindow = null;
+            object view = null;
+            object slide = null;
             try
             {
                 if (!IsConnected || _pptApplication == null) return null;
                 if (!Marshal.IsComObject(_pptApplication)) return null;
 
-                if (IsInSlideShow && _pptApplication.SlideShowWindows.Count > 0)
+                dynamic app = _pptApplication;
+
+                // 优先使用放映窗口里的当前演示文稿
+                if (IsInSlideShow)
                 {
-                    try
+                    slideShowWindows = app.SlideShowWindows;
+                    if (slideShowWindows != null)
                     {
-                        var slideShowWindow = _pptApplication.SlideShowWindows[1];
-                        if (slideShowWindow?.View != null)
+                        dynamic ssw = slideShowWindows;
+                        if (ssw.Count > 0)
                         {
-                            return (Presentation)slideShowWindow.View.Slide.Parent;
+                            slideShowWindow = ssw[1];
+                            if (slideShowWindow != null)
+                            {
+                                dynamic sswObj = slideShowWindow;
+                                view = sswObj.View;
+                                if (view != null)
+                                {
+                                    dynamic viewObj = view;
+                                    slide = viewObj.Slide;
+                                    if (slide != null)
+                                    {
+                                        dynamic ds = slide;
+                                        pres = ds.Parent;
+                                        return pres;
+                                    }
+                                }
+                            }
                         }
-                    }
-                    catch (COMException comEx)
-                    {
-                        var hr = (uint)comEx.HResult;
-                        if (hr == 0x80048240)
-                        {
-                            return null;
-                        }
-                        throw;
                     }
                 }
 
-                if (_pptApplication.ActiveWindow?.Presentation != null)
+                // 其次尝试 ActiveWindow.Presentation
+                try
                 {
-                    return _pptApplication.ActiveWindow.Presentation;
+                    var aw = app.ActiveWindow;
+                    if (aw != null)
+                    {
+                        dynamic daw = aw;
+                        pres = daw.Presentation;
+                        if (pres != null) return pres;
+                    }
+                }
+                catch
+                {
                 }
 
-                return _currentPresentation;
+                return null;
             }
             catch (COMException comEx)
             {
@@ -994,59 +1043,26 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                LogHelper.WriteLogToFile($"ROTPPTManager 获取当前演示文稿失败: {comEx.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 获取当前演示文稿失败: {comEx.Message}", LogHelper.LogType.Error);
                 return null;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager 获取当前演示文稿失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] 获取当前演示文稿失败: {ex}", LogHelper.LogType.Error);
                 return null;
+            }
+            finally
+            {
+                SafeReleaseComObject(slide);
+                SafeReleaseComObject(view);
+                SafeReleaseComObject(slideShowWindow);
+                SafeReleaseComObject(slideShowWindows);
+                // 注意：pres 作为返回值时不在这里释放，由调用方负责（如有需要）
             }
         }
         #endregion
 
         #region Helpers
-        private void UpdateCurrentPresentationInfo()
-        {
-            try
-            {
-                if (!IsConnected || _pptApplication == null) return;
-                if (!Marshal.IsComObject(_pptApplication)) return;
-
-                try
-                {
-                    _currentPresentation = _pptApplication.ActivePresentation;
-                }
-                catch
-                {
-                    _currentPresentation = null;
-                }
-
-                if (_currentPresentation != null)
-                {
-                    try
-                    {
-                        _currentSlides = _currentPresentation.Slides;
-                        SlidesCount = _currentSlides?.Count ?? 0;
-                    }
-                    catch
-                    {
-                        _currentSlides = null;
-                        SlidesCount = 0;
-                    }
-                }
-                else
-                {
-                    _currentSlides = null;
-                    SlidesCount = 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"ROTPPTManager 更新当前演示文稿信息失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
         /// <summary>
         /// 安全释放 COM 对象。
         /// </summary>
@@ -1077,10 +1093,9 @@ namespace Ink_Canvas.Helpers
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ROTPPTManager Dispose 异常: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[ROT] Dispose 异常: {ex}", LogHelper.LogType.Error);
             }
         }
         #endregion
     }
 }
-
