@@ -545,38 +545,122 @@ namespace Ink_Canvas
         {
             try
             {
-                dynamic presObj = pres;
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    // 在初始化墨迹管理器之前，先清理画布上的所有墨迹
-                    ClearStrokes(true);
-
-                    // 清理备份历史记录，防止旧演示文稿的墨迹影响新演示文稿
-                    if (TimeMachineHistories != null && TimeMachineHistories.Length > 0)
+                    try
                     {
-                        TimeMachineHistories[0] = null;
+                        dynamic activePresentation = null;
+
+                        try
+                        {
+                            activePresentation = _pptManager?.GetCurrentActivePresentation();
+                        }
+                        catch (COMException comEx)
+                        {
+                            var hr = (uint)comEx.HResult;
+                            LogHelper.WriteLogToFile(
+                                $"处理演示文稿打开事件时访问 PowerPoint 失败: {comEx.Message} (HR: 0x{hr:X8})",
+                                LogHelper.LogType.Warning);
+                            activePresentation = null;
+                        }
+                        catch (InvalidComObjectException invalidEx)
+                        {
+                            LogHelper.WriteLogToFile(
+                                $"处理演示文稿打开事件时演示文稿对象无效: {invalidEx}",
+                                LogHelper.LogType.Warning);
+                            activePresentation = null;
+                        }
+                        catch (Exception exInner)
+                        {
+                            LogHelper.WriteLogToFile(
+                                $"处理演示文稿打开事件时获取 PowerPoint 信息失败: {exInner}",
+                                LogHelper.LogType.Error);
+                            activePresentation = null;
+                        }
+
+                        if (activePresentation == null)
+                        {
+                            return;
+                        }
+
+                        // 在初始化墨迹管理器之前，先清理画布上的所有墨迹
+                        ClearStrokes(true);
+
+                        // 清理备份历史记录，防止旧演示文稿的墨迹影响新演示文稿
+                        if (TimeMachineHistories != null && TimeMachineHistories.Length > 0)
+                        {
+                            TimeMachineHistories[0] = null;
+                        }
+
+                        try
+                        {
+                            _singlePPTInkManager?.InitializePresentation(activePresentation as Presentation);
+                        }
+                        catch (Exception exInit)
+                        {
+                            LogHelper.WriteLogToFile($"初始化PPT墨迹管理器失败: {exInit}", LogHelper.LogType.Error);
+                        }
+
+                        // 处理跳转到首页或上次播放页的逻辑
+                        try
+                        {
+                            HandlePresentationOpenNavigation(activePresentation);
+                        }
+                        catch (Exception exNav)
+                        {
+                            LogHelper.WriteLogToFile($"处理演示文稿导航失败: {exNav}", LogHelper.LogType.Error);
+                        }
+
+                        // 检查隐藏幻灯片
+                        if (Settings.PowerPointSettings.IsNotifyHiddenPage)
+                        {
+                            try
+                            {
+                                CheckAndNotifyHiddenSlides(activePresentation);
+                            }
+                            catch (Exception exHidden)
+                            {
+                                LogHelper.WriteLogToFile($"检查隐藏幻灯片失败: {exHidden}", LogHelper.LogType.Error);
+                            }
+                        }
+
+                        // 检查自动播放设置
+                        if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation)
+                        {
+                            try
+                            {
+                                CheckAndNotifyAutoPlaySettings(activePresentation);
+                            }
+                            catch (Exception exAuto)
+                            {
+                                LogHelper.WriteLogToFile($"检查自动播放设置失败: {exAuto}", LogHelper.LogType.Error);
+                            }
+                        }
+
+                        _pptUIManager?.UpdateConnectionStatus(true);
+
+                        try
+                        {
+                            string presName = string.Empty;
+                            try
+                            {
+                                presName = activePresentation.Name;
+                            }
+                            catch
+                            {
+                                presName = "<unknown>";
+                            }
+
+                            LogHelper.WriteLogToFile($"已打开新演示文稿: {presName}，墨迹状态已清理", LogHelper.LogType.Event);
+                        }
+                        catch
+                        {
+                        }
                     }
-
-                    _singlePPTInkManager?.InitializePresentation(presObj as Presentation);
-
-                    // 处理跳转到首页或上次播放页的逻辑
-                    HandlePresentationOpenNavigation(presObj);
-
-                    // 检查隐藏幻灯片
-                    if (Settings.PowerPointSettings.IsNotifyHiddenPage)
+                    catch (Exception exCallback)
                     {
-                        CheckAndNotifyHiddenSlides(presObj);
+                        LogHelper.WriteLogToFile($"处理演示文稿打开事件失败(调度回调): {exCallback}", LogHelper.LogType.Error);
                     }
-
-                    // 检查自动播放设置
-                    if (Settings.PowerPointSettings.IsNotifyAutoPlayPresentation)
-                    {
-                        CheckAndNotifyAutoPlaySettings(presObj);
-                    }
-
-                    _pptUIManager?.UpdateConnectionStatus(true);
-
-                    LogHelper.WriteLogToFile($"已打开新演示文稿: {presObj.Name}，墨迹状态已清理", LogHelper.LogType.Event);
                 });
             }
             catch (Exception ex)
@@ -658,21 +742,35 @@ namespace Ink_Canvas
                     int currentSlide = 0;
                     int totalSlides = 0;
 
-                    if (wnObj?.View != null && wnObj.Presentation != null)
-                    {
-                        activePresentation = wnObj.Presentation;
-                        currentSlide = wnObj.View.CurrentShowPosition;
-                        totalSlides = activePresentation.Slides.Count;
-                        // 初始化当前播放页码跟踪
-                        _currentSlideShowPosition = currentSlide;
-                    }
-                    else
+                    try
                     {
                         activePresentation = _pptManager?.GetCurrentActivePresentation();
                         currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         totalSlides = _pptManager?.SlidesCount ?? 0;
-                        // 初始化当前播放页码跟踪
                         _currentSlideShowPosition = currentSlide;
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        LogHelper.WriteLogToFile(
+                            $"处理幻灯片放映开始事件时访问 PowerPoint 失败: {comEx.Message} (HR: 0x{hr:X8})",
+                            LogHelper.LogType.Warning);
+
+                        activePresentation = null;
+                        currentSlide = 0;
+                        totalSlides = 0;
+                        _currentSlideShowPosition = 0;
+                    }
+                    catch (Exception exInner)
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"处理幻灯片放映开始事件时获取 PowerPoint 信息失败: {exInner}",
+                            LogHelper.LogType.Error);
+
+                        activePresentation = null;
+                        currentSlide = 0;
+                        totalSlides = 0;
+                        _currentSlideShowPosition = 0;
                     }
 
                     if (activePresentation != null)
@@ -814,14 +912,36 @@ namespace Ink_Canvas
                 dynamic wnObj = wn;
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    if (wnObj?.View == null || wnObj.Presentation == null)
+                    int currentSlide = 0;
+                    int totalSlides = 0;
+
+                    try
+                    {
+                        currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                        totalSlides = _pptManager?.SlidesCount ?? 0;
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        LogHelper.WriteLogToFile(
+                            $"处理幻灯片切换事件时访问 PowerPoint 失败: {comEx.Message} (HR: 0x{hr:X8})",
+                            LogHelper.LogType.Warning);
+                        currentSlide = 0;
+                        totalSlides = 0;
+                    }
+                    catch (Exception exInner)
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"处理幻灯片切换事件时获取 PowerPoint 信息失败: {exInner}",
+                            LogHelper.LogType.Error);
+                        currentSlide = 0;
+                        totalSlides = 0;
+                    }
+
+                    if (currentSlide <= 0 || totalSlides <= 0)
                     {
                         return;
                     }
-
-                    var currentSlide = wnObj.View.CurrentShowPosition;
-                    dynamic activePresentation = wnObj.Presentation;
-                    var totalSlides = activePresentation.Slides.Count;
 
                     // 更新当前播放页码
                     _currentSlideShowPosition = currentSlide;
