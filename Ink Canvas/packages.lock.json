@@ -115,12 +115,6 @@
           "System.Text.Json": "8.0.5"
         }
       },
-      "Sentry.Profiling": {
-        "type": "Direct",
-        "requested": "[6.0.0, )",
-        "resolved": "6.0.0",
-        "contentHash": "UR5lOlSANE9vFDWoIyq0+nLy14FX3tUxfa9sXu8EaylZHogYnXnLnXKb3mmYVp+r+MAhxbHmTOF6pxeiamBnvQ=="
-      },
       "AForge": {
         "type": "Transitive",
         "resolved": "2.2.5",
