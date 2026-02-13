@@ -1205,6 +1205,96 @@ namespace Ink_Canvas
 
             // 加载墨迹渐隐设置
             LoadInkFadeSettings();
+
+            // 加载画笔自动恢复设置
+            LoadBrushAutoRestoreSettings();
+        }
+
+        private void LoadBrushAutoRestoreSettings()
+        {
+            try
+            {
+                // 同步设置面板中的开关状态
+                if (ToggleSwitchBrushAutoRestore != null)
+                {
+                    ToggleSwitchBrushAutoRestore.IsOn = Settings.Canvas.EnableBrushAutoRestore;
+                }
+
+                // 同步时间点输入框
+                if (BrushAutoRestoreTimesTextBox != null)
+                {
+                    BrushAutoRestoreTimesTextBox.Text = Settings.Canvas.BrushAutoRestoreTimes ?? string.Empty;
+                }
+
+                // 同步颜色下拉框
+                if (ComboBoxBrushAutoRestoreColor != null)
+                {
+                    if (string.IsNullOrWhiteSpace(Settings.Canvas.BrushAutoRestoreColor))
+                    {
+                        Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000"; 
+                    }
+
+                    bool found = false;
+                    foreach (ComboBoxItem item in ComboBoxBrushAutoRestoreColor.Items)
+                    {
+                        if (item.Tag != null && item.Tag.ToString() == Settings.Canvas.BrushAutoRestoreColor)
+                        {
+                            ComboBoxBrushAutoRestoreColor.SelectionChanged -= ComboBoxBrushAutoRestoreColor_SelectionChanged;
+                            try
+                            {
+                                ComboBoxBrushAutoRestoreColor.SelectedItem = item;
+                            }
+                            finally
+                            {
+                                ComboBoxBrushAutoRestoreColor.SelectionChanged += ComboBoxBrushAutoRestoreColor_SelectionChanged;
+                            }
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!found && ComboBoxBrushAutoRestoreColor.Items.Count > 0)
+                    {
+                        ComboBoxBrushAutoRestoreColor.SelectionChanged -= ComboBoxBrushAutoRestoreColor_SelectionChanged;
+                        try
+                        {
+                            ComboBoxBrushAutoRestoreColor.SelectedIndex = 0; 
+                            Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000";
+                        }
+                        finally
+                        {
+                            ComboBoxBrushAutoRestoreColor.SelectionChanged += ComboBoxBrushAutoRestoreColor_SelectionChanged;
+                        }
+                    }
+                }
+
+                // 同步粗细滑块
+                if (BrushAutoRestoreWidthSlider != null)
+                {
+                    BrushAutoRestoreWidthSlider.Value = Settings.Canvas.BrushAutoRestoreWidth > 0 
+                        ? Settings.Canvas.BrushAutoRestoreWidth 
+                        : 5;
+                }
+
+                // 同步透明度滑块
+                if (BrushAutoRestoreAlphaSlider != null)
+                {
+                    BrushAutoRestoreAlphaSlider.Value = Settings.Canvas.BrushAutoRestoreAlpha;
+                }
+
+                // 如果功能已启用，初始化并启动定时器
+                if (Settings.Canvas.EnableBrushAutoRestore)
+                {
+                    InitBrushAutoRestoreTimer();
+                    ScheduleBrushAutoRestore();
+                }
+
+                LogHelper.WriteLogToFile("画笔自动恢复设置已加载", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"加载画笔自动恢复设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         /// <summary>

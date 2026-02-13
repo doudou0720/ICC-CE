@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -108,6 +108,18 @@ namespace Ink_Canvas
         public int InkFadeTime { get; set; } = 3000; // 墨迹渐隐时间（毫秒）
         [JsonProperty("hideInkFadeControlInPenMenu")]
         public bool HideInkFadeControlInPenMenu { get; set; } = false; // 是否在笔工具菜单中隐藏墨迹渐隐控制开关
+        [JsonProperty("enableBrushAutoRestore")]
+        public bool EnableBrushAutoRestore { get; set; } = false;
+        [JsonProperty("brushAutoRestoreDelaySeconds")]
+        public int BrushAutoRestoreDelaySeconds { get; set; } = 30;
+        [JsonProperty("brushAutoRestoreTimes")]
+        public string BrushAutoRestoreTimes { get; set; } = "";
+        [JsonProperty("brushAutoRestoreColor")]
+        public string BrushAutoRestoreColor { get; set; } = "#FFFF0000";
+        [JsonProperty("brushAutoRestoreWidth")]
+        public double BrushAutoRestoreWidth { get; set; } =5;
+        [JsonProperty("brushAutoRestoreAlpha")]
+        public int BrushAutoRestoreAlpha { get; set; } = 255;
 
     }
 

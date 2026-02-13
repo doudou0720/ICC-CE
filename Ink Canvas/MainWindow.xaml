@@ -861,7 +861,56 @@
                                                          Toggled="ToggleSwitchHideInkFadeControlInPenMenu_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <TextBlock Text="# 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关" TextWrapping="Wrap" Foreground="#a1a1aa" />
-
+                                    <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
+                                          StrokeThickness="1" Margin="0,4,0,4" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="启用画笔自动恢复" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchBrushAutoRestore"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchBrushAutoRestore_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 启用后，临时修改画笔设置后将在指定时间点自动恢复到你在此处配置的颜色 / 透明度 / 粗细" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <ui:SimpleStackPanel Orientation="Vertical" HorizontalAlignment="Left"
+                                                         Spacing="4"
+                                                         Visibility="{Binding ElementName=ToggleSwitchBrushAutoRestore, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Foreground="#fafafa" Text="自动恢复时间点 (HH:mm，可多个，用 ; 分隔)"
+                                                   FontSize="14" Margin="0,0,0,0" />
+                                        <TextBox Name="BrushAutoRestoreTimesTextBox" Width="260"
+                                                 TextChanged="BrushAutoRestoreTimesTextBox_TextChanged" />
+                                        <TextBlock Foreground="#fafafa" Text="恢复目标颜色" FontSize="14" Margin="0,8,0,0" />
+                                        <ComboBox Name="ComboBoxBrushAutoRestoreColor" Width="260"
+                                                  SelectionChanged="ComboBoxBrushAutoRestoreColor_SelectionChanged">
+                                            <ComboBoxItem Content="默认" Tag="#FFFF0000" />
+                                            <ComboBoxItem Content="黑色" Tag="#FF000000" />
+                                            <ComboBoxItem Content="白色" Tag="#FFFFFFFF" />
+                                            <ComboBoxItem Content="红色" Tag="#FFFF0000" />
+                                            <ComboBoxItem Content="黄色" Tag="#FFFFFF00" />
+                                            <ComboBoxItem Content="蓝色" Tag="#FF2563EB" />
+                                            <ComboBoxItem Content="绿色" Tag="#FF16A34A" />
+                                            <ComboBoxItem Content="橙色" Tag="#FFFB9650" />
+                                            <ComboBoxItem Content="紫色" Tag="#FF9333EA" />
+                                        </ComboBox>
+                                        <TextBlock Foreground="#fafafa" Text="恢复笔粗细" FontSize="14" Margin="0,8,0,0" />
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Slider Name="BrushAutoRestoreWidthSlider" Width="200" Minimum="1" Maximum="20"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True"
+                                                    Value="5"
+                                                    ValueChanged="BrushAutoRestoreWidthSlider_ValueChanged" />
+                                            <TextBlock Foreground="#fafafa"
+                                                       Text="{Binding ElementName=BrushAutoRestoreWidthSlider, Path=Value, StringFormat={}{0:0}px}"
+                                                       FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                        </ui:SimpleStackPanel>
+                                        <TextBlock Foreground="#fafafa" Text="恢复透明度" FontSize="14" Margin="0,8,0,0" />
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Slider Name="BrushAutoRestoreAlphaSlider" Width="200" Minimum="0" Maximum="255"
+                                                    TickFrequency="5" IsSnapToTickEnabled="True"
+                                                    ValueChanged="BrushAutoRestoreAlphaSlider_ValueChanged" />
+                                            <TextBlock Foreground="#fafafa"
+                                                       Text="{Binding ElementName=BrushAutoRestoreAlphaSlider, Path=Value, StringFormat={}{0:0}}"
+                                                       FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                        </ui:SimpleStackPanel>
+                                    </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <!-- 崩溃后操作设置 -->

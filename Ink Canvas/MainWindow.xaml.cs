@@ -410,6 +410,8 @@ namespace Ink_Canvas
         private DrawingAttributes drawingAttributes;
         private InkSmoothingManager _inkSmoothingManager;
 
+        private DispatcherTimer _brushAutoRestoreTimer;
+
         private void loadPenCanvas()
         {
             try
@@ -435,6 +437,213 @@ namespace Ink_Canvas
                 inkCanvas.Gesture += InkCanvas_Gesture;
             }
             catch { }
+        }
+
+
+        /// <param name="color">目标颜色（包含Alpha通道）</param>
+        /// <param name="width">目标粗细</param>
+        /// <param name="height">目标高度（通常与width相同）</param>
+        private void SetBrushAttributesDirectly(Color color, double width, double height)
+        {
+            try
+            {
+                if (drawingAttributes == null)
+                {
+                    drawingAttributes = inkCanvas.DefaultDrawingAttributes;
+                }
+
+                drawingAttributes.Color = color;
+                drawingAttributes.Width = width;
+                drawingAttributes.Height = height;
+
+                inkCanvas.DefaultDrawingAttributes.Color = color;
+                inkCanvas.DefaultDrawingAttributes.Width = width;
+                inkCanvas.DefaultDrawingAttributes.Height = height;
+
+                drawingAttributes = inkCanvas.DefaultDrawingAttributes;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly 出错: {ex}", LogHelper.LogType.Warning);
+            }
+        }
+
+        private void InitBrushAutoRestoreTimer()
+        {
+            if (_brushAutoRestoreTimer == null)
+            {
+                _brushAutoRestoreTimer = new DispatcherTimer();
+                _brushAutoRestoreTimer.Tick += BrushAutoRestoreTimer_Tick;
+            }
+
+            UpdateBrushAutoRestoreTimerInterval();
+        }
+
+        private void UpdateBrushAutoRestoreTimerInterval()
+        {
+            if (_brushAutoRestoreTimer == null) return;
+
+            TimeSpan? nextInterval = null;
+            try
+            {
+                var timesConfig = Settings?.Canvas?.BrushAutoRestoreTimes;
+                if (!string.IsNullOrWhiteSpace(timesConfig))
+                {
+                    var parts = timesConfig
+                        .Split(new[] { ';', '；', ',', '，' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(p => p.Trim())
+                        .ToList();
+
+                    var validTimes = new List<TimeSpan>();
+                    foreach (var part in parts)
+                    {
+                        if (TimeSpan.TryParse(part, out var ts) &&
+                            ts >= TimeSpan.Zero &&
+                            ts < TimeSpan.FromDays(1))
+                        {
+                            validTimes.Add(ts);
+                        }
+                    }
+
+                    if (validTimes.Count > 0)
+                    {
+                        var now = DateTime.Now;
+                        var today = now.Date;
+                        var nowTod = now.TimeOfDay;
+
+                        TimeSpan? todayNext = null;
+                        foreach (var t in validTimes)
+                        {
+                            if (t >= nowTod)
+                            {
+                                if (todayNext == null || t < todayNext.Value)
+                                {
+                                    todayNext = t;
+                                }
+                            }
+                        }
+
+                        DateTime target;
+                        if (todayNext.HasValue)
+                        {
+                            target = today + todayNext.Value;
+                        }
+                        else
+                        {
+                            var firstTime = validTimes.OrderBy(t => t).First();
+                            target = today.AddDays(1) + firstTime;
+                        }
+
+                        var interval = target - now;
+                        if (interval < TimeSpan.FromSeconds(1))
+                        {
+                            interval = TimeSpan.FromSeconds(1);
+                        }
+                        nextInterval = interval;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"根据时间点计算画笔自动恢复时间间隔时出错: {ex}", LogHelper.LogType.Warning);
+            }
+
+            if (!nextInterval.HasValue)
+            {
+                int seconds = Settings?.Canvas?.BrushAutoRestoreDelaySeconds ?? 0;
+                if (seconds < 1) seconds = 1;
+                nextInterval = TimeSpan.FromSeconds(seconds);
+            }
+
+            _brushAutoRestoreTimer.Interval = nextInterval.Value;
+        }
+
+        internal void ScheduleBrushAutoRestore()
+        {
+            try
+            {
+                if (Settings == null || Settings.Canvas == null || !Settings.Canvas.EnableBrushAutoRestore)
+                {
+                    return;
+                }
+
+                if (_brushAutoRestoreTimer == null)
+                {
+                    InitBrushAutoRestoreTimer();
+                }
+                else
+                {
+                    UpdateBrushAutoRestoreTimerInterval();
+                }
+
+                _brushAutoRestoreTimer.Stop();
+                _brushAutoRestoreTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"ScheduleBrushAutoRestore 出错: {ex}", LogHelper.LogType.Warning);
+            }
+        }
+
+        private void BrushAutoRestoreTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                _brushAutoRestoreTimer.Stop();
+
+                if (Settings == null || Settings.Canvas == null || !Settings.Canvas.EnableBrushAutoRestore)
+                {
+                    return;
+                }
+
+                if (drawingAttributes == null)
+                {
+                    drawingAttributes = inkCanvas.DefaultDrawingAttributes;
+                }
+
+                Color targetColor = Ink_DefaultColor;
+                try
+                {
+                    var colorConfig = Settings.Canvas.BrushAutoRestoreColor;
+                    if (!string.IsNullOrWhiteSpace(colorConfig))
+                    {
+                        var converted = ColorConverter.ConvertFromString(colorConfig);
+                        if (converted is Color c)
+                        {
+                            targetColor = c;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"解析 BrushAutoRestoreColor 失败: {ex}", LogHelper.LogType.Warning);
+                }
+
+                int alphaConfig = Settings.Canvas.BrushAutoRestoreAlpha;
+                if (alphaConfig < 0) alphaConfig = 0;
+                if (alphaConfig > 255) alphaConfig = 255;
+                targetColor.A = (byte)alphaConfig;
+
+                double width = Settings.Canvas.BrushAutoRestoreWidth;
+                if (width <= 0)
+                {
+                    width = Settings.Canvas.InkWidth > 0 ? Settings.Canvas.InkWidth : 2.5;
+                }
+
+                SetBrushAttributesDirectly(targetColor, width, width);
+
+                var actualColor = inkCanvas.DefaultDrawingAttributes.Color;
+                var actualWidth = inkCanvas.DefaultDrawingAttributes.Width;
+                var actualHeight = inkCanvas.DefaultDrawingAttributes.Height;
+                LogHelper.WriteLogToFile($"画笔自动恢复已应用: 目标颜色={targetColor}, 目标粗细={width}, 目标透明度={alphaConfig}", LogHelper.LogType.Event);
+                LogHelper.WriteLogToFile($"画笔自动恢复验证: 实际颜色={actualColor}, 实际粗细={actualWidth}, 实际高度={actualHeight}", LogHelper.LogType.Event);
+                UpdateBrushAutoRestoreTimerInterval();
+                _brushAutoRestoreTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"BrushAutoRestoreTimer_Tick 出错: {ex}", LogHelper.LogType.Warning);
+            }
         }
 
         //ApplicationGesture lastApplicationGesture = ApplicationGesture.AllGestures;
@@ -826,6 +1035,7 @@ namespace Ink_Canvas
                     };
                 }
             }), DispatcherPriority.Loaded);
+            AddTouchSupportToSliders();
         }
 
         private void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e)
@@ -2719,6 +2929,101 @@ namespace Ink_Canvas
             }
         }
 
+        private void ToggleSwitchBrushAutoRestore_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                Settings.Canvas.EnableBrushAutoRestore = ToggleSwitchBrushAutoRestore.IsOn;
+                SaveSettingsToFile();
+
+                if (Settings.Canvas.EnableBrushAutoRestore)
+                {
+                    InitBrushAutoRestoreTimer();
+                    ScheduleBrushAutoRestore();
+                }
+                else
+                {
+                    if (_brushAutoRestoreTimer != null)
+                    {
+                        _brushAutoRestoreTimer.Stop();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换画笔自动恢复功能时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void BrushAutoRestoreTimesTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (Settings?.Canvas == null) return;
+
+                Settings.Canvas.BrushAutoRestoreTimes = BrushAutoRestoreTimesTextBox.Text ?? string.Empty;
+                SaveSettingsToFile();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新画笔自动恢复时间点时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ComboBoxBrushAutoRestoreColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (Settings?.Canvas == null) return;
+
+                if (ComboBoxBrushAutoRestoreColor.SelectedItem is ComboBoxItem item)
+                {
+                    string hex = item.Tag as string ?? string.Empty;
+                    Settings.Canvas.BrushAutoRestoreColor = hex;
+                    SaveSettingsToFile();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新画笔自动恢复目标颜色时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void BrushAutoRestoreWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (Settings?.Canvas == null) return;
+
+                Settings.Canvas.BrushAutoRestoreWidth = e.NewValue;
+                SaveSettingsToFile();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新画笔自动恢复目标粗细时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void BrushAutoRestoreAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (Settings?.Canvas == null) return;
+
+                Settings.Canvas.BrushAutoRestoreAlpha = (int)e.NewValue;
+                SaveSettingsToFile();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新画笔自动恢复目标透明度时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         /// <summary>
         /// 更新墨迹渐隐控制开关的可见性
         /// </summary>
@@ -3087,7 +3392,9 @@ namespace Ink_Canvas
                     InkAlphaSlider,
                     HighlighterWidthSlider,
                     MLAvoidanceHistorySlider,
-                    MLAvoidanceWeightSlider
+                    MLAvoidanceWeightSlider,
+                    BrushAutoRestoreWidthSlider,
+                    BrushAutoRestoreAlphaSlider
                 };
 
                 foreach (var slider in sliders)
