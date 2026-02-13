@@ -46,7 +46,7 @@ namespace Ink_Canvas
                 ClipboardNotification.ClipboardUpdate += OnClipboardUpdate;
                 isClipboardMonitoringEnabled = true;
 
-                if (IsSourceInitialized)
+                if (new WindowInteropHelper(this).Handle != IntPtr.Zero)
                     OnSourceInitializedForClipboard(this, EventArgs.Empty);
                 else
                     SourceInitialized += OnSourceInitializedForClipboard;
