@@ -2357,9 +2357,9 @@ namespace Ink_Canvas
         private void StartOrStoptimerCheckAutoFold()
         {
             if (Settings.Automation.IsEnableAutoFold)
-                timerCheckAutoFold.Start();
+                _unifiedMainWindowTimer?.Start();
             else
-                timerCheckAutoFold.Stop();
+                _unifiedMainWindowTimer?.Stop();
         }
 
         private void ToggleSwitchAutoFoldInEasiNote_Toggled(object sender, RoutedEventArgs e)

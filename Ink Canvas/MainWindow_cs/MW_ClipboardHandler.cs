@@ -1,5 +1,6 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,6 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Ink;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -19,22 +21,64 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        private const int WM_CLIPBOARDUPDATE = 0x031D;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
+
         private bool isClipboardMonitoringEnabled;
         private BitmapSource lastClipboardImage;
+        private HwndSource _clipboardHwndSource;
 
         // 初始化剪贴板监控
         private void InitializeClipboardMonitoring()
         {
             try
             {
-                // 监听剪贴板变化
                 ClipboardNotification.ClipboardUpdate += OnClipboardUpdate;
                 isClipboardMonitoringEnabled = true;
+
+                SourceInitialized += OnSourceInitializedForClipboard;
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"初始化剪贴板监控失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private void OnSourceInitializedForClipboard(object sender, EventArgs e)
+        {
+            SourceInitialized -= OnSourceInitializedForClipboard;
+            try
+            {
+                var handle = new WindowInteropHelper(this).Handle;
+                if (handle == IntPtr.Zero) return;
+
+                _clipboardHwndSource = HwndSource.FromHwnd(handle);
+                _clipboardHwndSource?.AddHook(ClipboardWndProc);
+
+                if (!AddClipboardFormatListener(handle))
+                    LogHelper.WriteLogToFile($"AddClipboardFormatListener 失败: {Marshal.GetLastWin32Error()}", LogHelper.LogType.Warning);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"安装剪贴板监听失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private IntPtr ClipboardWndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_CLIPBOARDUPDATE)
+            {
+                Dispatcher.BeginInvoke(new Action(() => ClipboardNotification.NotifyFromMessage()), DispatcherPriority.Background);
+                handled = true;
+            }
+            return IntPtr.Zero;
         }
 
         // 剪贴板内容变化事件处理
@@ -273,6 +317,13 @@ namespace Ink_Canvas
                     ClipboardNotification.ClipboardUpdate -= OnClipboardUpdate;
                     isClipboardMonitoringEnabled = false;
                 }
+
+                var handle = new WindowInteropHelper(this).Handle;
+                if (handle != IntPtr.Zero)
+                    RemoveClipboardFormatListener(handle);
+
+                _clipboardHwndSource?.RemoveHook(ClipboardWndProc);
+                _clipboardHwndSource = null;
             }
             catch (Exception ex)
             {
@@ -286,19 +337,10 @@ namespace Ink_Canvas
     {
         public static event Action ClipboardUpdate;
 
-        private static Timer clipboardTimer;
         private static string lastClipboardText = "";
         private static bool lastHadImage;
 
-        static ClipboardNotification()
-        {
-            clipboardTimer = new Timer();
-            clipboardTimer.Interval = 500; // 每500ms检查一次
-            clipboardTimer.Tick += CheckClipboard;
-            clipboardTimer.Start();
-        }
-
-        private static void CheckClipboard(object sender, EventArgs e)
+        public static void NotifyFromMessage()
         {
             try
             {
@@ -320,8 +362,6 @@ namespace Ink_Canvas
 
         public static void Stop()
         {
-            clipboardTimer?.Stop();
-            clipboardTimer?.Dispose();
         }
     }
 }

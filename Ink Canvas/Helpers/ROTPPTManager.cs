@@ -1,6 +1,7 @@
 using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Timers;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
@@ -162,8 +163,8 @@ namespace Ink_Canvas.Helpers
         // 唯一持久化的 COM 对象字段：PPT 应用程序实例
         private object _pptApplication;
 
-        private Timer _connectionCheckTimer;
-        private Timer _slideShowStateCheckTimer;
+        private Timer _unifiedRotTimer;
+        private int _rotTickCount;
 
         private bool _isModuleUnloading;
         private bool _lastSlideShowState;
@@ -179,28 +180,32 @@ namespace Ink_Canvas.Helpers
 
         private void InitializeTimers()
         {
-            _connectionCheckTimer = new Timer(500);
-            _connectionCheckTimer.Elapsed += OnConnectionCheckTimerElapsed;
-            _connectionCheckTimer.AutoReset = true;
+            _unifiedRotTimer = new Timer(500);
+            _unifiedRotTimer.Elapsed += OnUnifiedRotTimerElapsed;
+            _unifiedRotTimer.AutoReset = true;
+        }
 
-            _slideShowStateCheckTimer = new Timer(1000);
-            _slideShowStateCheckTimer.Elapsed += OnSlideShowStateCheckTimerElapsed;
-            _slideShowStateCheckTimer.AutoReset = true;
+        private void OnUnifiedRotTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            var tick = Interlocked.Increment(ref _rotTickCount);
+
+            OnConnectionCheckTimerElapsed(sender, e);
+
+            if (tick % 2 == 0)
+                OnSlideShowStateCheckTimerElapsed(sender, e);
         }
 
         public void StartMonitoring()
         {
             if (_disposed) return;
 
-            _connectionCheckTimer?.Start();
-            _slideShowStateCheckTimer?.Start();
+            _unifiedRotTimer?.Start();
             LogHelper.WriteLogToFile("[ROT] PPT 监控已启动", LogHelper.LogType.Trace);
         }
 
         public void StopMonitoring()
         {
-            _connectionCheckTimer?.Stop();
-            _slideShowStateCheckTimer?.Stop();
+            _unifiedRotTimer?.Stop();
             DisconnectFromPPT();
             LogHelper.WriteLogToFile("[ROT] PPT 监控已停止", LogHelper.LogType.Trace);
         }
@@ -364,8 +369,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 _isModuleUnloading = true;
-                _connectionCheckTimer?.Stop();
-                _slideShowStateCheckTimer?.Stop();
+                _unifiedRotTimer?.Stop();
 
                 PPTConnectionChanged?.Invoke(false);
                 LogHelper.WriteLogToFile("[ROT] 准备断开 PPT 连接，先卸载监控模块", LogHelper.LogType.Event);
@@ -445,8 +449,7 @@ namespace Ink_Canvas.Helpers
                         System.Threading.Thread.Sleep(1000);
 
                         _isModuleUnloading = false;
-                        _connectionCheckTimer?.Start();
-                        _slideShowStateCheckTimer?.Start();
+                        _unifiedRotTimer?.Start();
 
                         LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入联动状态", LogHelper.LogType.Trace);
                     }

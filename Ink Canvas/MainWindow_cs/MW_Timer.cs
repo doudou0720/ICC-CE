@@ -57,9 +57,8 @@ namespace Ink_Canvas
 
     public partial class MainWindow : Window
     {
-        private Timer timerCheckPPT = new Timer();
         private Timer timerKillProcess = new Timer();
-        private Timer timerCheckAutoFold = new Timer();
+        private Timer _unifiedMainWindowTimer;
         private string AvailableLatestVersion;
         private Timer timerCheckAutoUpdateWithSilence = new Timer();
         private Timer timerCheckAutoUpdateRetry = new Timer();
@@ -111,13 +110,11 @@ namespace Ink_Canvas
         // 修改InitTimers方法中的初始时间和日期格式
         private void InitTimers()
         {
-            // PPT检查现在由PPTManager处理，不再需要定时器
-            // timerCheckPPT.Elapsed += TimerCheckPPT_Elapsed;
-            // timerCheckPPT.Interval = 500;
             timerKillProcess.Elapsed += TimerKillProcess_Elapsed;
             timerKillProcess.Interval = 2000;
-            timerCheckAutoFold.Elapsed += timerCheckAutoFold_Elapsed;
-            timerCheckAutoFold.Interval = 500;
+            _unifiedMainWindowTimer = new Timer(500);
+            _unifiedMainWindowTimer.Elapsed += OnUnifiedMainWindowTimerElapsed;
+            _unifiedMainWindowTimer.AutoReset = true;
             timerCheckAutoUpdateWithSilence.Elapsed += timerCheckAutoUpdateWithSilence_Elapsed;
             timerCheckAutoUpdateWithSilence.Interval = 1000 * 60 * 10;
             timerCheckAutoUpdateRetry.Elapsed += timerCheckAutoUpdateRetry_Elapsed;
@@ -152,6 +149,11 @@ namespace Ink_Canvas
 
             // 初始化定时保存墨迹定时器
             InitAutoSaveStrokesTimer();
+        }
+
+        private void OnUnifiedMainWindowTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            timerCheckAutoFold_Elapsed(sender, e);
         }
 
         // 初始化定时保存墨迹定时器

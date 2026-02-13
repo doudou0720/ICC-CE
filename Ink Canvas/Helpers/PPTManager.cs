@@ -130,6 +130,7 @@ namespace Ink_Canvas.Helpers
         #region Private Fields
         private Timer _unifiedPptTimer;
         private int _monitorTickCount;
+        private volatile bool _unifiedPptTimerRunning;
         private bool _isWpsMonitoringEnabled;
 
         private Process _wpsProcess;
@@ -179,10 +180,12 @@ namespace Ink_Canvas.Helpers
         private void OnUnifiedPptTimerElapsed(object sender, ElapsedEventArgs e)
         {
             if (_disposed || _isModuleUnloading)
-            {
                 return;
-            }
 
+            if (_unifiedPptTimerRunning)
+                return;
+
+            _unifiedPptTimerRunning = true;
             try
             {
                 var tick = Interlocked.Increment(ref _monitorTickCount);
@@ -192,24 +195,22 @@ namespace Ink_Canvas.Helpers
                 if (IsConnected)
                 {
                     if (tick % 2 == 0)
-                    {
                         CheckSlideShowState();
-                    }
 
                     if (_isWpsMonitoringEnabled && tick % 4 == 0)
-                    {
                         CheckWpsProcess();
-                    }
                 }
 
                 if (tick >= int.MaxValue - 1000)
-                {
                     Interlocked.Exchange(ref _monitorTickCount, 0);
-                }
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"统一PPT监控定时器执行失败: {ex}", LogHelper.LogType.Error);
+            }
+            finally
+            {
+                _unifiedPptTimerRunning = false;
             }
         }
 
