@@ -34,6 +34,8 @@ namespace Ink_Canvas
         private bool isClipboardMonitoringEnabled;
         private BitmapSource lastClipboardImage;
         private HwndSource _clipboardHwndSource;
+        private DateTime _lastPasteNotificationTime = DateTime.MinValue;
+        private const int PasteNotificationDebounceSeconds = 4;
 
         // 初始化剪贴板监控
         private void InitializeClipboardMonitoring()
@@ -50,11 +52,20 @@ namespace Ink_Canvas
                     OnSourceInitializedForClipboard(this, EventArgs.Empty);
                 else
                     SourceInitialized += OnSourceInitializedForClipboard;
+                Dispatcher.BeginInvoke(new Action(EnsureClipboardHookInstalled), DispatcherPriority.Loaded);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"初始化剪贴板监控失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private void EnsureClipboardHookInstalled()
+        {
+            if (_clipboardHwndSource != null) return;
+            var handle = new WindowInteropHelper(this).Handle;
+            if (handle == IntPtr.Zero) return;
+            OnSourceInitializedForClipboard(this, EventArgs.Empty);
         }
 
         private void OnSourceInitializedForClipboard(object sender, EventArgs e)
@@ -92,19 +103,12 @@ namespace Ink_Canvas
         {
             try
             {
-                if (Clipboard.ContainsImage())
-                {
-                    var clipboardImage = Clipboard.GetImage();
-                    if (clipboardImage != null && clipboardImage != lastClipboardImage)
-                    {
-                        lastClipboardImage = clipboardImage;
-                        // 在白板模式下显示粘贴提示
-                        if (currentMode == 1) // 白板模式
-                        {
-                            ShowPasteNotification();
-                        }
-                    }
-                }
+                if (!Clipboard.ContainsImage())
+                    return;
+
+                var clipboardImage = Clipboard.GetImage();
+                if (clipboardImage != null)
+                    lastClipboardImage = clipboardImage;
             }
             catch (Exception ex)
             {
@@ -112,20 +116,40 @@ namespace Ink_Canvas
             }
         }
 
-        // 显示粘贴提示
-        private void ShowPasteNotification()
+        public void CheckClipboardImageAndShowPasteNotificationWhenEnteringBoard()
         {
             try
             {
-                Dispatcher.Invoke(() =>
-                {
-                    ShowNotification("检测到剪贴板中有图片，右键点击白板可粘贴");
-                });
+                if (!Clipboard.ContainsImage())
+                    return;
+
+                bool debounceElapsed = (DateTime.Now - _lastPasteNotificationTime).TotalSeconds >= PasteNotificationDebounceSeconds;
+                if (!debounceElapsed)
+                    return;
+
+                _lastPasteNotificationTime = DateTime.Now;
+                ShowPasteNotification();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"显示粘贴提示失败: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"进入白板时检测剪贴板失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        // 显示粘贴提示
+        private void ShowPasteNotification()
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                try
+                {
+                    ShowNotification("检测到剪贴板中有图片，右键点击白板可粘贴");
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"显示粘贴提示失败: {ex.Message}", LogHelper.LogType.Error);
+                }
+            }), DispatcherPriority.Normal);
         }
 
         // 处理右键菜单显示
@@ -360,9 +384,9 @@ namespace Ink_Canvas
                     ClipboardUpdate?.Invoke();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // 忽略剪贴板访问错误
+                LogHelper.WriteLogToFile($"剪贴板 NotifyFromMessage 异常: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

@@ -3027,6 +3027,8 @@ namespace Ink_Canvas
                     }
 
                     StackPanelPPTButtons.Visibility = Visibility.Visible;
+
+                    CheckClipboardImageAndShowPasteNotificationWhenEnteringBoard();
                 }
 
                 Topmost = true;
@@ -3186,6 +3188,8 @@ namespace Ink_Canvas
                         {
                             Topmost = false;
                         }
+
+                        CheckClipboardImageAndShowPasteNotificationWhenEnteringBoard();
                         break;
                 }
             }
