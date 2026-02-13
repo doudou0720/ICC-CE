@@ -370,6 +370,16 @@ namespace Ink_Canvas.Helpers
                         try
                         {
                             await Task.Delay(TimeSpan.FromMinutes(delayMinutes)).ConfigureAwait(false);
+                            if (MainWindow.Settings?.Dlass?.IsAutoUploadNotes != true)
+                            {
+                                LogHelper.WriteLogToFile($"延迟结束后自动上传已关闭，跳过入队: {filePath}", LogHelper.LogType.Event);
+                                return;
+                            }
+                            if (!File.Exists(filePath))
+                            {
+                                LogHelper.WriteLogToFile($"延迟结束后文件已不存在，跳过入队: {filePath}", LogHelper.LogType.Event);
+                                return;
+                            }
                             EnqueueFile(filePath);
                         }
                         catch (Exception ex)
