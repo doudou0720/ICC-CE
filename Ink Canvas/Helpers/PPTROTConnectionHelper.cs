@@ -299,13 +299,6 @@ namespace Ink_Canvas.Helpers
                 }
 
                 bestPriority = highestPriority;
-                
-                if (bestApp != null)
-                {
-                }
-                else
-                {
-                }
             }
             catch (Exception ex)
             {

@@ -78,8 +78,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (AutoUpdateWithSilenceStartTimeComboBox != null)
                 {
                     var startTime = MainWindow.Settings.Startup.AutoUpdateWithSilenceStartTime ?? "06:00";
+                    var startHour = startTime.Contains(":") ? startTime.Split(':')[0].Trim().PadLeft(2, '0') : startTime;
                     var startItem = AutoUpdateWithSilenceStartTimeComboBox.Items.Cast<ComboBoxItem>()
-                        .FirstOrDefault(item => item.Tag?.ToString() == startTime.Replace(":", ""));
+                        .FirstOrDefault(item => item.Tag?.ToString() == startHour);
                     if (startItem != null)
                     {
                         AutoUpdateWithSilenceStartTimeComboBox.SelectedItem = startItem;
@@ -89,8 +90,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 if (AutoUpdateWithSilenceEndTimeComboBox != null)
                 {
                     var endTime = MainWindow.Settings.Startup.AutoUpdateWithSilenceEndTime ?? "22:00";
+                    var endHour = endTime.Contains(":") ? endTime.Split(':')[0].Trim().PadLeft(2, '0') : endTime;
                     var endItem = AutoUpdateWithSilenceEndTimeComboBox.Items.Cast<ComboBoxItem>()
-                        .FirstOrDefault(item => item.Tag?.ToString() == endTime.Replace(":", ""));
+                        .FirstOrDefault(item => item.Tag?.ToString() == endHour);
                     if (endItem != null)
                     {
                         AutoUpdateWithSilenceEndTimeComboBox.SelectedItem = endItem;
