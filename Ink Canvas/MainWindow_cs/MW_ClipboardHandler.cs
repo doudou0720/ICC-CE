@@ -40,10 +40,16 @@ namespace Ink_Canvas
         {
             try
             {
+                if (isClipboardMonitoringEnabled)
+                    return;
+
                 ClipboardNotification.ClipboardUpdate += OnClipboardUpdate;
                 isClipboardMonitoringEnabled = true;
 
-                SourceInitialized += OnSourceInitializedForClipboard;
+                if (IsSourceInitialized)
+                    OnSourceInitializedForClipboard(this, EventArgs.Empty);
+                else
+                    SourceInitialized += OnSourceInitializedForClipboard;
             }
             catch (Exception ex)
             {
@@ -347,7 +353,7 @@ namespace Ink_Canvas
                 bool currentHasImage = Clipboard.ContainsImage();
                 string currentText = Clipboard.ContainsText() ? Clipboard.GetText() : "";
 
-                if (currentHasImage != lastHadImage || currentText != lastClipboardText)
+                if (currentHasImage != lastHadImage || currentText != lastClipboardText || currentHasImage)
                 {
                     lastHadImage = currentHasImage;
                     lastClipboardText = currentText;
