@@ -412,6 +412,9 @@ namespace Ink_Canvas
 
         private DispatcherTimer _brushAutoRestoreTimer;
 
+        private bool _isBoardBrushMode;
+        private double _savedInkWidthBeforeBoardBrush = 5;
+
         private void loadPenCanvas()
         {
             try
@@ -564,6 +567,62 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private const double BoardBrushInkWidth = 300;
+
+        private void BoardBrushModeButton_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender != BoardBrushModeButton) return;
+            if (lastBorderMouseDownObject != BoardBrushModeButton) return;
+
+            _isBoardBrushMode = !_isBoardBrushMode;
+
+            try
+            {
+                if (drawingAttributes == null)
+                    drawingAttributes = inkCanvas.DefaultDrawingAttributes;
+
+                if (penType == 1) return; 
+
+                if (_isBoardBrushMode)
+                {
+                    _savedInkWidthBeforeBoardBrush = InkWidthSlider != null ? InkWidthSlider.Value / 2.0 : drawingAttributes.Width;
+                    if (_savedInkWidthBeforeBoardBrush < 0.5) _savedInkWidthBeforeBoardBrush = 2.5;
+
+                    drawingAttributes.Width = BoardBrushInkWidth;
+                    drawingAttributes.Height = BoardBrushInkWidth;
+                    inkCanvas.DefaultDrawingAttributes.Width = BoardBrushInkWidth;
+                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkWidth;
+                    drawingAttributes.IgnorePressure = true;
+                    inkCanvas.DefaultDrawingAttributes.IgnorePressure = true;
+
+                    if (BoardBrushModeButton != null)
+                        BoardBrushModeButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+                }
+                else
+                {
+                    double w = InkWidthSlider != null ? InkWidthSlider.Value / 2.0 : _savedInkWidthBeforeBoardBrush;
+                    if (w < 0.5) w = 2.5;
+
+                    drawingAttributes.Width = w;
+                    drawingAttributes.Height = w;
+                    inkCanvas.DefaultDrawingAttributes.Width = w;
+                    inkCanvas.DefaultDrawingAttributes.Height = w;
+                    drawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
+                    inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
+
+                    if (BoardInkWidthSlider != null) BoardInkWidthSlider.Value = w * 2;
+                    if (Settings?.Canvas != null) Settings.Canvas.InkWidth = w;
+
+                    if (BoardBrushModeButton != null)
+                        BoardBrushModeButton.ClearValue(BackgroundProperty);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"BoardBrushModeButton_MouseUp: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
