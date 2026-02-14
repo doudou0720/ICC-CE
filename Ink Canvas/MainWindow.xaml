@@ -8448,10 +8448,10 @@
                                                                         Value="5"
                                                                         TickFrequency="0.1" TickPlacement="None"
                                                                         ValueChanged="InkWidthSlider_ValueChanged" />
-                                                                <TextBlock
+                                                                <TextBlock Width="36" TextAlignment="Right"
                                                                     Text="{Binding Value, ElementName=InkWidthSlider, Mode=OneWay}"
-                                                                    FontFamily="Consolas" VerticalAlignment="Bottom"
-                                                                    Margin="10,0,0,4.5" FontSize="15" />
+                                                                    FontFamily="Consolas" VerticalAlignment="Center"
+                                                                    Margin="10,0,0,0" FontSize="15" />
                                                                 <Button x:Name="BoardBrushModeButton" Width="24" Height="24" Margin="8,0,0,0"
                                                                         Style="{StaticResource NavButton}"
                                                                         VerticalAlignment="Center"
@@ -8477,10 +8477,10 @@
                                                                         TickFrequency="1"
                                                                         TickPlacement="None"
                                                                         ValueChanged="InkAlphaSlider_ValueChanged" />
-                                                                <TextBlock
+                                                                <TextBlock Width="36" TextAlignment="Right"
                                                                     Text="{Binding Value, ElementName=InkAlphaSlider, Mode=OneWay}"
-                                                                    FontFamily="Consolas" VerticalAlignment="Bottom"
-                                                                    Margin="10,0,0,4.5" FontSize="15" />
+                                                                    FontFamily="Consolas" VerticalAlignment="Center"
+                                                                    Margin="10,0,0,0" FontSize="15" />
                                                             </StackPanel>
                                                         </ui:SimpleStackPanel>
                                                     </Viewbox>
