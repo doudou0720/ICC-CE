@@ -489,34 +489,57 @@ namespace Ink_Canvas
         {
             try
             {
-                // 确保在UI线程上执行
                 if (!Dispatcher.CheckAccess())
                 {
                     Dispatcher.Invoke(() => SetBrushAttributesDirectly(color, width, height));
                     return;
                 }
 
-                // 确保当前处于批注模式
                 if (inkCanvas.EditingMode != InkCanvasEditingMode.Ink)
                 {
                     PenIcon_Click(null, null);
                 }
 
-                // 确保 drawingAttributes 已初始化
                 if (drawingAttributes == null)
                 {
                     drawingAttributes = inkCanvas.DefaultDrawingAttributes;
                 }
 
-                // 同步更新 Ink_DefaultColor
-                Ink_DefaultColor = color;
+                Color rgbColor = Color.FromRgb(color.R, color.G, color.B);
+                if (currentMode == 0)
+                {
+                    if (rgbColor == Colors.White) lastDesktopInkColor = 5;
+                    else if (rgbColor == Color.FromRgb(251, 150, 80)) lastDesktopInkColor = 8;
+                    else if (rgbColor == Colors.Yellow) lastDesktopInkColor = 4;
+                    else if (rgbColor == Colors.Black) lastDesktopInkColor = 0;
+                    else if (rgbColor == Color.FromRgb(37, 99, 235)) lastDesktopInkColor = 3;
+                    else if (rgbColor == Colors.Red) lastDesktopInkColor = 1;
+                    else if (rgbColor == Colors.Green || rgbColor == Color.FromRgb(22, 163, 74)) lastDesktopInkColor = 2;
+                    else if (rgbColor == Color.FromRgb(147, 51, 234)) lastDesktopInkColor = 6;
+                }
+                else
+                {
+                    if (rgbColor == Colors.White) lastBoardInkColor = 5;
+                    else if (rgbColor == Color.FromRgb(251, 150, 80)) lastBoardInkColor = 8;
+                    else if (rgbColor == Colors.Yellow) lastBoardInkColor = 4;
+                    else if (rgbColor == Colors.Black) lastBoardInkColor = 0;
+                    else if (rgbColor == Color.FromRgb(37, 99, 235)) lastBoardInkColor = 3;
+                    else if (rgbColor == Colors.Red) lastBoardInkColor = 1;
+                    else if (rgbColor == Colors.Green || rgbColor == Color.FromRgb(22, 163, 74)) lastBoardInkColor = 2;
+                    else if (rgbColor == Color.FromRgb(147, 51, 234)) lastBoardInkColor = 6;
+                }
 
-                // 设置画笔颜色和属性
-                drawingAttributes.Color = color;
-                inkCanvas.DefaultDrawingAttributes.Color = color;
+                var colorWithAlpha = Color.FromArgb(color.A, 0, 0, 0);
+                drawingAttributes.Color = colorWithAlpha;
+                inkCanvas.DefaultDrawingAttributes.Color = colorWithAlpha;
 
-                // 设置宽度和高度
-                if (penType != 1) // 不是荧光笔模式
+                ColorSwitchCheck(false);
+                CheckColorTheme();
+
+                Ink_DefaultColor = inkCanvas.DefaultDrawingAttributes.Color;
+
+                // 粗细与透明度
+                if (penType != 1)
                 {
                     drawingAttributes.Width = width;
                     drawingAttributes.Height = height;
@@ -527,28 +550,14 @@ namespace Ink_Canvas
                 if (Settings?.Canvas != null)
                 {
                     Settings.Canvas.InkWidth = width;
-                    Settings.Canvas.InkAlpha = (int)color.A; // 同步更新透明度设置
+                    Settings.Canvas.InkAlpha = (int)color.A;
                 }
 
-                // 同步批注子面板的粗细和透明度滑块
-                if (InkWidthSlider != null)
-                {
-                    InkWidthSlider.Value = width * 2;
-                }
-                if (InkAlphaSlider != null)
-                {
-                    InkAlphaSlider.Value = color.A;
-                }
-                if (BoardInkWidthSlider != null)
-                {
-                    BoardInkWidthSlider.Value = width * 2;
-                }
-                if (BoardInkAlphaSlider != null)
-                {
-                    BoardInkAlphaSlider.Value = color.A;
-                }
+                if (InkWidthSlider != null) InkWidthSlider.Value = width * 2;
+                if (InkAlphaSlider != null) InkAlphaSlider.Value = color.A;
+                if (BoardInkWidthSlider != null) BoardInkWidthSlider.Value = width * 2;
+                if (BoardInkAlphaSlider != null) BoardInkAlphaSlider.Value = color.A;
 
-                // 再次写入画笔粗细，防止滑块 ValueChanged 因范围/舍入覆盖为目标值
                 if (penType != 1)
                 {
                     drawingAttributes.Width = width;
@@ -557,36 +566,7 @@ namespace Ink_Canvas
                     inkCanvas.DefaultDrawingAttributes.Height = height;
                 }
 
-                // 更新颜色状态
-                Color rgbColor = Color.FromRgb(color.R, color.G, color.B);
-                if (currentMode == 0)
-                {
-                    // 桌面模式
-                    if (rgbColor == Colors.White) lastDesktopInkColor = 5;
-                    else if (rgbColor == Color.FromRgb(251, 150, 80)) lastDesktopInkColor = 8; // 橙色
-                    else if (rgbColor == Colors.Yellow) lastDesktopInkColor = 4;
-                    else if (rgbColor == Colors.Black) lastDesktopInkColor = 0;
-                    else if (rgbColor == Color.FromRgb(37, 99, 235)) lastDesktopInkColor = 3; // 蓝色
-                    else if (rgbColor == Colors.Red) lastDesktopInkColor = 1;
-                    else if (rgbColor == Colors.Green || rgbColor == Color.FromRgb(22, 163, 74)) lastDesktopInkColor = 2;
-                    else if (rgbColor == Color.FromRgb(147, 51, 234)) lastDesktopInkColor = 6; // 紫色
-                }
-                else
-                {
-                    // 白板模式
-                    if (rgbColor == Colors.White) lastBoardInkColor = 5;
-                    else if (rgbColor == Color.FromRgb(251, 150, 80)) lastBoardInkColor = 8; // 橙色
-                    else if (rgbColor == Colors.Yellow) lastBoardInkColor = 4;
-                    else if (rgbColor == Colors.Black) lastBoardInkColor = 0;
-                    else if (rgbColor == Color.FromRgb(37, 99, 235)) lastBoardInkColor = 3; // 蓝色
-                    else if (rgbColor == Colors.Red) lastBoardInkColor = 1;
-                    else if (rgbColor == Colors.Green || rgbColor == Color.FromRgb(22, 163, 74)) lastBoardInkColor = 2;
-                    else if (rgbColor == Color.FromRgb(147, 51, 234)) lastBoardInkColor = 6; // 紫色
-                }
-
-                ColorSwitchCheck(false);
-
-                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: 已设置颜色={color}, 宽度={width}, 高度={height}, Ink_DefaultColor已同步={Ink_DefaultColor}", LogHelper.LogType.Trace);
+                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: 索引 currentMode=0=>{lastDesktopInkColor} 1=>{lastBoardInkColor}, 宽度={width}, 透明度={color.A}", LogHelper.LogType.Trace);
             }
             catch (Exception ex)
             {
