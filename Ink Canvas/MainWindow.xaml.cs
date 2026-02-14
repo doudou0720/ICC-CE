@@ -570,7 +570,8 @@ namespace Ink_Canvas
             }
         }
 
-        private const double BoardBrushInkWidth = 300;
+        private const double BoardBrushInkWidth = 16;
+        private const double BoardBrushInkHeight = 50;
 
         private void BoardBrushModeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -589,9 +590,11 @@ namespace Ink_Canvas
                     if (_savedInkWidthBeforeBoardBrush < 0.5) _savedInkWidthBeforeBoardBrush = 2.5;
 
                     drawingAttributes.Width = BoardBrushInkWidth;
-                    drawingAttributes.Height = BoardBrushInkWidth;
+                    drawingAttributes.Height = BoardBrushInkHeight;
                     inkCanvas.DefaultDrawingAttributes.Width = BoardBrushInkWidth;
-                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkWidth;
+                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkHeight;
+                    drawingAttributes.StylusTip = StylusTip.Rectangle;
+                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Rectangle;
                     drawingAttributes.IgnorePressure = true;
                     inkCanvas.DefaultDrawingAttributes.IgnorePressure = true;
 
@@ -607,6 +610,8 @@ namespace Ink_Canvas
                     drawingAttributes.Height = w;
                     inkCanvas.DefaultDrawingAttributes.Width = w;
                     inkCanvas.DefaultDrawingAttributes.Height = w;
+                    drawingAttributes.StylusTip = StylusTip.Ellipse;
+                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Ellipse;
                     drawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
                     inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
 
@@ -643,9 +648,11 @@ namespace Ink_Canvas
                     if (_savedInkWidthBeforeBoardBrush < 0.5) _savedInkWidthBeforeBoardBrush = 2.5;
 
                     drawingAttributes.Width = BoardBrushInkWidth;
-                    drawingAttributes.Height = BoardBrushInkWidth;
+                    drawingAttributes.Height = BoardBrushInkHeight;
                     inkCanvas.DefaultDrawingAttributes.Width = BoardBrushInkWidth;
-                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkWidth;
+                    inkCanvas.DefaultDrawingAttributes.Height = BoardBrushInkHeight;
+                    drawingAttributes.StylusTip = StylusTip.Rectangle;
+                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Rectangle;
                     drawingAttributes.IgnorePressure = true;
                     inkCanvas.DefaultDrawingAttributes.IgnorePressure = true;
 
@@ -661,6 +668,8 @@ namespace Ink_Canvas
                     drawingAttributes.Height = w;
                     inkCanvas.DefaultDrawingAttributes.Width = w;
                     inkCanvas.DefaultDrawingAttributes.Height = w;
+                    drawingAttributes.StylusTip = StylusTip.Ellipse;
+                    inkCanvas.DefaultDrawingAttributes.StylusTip = StylusTip.Ellipse;
                     drawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
                     inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
 
