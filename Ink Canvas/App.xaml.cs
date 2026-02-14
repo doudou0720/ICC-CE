@@ -1051,7 +1051,15 @@ namespace Ink_Canvas
             {
                 isStartupComplete = true;
                 startupCompleteHeartbeat = DateTime.Now;
-                LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {(startupCompleteHeartbeat - splashScreenStartTime).TotalSeconds:F2}秒");
+                if (_isSplashScreenShown && splashScreenStartTime != DateTime.MinValue)
+                {
+                    LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {(startupCompleteHeartbeat - splashScreenStartTime).TotalSeconds:F2}秒");
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile($"启动完成心跳已记录");
+                }
+                LogHelper.WriteLogToFile($"启动时长: {(startupCompleteHeartbeat - appStartupStartTime).TotalSeconds:F2}秒");
                 
                 if (_isSplashScreenShown)
                 {
