@@ -941,7 +941,7 @@ namespace Ink_Canvas
                         }
                         catch (Exception initEx)
                         {
-                            LogHelper.WriteLogToFile($"一言 HTTP 客户端初始化失败（已捕获，不崩溃）: {initEx.Message}", LogHelper.LogType.Warning);
+                            LogHelper.WriteLogToFile($"一言 HTTP 客户端初始化失败: {initEx.Message}", LogHelper.LogType.Warning);
                             BlackBoardWaterMark.Text = "一言功能不可用（HTTP 库不可用）";
                             return;
                         }
