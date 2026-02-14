@@ -177,7 +177,6 @@ namespace Ink_Canvas.Windows
                     if (_settings.Automation.FloatingWindowInterceptor != null)
                     {
                         CheckBoxFloatingWindowInterceptorEnabled.IsChecked = _settings.Automation.FloatingWindowInterceptor.IsEnabled;
-                        CheckBoxFloatingWindowInterceptorAutoStart.IsChecked = _settings.Automation.FloatingWindowInterceptor.AutoStart;
                     }
                 }
             }
@@ -366,7 +365,6 @@ namespace Ink_Canvas.Windows
                     if (_settings.Automation.FloatingWindowInterceptor != null)
                     {
                         _settings.Automation.FloatingWindowInterceptor.IsEnabled = CheckBoxFloatingWindowInterceptorEnabled.IsChecked == true;
-                        _settings.Automation.FloatingWindowInterceptor.AutoStart = CheckBoxFloatingWindowInterceptorAutoStart.IsChecked == true;
                     }
                 }
             }

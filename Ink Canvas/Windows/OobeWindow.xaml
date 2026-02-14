@@ -274,7 +274,7 @@
                                   Margin="0,4,0,0"
                                   FontSize="13"
                                   Foreground="{DynamicResource SettingsPageForeground}"
-                                  Content="在主界面底部显示快速工具栏（计时器、点名等）" />
+                                  Content="启用快速面板（计时器、点名等）" />
                     </StackPanel>
 
                     <!-- 步骤 6：快捷键设置（对应设置 → 快捷键设置） -->
@@ -403,11 +403,6 @@
                                   FontSize="13"
                                   Foreground="{DynamicResource SettingsPageForeground}"
                                   Content="启用悬浮窗拦截（拦截希沃、鸿合等课堂软件的悬浮窗，避免遮挡画板）" />
-                        <CheckBox x:Name="CheckBoxFloatingWindowInterceptorAutoStart"
-                                  Margin="0,4,0,0"
-                                  FontSize="13"
-                                  Foreground="{DynamicResource SettingsPageForeground}"
-                                  Content="悬浮窗拦截随软件启动自动开启" />
                     </StackPanel>
 
                     <!-- 步骤 10：随机点名（对应设置 → 随机点名） -->
