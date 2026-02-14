@@ -440,27 +440,86 @@ namespace Ink_Canvas
         }
 
 
-        /// <param name="color">目标颜色（包含Alpha通道）</param>
+        /// <param name="color">目标颜色</param>
         /// <param name="width">目标粗细</param>
-        /// <param name="height">目标高度（通常与width相同）</param>
+        /// <param name="height">目标高度</param>
         private void SetBrushAttributesDirectly(Color color, double width, double height)
         {
             try
             {
+                // 确保在UI线程上执行
+                if (!Dispatcher.CheckAccess())
+                {
+                    Dispatcher.Invoke(() => SetBrushAttributesDirectly(color, width, height));
+                    return;
+                }
+
+                // 确保当前处于批注模式
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.Ink)
+                {
+                    PenIcon_Click(null, null);
+                }
+
+                // 确保 drawingAttributes 已初始化
                 if (drawingAttributes == null)
                 {
                     drawingAttributes = inkCanvas.DefaultDrawingAttributes;
                 }
 
+                // 同步更新 Ink_DefaultColor
+                Ink_DefaultColor = color;
+
+                // 设置画笔颜色和属性
                 drawingAttributes.Color = color;
-                drawingAttributes.Width = width;
-                drawingAttributes.Height = height;
-
                 inkCanvas.DefaultDrawingAttributes.Color = color;
-                inkCanvas.DefaultDrawingAttributes.Width = width;
-                inkCanvas.DefaultDrawingAttributes.Height = height;
 
-                drawingAttributes = inkCanvas.DefaultDrawingAttributes;
+                // 设置宽度和高度
+                if (penType != 1) // 不是荧光笔模式
+                {
+                    drawingAttributes.Width = width;
+                    drawingAttributes.Height = height;
+                    inkCanvas.DefaultDrawingAttributes.Width = width;
+                    inkCanvas.DefaultDrawingAttributes.Height = height;
+                }
+
+                if (Settings?.Canvas != null)
+                {
+                    Settings.Canvas.InkWidth = width;
+                    Settings.Canvas.InkAlpha = (int)color.A; // 同步更新透明度设置
+                }
+
+                // 更新颜色状态
+                Color rgbColor = Color.FromRgb(color.R, color.G, color.B);
+                if (currentMode == 0)
+                {
+                    // 桌面模式
+                    if (rgbColor == Colors.White) lastDesktopInkColor = 5;
+                    else if (rgbColor == Color.FromRgb(251, 150, 80)) lastDesktopInkColor = 8; // 橙色
+                    else if (rgbColor == Colors.Yellow) lastDesktopInkColor = 4;
+                    else if (rgbColor == Colors.Black) lastDesktopInkColor = 0;
+                    else if (rgbColor == Color.FromRgb(37, 99, 235)) lastDesktopInkColor = 3; // 蓝色
+                    else if (rgbColor == Colors.Red) lastDesktopInkColor = 1;
+                    else if (rgbColor == Colors.Green || rgbColor == Color.FromRgb(22, 163, 74)) lastDesktopInkColor = 2;
+                    else if (rgbColor == Color.FromRgb(147, 51, 234)) lastDesktopInkColor = 6; // 紫色
+                }
+                else
+                {
+                    // 白板模式
+                    if (rgbColor == Colors.White) lastBoardInkColor = 5;
+                    else if (rgbColor == Color.FromRgb(251, 150, 80)) lastBoardInkColor = 8; // 橙色
+                    else if (rgbColor == Colors.Yellow) lastBoardInkColor = 4;
+                    else if (rgbColor == Colors.Black) lastBoardInkColor = 0;
+                    else if (rgbColor == Color.FromRgb(37, 99, 235)) lastBoardInkColor = 3; // 蓝色
+                    else if (rgbColor == Colors.Red) lastBoardInkColor = 1;
+                    else if (rgbColor == Colors.Green || rgbColor == Color.FromRgb(22, 163, 74)) lastBoardInkColor = 2;
+                    else if (rgbColor == Color.FromRgb(147, 51, 234)) lastBoardInkColor = 6; // 紫色
+                }
+
+                // 更新快捷调色盘选择指示器
+                UpdateQuickColorPaletteIndicator(color);
+
+
+                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: 已设置颜色={color}, 宽度={width}, 高度={height}, Ink_DefaultColor已同步={Ink_DefaultColor}", LogHelper.LogType.Trace);
             }
             catch (Exception ex)
             {
