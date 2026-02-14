@@ -50,6 +50,10 @@ namespace Ink_Canvas.Helpers
         public void StartMonitoring() => _inner.StartMonitoring();
 
         public void StopMonitoring() => _inner.StopMonitoring();
+
+        public void ReloadConnection()
+        {
+        }
         #endregion
 
         #region 放映控制

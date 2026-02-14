@@ -24,6 +24,8 @@ namespace Ink_Canvas.Helpers
         void StartMonitoring();
         void StopMonitoring();
 
+        void ReloadConnection();
+
         // 放映控制
         bool TryStartSlideShow();
         bool TryEndSlideShow();

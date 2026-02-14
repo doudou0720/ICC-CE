@@ -123,13 +123,28 @@ namespace Ink_Canvas
                 // 初始化长按定时器
                 InitializeLongPressTimer();
 
-                // 如有旧实例，先停止监控，避免重复
+                // 完全清理旧模式
                 try
                 {
                     _pptManager?.StopMonitoring();
+                    _pptManager?.Dispose();
+                    _pptManager = null;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogHelper.WriteLogToFile($"清理旧 PPT 管理器异常: {ex}", LogHelper.LogType.Warning);
+                }
+
+                try
+                {
+                    StopPowerPointProcessMonitoring();
+                    _powerPointProcessMonitorTimer = null;
+                    ClosePowerPointApplication();
+                    ClearStaticInteropState();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"清理 Interop 状态异常: {ex}", LogHelper.LogType.Warning);
                 }
 
                 // 根据设置选择 COM / ROT 架构
@@ -202,6 +217,7 @@ namespace Ink_Canvas
             try
             {
                 if (!Settings.PowerPointSettings.EnablePowerPointEnhancement) return;
+                if (Settings.PowerPointSettings.UseRotPptLink) return;
 
                 // 创建PowerPoint应用程序实例
                 CreatePowerPointApplication();
@@ -251,6 +267,7 @@ namespace Ink_Canvas
         {
             try
             {
+                if (Settings.PowerPointSettings.UseRotPptLink) return;
                 // 如果应用程序已存在且有效，则不重复创建
                 if (pptApplication != null && IsPowerPointApplicationValid())
                 {
@@ -304,6 +321,7 @@ namespace Ink_Canvas
             try
             {
                 if (_pptManager == null) return;
+                if (Settings.PowerPointSettings.UseRotPptLink) return;
 
                 // 使用反射调用PPTManager的ConnectToPPT方法
                 var pptManagerType = _pptManager.GetType();
@@ -398,11 +416,40 @@ namespace Ink_Canvas
                     pptApplication = null;
                 }
 
+                ClearStaticInteropState();
                 LogHelper.WriteLogToFile("PowerPoint应用程序已关闭", LogHelper.LogType.Event);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"关闭PowerPoint应用程序失败: {ex}", LogHelper.LogType.Error);
+                ClearStaticInteropState();
+            }
+        }
+
+        private void ClearStaticInteropState()
+        {
+            try
+            {
+                if (presentation != null)
+                {
+                    try { if (Marshal.IsComObject(presentation)) Marshal.ReleaseComObject(presentation); } catch { }
+                    presentation = null;
+                }
+                if (slides != null)
+                {
+                    try { if (Marshal.IsComObject(slides)) Marshal.ReleaseComObject(slides); } catch { }
+                    slides = null;
+                }
+                if (slide != null)
+                {
+                    try { if (Marshal.IsComObject(slide)) Marshal.ReleaseComObject(slide); } catch { }
+                    slide = null;
+                }
+                slidescount = 0;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"ClearStaticInteropState 异常: {ex}", LogHelper.LogType.Warning);
             }
         }
 
@@ -418,6 +465,7 @@ namespace Ink_Canvas
                     StopPowerPointProcessMonitoring();
                     return;
                 }
+                if (Settings.PowerPointSettings.UseRotPptLink) return;
 
                 // 检查应用程序是否还在运行
                 if (!IsPowerPointApplicationValid())
@@ -437,6 +485,7 @@ namespace Ink_Canvas
         {
             try
             {
+                _pptManager?.StopMonitoring();
                 _pptManager?.Dispose();
                 _singlePPTInkManager?.Dispose();
                 _longPressTimer?.Stop();
@@ -448,6 +497,8 @@ namespace Ink_Canvas
                 // 清理PowerPoint进程守护
                 StopPowerPointProcessMonitoring();
                 _powerPointProcessMonitorTimer = null;
+                ClosePowerPointApplication();
+                ClearStaticInteropState();
 
                 LogHelper.WriteLogToFile("PPT管理器已释放", LogHelper.LogType.Event);
             }
@@ -1329,11 +1380,10 @@ namespace Ink_Canvas
                     InitializePPTManagers();
                 }
 
-                // 手动触发一次连接检查
+                _pptManager?.ReloadConnection();
                 _pptManager?.StartMonitoring();
 
-                // 等待一小段时间让连接建立
-                Task.Delay(500).ContinueWith(_ =>
+                Task.Delay(800).ContinueWith(_ =>
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {

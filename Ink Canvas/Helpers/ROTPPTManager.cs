@@ -209,6 +209,13 @@ namespace Ink_Canvas.Helpers
             DisconnectFromPPT();
             LogHelper.WriteLogToFile("[ROT] PPT 监控已停止", LogHelper.LogType.Trace);
         }
+
+        public void ReloadConnection()
+        {
+            if (_disposed) return;
+            LogHelper.WriteLogToFile("[ROT] 执行热重载：强制断开并重新连接", LogHelper.LogType.Event);
+            DisconnectFromPPT();
+        }
         #endregion
 
         #region Connection Management
@@ -245,6 +252,12 @@ namespace Ink_Canvas.Helpers
         private void CheckAndConnectToPPTViaRot()
         {
             if (_isModuleUnloading) return;
+
+            if (_pptApplication != null && !IsConnected)
+            {
+                DisconnectFromPPT();
+                return;
+            }
 
             lock (_lockObject)
             {
@@ -440,18 +453,18 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        System.Threading.Thread.Sleep(2000);
+                        System.Threading.Thread.Sleep(300);
 
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
                         GC.Collect();
 
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(200);
 
                         _isModuleUnloading = false;
                         _unifiedRotTimer?.Start();
 
-                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入联动状态", LogHelper.LogType.Trace);
+                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入联动状态（热重载）", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
