@@ -1,10 +1,11 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Ink_Canvas
 {
@@ -64,6 +65,58 @@ namespace Ink_Canvas
 
             BlackBoardLeftSidePageListView.SelectedIndex = CurrentWhiteboardIndex - 1;
             BlackBoardRightSidePageListView.SelectedIndex = CurrentWhiteboardIndex - 1;
+        }
+
+        private void TrySwitchWhiteboardPageByTouchPoint(ListView listView, ScrollViewer scrollViewer, Point pointInScrollViewer, bool isLeftSide)
+        {
+            if (listView == null || scrollViewer == null) return;
+            try
+            {
+                var transform = scrollViewer.TransformToVisual(listView);
+                if (transform == null) return;
+                var pointInListView = transform.Transform(pointInScrollViewer);
+                var hit = VisualTreeHelper.HitTest(listView, pointInListView);
+                if (hit?.VisualHit == null) return;
+                var container = FindAncestorOfType<ListViewItem>(hit.VisualHit);
+                if (container == null) return;
+                int index = listView.ItemContainerGenerator.IndexFromContainer(container);
+                if (index < 0 || index >= blackBoardSidePageListViewObservableCollection.Count) return;
+                var item = blackBoardSidePageListViewObservableCollection[index];
+                if (item == null) return;
+                AnimationsHelper.HideWithSlideAndFade(BoardBorderLeftPageListView);
+                AnimationsHelper.HideWithSlideAndFade(BoardBorderRightPageListView);
+                if (index + 1 != CurrentWhiteboardIndex)
+                {
+                    if (currentSelectedElement != null)
+                    {
+                        var previousEditingMode = inkCanvas.EditingMode;
+                        UnselectElement(currentSelectedElement);
+                        inkCanvas.EditingMode = previousEditingMode;
+                        currentSelectedElement = null;
+                    }
+                    SaveStrokes();
+                    ClearStrokes(true);
+                    CurrentWhiteboardIndex = index + 1;
+                    RestoreStrokes();
+                    UpdateIndexInfoDisplay();
+                }
+                BlackBoardLeftSidePageListView.SelectedIndex = index;
+                BlackBoardRightSidePageListView.SelectedIndex = index;
+            }
+            catch
+            {
+                // 忽略命中测试或切换过程中的异常
+            }
+        }
+
+        private static T FindAncestorOfType<T>(DependencyObject current) where T : DependencyObject
+        {
+            while (current != null)
+            {
+                if (current is T found) return found;
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return null;
         }
 
         public static void ScrollViewToVerticalTop(FrameworkElement element, ScrollViewer scrollViewer)
