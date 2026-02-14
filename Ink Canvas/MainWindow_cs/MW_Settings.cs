@@ -2337,9 +2337,8 @@ namespace Ink_Canvas
             var NowB = drawingAttributes.Color.B;
             // Trace.WriteLine(BitConverter.GetBytes(((Slider)sender).Value));
             drawingAttributes.Color = Color.FromArgb((byte)((Slider)sender).Value, NowR, NowG, NowB);
-            // drawingAttributes.Width = ((Slider)sender).Value / 2;
-            // Settings.Canvas.InkAlpha = ((Slider)sender).Value;
-            // SaveSettingsToFile();
+            Settings.Canvas.InkAlpha = ((Slider)sender).Value;
+            SaveSettingsToFile();
         }
 
         private void ComboBoxHyperbolaAsymptoteOption_SelectionChanged(object sender, SelectionChangedEventArgs e)
