@@ -44,6 +44,8 @@ namespace Ink_Canvas
         public static bool IsAppExitByUser;
         // 新增：标记是否启用了UIA置顶功能
         public static bool IsUIAccessTopMostEnabled;
+        // 新增：标记是否正在显示 OOBE（首次启动向导），看门狗在此期间不判定为卡死/假死
+        public static bool IsOobeShowing;
         // 新增：退出信号文件路径
         private static string watchdogExitSignalFile = Path.Combine(Path.GetTempPath(), "icc_watchdog_exit_" + Process.GetCurrentProcess().Id + ".flag");
         // 新增：崩溃日志文件路径
@@ -1158,6 +1160,9 @@ namespace Ink_Canvas
 
             watchdogTimer = new Timer(_ =>
             {
+                if (IsOobeShowing)
+                    return;
+
                 if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
                 {
                     DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue 

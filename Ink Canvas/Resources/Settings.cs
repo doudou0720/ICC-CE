@@ -203,6 +203,8 @@ namespace Ink_Canvas
         public TelemetryUploadLevel TelemetryUploadLevel { get; set; } = TelemetryUploadLevel.None;
         [JsonProperty("hasAcceptedTelemetryPrivacy")]
         public bool HasAcceptedTelemetryPrivacy { get; set; } = false;
+        [JsonProperty("hasShownOobe")]
+        public bool HasShownOobe { get; set; } = false;
     }
 
     public class Appearance
