@@ -221,10 +221,9 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                if (!_isModuleUnloading)
-                {
-                    CheckAndConnectToPPTViaRot();
-                }
+                if (_disposed || _isModuleUnloading)
+                    return;
+                CheckAndConnectToPPTViaRot();
             }
             catch (Exception ex)
             {
@@ -236,10 +235,9 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                if (!_isModuleUnloading && IsConnected)
-                {
-                    CheckSlideShowState();
-                }
+                if (_disposed || _isModuleUnloading || !IsConnected)
+                    return;
+                CheckSlideShowState();
             }
             catch (Exception ex)
             {
@@ -249,7 +247,7 @@ namespace Ink_Canvas.Helpers
 
         private void CheckAndConnectToPPTViaRot()
         {
-            if (_isModuleUnloading) return;
+            if (_disposed || _isModuleUnloading) return;
 
             if (_pptApplication != null && !IsConnected)
             {
@@ -457,7 +455,8 @@ namespace Ink_Canvas.Helpers
                         System.Threading.Thread.Sleep(200);
 
                         _isModuleUnloading = false;
-                        _unifiedRotTimer?.Start();
+                        if (!_disposed)
+                            _unifiedRotTimer?.Start();
                     }
                     catch (Exception ex)
                     {

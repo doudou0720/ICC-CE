@@ -104,7 +104,7 @@ namespace Ink_Canvas
         private const int SlideSwitchDebounceMs = 150; // 防抖延迟150毫秒
 
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
-        private const int ExitPPTModeAfterDisconnectDelayMs = 800; 
+        private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
         #endregion
 
         #region PPT Managers
