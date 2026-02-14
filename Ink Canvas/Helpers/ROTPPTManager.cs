@@ -200,14 +200,12 @@ namespace Ink_Canvas.Helpers
             if (_disposed) return;
 
             _unifiedRotTimer?.Start();
-            LogHelper.WriteLogToFile("[ROT] PPT 监控已启动", LogHelper.LogType.Trace);
         }
 
         public void StopMonitoring()
         {
             _unifiedRotTimer?.Stop();
             DisconnectFromPPT();
-            LogHelper.WriteLogToFile("[ROT] PPT 监控已停止", LogHelper.LogType.Trace);
         }
 
         public void ReloadConnection()
@@ -341,8 +339,6 @@ namespace Ink_Canvas.Helpers
                         app.SlideShowBegin += OnSlideShowBeginInternal;
                         app.SlideShowNextSlide += OnSlideShowNextSlideInternal;
                         app.SlideShowEnd += OnSlideShowEndInternal;
-
-                        LogHelper.WriteLogToFile("[ROT] PPT 事件注册成功", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
@@ -410,7 +406,6 @@ namespace Ink_Canvas.Helpers
                                 catch (Exception ex)
                                 {
                                     LogHelper.WriteLogToFile($"[ROT] 取消 PPT 事件注册异常: {ex}", LogHelper.LogType.Warning);
-                                    LogHelper.WriteLogToFile(ex.ToString(), LogHelper.LogType.Trace);
                                 }
                             }, DispatcherPriority.Normal);
                         }
@@ -463,8 +458,6 @@ namespace Ink_Canvas.Helpers
 
                         _isModuleUnloading = false;
                         _unifiedRotTimer?.Start();
-
-                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入联动状态（热重载）", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {

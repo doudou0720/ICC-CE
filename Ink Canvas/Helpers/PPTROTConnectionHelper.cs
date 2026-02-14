@@ -268,8 +268,6 @@ namespace Ink_Canvas.Helpers
 
                             if (currentPriority > 0)
                             {
-                                LogHelper.WriteLogToFile($"ROT扫描: {displayName}: priority={currentPriority}", LogHelper.LogType.Trace);
-                                
                                 if (currentPriority > highestPriority)
                                 {
                                     highestPriority = currentPriority;

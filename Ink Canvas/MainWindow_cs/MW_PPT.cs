@@ -102,6 +102,9 @@ namespace Ink_Canvas
         private int _pendingSlideIndex = -1;
         private System.Timers.Timer _slideSwitchDebounceTimer;
         private const int SlideSwitchDebounceMs = 150; // 防抖延迟150毫秒
+
+        private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
+        private const int ExitPPTModeAfterDisconnectDelayMs = 800; 
         #endregion
 
         #region PPT Managers
@@ -573,12 +576,32 @@ namespace Ink_Canvas
 
                     if (isConnected)
                     {
+                        _exitPPTModeAfterDisconnectTimer?.Stop();
+                        _exitPPTModeAfterDisconnectTimer = null;
                         LogHelper.WriteLogToFile("PPT连接已建立", LogHelper.LogType.Event);
                     }
                     else
                     {
                         LogHelper.WriteLogToFile("PPT连接已断开", LogHelper.LogType.Event);
                         _singlePPTInkManager?.ClearAllStrokes();
+                        _exitPPTModeAfterDisconnectTimer?.Stop();
+                        _exitPPTModeAfterDisconnectTimer = new DispatcherTimer
+                        {
+                            Interval = TimeSpan.FromMilliseconds(ExitPPTModeAfterDisconnectDelayMs)
+                        };
+                        _exitPPTModeAfterDisconnectTimer.Tick += (s, e) =>
+                        {
+                            _exitPPTModeAfterDisconnectTimer?.Stop();
+                            _exitPPTModeAfterDisconnectTimer = null;
+                            if (_pptManager?.IsConnected != true)
+                            {
+                                _pptUIManager?.UpdateSlideShowStatus(false);
+                                _pptUIManager?.UpdateSidebarExitButtons(false);
+                                ResetPPTStateVariables();
+                                _ = HandleManualSlideShowEnd();
+                            }
+                        };
+                        _exitPPTModeAfterDisconnectTimer.Start();
                     }
                 });
             }
