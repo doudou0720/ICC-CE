@@ -1284,8 +1284,11 @@ namespace Ink_Canvas
                             StartupCount.Reset();
                             Environment.Exit(1);
                         }
-                        string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                        Process.Start(exePath);
+                        else
+                        {
+                            string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                            Process.Start(exePath);
+                        }
                     }
                 }
                 catch { }
