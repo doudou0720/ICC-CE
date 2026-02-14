@@ -440,6 +440,48 @@ namespace Ink_Canvas
         }
 
 
+        private static Color GetCanonicalPaletteColorFromHex(string hex, byte alpha)
+        {
+            if (string.IsNullOrWhiteSpace(hex)) return Color.FromArgb(alpha, 255, 0, 0);
+
+            string n = hex.Trim().ToLowerInvariant();
+            if (n.StartsWith("#")) n = n.Substring(1);
+            if (n.Length == 8) n = n.Substring(2, 6); // 去掉 AA
+            else if (n.Length != 6) n = "";
+
+            if (n.Length == 6)
+            {
+                if (n == "ffffff") return Color.FromArgb(alpha, 255, 255, 255);
+                if (n == "fb9650") return Color.FromArgb(alpha, 251, 150, 80);   // 251,150,80 橙
+                if (n == "ffff00") return Color.FromArgb(alpha, 255, 255, 0);
+                if (n == "000000") return Color.FromArgb(alpha, 0, 0, 0);
+                if (n == "2563eb") return Color.FromArgb(alpha, 37, 99, 235);    // 37,99,235 蓝
+                if (n == "ff0000") return Color.FromArgb(alpha, 255, 0, 0);
+                if (n == "16a34a") return Color.FromArgb(alpha, 22, 163, 74);    // 22,163,74 绿
+                if (n == "9333ea") return Color.FromArgb(alpha, 147, 51, 234);    // 147,51,234 紫
+            }
+
+            try
+            {
+                var converted = ColorConverter.ConvertFromString(hex);
+                if (converted is Color parsed)
+                {
+                    byte r = parsed.R, g = parsed.G, b = parsed.B;
+                    if (r == 255 && g == 255 && b == 255) return Color.FromArgb(alpha, 255, 255, 255);
+                    if (r == 251 && g == 150 && b == 80) return Color.FromArgb(alpha, 251, 150, 80);
+                    if (r == 255 && g == 255 && b == 0) return Color.FromArgb(alpha, 255, 255, 0);
+                    if (r == 0 && g == 0 && b == 0) return Color.FromArgb(alpha, 0, 0, 0);
+                    if (r == 37 && g == 99 && b == 235) return Color.FromArgb(alpha, 37, 99, 235);
+                    if (r == 255 && g == 0 && b == 0) return Color.FromArgb(alpha, 255, 0, 0);
+                    if (r == 22 && g == 163 && b == 74) return Color.FromArgb(alpha, 22, 163, 74);
+                    if (r == 147 && g == 51 && b == 234) return Color.FromArgb(alpha, 147, 51, 234);
+                    return Color.FromArgb(alpha, r, g, b);
+                }
+            }
+            catch { }
+            return Color.FromArgb(alpha, 255, 0, 0);
+        }
+
         /// <param name="color">目标颜色</param>
         /// <param name="width">目标粗细</param>
         /// <param name="height">目标高度</param>
@@ -488,6 +530,33 @@ namespace Ink_Canvas
                     Settings.Canvas.InkAlpha = (int)color.A; // 同步更新透明度设置
                 }
 
+                // 同步批注子面板的粗细和透明度滑块
+                if (InkWidthSlider != null)
+                {
+                    InkWidthSlider.Value = width * 2;
+                }
+                if (InkAlphaSlider != null)
+                {
+                    InkAlphaSlider.Value = color.A;
+                }
+                if (BoardInkWidthSlider != null)
+                {
+                    BoardInkWidthSlider.Value = width * 2;
+                }
+                if (BoardInkAlphaSlider != null)
+                {
+                    BoardInkAlphaSlider.Value = color.A;
+                }
+
+                // 再次写入画笔粗细，防止滑块 ValueChanged 因范围/舍入覆盖为目标值
+                if (penType != 1)
+                {
+                    drawingAttributes.Width = width;
+                    drawingAttributes.Height = height;
+                    inkCanvas.DefaultDrawingAttributes.Width = width;
+                    inkCanvas.DefaultDrawingAttributes.Height = height;
+                }
+
                 // 更新颜色状态
                 Color rgbColor = Color.FromRgb(color.R, color.G, color.B);
                 if (currentMode == 0)
@@ -515,9 +584,7 @@ namespace Ink_Canvas
                     else if (rgbColor == Color.FromRgb(147, 51, 234)) lastBoardInkColor = 6; // 紫色
                 }
 
-                // 更新快捷调色盘选择指示器
-                UpdateQuickColorPaletteIndicator(color);
-
+                ColorSwitchCheck(false);
 
                 LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: 已设置颜色={color}, 宽度={width}, 高度={height}, Ink_DefaultColor已同步={Ink_DefaultColor}", LogHelper.LogType.Trace);
             }
@@ -660,33 +727,22 @@ namespace Ink_Canvas
                     drawingAttributes = inkCanvas.DefaultDrawingAttributes;
                 }
 
-                Color targetColor = Ink_DefaultColor;
-                try
-                {
-                    var colorConfig = Settings.Canvas.BrushAutoRestoreColor;
-                    if (!string.IsNullOrWhiteSpace(colorConfig))
-                    {
-                        var converted = ColorConverter.ConvertFromString(colorConfig);
-                        if (converted is Color c)
-                        {
-                            targetColor = c;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"解析 BrushAutoRestoreColor 失败: {ex}", LogHelper.LogType.Warning);
-                }
-
                 int alphaConfig = Settings.Canvas.BrushAutoRestoreAlpha;
                 if (alphaConfig < 0) alphaConfig = 0;
                 if (alphaConfig > 255) alphaConfig = 255;
-                targetColor.A = (byte)alphaConfig;
+                byte alpha = (byte)alphaConfig;
 
-                double width = Settings.Canvas.BrushAutoRestoreWidth;
-                if (width <= 0)
+                Color targetColor = GetCanonicalPaletteColorFromHex(Settings.Canvas.BrushAutoRestoreColor ?? "", alpha);
+
+                double sliderValue = Settings.Canvas.BrushAutoRestoreWidth;
+                double width;
+                if (sliderValue <= 0)
                 {
                     width = Settings.Canvas.InkWidth > 0 ? Settings.Canvas.InkWidth : 2.5;
+                }
+                else
+                {
+                    width = sliderValue / 2.0; 
                 }
 
                 SetBrushAttributesDirectly(targetColor, width, width);
