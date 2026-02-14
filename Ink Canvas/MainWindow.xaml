@@ -8443,7 +8443,7 @@
                                                                        FontSize="17" VerticalAlignment="Center" />
                                                                 <Slider x:Name="InkWidthSlider" Minimum="1"
                                                                         Maximum="20"
-                                                                        Width="180" FontFamily="Microsoft YaHei UI"
+                                                                        Width="200" FontFamily="Microsoft YaHei UI"
                                                                         FontSize="20" IsSnapToTickEnabled="True"
                                                                         Value="5"
                                                                         TickFrequency="0.1" TickPlacement="None"
@@ -8452,13 +8452,10 @@
                                                                     Text="{Binding Value, ElementName=InkWidthSlider, Mode=OneWay}"
                                                                     FontFamily="Consolas" VerticalAlignment="Bottom"
                                                                     Margin="10,0,0,4.5" FontSize="15" />
-                                                                <Border x:Name="BoardBrushModeButton" Width="24" Height="24" Margin="8,0,0,0"
-                                                                        Background="{DynamicResource FloatBarBackground}"
-                                                                        BorderBrush="{DynamicResource FloatBarBorderBrush}"
-                                                                        BorderThickness="1" CornerRadius="2"
+                                                                <Button x:Name="BoardBrushModeButton" Width="24" Height="24" Margin="8,0,0,0"
+                                                                        Style="{StaticResource NavButton}"
                                                                         VerticalAlignment="Center"
-                                                                        MouseDown="Border_MouseDown"
-                                                                        MouseUp="BoardBrushModeButton_MouseUp"
+                                                                        Click="BoardBrushModeButton_Click"
                                                                         ToolTip="板刷模式">
                                                                     <Viewbox Margin="4" Stretch="Uniform">
                                                                         <Path x:Name="BoardBrushModeIcon" Fill="{DynamicResource FloatBarForeground}" Stretch="Fill">
@@ -8467,14 +8464,14 @@
                                                                             </Path.Data>
                                                                         </Path>
                                                                     </Viewbox>
-                                                                </Border>
+                                                                </Button>
                                                             </StackPanel>
                                                             <StackPanel Orientation="Horizontal" Height="30">
                                                                 <Label Margin="0,0,10,0" Content="透明" FontWeight="Bold"
                                                                        Foreground="{DynamicResource FloatBarForeground}"
                                                                        FontSize="17" VerticalAlignment="Center" />
                                                                 <Slider x:Name="InkAlphaSlider" Margin="0,0,0,0"
-                                                                        Minimum="1" Maximum="255" Width="180"
+                                                                        Minimum="1" Maximum="255" Width="200"
                                                                         FontFamily="Microsoft YaHei UI" FontSize="20"
                                                                         IsSnapToTickEnabled="True" Value="255"
                                                                         TickFrequency="1"
