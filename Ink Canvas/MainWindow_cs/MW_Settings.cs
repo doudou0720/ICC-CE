@@ -941,21 +941,21 @@ namespace Ink_Canvas
                         }
                         catch (Exception initEx)
                         {
-                            LogHelper.WriteLogToFile($"HTTP 客户端初始化失败: {initEx.Message}", LogHelper.LogType.Warning);
-                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            LogHelper.WriteLogToFile($"一言 HTTP 客户端初始化失败（已捕获，不崩溃）: {initEx.Message}", LogHelper.LogType.Warning);
+                            BlackBoardWaterMark.Text = "一言功能不可用（HTTP 库不可用）";
                             return;
                         }
 
                         if (clientObj == null || !(clientObj is HttpClient client))
                         {
-                            BlackBoardWaterMark.Text = "一言功能不可用（缺少 System.Net.Http）";
+                            BlackBoardWaterMark.Text = "一言功能不可用（HTTP 库不可用）";
                             return;
                         }
 
-                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text");
+                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text").ConfigureAwait(true);
                         response.EnsureSuccessStatusCode();
 
-                        var text = await response.Content.ReadAsStringAsync();
+                        var text = await response.Content.ReadAsStringAsync().ConfigureAwait(true);
                         if (!string.IsNullOrWhiteSpace(text))
                         {
                             BlackBoardWaterMark.Text = text.Trim();
@@ -967,14 +967,18 @@ namespace Ink_Canvas
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"Hitokoto API 请求失败: {ex.Message}", LogHelper.LogType.Warning);
-                        BlackBoardWaterMark.Text = "一言获取失败，请稍后重试";
+                        LogHelper.WriteLogToFile($"一言 API 请求失败: {ex.Message}", LogHelper.LogType.Warning);
+                        BlackBoardWaterMark.Text = "一言功能不可用";
                     }
                 }
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"更新白板名言时出错: {ex.Message}", LogHelper.LogType.Warning);
+                if (Settings.Appearance.ChickenSoupSource == 3 && BlackBoardWaterMark != null)
+                {
+                    try { BlackBoardWaterMark.Text = "一言功能不可用"; } catch { }
+                }
             }
         }
 
