@@ -495,11 +495,6 @@ namespace Ink_Canvas
                     return;
                 }
 
-                if (inkCanvas.EditingMode != InkCanvasEditingMode.Ink)
-                {
-                    PenIcon_Click(null, null);
-                }
-
                 if (drawingAttributes == null)
                 {
                     drawingAttributes = inkCanvas.DefaultDrawingAttributes;
@@ -533,7 +528,6 @@ namespace Ink_Canvas
                 drawingAttributes.Color = colorWithAlpha;
                 inkCanvas.DefaultDrawingAttributes.Color = colorWithAlpha;
 
-                ColorSwitchCheck(false);
                 CheckColorTheme();
 
                 Ink_DefaultColor = inkCanvas.DefaultDrawingAttributes.Color;
@@ -566,11 +560,10 @@ namespace Ink_Canvas
                     inkCanvas.DefaultDrawingAttributes.Height = height;
                 }
 
-                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: 索引 currentMode=0=>{lastDesktopInkColor} 1=>{lastBoardInkColor}, 宽度={width}, 透明度={color.A}", LogHelper.LogType.Trace);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly 出错: {ex}", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"SetBrushAttributesDirectly: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -649,10 +642,7 @@ namespace Ink_Canvas
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"根据时间点计算画笔自动恢复时间间隔时出错: {ex}", LogHelper.LogType.Warning);
-            }
+            catch { }
 
             if (!nextInterval.HasValue)
             {
@@ -687,7 +677,7 @@ namespace Ink_Canvas
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"ScheduleBrushAutoRestore 出错: {ex}", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"ScheduleBrushAutoRestore: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -727,17 +717,12 @@ namespace Ink_Canvas
 
                 SetBrushAttributesDirectly(targetColor, width, width);
 
-                var actualColor = inkCanvas.DefaultDrawingAttributes.Color;
-                var actualWidth = inkCanvas.DefaultDrawingAttributes.Width;
-                var actualHeight = inkCanvas.DefaultDrawingAttributes.Height;
-                LogHelper.WriteLogToFile($"画笔自动恢复已应用: 目标颜色={targetColor}, 目标粗细={width}, 目标透明度={alphaConfig}", LogHelper.LogType.Event);
-                LogHelper.WriteLogToFile($"画笔自动恢复验证: 实际颜色={actualColor}, 实际粗细={actualWidth}, 实际高度={actualHeight}", LogHelper.LogType.Event);
                 UpdateBrushAutoRestoreTimerInterval();
                 _brushAutoRestoreTimer.Start();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"BrushAutoRestoreTimer_Tick 出错: {ex}", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"BrushAutoRestoreTimer_Tick: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -3060,10 +3045,14 @@ namespace Ink_Canvas
 
                 Settings.Canvas.BrushAutoRestoreTimes = BrushAutoRestoreTimesTextBox.Text ?? string.Empty;
                 SaveSettingsToFile();
+                if (Settings.Canvas.EnableBrushAutoRestore)
+                {
+                    ScheduleBrushAutoRestore();
+                }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"更新画笔自动恢复时间点时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"BrushAutoRestoreTimes: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

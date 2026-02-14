@@ -720,6 +720,15 @@ namespace Ink_Canvas
                 InkWidthSlider.Value = Settings.Canvas.InkWidth * 2;
                 HighlighterWidthSlider.Value = Settings.Canvas.HighlighterWidth;
 
+                int alpha = (int)Settings.Canvas.InkAlpha;
+                if (alpha < 0) alpha = 0; if (alpha > 255) alpha = 255;
+                var inkColor = drawingAttributes.Color;
+                drawingAttributes.Color = Color.FromArgb((byte)alpha, inkColor.R, inkColor.G, inkColor.B);
+                inkCanvas.DefaultDrawingAttributes.Color = drawingAttributes.Color;
+                if (InkAlphaSlider != null) InkAlphaSlider.Value = alpha;
+                if (BoardInkAlphaSlider != null) BoardInkAlphaSlider.Value = alpha;
+
+
                 ComboBoxHyperbolaAsymptoteOption.SelectedIndex = (int)Settings.Canvas.HyperbolaAsymptoteOption;
 
                 if (Settings.Canvas.UsingWhiteboard)
