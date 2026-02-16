@@ -31,6 +31,26 @@ namespace Ink_Canvas
         public CameraSettings Camera { get; set; } = new CameraSettings();
         [JsonProperty("dlass")]
         public DlassSettings Dlass { get; set; } = new DlassSettings();
+        [JsonProperty("security")]
+        public Security Security { get; set; } = new Security();
+    }
+
+    public class Security
+    {
+        [JsonProperty("passwordEnabled")]
+        public bool PasswordEnabled { get; set; } = false;
+        [JsonProperty("passwordSalt")]
+        public string PasswordSalt { get; set; } = "";
+        [JsonProperty("passwordHash")]
+        public string PasswordHash { get; set; } = "";
+        [JsonProperty("requirePasswordOnExit")]
+        public bool RequirePasswordOnExit { get; set; } = false;
+        [JsonProperty("requirePasswordOnEnterSettings")]
+        public bool RequirePasswordOnEnterSettings { get; set; } = false;
+        [JsonProperty("requirePasswordOnResetConfig")]
+        public bool RequirePasswordOnResetConfig { get; set; } = false;
+        [JsonProperty("enableProcessProtection")]
+        public bool EnableProcessProtection { get; set; } = true;
     }
 
     public class Canvas

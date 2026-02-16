@@ -136,6 +136,14 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile(ex.ToString(), LogHelper.LogType.Error);
             }
 
+            try
+            {
+                ProcessProtectionManager.ApplyFromSettings();
+            }
+            catch
+            {
+            }
+
             // Startup
             if (isStartup)
             {

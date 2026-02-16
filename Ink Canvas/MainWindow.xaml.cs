@@ -1388,7 +1388,7 @@ namespace Ink_Canvas
             }
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private async void Window_Closing(object sender, CancelEventArgs e)
         {
             LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
             try
@@ -1398,6 +1398,23 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"关闭快抽悬浮按钮时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            try
+            {
+                if (!App.IsUpdateInstalling && SecurityManager.IsPasswordRequiredForExit(Settings))
+                {
+                    bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
+                    if (!ok)
+                    {
+                        e.Cancel = true;
+                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
+                        return;
+                    }
+                }
+            }
+            catch
+            {
             }
 
             if (!CloseIsFromButton && Settings.Advanced.IsSecondConfirmWhenShutdownApp)
@@ -2498,11 +2515,23 @@ namespace Ink_Canvas
         #region 新设置窗口
 
         // 添加打开新设置窗口按钮点击事件
-        private void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
+        private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
             HideSubPanels();
             {
+                try
+                {
+                    if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
+                    {
+                        bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
+                        if (!ok) return;
+                    }
+                }
+                catch
+                {
+                }
+
                 var settingsWindow = new SettingsWindow();
                 settingsWindow.Owner = this;
                 settingsWindow.ShowDialog();

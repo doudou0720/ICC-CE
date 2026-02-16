@@ -59,7 +59,7 @@ namespace Ink_Canvas.Helpers
                 // 确保备份目录存在
                 if (!Directory.Exists(BackupDir))
                 {
-                    Directory.CreateDirectory(BackupDir);
+                    ProcessProtectionManager.WithWriteAccess(BackupDir, () => Directory.CreateDirectory(BackupDir));
                 }
 
                 // 检查主配置文件是否存在
@@ -74,7 +74,7 @@ namespace Ink_Canvas.Helpers
                 string backupPath = Path.Combine(BackupDir, backupFileName);
 
                 // 复制主配置文件到备份位置
-                File.Copy(SettingsFile, backupPath, true);
+                ProcessProtectionManager.WithWriteAccess(backupPath, () => File.Copy(SettingsFile, backupPath, true));
 
                 // 更新最后备份时间
                 settings.Advanced.LastAutoBackupTime = DateTime.Now;
@@ -138,11 +138,11 @@ namespace Ink_Canvas.Helpers
                 if (File.Exists(SettingsFile))
                 {
                     string corruptedBackup = Path.Combine(BackupDir, $"Settings_Corrupted_{DateTime.Now:yyyyMMdd_HHmmss}.json");
-                    File.Copy(SettingsFile, corruptedBackup, true);
+                    ProcessProtectionManager.WithWriteAccess(corruptedBackup, () => File.Copy(SettingsFile, corruptedBackup, true));
                 }
 
                 // 从备份恢复配置文件
-                File.Copy(latestBackup, SettingsFile, true);
+                ProcessProtectionManager.WithWriteAccess(SettingsFile, () => File.Copy(latestBackup, SettingsFile, true));
                 return true;
             }
             catch (Exception ex)
@@ -173,7 +173,7 @@ namespace Ink_Canvas.Helpers
                 {
                     if (File.GetCreationTime(file) < cutoffDate)
                     {
-                        File.Delete(file);
+                        ProcessProtectionManager.WithWriteAccess(file, () => File.Delete(file));
                         deletedCount++;
                     }
                 }

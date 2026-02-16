@@ -1346,6 +1346,9 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
+                App.IsUpdateInstalling = true;
+                try { ProcessProtectionManager.SetEnabled(false); } catch { }
+
                 // 在更新前备份设置文件
                 try
                 {

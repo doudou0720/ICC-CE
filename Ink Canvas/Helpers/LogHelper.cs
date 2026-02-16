@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -62,7 +62,7 @@ namespace Ink_Canvas.Helpers
 
                 if (!Directory.Exists(App.RootPath))
                 {
-                    Directory.CreateDirectory(App.RootPath);
+                    ProcessProtectionManager.WithWriteAccess(App.RootPath, () => Directory.CreateDirectory(App.RootPath));
                 }
 
                 var threadId = Thread.CurrentThread.ManagedThreadId;
@@ -78,10 +78,13 @@ namespace Ink_Canvas.Helpers
                     }
                 }
                 string logLine = string.Format("{0} [T{1}] [{2}] [{3}] {4}", DateTime.Now.ToString("O"), threadId, strLogType, callerInfo, str);
-                using (StreamWriter sw = new StreamWriter(file, true))
+                ProcessProtectionManager.WithWriteAccess(file, () =>
                 {
-                    sw.WriteLine(logLine);
-                }
+                    using (StreamWriter sw = new StreamWriter(file, true))
+                    {
+                        sw.WriteLine(logLine);
+                    }
+                });
             }
             catch { }
         }
@@ -116,10 +119,14 @@ namespace Ink_Canvas.Helpers
 
                     // 记录清理操作
                     string cleanupMessage = $"Logs folder exceeded size limit ({totalSize / 1024.0 / 1024.0:F2} MB > {MaxLogsFolderSizeBytes / 1024.0 / 1024.0:F2} MB). Folder cleaned.";
-                    using (StreamWriter sw = new StreamWriter(Path.Combine(logsPath, $"Log_{AppStartTime}.txt"), true))
+                    var logFile = Path.Combine(logsPath, $"Log_{AppStartTime}.txt");
+                    ProcessProtectionManager.WithWriteAccess(logFile, () =>
                     {
-                        sw.WriteLine($"{DateTime.Now:O} [Cleanup] {cleanupMessage}");
-                    }
+                        using (StreamWriter sw = new StreamWriter(logFile, true))
+                        {
+                            sw.WriteLine($"{DateTime.Now:O} [Cleanup] {cleanupMessage}");
+                        }
+                    });
                 }
             }
             catch { }

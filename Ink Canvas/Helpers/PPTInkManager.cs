@@ -1,4 +1,4 @@
-﻿using Microsoft.Office.Interop.PowerPoint;
+using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

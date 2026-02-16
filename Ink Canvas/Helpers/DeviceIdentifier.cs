@@ -368,11 +368,11 @@ namespace Ink_Canvas.Helpers
                 var directory = Path.GetDirectoryName(filePath);
                 if (!Directory.Exists(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    ProcessProtectionManager.WithWriteAccess(directory, () => Directory.CreateDirectory(directory));
                 }
 
                 string json = JsonConvert.SerializeObject(info, Formatting.Indented);
-                File.WriteAllText(filePath, json);
+                ProcessProtectionManager.WithWriteAccess(filePath, () => File.WriteAllText(filePath, json));
 
                 LogHelper.WriteLogToFile($"DeviceIdentifier | 设备ID已保存到: {filePath}");
             }

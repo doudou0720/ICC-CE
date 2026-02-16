@@ -3320,8 +3320,20 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
-        public void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
+        public async void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                if (sender != null && Ink_Canvas.Helpers.SecurityManager.IsPasswordRequiredForResetConfig(Settings))
+                {
+                    bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyAsync(Settings, this, "重置配置验证", "请输入安全密码以确认重置配置。");
+                    if (!ok) return;
+                }
+            }
+            catch
+            {
+            }
+
             try
             {
                 isLoaded = false;
@@ -4405,10 +4417,11 @@ namespace Ink_Canvas
                 string configsDir = Path.Combine(App.RootPath, "Configs");
                 if (!Directory.Exists(configsDir))
                 {
-                    Directory.CreateDirectory(configsDir);
+                    ProcessProtectionManager.WithWriteAccess(configsDir, () => Directory.CreateDirectory(configsDir));
                 }
 
-                File.WriteAllText(App.RootPath + settingsFileName, text);
+                var path = App.RootPath + settingsFileName;
+                ProcessProtectionManager.WithWriteAccess(path, () => File.WriteAllText(path, text));
             }
             catch { }
         }

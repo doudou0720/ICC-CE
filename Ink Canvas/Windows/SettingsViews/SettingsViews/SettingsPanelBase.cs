@@ -39,6 +39,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 System.Diagnostics.Debug.WriteLine($"SettingsPanelBase 应用主题时出错: {ex.Message}");
             }
+                LoadSettings();
             _isLoaded = true;
         }
 

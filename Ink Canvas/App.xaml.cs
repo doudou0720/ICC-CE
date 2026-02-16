@@ -42,6 +42,8 @@ namespace Ink_Canvas
         public static Process watchdogProcess;
         // 新增：标记是否为软件内主动退出
         public static bool IsAppExitByUser;
+        // 新增：标记是否正在触发安装更新（用于跳过某些交互确认）
+        public static bool IsUpdateInstalling;
         // 新增：标记是否启用了UIA置顶功能
         public static bool IsUIAccessTopMostEnabled;
         // 新增：标记是否正在显示 OOBE（首次启动向导），看门狗在此期间不判定为卡死/假死

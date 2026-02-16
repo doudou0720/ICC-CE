@@ -2831,7 +2831,7 @@ namespace Ink_Canvas
         private bool wasNoFocusModeBeforeSettings;
         private bool userChangedNoFocusModeInSettings;
 
-        private void BtnSettings_Click(object sender, RoutedEventArgs e)
+        private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
             {
@@ -2839,6 +2839,18 @@ namespace Ink_Canvas
             }
             else
             {
+                try
+                {
+                    if (Ink_Canvas.Helpers.SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
+                    {
+                        bool ok = await Ink_Canvas.Helpers.SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
+                        if (!ok) return;
+                    }
+                }
+                catch
+                {
+                }
+
                 BorderSettings.Visibility = Visibility.Visible;
                 wasNoFocusModeBeforeSettings = Settings.Advanced.IsNoFocusMode;
                 userChangedNoFocusModeInSettings = false; // 重置用户修改标志
