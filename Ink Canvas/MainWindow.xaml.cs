@@ -562,7 +562,7 @@ namespace Ink_Canvas
                     else if (rgbColor == Color.FromRgb(147, 51, 234)) lastBoardInkColor = 6;
                 }
 
-                var colorWithAlpha = Color.FromArgb(color.A, 0, 0, 0);
+                var colorWithAlpha = Color.FromArgb(color.A, color.R, color.G, color.B);
                 drawingAttributes.Color = colorWithAlpha;
                 inkCanvas.DefaultDrawingAttributes.Color = colorWithAlpha;
 
