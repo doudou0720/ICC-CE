@@ -552,6 +552,9 @@ namespace Ink_Canvas
                 var touchPoint = e.GetTouchPoint(null);
                 centerPoint = touchPoint.Position;
                 lastTouchPointOnGridInkCanvasCover = touchPoint.Position;
+                
+                var touchPointInCanvas = e.GetTouchPoint(inkCanvas);
+                lastDragPointInCanvas = touchPointInCanvas.Position;
             }
         }
 
@@ -560,6 +563,8 @@ namespace Ink_Canvas
             dec.Remove(e.TouchDevice.Id);
             if (dec.Count >= 1) return;
             isProgramChangeStrokeSelection = false;
+            
+            lastDragPointInCanvas = new Point(0, 0);
             
             var touchUpPoint = e.GetTouchPoint(null).Position;
             if (lastTouchPointOnGridInkCanvasCover == touchUpPoint)
@@ -600,9 +605,9 @@ namespace Ink_Canvas
                 var currentTouchPoint = e.GetTouchPoint(inkCanvas).Position;
 
                 // 检查是否有有效的起始触摸点
-                if (lastTouchPointOnGridInkCanvasCover != new Point(0, 0))
+                if (lastDragPointInCanvas != new Point(0, 0))
                 {
-                    var delta = currentTouchPoint - lastTouchPointOnGridInkCanvasCover;
+                    var delta = currentTouchPoint - lastDragPointInCanvas;
 
                     // 只有当移动距离足够大时才进行拖动（避免微小移动造成的抖动）
                     if (Math.Abs(delta.X) > 1 || Math.Abs(delta.Y) > 1)
@@ -622,13 +627,14 @@ namespace Ink_Canvas
                         updateBorderStrokeSelectionControlLocation();
 
                         // 更新最后触摸点
-                        lastTouchPointOnGridInkCanvasCover = currentTouchPoint;
+                        lastDragPointInCanvas = currentTouchPoint;
                     }
                 }
             }
         }
 
         private Point lastTouchPointOnGridInkCanvasCover = new Point(0, 0);
+        private Point lastDragPointInCanvas = new Point(0, 0);
 
         private void LassoSelect_Click(object sender, RoutedEventArgs e)
         {
