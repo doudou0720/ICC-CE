@@ -2847,8 +2847,10 @@ namespace Ink_Canvas
                         if (!ok) return;
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
+                    return;
                 }
 
                 BorderSettings.Visibility = Visibility.Visible;
