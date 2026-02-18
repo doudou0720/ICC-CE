@@ -2514,29 +2514,30 @@ namespace Ink_Canvas
 
         #region 新设置窗口
 
-        // 添加打开新设置窗口按钮点击事件
-        private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
-        {
-            if (isOpeningOrHidingSettingsPane) return;
-            HideSubPanels();
+            private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
             {
-                try
+                if (isOpeningOrHidingSettingsPane) return;
+                HideSubPanels();
                 {
-                    if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
+                    try
                     {
-                        bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
-                        if (!ok) return;
+                        if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
+                        {
+                            bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
+                            if (!ok) return;
+                        }
                     }
-                }
-                catch
-                {
-                }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
+                        return;
+                    }
 
-                var settingsWindow = new SettingsWindow();
-                settingsWindow.Owner = this;
-                settingsWindow.ShowDialog();
+                    var settingsWindow = new SettingsWindow();
+                    settingsWindow.Owner = this;
+                    settingsWindow.ShowDialog();
+                }
             }
-        }
 
         #endregion 新设置窗口
 
