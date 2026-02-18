@@ -249,17 +249,17 @@ namespace Ink_Canvas.Helpers
         {
             if (_disposed || _isModuleUnloading) return;
 
-            if (_pptApplication != null && !IsConnected)
-            {
-                DisconnectFromPPT();
-                return;
-            }
-
             lock (_lockObject)
             {
                 try
                 {
                     if (_isModuleUnloading) return;
+
+                    if (_pptApplication != null && !IsConnected)
+                    {
+                        DisconnectFromPPT();
+                        return;
+                    }
 
                     // 使用 ROT 获取当前最佳 PPT 实例
                     var bestApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
@@ -373,25 +373,31 @@ namespace Ink_Canvas.Helpers
 
         private void DisconnectFromPPT()
         {
+            object appToRelease = null;
             try
             {
-                _isModuleUnloading = true;
-                _unifiedRotTimer?.Stop();
-
                 PPTConnectionChanged?.Invoke(false);
                 LogHelper.WriteLogToFile("[ROT] 准备断开 PPT 连接，先卸载监控模块", LogHelper.LogType.Event);
 
-                if (_pptApplication != null)
+                lock (_lockObject)
+                {
+                    _isModuleUnloading = true;
+                    _unifiedRotTimer?.Stop();
+                    appToRelease = _pptApplication;
+                    _pptApplication = null;
+                }
+
+                if (appToRelease != null)
                 {
                     try
                     {
-                        if (Marshal.IsComObject(_pptApplication))
+                        if (Marshal.IsComObject(appToRelease))
                         {
                             Application.Current?.Dispatcher?.Invoke(() =>
                             {
                                 try
                                 {
-                                    var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                                    var app = appToRelease as Microsoft.Office.Interop.PowerPoint.Application;
                                     if (app != null)
                                     {
                                         app.PresentationOpen -= OnPresentationOpenInternal;
@@ -413,28 +419,26 @@ namespace Ink_Canvas.Helpers
                         LogHelper.WriteLogToFile($"[ROT] 取消 PPT 事件注册失败: {ex}", LogHelper.LogType.Warning);
                     }
 
-                    if (Marshal.IsComObject(_pptApplication))
+                    if (Marshal.IsComObject(appToRelease))
                     {
                         try
                         {
-                            Marshal.FinalReleaseComObject(_pptApplication);
+                            Marshal.FinalReleaseComObject(appToRelease);
                         }
                         catch
                         {
                             try
                             {
-                                int refCount = Marshal.ReleaseComObject(_pptApplication);
+                                int refCount = Marshal.ReleaseComObject(appToRelease);
                                 while (refCount > 0)
                                 {
-                                    refCount = Marshal.ReleaseComObject(_pptApplication);
+                                    refCount = Marshal.ReleaseComObject(appToRelease);
                                 }
                             }
                             catch { }
                         }
                     }
                 }
-
-                _pptApplication = null;
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -454,21 +458,30 @@ namespace Ink_Canvas.Helpers
 
                         System.Threading.Thread.Sleep(200);
 
-                        _isModuleUnloading = false;
-                        if (!_disposed)
-                            _unifiedRotTimer?.Start();
+                        lock (_lockObject)
+                        {
+                            _isModuleUnloading = false;
+                            if (!_disposed)
+                                _unifiedRotTimer?.Start();
+                        }
                     }
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"[ROT] 重新进入监控状态失败: {ex}", LogHelper.LogType.Error);
-                        _isModuleUnloading = false;
+                        lock (_lockObject)
+                        {
+                            _isModuleUnloading = false;
+                        }
                     }
                 });
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"[ROT] 断开 PPT 连接失败: {ex}", LogHelper.LogType.Error);
-                _isModuleUnloading = false;
+                lock (_lockObject)
+                {
+                    _isModuleUnloading = false;
+                }
             }
         }
         #endregion
