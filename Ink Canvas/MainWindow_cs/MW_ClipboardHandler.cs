@@ -37,7 +37,12 @@ namespace Ink_Canvas
         private DateTime _lastPasteNotificationTime = DateTime.MinValue;
         private const int PasteNotificationDebounceSeconds = 4;
 
-        // 初始化剪贴板监控
+        /// <summary>
+        /// 启动并配置窗口的剪贴板监控：订阅剪贴板更新事件、设置监控标记，并确保在窗口可用时安装消息钩子以接收剪贴板更新通知。
+        /// </summary>
+        /// <remarks>
+        /// 如果监控已启用则不做任何操作。方法内部在发生异常时会记录错误但不会抛出异常；同时会排队执行 EnsureClipboardHookInstalled 以在窗口句柄就绪后安装钩子。
+        /// </remarks>
         private void InitializeClipboardMonitoring()
         {
             try
@@ -60,6 +65,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在可用的窗口句柄上安装用于接收剪贴板更新的窗口钩子；如果钩子已安装或窗口句柄无效则不执行任何操作。
+        /// </summary>
         private void EnsureClipboardHookInstalled()
         {
             if (_clipboardHwndSource != null) return;
@@ -68,6 +76,12 @@ namespace Ink_Canvas
             OnSourceInitializedForClipboard(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// 在窗口源可用时为剪贴板更新安装窗口消息钩子并向系统注册剪贴板格式监听器。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会注销自身的 SourceInitialized 事件处理器、获取窗口句柄、在该句柄上添加消息钩子以拦截剪贴板更新消息，并调用 Win32 的 AddClipboardFormatListener 请求剪贴板格式更改通知。若注册失败或发生异常，会记录相应的日志信息。
+        /// </remarks>
         private void OnSourceInitializedForClipboard(object sender, EventArgs e)
         {
             SourceInitialized -= OnSourceInitializedForClipboard;
@@ -98,7 +112,9 @@ namespace Ink_Canvas
             return IntPtr.Zero;
         }
 
-        // 剪贴板内容变化事件处理
+        /// <summary>
+        /// 在剪贴板发生变化时读取剪贴板中的图像并在存在时更新 lastClipboardImage 字段。
+        /// </summary>
         private void OnClipboardUpdate()
         {
             try
@@ -116,6 +132,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在进入白板时检查剪贴板是否包含图片，并在满足防抖间隔后显示粘贴提示。
+        /// </summary>
+        /// <remarks>
+        /// 如果剪贴板包含图片且自上次提示已超过配置的防抖秒数，则更新上次提示时间并触发粘贴通知显示；否则不做任何操作。
+        /// </remarks>
         public void CheckClipboardImageAndShowPasteNotificationWhenEnteringBoard()
         {
             try
@@ -136,7 +158,12 @@ namespace Ink_Canvas
             }
         }
 
-        // 显示粘贴提示
+        /// <summary>
+        /// 在界面上显示一条提示，告知用户剪贴板中有图片并可在白板上粘贴。
+        /// </summary>
+        /// <remarks>
+        /// 提示会安排在 UI 线程上显示以确保与界面交互安全。发生异常时会被记录但不会抛出到调用方。
+        /// </remarks>
         private void ShowPasteNotification()
         {
             Dispatcher.BeginInvoke(new Action(() =>
@@ -152,7 +179,10 @@ namespace Ink_Canvas
             }), DispatcherPriority.Normal);
         }
 
-        // 处理右键菜单显示
+        /// <summary>
+        /// 在指定画布位置显示一个用于将剪贴板图像粘贴到 InkCanvas 的右键上下文菜单（仅当剪贴板包含图像时）。
+        /// </summary>
+        /// <param name="position">用于粘贴操作的目标位置（画布坐标），用于在菜单项触发时将图像放置到该位置。</param>
         private void ShowPasteContextMenu(Point position)
         {
             try
@@ -370,6 +400,13 @@ namespace Ink_Canvas
         private static string lastClipboardText = "";
         private static bool lastHadImage;
 
+        /// <summary>
+        /// 在收到系统剪贴板更改消息时更新内部剪贴板状态并在必要时触发 <c>ClipboardUpdate</c> 事件。
+        /// </summary>
+        /// <remarks>
+        /// 比较当前剪贴板的图像存在性与文本内容与保存的上次状态：当图像存在性发生变化、文本发生变化，或当前包含图像时，更新内部跟踪字段 <c>lastHadImage</c> 和 <c>lastClipboardText</c> 并调用 <c>ClipboardUpdate</c> 事件以通知订阅者。
+        /// 此方法会吞并异常并记录错误，不会向调用者抛出异常。
+        /// </remarks>
         public static void NotifyFromMessage()
         {
             try

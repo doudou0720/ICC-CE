@@ -359,7 +359,11 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 保存设备ID到文件
+        /// <summary>
+        /// 将给定的设备 ID 信息以 JSON 格式保存到指定文件路径（会确保目标目录存在）。
         /// </summary>
+        /// <param name="filePath">目标文件的完整路径。</param>
+        /// <param name="info">要保存的设备 ID 信息对象。</param>
         private static void SaveDeviceIdToFile(string filePath, DeviceIdInfo info)
         {
             try
@@ -1619,4 +1623,3 @@ namespace Ink_Canvas.Helpers
         }
     }
 }
-

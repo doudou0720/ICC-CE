@@ -1341,7 +1341,14 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 安装新版本应用 - 优化版本，不使用命令行
+        /// <summary>
+        /// 使用下载的 ZIP 包在当前机器上安装指定版本的应用并启动更新流程（不使用命令行安装器）。 
+        /// </summary>
+        /// <param name="version">要安装的版本号（用于定位 ZIP 文件和生成备份文件名）。</param>
+        /// <param name="isInSilence">指示是否以静默模式安装；静默模式将影响更新启动时的行为和提示。</param>
+        /// <remarks>
+        /// 此方法会设置 App.IsUpdateInstalling 为 true 并尝试禁用进程保护；在配置允许时会自动备份当前设置文件，解压对应版本的 ZIP 包，启动新版本进程以“更新模式”接管安装，然后关闭当前应用进程。所有关键步骤的失败会被记录到日志，遇到不可恢复的错误时方法会中止安装流程。    
+        /// </remarks>
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
             try

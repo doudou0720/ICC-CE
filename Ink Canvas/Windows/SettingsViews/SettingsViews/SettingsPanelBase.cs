@@ -20,6 +20,15 @@ namespace Ink_Canvas.Windows.SettingsViews
             Loaded += SettingsPanelBase_Loaded;
         }
 
+        /// <summary>
+        /// 在控件首次加载时初始化面板：加载设置、启用触控支持并尝试应用面板主题，然后将已加载状态标记为已就绪。
+        /// </summary>
+        /// <param name="sender">触发 Loaded 事件的对象。</param>
+        /// <param name="e">与 Loaded 事件关联的路由事件参数。</param>
+        /// <remarks>
+        /// 如果面板定义了名为 `ApplyTheme` 的实例方法，则会尝试调用该方法；方法内部抛出的异常会被捕获并记录，但不会阻止后续初始化流程。
+        /// 注意：本方法在加载过程中会调用 `LoadSettings()` 并在应用主题尝试后再次调用一次以确保设置生效。
+        /// </remarks>
         private void SettingsPanelBase_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
@@ -272,4 +281,3 @@ namespace Ink_Canvas.Windows.SettingsViews
         protected abstract void HandleOptionChange(string group, string value);
     }
 }
-

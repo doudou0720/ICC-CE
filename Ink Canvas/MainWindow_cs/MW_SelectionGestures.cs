@@ -490,6 +490,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理选区覆盖层上的操控增量事件：根据触点数与事件增量对当前选中的墨迹应用平移、缩放与旋转变换，并刷新选区控件位置。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（选区覆盖层）。</param>
+        /// <param name="e">包含本次操控的位移、旋转与缩放增量，用于构建并应用到选中墨迹的变换。若仅有单指触点且已有选中墨迹，则在此方法中不处理（由单指触摸逻辑处理）。</param>
         private void GridInkCanvasSelectionCover_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
             try
@@ -543,6 +548,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理画布选择覆盖层的触摸按下事件：记录触点 ID，并在这是第一个触点时保存触摸中心点与最后触摸位置。
+        /// </summary>
+        /// <param name="sender">事件来源对象（未使用）。</param>
+        /// <param name="e">触摸事件参数，用于获取触点位置和 ID。</param>
         private void GridInkCanvasSelectionCover_TouchDown(object sender, TouchEventArgs e)
         {
             dec.Add(e.TouchDevice.Id);
@@ -555,6 +565,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理选择覆盖层的触摸抬起事件，维护多点触控计数并根据触点位置与当前选区更新选择状态和选择覆盖可见性。
+        /// </summary>
+        /// <param name="sender">事件源。</param>
+        /// <param name="e">触摸事件参数，包含触点位置与触点标识。</param>
         private void GridInkCanvasSelectionCover_TouchUp(object sender, TouchEventArgs e)
         {
             dec.Remove(e.TouchDevice.Id);
@@ -592,6 +607,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理选区覆盖层的触摸移动，用于以单指拖动平移当前选中的墨迹并更新选区控件位置。
+        /// </summary>
+        /// <remarks>
+        /// 仅在当前有选中墨迹且仅有一个有效触点时生效；当触点相对于上一次记录的位置在任一轴上移动超过 1 像素时，按位移量对所有选中笔划应用平移变换并更新最后触摸点和选区控件位置。
+        /// </remarks>
         private void GridInkCanvasSelectionCover_TouchMove(object sender, TouchEventArgs e)
         {
             // 处理触摸移动事件 - 用于拖动选中的墨迹
@@ -630,6 +651,12 @@ namespace Ink_Canvas
 
         private Point lastTouchPointOnGridInkCanvasCover = new Point(0, 0);
 
+        /// <summary>
+        /// 切换到套索/选择工具并重置与擦除器和绘图形状相关的临时状态。
+        /// </summary>
+        /// <remarks>
+        /// 将 forceEraser、forcePointEraser 置为 false，重置 drawingShapeMode 为 0，然后将当前工具设为选择并更新光标显示。
+        /// </remarks>
         private void LassoSelect_Click(object sender, RoutedEventArgs e)
         {
             forceEraser = false;
@@ -695,6 +722,12 @@ namespace Ink_Canvas
 
         #region Selection Display and Resize Handles
 
+        /// <summary>
+        /// 显示并定位当前选中笔画的选择矩形与控制点（缩放/旋转手柄）。
+        /// </summary>
+        /// <remarks>
+        /// 如果没有选中笔画，则隐藏选择显示。对选区边界向外扩展 8 像素以置放选择框和手柄，设置选择矩形的位置与尺寸并调用 UpdateSelectionHandles 更新手柄位置，然后使手柄画布可见。
+        /// </remarks>
         private void UpdateSelectionDisplay()
         {
             if (inkCanvas.GetSelectedStrokes().Count == 0)
@@ -725,6 +758,10 @@ namespace Ink_Canvas
             SelectionHandlesCanvas.Visibility = Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// 更新选择框的八个控制手柄的位置，使之围绕指定边界外侧排列：四个边中点手柄在边外向外扩展 8 像素，四个角手柄完全位于选择框外角位置。
+        /// </summary>
+        /// <param name="bounds">表示当前选区在画布坐标系中的边界矩形，用于计算各手柄的目标位置。</param>
         private void UpdateSelectionHandles(Rect bounds)
         {
             // 四个边选择点，向外扩展8像素
@@ -740,6 +777,11 @@ namespace Ink_Canvas
             BottomRightHandle.Margin = new Thickness(bounds.Right + 4, bounds.Bottom + 4, 0, 0);
         }
 
+        /// <summary>
+        /// 处理选择框调整大小句柄的鼠标按下事件：记录调整状态与初始参数并捕获鼠标以开始尺寸调整操作。
+        /// </summary>
+        /// <param name="sender">触发事件的句柄矩形（调整大小的句柄）。</param>
+        /// <param name="e">包含用于获取在 inkCanvas 上起始鼠标位置的事件数据；事件在成功处理后被标记为已处理。</param>
         private void SelectionHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -769,6 +811,9 @@ namespace Ink_Canvas
             UpdateSelectionDisplay();
         }
 
+        /// <summary>
+        /// 在选区缩放句柄上释放鼠标时结束缩放交互：重置缩放状态、清除当前句柄并释放句柄的鼠标捕获，同时将事件标记为已处理。
+        /// </summary>
         private void SelectionHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -780,6 +825,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在触摸按下选择调整把手时初始化调整操作的状态与基准数据，进入缩放/调整模式并标记事件为已处理。
+        /// </summary>
+        /// <param name="sender">触发事件的选择把手（Rectangle）。</param>
+        /// <param name="e">触摸事件参数，包含触摸位置等信息。</param>
         private void SelectionHandle_TouchDown(object sender, TouchEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -793,6 +843,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在触摸移动时根据当前拖动手柄计算并应用新的选区边界，将相应变换应用到所选墨迹并更新选择框显示。
+        /// </summary>
+        /// <param name="sender">触发事件的缩放句柄（Rectangle）。</param>
+        /// <param name="e">触摸事件参数，提供触点位置与事件状态。</param>
         private void SelectionHandle_TouchMove(object sender, TouchEventArgs e)
         {
             if (!isResizing || !(sender is Rectangle handle)) return;
@@ -812,6 +867,11 @@ namespace Ink_Canvas
             e.Handled = true;
         }
 
+        /// <summary>
+        /// 在触摸结束时停止对选区调整大小的交互并清除当前活动的调整柄状态。
+        /// </summary>
+        /// <param name="sender">触发事件的调整柄（Rectangle）。</param>
+        /// <param name="e">触摸事件参数，事件将在处理后标记为已处理。</param>
         private void SelectionHandle_TouchUp(object sender, TouchEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -822,6 +882,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据被拖动的句柄名称和位移，计算并返回调整后的选择矩形。
+        /// </summary>
+        /// <param name="originalBounds">原始选择矩形。</param>
+        /// <param name="delta">拖动产生的位移（用于调整对应边或角的偏移）。</param>
+        /// <param name="handleName">被拖动的句柄名称；支持的值：TopLeftHandle、TopRightHandle、BottomLeftHandle、BottomRightHandle、TopHandle、BottomHandle、LeftHandle、RightHandle。</param>
+        /// <returns>应用位移并强制最小尺寸（宽、高至少为 10）后得到的新矩形。</returns>
         private Rect CalculateNewBounds(Rect originalBounds, Point delta, string handleName)
         {
             var newBounds = originalBounds;
@@ -908,4 +975,3 @@ namespace Ink_Canvas
         #endregion
     }
 }
-

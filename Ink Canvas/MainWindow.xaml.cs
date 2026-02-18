@@ -76,6 +76,12 @@ namespace Ink_Canvas
 
         #region Window Initialization
 
+        /// <summary>
+        /// 初始化主窗口实例并配置界面初始可见性、浮动栏位置、定时器、墨迹管理器、触摸滑动与滑块触控支持、首个白板页面及相关事件处理器与窗口置顶/无焦点状态。
+        /// </summary>
+        /// <remarks>
+        /// 包含：隐藏/显示初始面板、根据配色与快捷调色盘计算并定位浮动栏、清理过大的日志文件、初始化撤销/重做与墨迹变更回调、注册系统偏好更改处理、初始化墨迹平滑与渐隐管理器、注册 InkCanvas 输入事件、创建并显示第一页白板、实现左右侧页面列表的触摸滑动与轻触切页逻辑、应用无焦点和始终置顶设置、绑定窗口激活/失活事件、为滑块添加触控支持，以及延后绑定计时器控件的父子关系与最小化事件处理器。
+        /// </remarks>
         public MainWindow()
         {
             /*
@@ -450,6 +456,12 @@ namespace Ink_Canvas
         private bool _isBoardBrushMode;
         private double _savedInkWidthBeforeBoardBrush = 5;
 
+        /// <summary>
+        /// 初始化画笔相关的绘制属性并将 InkCanvas 的手势事件绑定到处理器。
+        /// </summary>
+        /// <remarks>
+        /// 设置默认颜色、笔触大小和高亮器标志；根据设置选择是否启用高级贝塞尔平滑或使用 FitToCurve 配置；将 InkCanvas.Gesture 事件连接到 InkCanvas_Gesture 处理方法。
+        /// </remarks>
         private void loadPenCanvas()
         {
             try
@@ -478,6 +490,12 @@ namespace Ink_Canvas
         }
 
 
+        /// <summary>
+        /// 将给定的十六进制或命名颜色字符串解析为使用指定 alpha 通道的规范化调色板颜色。
+        /// </summary>
+        /// <param name="hex">颜色字符串，支持格式如 "#RRGGBB"、"#AARRGGBB"、"RRGGBB" 或可被 ColorConverter 识别的命名颜色；为空或解析失败时会采用默认值。</param>
+        /// <param name="alpha">用于结果颜色的透明度（0-255）。</param>
+        /// <returns>使用指定 alpha 的 ARGB 颜色；对若干常用色做了映射为固定调色板色，解析失败时返回不透明红色（alpha 应用于返回值）。</returns>
         private static Color GetCanonicalPaletteColorFromHex(string hex, byte alpha)
         {
             if (string.IsNullOrWhiteSpace(hex)) return Color.FromArgb(alpha, 255, 0, 0);
@@ -522,7 +540,12 @@ namespace Ink_Canvas
 
         /// <param name="color">目标颜色</param>
         /// <param name="width">目标粗细</param>
-        /// <param name="height">目标高度</param>
+        /// <summary>
+        /// 将画笔的颜色、宽度和高度应用到当前 InkCanvas 的绘制属性，并同步相关的 UI 控件、设置与最近使用的调色板索引（根据当前模式更新）。
+        /// </summary>
+        /// <param name="color">目标颜色（包含 alpha 通道），用于设置绘制属性的颜色与透明度。</param>
+        /// <param name="width">画笔宽度（逻辑单位），会同步到绘制属性、滑块和设置中。</param>
+        /// <param name="height">画笔高度（逻辑单位），会同步到绘制属性并在需要时更新相关 UI。</param>
         private void SetBrushAttributesDirectly(Color color, double width, double height)
         {
             try
@@ -608,6 +631,9 @@ namespace Ink_Canvas
         private const double BoardBrushInkWidth = 16;
         private const double BoardBrushInkHeight = 50;
 
+        /// <summary>
+        /// 切换“黑板画笔”模式；在启用时保存当前笔宽并切换为矩形不可压感大笔触（板书样式），在禁用时恢复先前笔宽、笔触形状与压力设置，并同步相关 UI（按钮背景、板书滑块和设置项）。
+        /// </summary>
         private void BoardBrushModeButton_Click(object sender, RoutedEventArgs e)
         {
             _isBoardBrushMode = !_isBoardBrushMode;
@@ -663,6 +689,15 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 切换“黑板画笔”模式并在画布与 UI 之间同步相关画笔属性和控件状态。
+        /// </summary>
+        /// <remarks>
+        /// - 如果触发源不是 BoardBrushModeButton 或上一次按下的对象不是 BoardBrushModeButton 则不执行任何操作。
+        /// - 如果内部 penType 等于 1，则仅切换模式状态但不修改画笔属性。
+        /// - 开启黑板模式时保存当前画笔宽度、将笔尖改为矩形、禁用压力感应并将画笔尺寸切换为黑板尺寸，同时设置按钮背景为蓝色；
+        ///   关闭黑板模式时恢复先前宽度（或使用默认值）、将笔尖改回椭圆、恢复压力感应设置，并同步相关滑块与 Settings 中的 InkWidth 值。
+        /// </remarks>
         private void BoardBrushModeButton_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (sender != BoardBrushModeButton) return;
@@ -721,6 +756,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 初始化画笔自动恢复的调度计时器：在尚未创建时构建计时器并绑定 Tick 事件处理器，然后设置/刷新计时器的时间间隔。
+        /// </summary>
         private void InitBrushAutoRestoreTimer()
         {
             if (_brushAutoRestoreTimer == null)
@@ -732,6 +770,15 @@ namespace Ink_Canvas
             UpdateBrushAutoRestoreTimerInterval();
         }
 
+        /// <summary>
+        /// 根据用户设置计算并应用下一次刷子自动恢复的时间间隔到内部计时器。
+        /// </summary>
+        /// <remarks>
+        /// 优先解析 <c>Settings.Canvas.BrushAutoRestoreTimes</c>（支持分号或逗号分隔的时间点列表，格式为 hh:mm:ss 或 hh:mm），选择距离当前时间的下一个时间点并设置为间隔；
+        /// 当解析失败、配置为空或未找到有效时间点时，回退到 <c>Settings.Canvas.BrushAutoRestoreDelaySeconds</c>（最小为 1 秒）。
+        /// 任何不可预期的解析错误将被吞掉以保证计时器仍能设置为默认间隔。
+        /// 最终会将计算出的间隔赋值给内部字段 <c>_brushAutoRestoreTimer.Interval</c>。
+        /// </remarks>
         private void UpdateBrushAutoRestoreTimerInterval()
         {
             if (_brushAutoRestoreTimer == null) return;
@@ -808,6 +855,12 @@ namespace Ink_Canvas
             _brushAutoRestoreTimer.Interval = nextInterval.Value;
         }
 
+        /// <summary>
+        /// 根据用户设置安排（或重新安排）画笔自动恢复计时器并启动它以触发后续的恢复操作。
+        /// </summary>
+        /// <remarks>
+        /// 如果设置对象为 null 或未启用画笔自动恢复，方法立即返回而不做任何操作。若计时器尚未创建则初始化计时器，若已存在则更新计时器间隔；最后重启计时器以应用新配置。方法内部捕获异常并将错误写入日志，不会抛出异常给调用者。
+        /// </remarks>
         internal void ScheduleBrushAutoRestore()
         {
             try
@@ -835,6 +888,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据用户设置在定时器触发时恢复画笔的颜色、透明度和宽度。
+        /// </summary>
+        /// <remarks>
+        /// 当画笔自动恢复已启用时，从设置中读取目标颜色、透明度和宽度并应用到画笔，同时重新计算并重启用于自动恢复的计时器；如果未启用则不作任何更改。
+        /// </remarks>
         private void BrushAutoRestoreTimer_Tick(object sender, EventArgs e)
         {
             try
@@ -967,6 +1026,12 @@ namespace Ink_Canvas
         private bool isLoaded;
         private bool forcePointEraser;
 
+        /// <summary>
+        /// 在窗口加载完成后执行，初始化界面、配置和各个后台管理器并应用启动时的模式与设置。
+        /// </summary>
+        /// <remarks>
+        /// 该事件处理程序负责启动应用所需的核心初始化流程，例如加载画笔与配色设置、恢复备份与上传队列、初始化插件与外部集成（PPT、计时器等）、注册系统事件以及根据命令行或持久化设置切换到相应的运行模式（白板/展示/收纳等）。
+        /// </remarks>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             loadPenCanvas();
@@ -1274,6 +1339,12 @@ namespace Ink_Canvas
             AddTouchSupportToSliders();
         }
 
+        /// <summary>
+        /// 在首次运行时显示首次启动体验（OOBE）窗口并将其显示状态记录到设置中。
+        /// </summary>
+        /// <remarks>
+        /// 如果 Settings 或其 Startup 子项为空，或已标记为已显示，则不执行任何操作。显示 OOBE 窗口时会设置应用级标志以表示正在显示 OOBE；窗口关闭后将 Settings.Startup.HasShownOobe 设为 true 并将设置持久化。发生异常时会写入错误日志并确保应用级显示标志被重置。
+        /// </remarks>
         private void ShowOobeIfNeeded()
         {
             try
@@ -1309,6 +1380,15 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在系统显示设置变化时处理响应：通知用户新分辨率，并在检测到悬浮工具栏位于屏幕外时（根据设置）在后台通过延迟/去抖后将悬浮工具栏移回可见区域。
+        /// </summary>
+        /// <remarks>
+        /// - 若 Settings.Advanced.IsEnableResolutionChangeDetection 为 false 则直接返回，不执行任何操作。  
+        /// - 会显示一条包含当前主屏幕分辨率的通知。  
+        /// - 在后台线程中判断悬浮工具栏是否已移出屏幕以及当前是否处于 PPT 放映模式；若悬浮工具栏在屏幕外，则以 3000 毫秒的去抖延迟执行恢复动画。  
+        /// - 恢复动画在 PPT 放映模式下使用较小的边距（60），否则使用较大边距（100 并带折叠处理标志）。
+        /// </remarks>
         private void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e)
         {
             if (!Settings.Advanced.IsEnableResolutionChangeDetection) return;
@@ -1372,6 +1452,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据用户设置在“窗口化（使用主屏幕边界）”和“全屏（最大化）”之间切换窗口模式。
+        /// </summary>
+        /// <remarks>
+        /// 当 Settings.Advanced.WindowMode 为 true 时，将窗口移动到主显示器左上角并调整为主屏幕的宽高；否则将窗口置为最大化状态。
+        /// </remarks>
         private void SetWindowMode()
         {
             if (Settings.Advanced.WindowMode)
@@ -1388,6 +1474,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在窗口尝试关闭时执行退出流程：记录事件，按设置执行可选的安全密码校验与多重确认对话，必要时取消关闭操作并记录取消原因。
+        /// </summary>
+        /// <param name="sender">触发关闭事件的对象（通常为窗口实例）。</param>
+        /// <param name="e">可通过将 <see cref="CancelEventArgs.Cancel"/> 设为 <c>true</c> 来中止关闭操作；方法会根据安全验证或用户确认结果修改此值。</param>
         private async void Window_Closing(object sender, CancelEventArgs e)
         {
             LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
@@ -2514,7 +2605,12 @@ namespace Ink_Canvas
 
         #region 新设置窗口
 
-        // 添加打开新设置窗口按钮点击事件
+        /// <summary>
+        /// 打开应用设置窗口（在必要时先验证安全密码并隐藏子面板）。
+        /// </summary>
+        /// <remarks>
+        /// 如果当前正在打开或隐藏设置面板则直接返回。若配置要求安全密码，先弹出密码输入并验证，验证不通过时不打开设置窗口。设置窗口以当前窗口为所有者并以模态方式显示。
+        /// </remarks>
         private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
@@ -3207,7 +3303,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 在笔工具菜单中隐藏墨迹渐隐控制开关切换事件处理
+        /// <summary>
+        /// 处理“在笔工具菜单中隐藏墨迹渐隐控制开关”的切换操作并将结果应用到设置与界面上。
         /// </summary>
+        /// <remarks>
+        /// 当切换发生时，更新 Settings.Canvas.HideInkFadeControlInPenMenu 的值、持久化设置文件、刷新墨迹渐隐控制项的可见性，并记录事件日志或错误日志。
+        /// </remarks>
         private void ToggleSwitchHideInkFadeControlInPenMenu_Toggled(object sender, RoutedEventArgs e)
         {
             try
@@ -3229,6 +3330,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理画笔自动恢复开关的切换并应用相应设置。
+        /// </summary>
+        /// <remarks>
+        /// 切换后会将新状态持久化到设置文件；如果启用，则初始化并调度画笔自动恢复定时器；如果禁用，则停止已存在的定时器以停止自动恢复行为。
+        /// </remarks>
         private void ToggleSwitchBrushAutoRestore_Toggled(object sender, RoutedEventArgs e)
         {
             try
@@ -3256,6 +3363,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 将文本框中的自动恢复时间保存到设置并在启用自动恢复时重新安排计时器。
+        /// </summary>
+        /// <remarks>
+        /// 如果窗口尚未完成加载或 Settings.Canvas 为 null，则不执行任何操作。发生异常时会记录错误但不会向上抛出。
+        /// </remarks>
         private void BrushAutoRestoreTimesTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -3276,6 +3389,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 将画笔自动恢复目标颜色设置为当前下拉列表选中项的 Tag（十六进制颜色），并保存到设置文件中。
+        /// </summary>
+        /// <param name="sender">事件触发者（通常为颜色下拉列表控件）。</param>
+        /// <param name="e">选择更改的事件数据。</param>
+        /// <remarks>
+        /// 如果窗口尚未完成加载或设置不可用则不进行任何操作；发生异常时会将错误写入日志文件，但不会抛出异常向上层传播。
+        /// </remarks>
         private void ComboBoxBrushAutoRestoreColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
@@ -3296,6 +3417,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在设置界面中响应画笔自动恢复宽度滑块的值变化，更新设置并将更改持久化到配置文件。
+        /// </summary>
+        /// <remarks>
+        /// 如果窗口尚未完成加载或 Settings.Canvas 为 null，则不执行任何操作。发生异常时会被捕获并记录，不会向上抛出。
+        /// </remarks>
         private void BrushAutoRestoreWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             try
@@ -3312,6 +3439,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 将画笔自动恢复目标透明度更新为滑块的新值并将设置持久化到配置文件。
+        /// </summary>
         private void BrushAutoRestoreAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             try
@@ -3658,7 +3788,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 为所有滑块控件添加触摸和手写笔事件支持
+        /// <summary>
+        /// 为窗口中的相关 Slider 控件注册触控与手写笔交互支持，允许通过触摸或笔直接调整滑块值。
         /// </summary>
+        /// <remarks>
+        /// 会跳过为 null 的控件；方法执行结果和异常会记录到日志。
         private void AddTouchSupportToSliders()
         {
             try

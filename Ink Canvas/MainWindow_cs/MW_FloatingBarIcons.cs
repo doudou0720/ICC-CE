@@ -2419,55 +2419,88 @@ namespace Ink_Canvas
             CursorIcon_Click(null, null);
         }
 
-        // 快捷调色盘事件处理方法
+        /// <summary>
+        /// 将当前绘图颜色设置为白色并安排自动恢复之前的画笔状态。
+        /// </summary>
         private void QuickColorWhite_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.White);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 切换当前画笔颜色为预设的橙色，并安排画笔状态的自动恢复。
+        /// </summary>
         private void QuickColorOrange_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(251, 150, 80)); // 橙色
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将当前快速颜色设置为黄色并安排画笔状态的自动恢复操作。
+        /// </summary>
         private void QuickColorYellow_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Yellow);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色设为黑色并安排在稍后自动恢复画笔状态。
+        /// </summary>
         private void QuickColorBlack_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Black);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将绘图颜色设置为蓝色（RGB 37,99,235）并安排自动恢复先前的画笔状态。
+        /// </summary>
+        /// <remarks>
+        /// 用于快速颜色按钮的点击事件处理器，会调用颜色设置并触发 ScheduleBrushAutoRestore。
+        /// </remarks>
         private void QuickColorBlue_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(37, 99, 235)); // 蓝色
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将当前快捷颜色切换为红色并安排自动恢复画笔状态。
+        /// </summary>
+        /// <remarks>
+        /// 设置绘图颜色为红色，并触发后续对画笔状态（如颜色/粗细/高亮）自动还原的调度操作。
+        /// </remarks>
         private void QuickColorRed_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Red);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将绘图颜色切换为预定义的绿色快速色并安排画笔状态的自动恢复。
+        /// </summary>
         private void QuickColorGreen_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(22, 163, 74));
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 切换当前画笔颜色为预设紫色快捷色并安排在稍后自动恢复画笔状态。
+        /// </summary>
         private void QuickColorPurple_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(147, 51, 234));
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将给定颜色应用为当前画笔，并同步更新画笔属性、荧光笔状态、最近使用颜色索引及快捷调色板和界面指示器。
+        /// </summary>
+        /// <param name="color">要应用到画笔的颜色。</param>
         private void SetQuickColor(Color color)
         {
             // 确保当前处于批注模式
@@ -2831,6 +2864,15 @@ namespace Ink_Canvas
         private bool wasNoFocusModeBeforeSettings;
         private bool userChangedNoFocusModeInSettings;
 
+        /// <summary>
+        /// 在用户界面中打开或关闭设置面板；在打开时会（必要时）提示并校验安全密码，然后临时调整无焦点模式、显示设置遮罩并播放侧滑动画将设置面板滑入视图。 
+        /// </summary>
+        /// <remarks>
+        /// - 当设置面板已可见时，该方法会调用 HideSubPanels() 隐藏所有子面板并退出。 
+        /// - 当设置面板尚未可见时，如果配置要求进入设置需验证密码，则会异步弹出密码提示并在校验不通过时中止打开流程。 
+        /// - 成功进入设置后会记录并在必要时临时禁用“无焦点模式”，将遮罩设为可交互并应用半透明背景，滚动设置面板到顶部，并以缓动动画将面板滑入。 
+        /// - 方法在内部捕获密码提示相关异常以避免抛出到调用者。 
+        /// </remarks>
         private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
@@ -3004,6 +3046,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在屏幕模式、白板模式与黑板模式之间切换应用的显示与绘图状态。
+        /// </summary>
+        /// <remarks>
+        /// 切换时会更新相关 UI 面板与主题，保存/清除/恢复墨迹记录，控制浮动工具栏与手势面板的可见性，并根据设置在进入或退出白板时应用或恢复全屏行为。进入白板/黑板时会触发剪贴板图片检测以显示粘贴提示；退出白板时可根据自动化设置在浮动栏展开后自动收纳。此方法为界面事件处理器，会产生持久化和可视状态的副作用（例如修改 Topmost、主题以及画布背景）。
+        /// </remarks>
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)

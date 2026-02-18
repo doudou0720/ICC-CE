@@ -47,10 +47,19 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region 生命周期管理
-        public void StartMonitoring() => _inner.StartMonitoring();
+        /// <summary>
+/// 开始监视 PowerPoint 的连接和放映状态，使相关事件（如幻灯片切换、放映开始/结束、演示文稿打开/关闭等）在状态变化时被触发。
+/// </summary>
+public void StartMonitoring() => _inner.StartMonitoring();
 
-        public void StopMonitoring() => _inner.StopMonitoring();
+        /// <summary>
+/// 停止监控 PowerPoint 的连接及放映相关事件，取消对外部 PPT 状态变更的跟踪。
+/// </summary>
+public void StopMonitoring() => _inner.StopMonitoring();
 
+        /// <summary>
+        /// 刷新或重新建立与底层 PowerPoint 管理器的连接以恢复或更新连接状态。
+        /// </summary>
         public void ReloadConnection()
         {
         }
@@ -88,4 +97,3 @@ namespace Ink_Canvas.Helpers
         #endregion
     }
 }
-

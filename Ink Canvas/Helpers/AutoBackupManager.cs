@@ -51,7 +51,11 @@ namespace Ink_Canvas.Helpers
         /// 执行自动备份
         /// </summary>
         /// <param name="settings">设置对象</param>
-        /// <returns>备份是否成功</returns>
+        /// <summary>
+        /// 将主配置文件复制到备份目录并以时间戳命名，同时更新设置中的最后自动备份时间。
+        /// </summary>
+        /// <param name="settings">包含并将更新 Advanced.LastAutoBackupTime 的设置对象。</param>
+        /// <returns><c>true</c> 表示备份成功，<c>false</c> 表示失败。</returns>
         public static bool PerformAutoBackup(Settings settings)
         {
             try
@@ -91,7 +95,13 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 尝试从备份恢复配置文件
         /// </summary>
-        /// <returns>恢复是否成功</returns>
+        /// <summary>
+        /// 从最新的有效自动备份恢复应用的设置文件。
+        /// </summary>
+        /// <remarks>
+        /// 在恢复前会验证备份文件的内容；如果当前设置文件存在，则会将其以带时间戳的备份形式保存到备份目录以作保留。文件写入操作使用受保护的写入通道执行。
+        /// </remarks>
+        /// <returns>`true` 如果恢复成功，`false` 否则。</returns>
         public static bool TryRestoreFromBackup()
         {
             try
@@ -155,7 +165,13 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 清理过期的备份文件
         /// 保留最近30天的备份文件
+        /// <summary>
+        /// 删除备份目录中创建时间早于 30 天前的自动备份文件。
         /// </summary>
+        /// <remarks>
+        /// 仅移除以 <c>BackupPrefix</c> 开头且扩展名为 <c>.json</c> 的文件；当备份目录不存在时不做任何操作。
+        /// 发生异常时会记录错误日志并中止清理过程。
+        /// </remarks>
         public static void CleanupOldBackups()
         {
             try

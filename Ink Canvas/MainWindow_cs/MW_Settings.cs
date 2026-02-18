@@ -904,6 +904,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据用户设置更新白板上的励志/名言水印文本。
+        /// </summary>
+        /// <remarks>
+        /// 会从内置语料库或外部“一言”API获取文本，并将结果赋值给 BlackBoardWaterMark.Text；在网络或初始化失败时记录日志并展示相应的不可用提示文字。
+        /// </remarks>
         private async Task UpdateChickenSoupTextAsync()
         {
             try
@@ -2331,6 +2337,9 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理墨迹不透明度滑块的值变更，更新当前绘图属性的 alpha（不透明度）并将该值保存到设置中。
+        /// </summary>
         private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2345,6 +2354,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 更新双曲线渐近线选项并将更改保存到应用设置。
+        /// </summary>
+        /// <remarks>
+        /// 当窗口尚未完成加载时不会执行任何操作。把组合框的选中索引转换为 `OptionalOperation` 并赋值给 `Settings.Canvas.HyperbolaAsymptoteOption`，然后调用保存函数持久化设置。
+        /// </remarks>
         private void ComboBoxHyperbolaAsymptoteOption_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3173,6 +3188,13 @@ namespace Ink_Canvas
 
         #region Reset
 
+        /// <summary>
+        /// 将全局 Settings 重置为推荐的默认配置。
+        /// </summary>
+        /// <remarks>
+        /// 在重置过程中会保留当前 Settings.Automation 下的 AutoDelSavedFiles 与 AutoDelSavedFilesDaysThreshold 两项值并应用到新的设置实例中。
+        /// 此方法直接替换静态 Settings 对象并初始化各子设置为推荐的默认值，不返回值或抛出异常声明。
+        /// </remarks>
         public static void SetSettingsToRecommendation()
         {
             var AutoDelSavedFilesDays = Settings.Automation.AutoDelSavedFiles;
@@ -3320,6 +3342,12 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认值，并立即保存与应用这些更改。
+        /// </summary>
+        /// <remarks>
+        /// 在需要时会先弹出安全密码输入框以验证重置权限；验证通过或不需要验证后，方法会应用推荐设置、保存到配置文件、重新加载设置（跳过自动更新检查）、并将“开机运行”选项设为关闭，最后在界面上显示确认通知。
+        /// </remarks>
         public async void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -4409,6 +4437,12 @@ namespace Ink_Canvas
 
         #endregion
 
+        /// <summary>
+        /// 将当前 Settings 对象序列化并写入到应用的配置文件中，持久化用户设置。
+        /// </summary>
+        /// <remarks>
+        /// 写入目标为应用根路径下的 Configs 目录中的设置文件；在需要时会创建目录并确保具有写入权限。方法在遇到 I/O 或权限错误时会静默忽略异常（不抛出）。
+        /// </remarks>
         public static void SaveSettingsToFile()
         {
             var text = JsonConvert.SerializeObject(Settings, Formatting.Indented);

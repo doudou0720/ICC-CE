@@ -119,6 +119,12 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Manager Initialization
+        /// <summary>
+        /// 初始化并配置用于与 PowerPoint 集成的管理器与相关资源。
+        /// </summary>
+        /// <remarks>
+        /// 执行以下操作：清理并停止先前的 PPT 管理器与 PowerPoint 进程监控，释放并重置与 COM/Interop 相关的静态状态；根据配置选择并创建 ROT 或 COM 类型的 PPT 管理器；为新管理器注册连接及幻灯片事件；创建并配置单个演示文稿的墨迹管理器与 UI 管理器，并应用用户设置（例如是否支持 WPS、自动保存与按钮显示/位置等）。方法会在内部捕获异常并记录错误或警告日志。此方法会产生全局可见的副作用（创建/释放管理器、启动/停止监控、清除互操作状态等）。
+        /// </remarks>
         private void InitializePPTManagers()
         {
             try
@@ -214,7 +220,12 @@ namespace Ink_Canvas
         #region PowerPoint Application Management
         /// <summary>
         /// 启动PowerPoint应用程序守护
+        /// <summary>
+        /// 启动对 PowerPoint 进程的周期性监控并在需要时创建 PowerPoint 应用实例以维持增强功能可用性。
         /// </summary>
+        /// <remarks>
+        /// 若设置中未启用 PowerPoint 增强或使用 ROT 链接，则不会启动监控。监控通过内部 DispatcherTimer 周期性触发应用有效性检查并在日志中记录启动或错误信息。
+        /// </remarks>
         private void StartPowerPointProcessMonitoring()
         {
             try
@@ -265,7 +276,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 创建PowerPoint应用程序实例
+        /// <summary>
+        /// 确保存在一个可用的 PowerPoint COM 应用实例并将其分配给内部管理器。
         /// </summary>
+        /// <remarks>
+        /// 如果配置使用 ROT 链接或已有有效实例，则不做任何操作；否则创建新的 PowerPoint.Application，设置为最小化且不可见，并在延迟后通过 SetPPTManagerApplication 将该实例注入到内部的 PPT 管理器。创建或注入失败的异常会被捕获并记录。 
+        /// </remarks>
         private void CreatePowerPointApplication()
         {
             try
@@ -318,7 +334,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 设置PPTManager的PowerPoint应用程序实例
+        /// <summary>
+        /// 将 PowerPoint 应用程序实例注入到当前的 PPT 管理器，使管理器能够使用该 COM 应用程序对象与 PowerPoint 交互。
+        /// 如果未配置 PPT 管理器实例或启用了 ROT 链接模式，则不会执行任何操作。
         /// </summary>
+        /// <param name="app">要注入的 PowerPoint COM 应用程序实例（Microsoft.Office.Interop.PowerPoint.Application）。</param>
         private void SetPPTManagerApplication(Microsoft.Office.Interop.PowerPoint.Application app)
         {
             try
@@ -391,7 +411,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 关闭PowerPoint应用程序
+        /// <summary>
+        /// 关闭 PowerPoint 应用并清理相关的 COM 与互操作状态。
         /// </summary>
+        /// <remarks>
+        /// 该方法会尝试关闭所有打开的演示文稿、退出 PowerPoint 进程、释放 PowerPoint COM 对象，并调用 ClearStaticInteropState 清除静态互操作资源；操作完成后记录事件日志。若在关闭过程中发生异常，会记录错误日志并仍然尝试清理静态互操作状态。
+        /// </remarks>
         private void ClosePowerPointApplication()
         {
             try
@@ -429,6 +454,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 释放与 PowerPoint COM 互操作相关的静态引用并重置相关状态。
+        /// </summary>
+        /// <remarks>
+        /// 尝试释放保存的 Presentation、Slides 和 Slide 的 COM 引用，并将对应字段置为 null，
+        /// 同时将 slidescount 重置为 0。若释放过程中发生异常，会记录警告日志但不会抛出异常。
+        /// </remarks>
         private void ClearStaticInteropState()
         {
             try
@@ -458,7 +490,14 @@ namespace Ink_Canvas
 
         /// <summary>
         /// PowerPoint应用程序监控定时器事件
+        /// <summary>
+        /// 定期检查 PowerPoint 应用程序的可用性，并在失效时尝试重建应用程序实例。
         /// </summary>
+        /// <remarks>
+        /// 如果已关闭增强功能，则停止进程监控；当使用 ROT 链接模式时不会执行检查。任何异常会被捕获并记录。
+        /// </remarks>
+        /// <param name="sender">事件的发送者（定时器）。</param>
+        /// <param name="e">事件参数。</param>
         private void OnPowerPointApplicationMonitorTick(object sender, EventArgs e)
         {
             try
@@ -484,6 +523,12 @@ namespace Ink_Canvas
         }
         #endregion
 
+        /// <summary>
+        /// 释放并重置与 PowerPoint 集成相关的所有管理器、计时器和互操作状态，关闭 PowerPoint 进程并记录操作结果。
+        /// </summary>
+        /// <remarks>
+        /// 方法会停止并释放内部的 PPT 管理器、单一演示文稿墨迹管理器和长按计时器，停止进程监视器，关闭 PowerPoint 应用并清理静态 COM/互操作状态；任何在释放过程中发生的异常将被捕获并记录为错误日志。
+        /// </remarks>
         private void DisposePPTManagers()
         {
             try
@@ -566,6 +611,10 @@ namespace Ink_Canvas
         #endregion
 
         #region New PPT Event Handlers
+        /// <summary>
+        /// 处理 PowerPoint 连接状态变化并更新相关 UI 与内部状态。
+        /// </summary>
+        /// <param name="isConnected">当为 <c>true</c> 时表示已连接；为 <c>false</c> 时表示已断开。</param>
         private void OnPPTConnectionChanged(bool isConnected)
         {
             try
@@ -1393,6 +1442,14 @@ namespace Ink_Canvas
         }
         #endregion
 
+        /// <summary>
+        /// 触发一次对 PowerPoint 连接的手动检查并在短延迟后根据结果记录日志或弹窗提示。
+        /// </summary>
+        /// <param name="sender">触发此事件的源对象（通常为按钮）。</param>
+        /// <param name="e">事件参数。</param>
+        /// <remarks>
+        /// 方法会在必要时初始化 PPT 管理器，重载连接并开始监控；在短暂延迟后根据管理器的连接状态记录成功或失败日志并在未连接时弹出提示窗口。发生异常时会记录错误、更新 UI 的连接状态为断开并弹出提示。
+        /// </remarks>
         private void BtnCheckPPT_Click(object sender, RoutedEventArgs e)
         {
             try

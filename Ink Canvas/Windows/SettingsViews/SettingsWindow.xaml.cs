@@ -17,6 +17,12 @@ namespace Ink_Canvas.Windows
     {
         private MainWindow _mainWindow;
 
+        /// <summary>
+        /// 初始化 SettingsWindow 并配置侧边栏、面板、主题、事件绑定与自定义控件交互支持。
+        /// </summary>
+        /// <remarks>
+        /// 执行以下初始化工作：获取主窗口引用，构建侧边栏条目（包含“安全”等项），将面板与滚动器、标题与名称数组关联，订阅各面板的顶部阴影与主题变更事件，初始化侧边栏主题状态，加载各面板设置，向自定义滑块添加触控与笔输入支持，并应用主题以保证 UI 元素（例如标题栏、上下文菜单、图标）正确显示。该构造器不会抛出显式异常；初始化过程中遇到的错误在实现中被捕获并记录。
+        /// </remarks>
         public SettingsWindow()
         {
             InitializeComponent();
@@ -323,7 +329,13 @@ namespace Ink_Canvas.Windows
         
         /// <summary>
         /// 通知所有面板应用主题
+        /// <summary>
+        /// 通知所有已知的设置面板应用当前主题。
         /// </summary>
+        /// <remarks>
+        /// 会遍历窗口中已注册的设置面板，并通过反射调用每个面板的 `ApplyTheme` 方法（若存在）。
+        /// 单个面板在调用过程中发生的异常会被捕获并写入调试输出，不会中断对其他面板的通知流程。
+        /// </remarks>
         private void ApplyThemeToAllPanels()
         {
             try
@@ -754,7 +766,12 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 加载所有设置面板的设置
+        /// <summary>
+        /// 延迟预加载并初始化所有设置面板，确保面板的设置已读取、触摸支持已启用且主题已应用。
         /// </summary>
+        /// <remarks>
+        /// 在 UI 线程上使用调度器（Loaded 优先级）异步执行。对每个已创建的面板，尝试通过反射调用 `LoadSettings`、`EnableTouchSupport`（若不存在则调用 MainWindowSettingsHelper.EnableTouchSupportForControls）和 `ApplyTheme` 方法；完成后再次触发对所有面板的主题应用以保证生效。方法内部会捕获并通过 Debug.WriteLine 记录任何异常，不会向上传播异常。
+        /// </remarks>
         private void LoadAllPanelsSettings()
         {
             try
@@ -938,6 +955,16 @@ namespace Ink_Canvas.Windows
         public string[] SettingsPaneTitles;
         public string[] SettingsPaneNames;
 
+        /// <summary>
+        /// 更新侧边栏项的选中状态、同步主题并切换对应设置面板的可见性与主题。
+        /// </summary>
+        /// <remarks>
+        /// - 遍历 SidebarItems，设置每项的 Selected 并在选中项存在时更新窗口标题。  
+        /// - 根据当前应用/系统主题计算并同步每个 SidebarItem 的 IsDarkTheme。  
+        /// - 根据当前选中项调整各设置面板的 Visibility。  
+        /// - 对新显示的面板在 Dispatcher 的 Loaded 优先级下延迟调用其 ApplyTheme 方法（若该方法存在）。  
+        /// - 将所有 SettingsPaneScrollViewers 滚动到顶部以重置视图位置。
+        /// </remarks>
         public void UpdateSidebarItemsSelection()
         {
             foreach (var si in SidebarItems)

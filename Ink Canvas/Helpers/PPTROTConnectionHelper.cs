@@ -119,6 +119,13 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// 在运行对象表（ROT）中查找并选择最合适的 PowerPoint Application COM 实例。
+        /// </summary>
+        /// <param name="targetApp">可选的目标 COM 对象；如果提供，会返回该对象的优先级到 <paramref name="targetPriority"/>。</param>
+        /// <param name="bestPriority">输出参数。所选应用的优先级（0 表示未找到；1 表示存在 ActivePresentation；2 表示存在 SlideShowWindow；3 表示幻灯放映处于活动状态）。</param>
+        /// <param name="targetPriority">输出参数。如果提供了 <paramref name="targetApp"/>，返回该目标应用的优先级；否则为 0。</param>
+        /// <returns>被选中的 PowerPoint Application COM 对象；找不到合适实例时返回 null。</returns>
         public static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
@@ -480,4 +487,3 @@ namespace Ink_Canvas.Helpers
         #endregion
     }
 }
-

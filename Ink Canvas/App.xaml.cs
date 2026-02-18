@@ -665,6 +665,19 @@ namespace Ink_Canvas
 
         private TaskbarIcon _taskbar;
 
+        /// <summary>
+        /// 处理应用启动流程：可选显示启动画面、初始化本地组件与遥测、处理更新/单实例/IPC逻辑、并创建并显示主窗口。
+        /// </summary>
+        /// <remarks>
+        /// 行为要点：
+        /// - 根据设置可显示并更新启动画面；释放 IACore/UIAccess DLL 并记录设备信息与遥测标签；
+        /// - 处理更新相关模式（更新、最终应用、更新中标记文件）并在必要时跳过主窗口显示；
+        /// - 执行单实例检测并通过 IPC 将启动参数（.icstk 文件、--board/--show 命令或 icc: URI）发送到已运行实例；
+        /// - 在非特殊模式下创建主窗口、处理启动 URI、注册文件关联并启动 IPC 监听器；
+        /// - 在特殊模式下（更新/最终应用/跳过 Mutex 检查）创建临时互斥体并等待以保证更新进程完成。
+        /// </remarks>
+        /// <param name="sender">触发启动事件的对象（通常为应用实例）。</param>
+        /// <param name="e">包含启动参数的事件数据，方法会使用 e.Args 来决定启动模式和传递 IPC/URI 参数。</param>
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
@@ -1159,6 +1172,15 @@ namespace Ink_Canvas
         private static DateTime splashScreenStartTime = DateTime.MinValue;
         private static DateTime appStartupStartTime = DateTime.MinValue;
 
+        /// <summary>
+        /// 启动心跳与守护监视器，用于检测启动假死和主线程无响应并在配置允许时触发静默重启。
+        /// </summary>
+        /// <remarks>
+        /// 每秒更新一次心跳时间；每3秒检查一次守护条件。若正在显示 OOBE，则跳过检查。检测逻辑如下：
+        /// 1. 在启动尚未完成时，若自启动（或启动画面）开始已超过 2 分钟且未收到启动完成心跳，则视为启动假死并尝试重启应用。
+        /// 2. 在启动完成后，若距上次心跳超过 10 秒，则视为主线程无响应并尝试重启应用。
+        /// 重启仅在 CrashAction 为 SilentRestart 且连续重启次数少于 5 次时执行；达到 5 次后会显示错误对话并退出，同时重置重启计数器。每次尝试重启前会增加重启计数。
+        /// </remarks>
         private void StartHeartbeatMonitor()
         {
             heartbeatTimer = new DispatcherTimer
@@ -1248,7 +1270,17 @@ namespace Ink_Canvas
             watchdogProcess = Process.Start(psi);
         }
 
-        // 看门狗主逻辑
+        /// <summary>
+        /// 作为看门狗进程监视指定的主进程并在主进程异常终止时根据配置决定重启或退出程序。
+        /// </summary>
+        /// <remarks>
+        /// 仅在进程以命令行参数格式 "--watchdog &lt;pid&gt; &lt;exitSignalFile&gt;" 启动时生效。看门狗会：
+        /// - 监视指定 PID 的主进程是否存续；如果检测到传入的退出信号文件则删除该文件并退出；
+        /// - 主进程意外退出时同步崩溃处理设置；若启用了 UI access 顶层优先则直接退出；
+        /// - 当崩溃处理设置为 SilentRestart 时递增启动计数并尝试重新启动可执行文件；
+        ///   若连续重启次数达到 5 次则显示提示框、重置计数并退出以停止自动重启。
+        /// 此方法会在必要时终止当前进程（调用 Environment.Exit 或显示消息框），不会抛出可预期的异常供调用方处理。
+        /// </remarks>
         public static void RunWatchdogIfNeeded()
         {
             var args = Environment.GetCommandLineArgs();

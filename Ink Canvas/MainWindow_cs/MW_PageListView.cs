@@ -21,7 +21,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// <para>刷新白板的缩略图页面列表。</para>
+        /// <summary>
+        /// 重新构建并刷新黑板左/右侧的页面缩略列表项集合及其选中状态。
         /// </summary>
+        /// <remarks>
+        /// 对比当前集合长度与白板总页数：若相等则逐项替换，否则清空并重新添加所有页的缩略项。每个缩略项由应用历史记录生成的笔迹集合构成，且会被裁切到当前 inkCanvas 的可见区域。随后用当前画布的实时笔迹替换对应的当前页缩略项，并将左右侧列表的选中索引同步为当前白板页索引减一（基于 0 的列表索引）。
+        /// </remarks>
         private void RefreshBlackBoardSidePageListView()
         {
             if (blackBoardSidePageListViewObservableCollection.Count == WhiteboardTotalCount)
@@ -67,6 +72,13 @@ namespace Ink_Canvas
             BlackBoardRightSidePageListView.SelectedIndex = CurrentWhiteboardIndex - 1;
         }
 
+        /// <summary>
+        /// 根据在滚动视图内的触点位置，通过缩略图命中检测切换到对应的白板页面并同步左右面板的选中状态。
+        /// </summary>
+        /// <param name="listView">展示页缩略图的 ListView 控件。</param>
+        /// <param name="scrollViewer">包含该 ListView 的 ScrollViewer；触点坐标以此为参考系。</param>
+        /// <param name="pointInScrollViewer">在 scrollViewer 坐标系下的触点位置，用于在 ListView 中进行命中检测。</param>
+        /// <param name="isLeftSide">指示触发来源是否为左侧黑板（用于调用上下文区分），不改变方法的切换逻辑。</param>
         private void TrySwitchWhiteboardPageByTouchPoint(ListView listView, ScrollViewer scrollViewer, Point pointInScrollViewer, bool isLeftSide)
         {
             if (listView == null || scrollViewer == null) return;
@@ -109,6 +121,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在可视树中向上遍历并查找第一个类型为 <typeparamref name="T"/> 的父级元素。
+        /// </summary>
+        /// <typeparam name="T">要查找的父级元素类型，必须派生自 <see cref="DependencyObject"/>。</typeparam>
+        /// <param name="current">起始节点；从此节点开始向上搜索其父级。</param>
+        /// <returns>找到的第一个类型为 <typeparamref name="T"/> 的祖先元素；未找到时返回 <c>null</c>。</returns>
         private static T FindAncestorOfType<T>(DependencyObject current) where T : DependencyObject
         {
             while (current != null)
@@ -119,6 +137,11 @@ namespace Ink_Canvas
             return null;
         }
 
+        /// <summary>
+        /// 将指定元素的顶部滚动到 ScrollViewer 当前的垂直可见区域顶部位置。
+        /// </summary>
+        /// <param name="element">位于 ScrollViewer 中的目标元素，其顶部将与 ScrollViewer 的当前垂直偏移对齐。</param>
+        /// <param name="scrollViewer">目标 ScrollViewer。</param>
         public static void ScrollViewToVerticalTop(FrameworkElement element, ScrollViewer scrollViewer)
         {
             if (element == null || scrollViewer == null)

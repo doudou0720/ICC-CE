@@ -29,6 +29,11 @@ namespace Ink_Canvas.Helpers
             WriteLogToFile(msg, LogType.Error);
         }
 
+        /// <summary>
+        /// 将一条日志消息写入应用的日志文件，日志文件位置和格式受应用设置控制；当日志功能被禁用时不会写入任何内容。
+        /// </summary>
+        /// <param name="str">要写入的日志消息文本。</param>
+        /// <param name="logType">日志类型，用于标记该条日志（例如 Info、Error、Warning 等）。</param>
         public static void WriteLogToFile(string str, LogType logType = LogType.Info)
         {
             // 检查日志是否启用
@@ -89,6 +94,13 @@ namespace Ink_Canvas.Helpers
             catch { }
         }
 
+        /// <summary>
+        /// 检查指定的日志文件夹总大小并在超过 MaxLogsFolderSizeBytes 限制时删除文件以进行清理。
+        /// </summary>
+        /// <remarks>
+        /// 清理发生后会向同一日志文件夹内名为 `Log_<AppStartTime>.txt` 的文件追加一条清理记录。函数在遇到文件或 IO 错误时会吞掉异常并静默返回。
+        /// </remarks>
+        /// <param name="logsPath">要检查的日志文件夹的完整路径；如果该目录不存在，函数立即返回且不做任何操作。</param>
         private static void CheckAndCleanLogsFolder(string logsPath)
         {
             try

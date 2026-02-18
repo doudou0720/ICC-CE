@@ -21,6 +21,11 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 根据用户配置加载并应用应用程序设置，同时在配置损坏时尝试从备份恢复或回退为默认设置并清理过期配置项。
+        /// </summary>
+        /// <param name="isStartup">指示该调用是否发生在应用启动流程；为 true 时会触发仅在启动时执行的行为（例如折叠浮动栏、在启动时运行的自动更新检查、根据仅PPT模式隐藏主窗口等）。</param>
+        /// <param name="skipAutoUpdateCheck">为 true 时在加载时跳过自动更新检查（即使设置中启用了自动更新）。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -1227,6 +1232,14 @@ namespace Ink_Canvas
             LoadBrushAutoRestoreSettings();
         }
 
+        /// <summary>
+        /// 将画笔自动恢复相关的用户配置应用到界面控件并在需要时初始化恢复定时器。
+        /// </summary>
+        /// <remarks>
+        /// - 同步启用开关、时间点文本、颜色下拉、宽度和透明度滑块的值到对应控件；对于缺失或非法的颜色和宽度使用安全默认值。 
+        /// - 如果设置启用，则初始化并调度画笔自动恢复定时器以生效。 
+        /// - 在内部捕获并记录任何异常，不向调用者抛出异常。
+        /// </remarks>
         private void LoadBrushAutoRestoreSettings()
         {
             try
