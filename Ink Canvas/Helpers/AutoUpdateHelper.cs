@@ -1341,13 +1341,25 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 安装新版本应用 - 优化版本，不使用命令行
+        // 安装新版本应用
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
+            bool wasProcessProtectionEnabled = false;
+            try
+            {
+                wasProcessProtectionEnabled = ProcessProtectionManager.Enabled;
+            }
+            catch
+            {
+            }
+
             try
             {
                 App.IsUpdateInstalling = true;
-                try { ProcessProtectionManager.SetEnabled(false); } catch { }
+                if (wasProcessProtectionEnabled)
+                {
+                    try { ProcessProtectionManager.SetEnabled(false); } catch { }
+                }
 
                 // 在更新前备份设置文件
                 try
@@ -1507,6 +1519,18 @@ namespace Ink_Canvas.Helpers
                 if (ex.InnerException != null)
                 {
                     LogHelper.WriteLogToFile($"AutoUpdate | 内部异常: {ex.InnerException.Message}", LogHelper.LogType.Error);
+                }
+            }
+            finally
+            {
+                // 确保无论更新成功还是失败，都恢复标志位和进程保护状态
+                App.IsUpdateInstalling = false;
+                try
+                {
+                    ProcessProtectionManager.SetEnabled(wasProcessProtectionEnabled);
+                }
+                catch
+                {
                 }
             }
         }
