@@ -207,6 +207,15 @@ namespace Ink_Canvas
 
         private void StopPPTMonitoring()
         {
+            try
+            {
+                _exitPPTModeAfterDisconnectTimer?.Stop();
+                _exitPPTModeAfterDisconnectTimer = null;
+            }
+            catch
+            {
+            }
+
             _pptManager?.StopMonitoring();
             LogHelper.WriteLogToFile("PPT监控已停止", LogHelper.LogType.Event);
         }
