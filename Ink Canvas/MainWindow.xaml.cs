@@ -240,7 +240,7 @@ namespace Ink_Canvas
                     var pt = e.GetTouchPoint(BlackBoardLeftSidePageListScrollViewer).Position;
                     double dx = pt.X - leftTouchStartX, dy = pt.Y - leftTouchStartY;
                     if (dx * dx + dy * dy <= TouchTapMovementThreshold * TouchTapMovementThreshold)
-                        TrySwitchWhiteboardPageByTouchPoint(BlackBoardLeftSidePageListView, BlackBoardLeftSidePageListScrollViewer, pt, true);
+                        TrySwitchWhiteboardPageByTouchPoint(BlackBoardLeftSidePageListView, BlackBoardLeftSidePageListScrollViewer, pt);
                 }
                 leftIsTouching = false;
                 leftTouchDidScroll = false;
@@ -284,7 +284,7 @@ namespace Ink_Canvas
                     var pt = e.GetTouchPoint(BlackBoardRightSidePageListScrollViewer).Position;
                     double dx = pt.X - rightTouchStartX, dy = pt.Y - rightTouchStartY;
                     if (dx * dx + dy * dy <= TouchTapMovementThreshold * TouchTapMovementThreshold)
-                        TrySwitchWhiteboardPageByTouchPoint(BlackBoardRightSidePageListView, BlackBoardRightSidePageListScrollViewer, pt, false);
+                        TrySwitchWhiteboardPageByTouchPoint(BlackBoardRightSidePageListView, BlackBoardRightSidePageListScrollViewer, pt);
                 }
                 rightIsTouching = false;
                 rightTouchDidScroll = false;

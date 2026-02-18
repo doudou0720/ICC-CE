@@ -67,7 +67,7 @@ namespace Ink_Canvas
             BlackBoardRightSidePageListView.SelectedIndex = CurrentWhiteboardIndex - 1;
         }
 
-        private void TrySwitchWhiteboardPageByTouchPoint(ListView listView, ScrollViewer scrollViewer, Point pointInScrollViewer, bool isLeftSide)
+        private void TrySwitchWhiteboardPageByTouchPoint(ListView listView, ScrollViewer scrollViewer, Point pointInScrollViewer)
         {
             if (listView == null || scrollViewer == null) return;
             try
