@@ -249,6 +249,20 @@
                             <TextBlock x:Name="InkFadeTimeText" Text="3000ms" VerticalAlignment="Center" FontSize="14" Margin="12,0,0,0" Foreground="#2e3436"/>
                         </StackPanel>
                     </Grid>
+                    <Border Height="1" Background="#ebebeb"/>
+                    <Grid Height="54">
+                        <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="在笔工具菜单中隐藏墨迹渐隐控制" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Border x:Name="ToggleSwitchHideInkFadeControlInPenMenu" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="HideInkFadeControlInPenMenu" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
+                                </Border.Effect>
+                            </Border>
+                        </Border>
+                    </Grid>
                 </StackPanel>
             </Border>
             

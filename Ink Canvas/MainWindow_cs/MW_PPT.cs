@@ -105,14 +105,14 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Managers
-        private PPTManager _pptManager;
+        private IPPTLinkManager _pptManager;
         private PPTInkManager _singlePPTInkManager;
         private PPTUIManager _pptUIManager;
 
         /// <summary>
         /// 获取PPT管理器实例
         /// </summary>
-        public PPTManager PPTManager => _pptManager;
+        public IPPTLinkManager PPTManager => _pptManager;
         #endregion
 
         #region PPT Manager Initialization
@@ -123,17 +123,34 @@ namespace Ink_Canvas
                 // 初始化长按定时器
                 InitializeLongPressTimer();
 
-                // 初始化PPT管理器
-                _pptManager = new PPTManager();
+                // 如有旧实例，先停止监控，避免重复
+                try
+                {
+                    _pptManager?.StopMonitoring();
+                }
+                catch
+                {
+                }
+
+                // 根据设置选择 COM / ROT 架构
+                if (Settings.PowerPointSettings.UseRotPptLink)
+                {
+                    _pptManager = new ROTPPTManager();
+                }
+                else
+                {
+                    _pptManager = new ComPPTLinkManager();
+                }
+
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
 
                 // 注册事件
                 _pptManager.PPTConnectionChanged += OnPPTConnectionChanged;
-                _pptManager.SlideShowBegin += OnPPTSlideShowBegin;
-                _pptManager.SlideShowNextSlide += OnPPTSlideShowNextSlide;
-                _pptManager.SlideShowEnd += OnPPTSlideShowEnd;
-                _pptManager.PresentationOpen += OnPPTPresentationOpen;
-                _pptManager.PresentationClose += OnPPTPresentationClose;
+                _pptManager.SlideShowBegin += o => OnPPTSlideShowBegin(o as SlideShowWindow);
+                _pptManager.SlideShowNextSlide += o => OnPPTSlideShowNextSlide(o as SlideShowWindow);
+                _pptManager.SlideShowEnd += o => OnPPTSlideShowEnd(o as Presentation);
+                _pptManager.PresentationOpen += o => OnPPTPresentationOpen(o as Presentation);
+                _pptManager.PresentationClose += o => OnPPTPresentationClose(o as Presentation);
                 _pptManager.SlideShowStateChanged += OnPPTSlideShowStateChanged;
 
                 _singlePPTInkManager = new PPTInkManager();
@@ -645,7 +662,7 @@ namespace Ink_Canvas
                     }
                     else
                     {
-                        activePresentation = _pptManager?.GetCurrentActivePresentation();
+                        activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
                         currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         totalSlides = _pptManager?.SlidesCount ?? 0;
                         // 初始化当前播放页码跟踪
@@ -988,9 +1005,10 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            if (_pptManager?.PPTApplication != null)
+                            var pptApp = _pptManager?.PPTApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                            if (pptApp != null)
                             {
-                                if (_pptManager.PPTApplication.SlideShowWindows.Count >= 1)
+                                if (pptApp.SlideShowWindows.Count >= 1)
                                 {
                                     pres.SlideShowWindow.View.GotoSlide(page);
                                 }
@@ -1628,25 +1646,31 @@ namespace Ink_Canvas
                     });
                 }
 
-                Application.Current.Dispatcher.Invoke(() =>
+                // 结束放映
+                if (_pptManager?.TryEndSlideShow() == true)
                 {
-                    CursorIcon_Click(null, null);
-                });
-
-                await Task.Delay(100);
-                await Application.Current.Dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Background);
-
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    // 如果成功结束放映，等待OnPPTSlideShowEnd事件处理收纳状态恢复
+                }
+                else
                 {
-                    try
+                    LogHelper.WriteLogToFile("结束幻灯片放映失败", LogHelper.LogType.Warning);
+
+                    // 手动更新UI状态，防止事件未触发
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
                     {
-                        _pptManager?.TryEndSlideShow();
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"结束放映时发生异常: {ex}", LogHelper.LogType.Error);
-                    }
-                }), System.Windows.Threading.DispatcherPriority.Normal);
+                        _pptUIManager?.UpdateSlideShowStatus(false);
+                        _pptUIManager?.UpdateSidebarExitButtons(false);
+                        LogHelper.WriteLogToFile("手动更新放映结束UI状态", LogHelper.LogType.Trace);
+                    });
+
+                    // 手动处理自动收纳，因为OnPPTSlideShowEnd事件可能未触发
+                    await HandleManualSlideShowEnd();
+                }
+
+                HideSubPanels("cursor");
+                SetCurrentToolMode(InkCanvasEditingMode.None);
+
+                await Task.Delay(150);
                 if (!isFloatingBarFolded)
                 {
                     PureViewboxFloatingBarMarginAnimationInDesktopMode();

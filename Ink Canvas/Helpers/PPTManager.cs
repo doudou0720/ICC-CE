@@ -1,4 +1,4 @@
-﻿using Microsoft.Office.Interop.PowerPoint;
+using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -128,9 +128,11 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Private Fields
-        private Timer _connectionCheckTimer;
-        private Timer _slideShowStateCheckTimer;
-        private Timer _wpsProcessCheckTimer;
+        private Timer _unifiedPptTimer;
+        private int _monitorTickCount;
+        private volatile bool _unifiedPptTimerRunning;
+        private bool _isWpsMonitoringEnabled;
+
         private Process _wpsProcess;
         private bool _isModuleUnloading = false;
         private bool _hasWpsProcessId;
@@ -151,62 +153,64 @@ namespace Ink_Canvas.Helpers
 
         private void InitializeConnectionTimer()
         {
-            _connectionCheckTimer = new Timer(500);
-            _connectionCheckTimer.Elapsed += OnConnectionCheckTimerElapsed;
-            _connectionCheckTimer.AutoReset = true;
-
-            _slideShowStateCheckTimer = new Timer(1000);
-            _slideShowStateCheckTimer.Elapsed += OnSlideShowStateCheckTimerElapsed;
-            _slideShowStateCheckTimer.AutoReset = true;
+            _unifiedPptTimer = new Timer(500);
+            _unifiedPptTimer.Elapsed += OnUnifiedPptTimerElapsed;
+            _unifiedPptTimer.AutoReset = true;
         }
 
         public void StartMonitoring()
         {
             if (!_disposed)
             {
-                _connectionCheckTimer?.Start();
-                _slideShowStateCheckTimer?.Start();
+                _unifiedPptTimer?.Start();
                 LogHelper.WriteLogToFile("PPT监控已启动", LogHelper.LogType.Trace);
             }
         }
 
         public void StopMonitoring()
         {
-            _connectionCheckTimer?.Stop();
-            _slideShowStateCheckTimer?.Stop();
+            _unifiedPptTimer?.Stop();
+            StopWpsProcessCheckTimer();
             DisconnectFromPPT();
             LogHelper.WriteLogToFile("PPT监控已停止", LogHelper.LogType.Trace);
         }
         #endregion
 
         #region Connection Management
-        private void OnConnectionCheckTimerElapsed(object sender, ElapsedEventArgs e)
+        private void OnUnifiedPptTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            try
-            {
-                if (!_isModuleUnloading)
-                {
-                    CheckAndConnectToPPT();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"PPT连接检查失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
+            if (_disposed || _isModuleUnloading)
+                return;
 
-        private void OnSlideShowStateCheckTimerElapsed(object sender, ElapsedEventArgs e)
-        {
+            if (_unifiedPptTimerRunning)
+                return;
+
+            _unifiedPptTimerRunning = true;
             try
             {
-                if (!_isModuleUnloading && IsConnected)
+                var tick = Interlocked.Increment(ref _monitorTickCount);
+
+                CheckAndConnectToPPT();
+
+                if (IsConnected)
                 {
-                    CheckSlideShowState();
+                    if (tick % 2 == 0)
+                        CheckSlideShowState();
+
+                    if (_isWpsMonitoringEnabled && tick % 4 == 0)
+                        CheckWpsProcess();
                 }
+
+                if (tick >= int.MaxValue - 1000)
+                    Interlocked.Exchange(ref _monitorTickCount, 0);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"PPT放映状态检查失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"统一PPT监控定时器执行失败: {ex}", LogHelper.LogType.Error);
+            }
+            finally
+            {
+                _unifiedPptTimerRunning = false;
             }
         }
 
@@ -291,35 +295,16 @@ namespace Ink_Canvas.Helpers
                 }
                 return null;
             }
-            catch (COMException ex)
+            catch (COMException)
             {
-                var hr = (uint)ex.HResult;
-                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
-                {
-                    return TryConnectToPowerPointViaROT();
-                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                return TryConnectToPowerPointViaROT();
+                return null;
             }
             catch (Exception)
             {
-                return null;
-            }
-        }
-
-        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToPowerPointViaROT()
-        {
-            try
-            {
-                var pptApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
-                return pptApp;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"ROT 备用方法连接异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
@@ -337,41 +322,16 @@ namespace Ink_Canvas.Helpers
                 }
                 return null;
             }
-            catch (COMException ex)
+            catch (COMException)
             {
-                var hr = (uint)ex.HResult;
-                if (hr == 0x800401E3 || hr == 0x800401F3 || hr == 0x800401E4)
-                {
-                    // WPS COM注册损坏，尝试使用ROT备用方法
-                    return TryConnectToWPSViaROT();
-                }
-                if (hr != 0x80004005 && hr != 0x800706B5 && hr != 0x8001010E)
-                {
-                    LogHelper.WriteLogToFile($"连接WPS失败: {ex}", LogHelper.LogType.Warning);
-                }
                 return null;
             }
             catch (InvalidCastException)
             {
-                // WPS COM对象类型转换失败，尝试使用ROT备用方法
-                return TryConnectToWPSViaROT();
+                return null;
             }
             catch (Exception)
             {
-                return null;
-            }
-        }
-
-        private Microsoft.Office.Interop.PowerPoint.Application TryConnectToWPSViaROT()
-        {
-            try
-            {
-                var wpsApp = PPTROTConnectionHelper.TryConnectViaROT(true);
-                return wpsApp;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"ROT 备用方法连接 WPS 异常: {ex}", LogHelper.LogType.Error);
                 return null;
             }
         }
@@ -404,9 +364,6 @@ namespace Ink_Canvas.Helpers
 
                 // 获取当前演示文稿信息
                 UpdateCurrentPresentationInfo();
-
-                // 停止连接检查定时器
-                _connectionCheckTimer?.Stop();
 
                 // 触发连接成功事件
                 PPTConnectionChanged?.Invoke(true);
@@ -510,8 +467,7 @@ namespace Ink_Canvas.Helpers
                 GC.Collect();
 
                 _isModuleUnloading = true;
-                _connectionCheckTimer?.Stop();
-                _slideShowStateCheckTimer?.Stop();
+                _unifiedPptTimer?.Stop();
 
                 // 触发连接断开事件
                 PPTConnectionChanged?.Invoke(false);
@@ -531,8 +487,7 @@ namespace Ink_Canvas.Helpers
                         Thread.Sleep(1000);
                         
                         _isModuleUnloading = false;
-                        _connectionCheckTimer?.Start();
-                        _slideShowStateCheckTimer?.Start();
+                        _unifiedPptTimer?.Start();
                         
                         LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
                     }
@@ -1102,55 +1057,35 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public Presentation GetCurrentActivePresentation()
         {
-            object slideShowWindows = null;
-            object slideShowWindow = null;
-            object view = null;
-            object slide = null;
-            object activeWindow = null;
-            object presentation = null;
             try
             {
                 if (!IsConnected || PPTApplication == null) return null;
                 if (!Marshal.IsComObject(PPTApplication)) return null;
 
-                if (IsInSlideShow)
+                if (IsInSlideShow && PPTApplication.SlideShowWindows.Count > 0)
                 {
-                    slideShowWindows = PPTApplication.SlideShowWindows;
-                    if (slideShowWindows != null)
+                    try
                     {
-                        dynamic ssw = slideShowWindows;
-                        if (ssw.Count > 0)
+                        var slideShowWindow = PPTApplication.SlideShowWindows[1];
+                        if (slideShowWindow?.View != null)
                         {
-                            slideShowWindow = ssw[1];
-                            if (slideShowWindow != null)
-                            {
-                                dynamic sswObj = slideShowWindow;
-                                view = sswObj.View;
-                                if (view != null)
-                                {
-                                    dynamic viewObj = view;
-                                    slide = viewObj.Slide;
-                                    if (slide != null)
-                                    {
-                                        dynamic slideObj = slide;
-                                        presentation = slideObj.Parent;
-                                        return presentation as Presentation;
-                                    }
-                                }
-                            }
+                            return (Presentation)slideShowWindow.View.Slide.Parent;
                         }
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        if (hr == 0x80048240)
+                        {
+                            return null;
+                        }
+                        throw;
                     }
                 }
 
-                activeWindow = PPTApplication.ActiveWindow;
-                if (activeWindow != null)
+                if (PPTApplication.ActiveWindow?.Presentation != null)
                 {
-                    dynamic aw = activeWindow;
-                    presentation = aw.Presentation;
-                    if (presentation != null)
-                    {
-                        return presentation as Presentation;
-                    }
+                    return PPTApplication.ActiveWindow.Presentation;
                 }
 
                 return CurrentPresentation;
@@ -1162,10 +1097,6 @@ namespace Ink_Canvas.Helpers
                 {
                     DisconnectFromPPT();
                 }
-                if (hr == 0x80048240)
-                {
-                    return null;
-                }
                 LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {comEx.Message}", LogHelper.LogType.Warning);
                 return CurrentPresentation;
             }
@@ -1173,18 +1104,6 @@ namespace Ink_Canvas.Helpers
             {
                 LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {ex}", LogHelper.LogType.Error);
                 return CurrentPresentation;
-            }
-            finally
-            {
-                if (presentation != null && !ReferenceEquals(presentation, CurrentPresentation))
-                {
-                    SafeReleaseComObject(presentation);
-                }
-                SafeReleaseComObject(slide);
-                SafeReleaseComObject(view);
-                SafeReleaseComObject(slideShowWindow);
-                SafeReleaseComObject(slideShowWindows);
-                SafeReleaseComObject(activeWindow);
             }
         }
 
@@ -1478,20 +1397,11 @@ namespace Ink_Canvas.Helpers
         {
             if (!IsSupportWPS) return;
 
-            if (_wpsProcessCheckTimer != null)
-            {
-                _wpsProcessCheckTimer.Stop();
-                _wpsProcessCheckTimer.Dispose();
-            }
-
-            // 增加检查间隔到2秒，减少性能开销
-            _wpsProcessCheckTimer = new Timer(2000);
-            _wpsProcessCheckTimer.Elapsed += OnWpsProcessCheckTimerElapsed;
-            _wpsProcessCheckTimer.Start();
-            LogHelper.WriteLogToFile("启动 WPS 进程检测定时器", LogHelper.LogType.Trace);
+            _isWpsMonitoringEnabled = true;
+            _wpsProcessCheckCount = 0;
         }
 
-        private void OnWpsProcessCheckTimerElapsed(object sender, ElapsedEventArgs e)
+        private void CheckWpsProcess()
         {
             if (!IsSupportWPS)
             {
@@ -1810,9 +1720,6 @@ namespace Ink_Canvas.Helpers
                 SlidesCount = 0;
                 StopWpsProcessCheckTimer();
 
-                // 重新启动连接检查定时器，以便能够检测新的WPS实例
-                _connectionCheckTimer?.Start();
-
                 // 触发连接断开事件
                 PPTConnectionChanged?.Invoke(false);
 
@@ -1824,12 +1731,7 @@ namespace Ink_Canvas.Helpers
 
         private void StopWpsProcessCheckTimer()
         {
-            if (_wpsProcessCheckTimer != null)
-            {
-                _wpsProcessCheckTimer.Stop();
-                _wpsProcessCheckTimer.Dispose();
-                _wpsProcessCheckTimer = null;
-            }
+            _isWpsMonitoringEnabled = false;
 
             _wpsProcess = null;
             _hasWpsProcessId = false;
@@ -1837,7 +1739,7 @@ namespace Ink_Canvas.Helpers
             _wpsProcessCheckCount = 0;
             _lastForegroundWpsWindow = null;
             _lastWindowCheckTime = DateTime.MinValue;
-            LogHelper.WriteLogToFile("停止 WPS 进程检测定时器", LogHelper.LogType.Trace);
+            LogHelper.WriteLogToFile("停止 WPS 进程检测", LogHelper.LogType.Trace);
         }
         #endregion
 
@@ -2161,9 +2063,7 @@ namespace Ink_Canvas.Helpers
                 StopMonitoring();
                 StopWpsProcessCheckTimer();
 
-                _connectionCheckTimer?.Dispose();
-                _slideShowStateCheckTimer?.Dispose();
-                _wpsProcessCheckTimer?.Dispose();
+                _unifiedPptTimer?.Dispose();
 
                 _disposed = true;
             }

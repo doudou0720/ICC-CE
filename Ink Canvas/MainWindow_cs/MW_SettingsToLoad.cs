@@ -21,7 +21,7 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
-        private void LoadSettings(bool isStartup = false)
+        private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             try
@@ -144,6 +144,42 @@ namespace Ink_Canvas
 
             try
             {
+                if (Settings?.Startup != null)
+                {
+                    if (ComboBoxTelemetryUploadLevel != null)
+                    {
+                        int idx = 0;
+                        switch (Settings.Startup.TelemetryUploadLevel)
+                        {
+                            case TelemetryUploadLevel.None:
+                                idx = 0;
+                                break;
+                            case TelemetryUploadLevel.Basic:
+                                idx = 1;
+                                break;
+                            case TelemetryUploadLevel.Extended:
+                                idx = 2;
+                                break;
+                            default:
+                                idx = 0;
+                                break;
+                        }
+
+                        ComboBoxTelemetryUploadLevel.SelectedIndex = idx;
+                    }
+
+                    if (CheckBoxTelemetryPrivacyAccepted != null)
+                    {
+                        CheckBoxTelemetryPrivacyAccepted.IsChecked = Settings.Startup.HasAcceptedTelemetryPrivacy;
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            try
+            {
                 if (File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup) +
                                 "\\Ink Canvas Annotation.lnk"))
                 {
@@ -193,7 +229,7 @@ namespace Ink_Canvas
                 ToggleSwitchIsAutoUpdate.IsOn = Settings.Startup.IsAutoUpdate;
 
                 // 只有在启用了自动更新功能时才检查更新
-                if (Settings.Startup.IsAutoUpdate)
+                if (Settings.Startup.IsAutoUpdate && !skipAutoUpdateCheck)
                 {
                     if (isStartup)
                     {
@@ -468,6 +504,11 @@ namespace Ink_Canvas
                 }
 
                 ToggleSwitchShowCanvasAtNewSlideShow.IsOn = Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow;
+
+                if (ToggleSwitchUseRotPptLink != null)
+                {
+                    ToggleSwitchUseRotPptLink.IsOn = Settings.PowerPointSettings.UseRotPptLink;
+                }
 
                 ToggleSwitchEnableTwoFingerGestureInPresentationMode.IsOn =
                     Settings.PowerPointSettings.IsEnableTwoFingerGestureInPresentationMode;
@@ -857,6 +898,7 @@ namespace Ink_Canvas
                 ToggleSwitchIsSecondConfimeWhenShutdownApp.IsOn = Settings.Advanced.IsSecondConfirmWhenShutdownApp;
                 ToggleSwitchWindowMode.IsOn = Settings.Advanced.WindowMode;
                 ToggleSwitchIsSpecialScreen.IsOn = Settings.Advanced.IsSpecialScreen;
+                ToggleSwitchIsEnableUriScheme.IsOn = Settings.Advanced.IsEnableUriScheme;
                 ToggleSwitchIsQuadIR.IsOn = Settings.Advanced.IsQuadIR;
                 ToggleSwitchEraserBindTouchMultiplier.IsOn = Settings.Advanced.EraserBindTouchMultiplier;
                 ToggleSwitchIsEnableFullScreenHelper.IsOn = Settings.Advanced.IsEnableFullScreenHelper;
@@ -1204,6 +1246,15 @@ namespace Ink_Canvas
                     _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
                     _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
                 }
+
+                // 同步在笔工具菜单中隐藏墨迹渐隐控制开关的设置
+                if (ToggleSwitchHideInkFadeControlInPenMenu != null)
+                {
+                    ToggleSwitchHideInkFadeControlInPenMenu.IsOn = Settings.Canvas.HideInkFadeControlInPenMenu;
+                }
+
+                // 根据设置更新墨迹渐隐控制开关的可见性
+                UpdateInkFadeControlVisibility();
 
                 LogHelper.WriteLogToFile("墨迹渐隐设置已加载", LogHelper.LogType.Event);
             }
