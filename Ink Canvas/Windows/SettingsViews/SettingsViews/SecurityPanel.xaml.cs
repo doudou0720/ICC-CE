@@ -43,7 +43,6 @@ namespace Ink_Canvas.Windows.SettingsViews
             var enabled = sec != null && sec.PasswordEnabled;
 
             if (BtnSetOrChangePassword != null) BtnSetOrChangePassword.IsEnabled = enabled;
-            if (BtnDisablePassword != null) BtnDisablePassword.IsEnabled = enabled;
 
             // 用途开关：仅在启用密码功能时可操作
             var usageEnabled = enabled;
@@ -152,21 +151,6 @@ namespace Ink_Canvas.Windows.SettingsViews
                 MainWindow.Settings.Security.PasswordEnabled = true;
                 MainWindow.SaveSettingsToFile();
                 UpdatePasswordUiState();
-            }
-        }
-
-        private void BtnDisablePassword_Click(object sender, RoutedEventArgs e)
-        {
-            // 触发和开关一致的逻辑
-            if (FindToggleSwitch("ToggleSwitchPasswordEnabled") is Border b)
-            {
-                // 模拟点击到 off
-                if (MainWindow.Settings?.Security?.PasswordEnabled == true)
-                {
-                    _isLoaded = true;
-                    SetToggleSwitchState(b, false);
-                    HandleToggleSwitchChange("PasswordEnabled", false);
-                }
             }
         }
 

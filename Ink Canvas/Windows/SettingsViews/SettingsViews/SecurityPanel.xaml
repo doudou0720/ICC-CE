@@ -66,7 +66,6 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
                             <Button x:Name="BtnSetOrChangePassword" Width="120" Height="32" Click="BtnSetOrChangePassword_Click" Content="设置/修改密码"/>
-                            <Button x:Name="BtnDisablePassword" Width="90" Height="32" Margin="8,0,0,0" Click="BtnDisablePassword_Click" Content="关闭密码"/>
                         </StackPanel>
                     </Grid>
 
