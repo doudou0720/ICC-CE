@@ -53,6 +53,8 @@ namespace Ink_Canvas.Helpers
 
         public void ReloadConnection()
         {
+            LogHelper.WriteLogToFile("COM PPT 执行热重载：强制断开并重新连接", LogHelper.LogType.Event);
+            _inner.StopMonitoring();
         }
         #endregion
 
