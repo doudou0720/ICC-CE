@@ -64,13 +64,11 @@ namespace Ink_Canvas.Helpers
                 return;
             }
 
-            if (Interlocked.Exchange(ref _writeGate, 1) == 1)
+            var waitStart = Environment.TickCount;
+            while (Interlocked.CompareExchange(ref _writeGate, 1, 0) != 0)
             {
-                var start = Environment.TickCount;
-                while (Interlocked.CompareExchange(ref _writeGate, 1, 1) == 1 && Environment.TickCount - start < 2000)
-                {
-                    Thread.Sleep(10);
-                }
+                if (Environment.TickCount - waitStart < 2000) Thread.Sleep(10);
+                else Thread.Sleep(50);
             }
 
             var normalized = NormalizePath(targetPath);
