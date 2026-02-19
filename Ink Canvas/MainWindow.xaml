@@ -10559,6 +10559,22 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <ToggleButton
+                            x:Name="BtnToggleVideoPresenterLiveOnCanvas"
+                            Width="90"
+                            Height="40"
+                            Margin="3,0"
+                            Background="{DynamicResource FloatBarBackground}"
+                            BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                            BorderThickness="1"
+                            Checked="BtnToggleVideoPresenterLiveOnCanvas_Checked"
+                            Unchecked="BtnToggleVideoPresenterLiveOnCanvas_Unchecked">
+                            <TextBlock
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource FloatBarForeground}"
+                                Text="上屏" />
+                        </ToggleButton>
+                        <ToggleButton
                             x:Name="CheckBoxEnablePhotoCorrection"
                             Width="110"
                             Height="40"

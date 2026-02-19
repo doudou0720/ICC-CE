@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -47,6 +47,10 @@ namespace Ink_Canvas
             {
                 if (child is Image || child is MediaElement)
                 {
+                    if (child is Image img && img.Tag is string tag && tag == VideoPresenterLiveFrameTag)
+                    {
+                        continue;
+                    }
                     if (!elementsInHistory.Contains(child))
                     {
                         timeMachine.CommitElementInsertHistory(child);
@@ -288,12 +292,14 @@ namespace Ink_Canvas
                 currentSelectedElement = null;
             }
 
+            VideoPresenter_BeforePageLeave();
             SaveStrokes();
 
             ClearStrokes(true);
             CurrentWhiteboardIndex--;
 
             RestoreStrokes();
+            VideoPresenter_OnPageChanged();
 
             UpdateIndexInfoDisplay();
         }
@@ -322,12 +328,14 @@ namespace Ink_Canvas
                 currentSelectedElement = null;
             }
 
+            VideoPresenter_BeforePageLeave();
             SaveStrokes();
 
             ClearStrokes(true);
             CurrentWhiteboardIndex++;
 
             RestoreStrokes();
+            VideoPresenter_OnPageChanged();
 
             UpdateIndexInfoDisplay();
         }
@@ -349,6 +357,7 @@ namespace Ink_Canvas
                 currentSelectedElement = null;
             }
 
+            VideoPresenter_BeforePageLeave();
             SaveStrokes();
             ClearStrokes(true);
 
@@ -364,6 +373,7 @@ namespace Ink_Canvas
 
             // 恢复新页面（这会清空画布，因为历史记录为null）
             RestoreStrokes();
+            VideoPresenter_OnPageChanged();
 
             UpdateIndexInfoDisplay();
 

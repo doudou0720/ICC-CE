@@ -18,11 +18,21 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        // 标记：用于在保存/恢复白板内容时排除“展台实时上屏”画面
+        private const string VideoPresenterLiveFrameTag = "__VideoPresenterLiveFrame";
+
         private CameraService _cameraService;
         private readonly object _videoPresenterFrameLock = new object();
         private Bitmap _lastFrame;
 
         private readonly List<CapturedImage> _capturedPhotos = new List<CapturedImage>();
+
+        // 按页绑定：每一页对应一个“实时画面”元素与布局/设备信息
+        private readonly Dictionary<int, System.Windows.Controls.Image> _liveFrameImageByPage = new Dictionary<int, System.Windows.Controls.Image>();
+        private readonly HashSet<int> _liveEnabledPages = new HashSet<int>();
+        private readonly Dictionary<int, int> _cameraIndexByPage = new Dictionary<int, int>();
+        private readonly Dictionary<int, (double left, double top, double width)> _liveFrameLayoutByPage =
+            new Dictionary<int, (double left, double top, double width)>();
 
         private DateTime _lastCaptureTime = DateTime.MinValue;
         private const int VideoPresenterCaptureCooldownMs = 1000;
@@ -52,6 +62,12 @@ namespace Ink_Canvas
             if (CheckBoxEnablePhotoCorrection != null)
             {
                 CheckBoxEnablePhotoCorrection.IsChecked = Settings?.Automation?.IsEnablePhotoCorrection ?? false;
+            }
+
+            // 同步“上屏”按钮状态（按页绑定）
+            if (BtnToggleVideoPresenterLiveOnCanvas != null)
+            {
+                BtnToggleVideoPresenterLiveOnCanvas.IsChecked = _liveEnabledPages.Contains(GetCurrentPageIndex());
             }
         }
 
@@ -119,12 +135,77 @@ namespace Ink_Canvas
                     {
                         BtnCapturePhoto.IsEnabled = true;
                     }
+
+                    // 实时上屏：刷新当前页的画面元素
+                    TryUpdateLiveFrameOnCanvas(preview);
                 }));
             }
             catch
             {
                 // 忽略预览刷新异常
             }
+        }
+
+        private int GetCurrentPageIndex()
+        {
+            return Math.Max(1, CurrentWhiteboardIndex);
+        }
+
+        private void TryUpdateLiveFrameOnCanvas(BitmapImage preview)
+        {
+            try
+            {
+                int page = GetCurrentPageIndex();
+                if (!_liveEnabledPages.Contains(page)) return;
+                if (inkCanvas == null) return;
+                if (!_liveFrameImageByPage.TryGetValue(page, out var img) || img == null) return;
+
+                if (!inkCanvas.Children.Contains(img))
+                {
+                    inkCanvas.Children.Add(img);
+                }
+
+                img.Source = preview;
+                img.Visibility = Visibility.Visible;
+            }
+            catch { }
+        }
+
+        private System.Windows.Controls.Image EnsureLiveFrameElementForPage(int page)
+        {
+            if (_liveFrameImageByPage.TryGetValue(page, out var existing) && existing != null) return existing;
+
+            var img = new System.Windows.Controls.Image
+            {
+                Tag = VideoPresenterLiveFrameTag,
+                Stretch = System.Windows.Media.Stretch.Uniform,
+                Width = 520,
+                Visibility = Visibility.Visible,
+                Opacity = 1.0
+            };
+            _liveFrameImageByPage[page] = img;
+            return img;
+        }
+
+        private void ApplyLiveFrameLayoutForPage(int page, System.Windows.Controls.Image img)
+        {
+            if (img == null) return;
+
+            if (_liveFrameLayoutByPage.TryGetValue(page, out var layout))
+            {
+                if (!double.IsNaN(layout.width) && layout.width > 10) img.Width = layout.width;
+                InkCanvas.SetLeft(img, Math.Max(0, layout.left));
+                InkCanvas.SetTop(img, Math.Max(0, layout.top));
+                return;
+            }
+
+            // 默认位置：居中偏上
+            double x = (inkCanvas?.ActualWidth ?? 0) / 2 - img.Width / 2;
+            double y = (inkCanvas?.ActualHeight ?? 0) / 2 - 200;
+            if (double.IsNaN(x) || double.IsInfinity(x)) x = 100;
+            if (double.IsNaN(y) || double.IsInfinity(y)) y = 100;
+            InkCanvas.SetLeft(img, Math.Max(0, x));
+            InkCanvas.SetTop(img, Math.Max(0, y));
         }
 
         private void RefreshVideoPresenterDeviceList()
@@ -184,6 +265,7 @@ namespace Ink_Canvas
             try
             {
                 EnsureCameraService();
+                _cameraIndexByPage[GetCurrentPageIndex()] = cameraIndex;
                 if (_cameraService.StartPreview(cameraIndex))
                 {
                     if (BtnCapturePhoto != null) BtnCapturePhoto.IsEnabled = true;
@@ -193,6 +275,101 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"启动视频展台预览失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private void BtnToggleVideoPresenterLiveOnCanvas_Checked(object sender, RoutedEventArgs e)
+        {
+            int page = GetCurrentPageIndex();
+            _liveEnabledPages.Add(page);
+
+            var img = EnsureLiveFrameElementForPage(page);
+            ApplyLiveFrameLayoutForPage(page, img);
+
+            if (inkCanvas != null && !inkCanvas.Children.Contains(img))
+            {
+                inkCanvas.Children.Add(img);
+            }
+
+            // 立即用侧栏预览刷新一次
+            if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
+            {
+                img.Source = bi;
+            }
+        }
+
+        private void BtnToggleVideoPresenterLiveOnCanvas_Unchecked(object sender, RoutedEventArgs e)
+        {
+            int page = GetCurrentPageIndex();
+            _liveEnabledPages.Remove(page);
+
+            if (_liveFrameImageByPage.TryGetValue(page, out var img) && img != null)
+            {
+                try
+                {
+                    if (inkCanvas != null && inkCanvas.Children.Contains(img))
+                    {
+                        inkCanvas.Children.Remove(img);
+                    }
+                }
+                catch { }
+            }
+        }
+
+        // 翻页前调用：保存当前页实时画面的位置/大小
+        private void VideoPresenter_BeforePageLeave()
+        {
+            try
+            {
+                int page = GetCurrentPageIndex();
+                if (!_liveFrameImageByPage.TryGetValue(page, out var img) || img == null) return;
+
+                double left = InkCanvas.GetLeft(img);
+                double top = InkCanvas.GetTop(img);
+                if (double.IsNaN(left)) left = 0;
+                if (double.IsNaN(top)) top = 0;
+
+                _liveFrameLayoutByPage[page] = (left, top, img.Width);
+            }
+            catch { }
+        }
+
+        // 翻页后调用：根据该页状态恢复实时画面，并同步设备选择
+        private void VideoPresenter_OnPageChanged()
+        {
+            try
+            {
+                int page = GetCurrentPageIndex();
+
+                // 同步“上屏”按钮状态
+                if (BtnToggleVideoPresenterLiveOnCanvas != null)
+                {
+                    BtnToggleVideoPresenterLiveOnCanvas.IsChecked = _liveEnabledPages.Contains(page);
+                }
+
+                // 若该页上屏，恢复画面元素（RestoreStrokes 会清空 inkCanvas.Children）
+                if (_liveEnabledPages.Contains(page))
+                {
+                    var img = EnsureLiveFrameElementForPage(page);
+                    ApplyLiveFrameLayoutForPage(page, img);
+                    if (inkCanvas != null && !inkCanvas.Children.Contains(img))
+                    {
+                        inkCanvas.Children.Add(img);
+                    }
+
+                    if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
+                    {
+                        img.Source = bi;
+                    }
+                }
+
+                // 按页摄像头索引：切页后自动切回该页的摄像头
+                if (_cameraIndexByPage.TryGetValue(page, out int idx))
+                {
+                    EnsureCameraService();
+                    _cameraService?.StartPreview(idx);
+                }
+            }
+            catch { }
         }
 
         private void BtnCapturePhoto_Click(object sender, RoutedEventArgs e)
