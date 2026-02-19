@@ -3061,6 +3061,7 @@ namespace Ink_Canvas
                 switch (++currentMode % 2)
                 {
                     case 0: //屏幕模式
+                        VideoPresenter_OnExitWhiteboardMode();
                         currentMode = 0;
                         GridBackgroundCover.Visibility = Visibility.Collapsed;
                         AnimationsHelper.HideWithSlideAndFade(BlackboardLeftSide);

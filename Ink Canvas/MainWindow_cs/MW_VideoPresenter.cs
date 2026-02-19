@@ -183,8 +183,6 @@ namespace Ink_Canvas
                 Visibility = Visibility.Visible,
                 Opacity = 1.0
             };
-
-            // 让它具备与“普通插入图片”一致的选中/拖拽/缩放行为
             try
             {
                 InitializeElementTransform(img);
@@ -299,7 +297,6 @@ namespace Ink_Canvas
                 inkCanvas.Children.Add(img);
             }
 
-            // 上屏后自动切到选择模式，否则用户在笔模式下点不中元素
             try
             {
                 SetCurrentToolMode(InkCanvasEditingMode.Select);
@@ -526,12 +523,58 @@ namespace Ink_Canvas
 
                 InkCanvas.SetLeft(img, Math.Max(0, x));
                 InkCanvas.SetTop(img, Math.Max(0, y));
+                InitializeElementTransform(img);
+                BindElementEvents(img);
+                timeMachine.CommitElementInsertHistory(img);
+
                 inkCanvas?.Children.Add(img);
+
+                SetCurrentToolMode(InkCanvasEditingMode.Select);
+                UpdateCurrentToolMode("select");
+                HideSubPanels("select");
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"插入展台照片失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private void VideoPresenter_OnExitWhiteboardMode()
+        {
+            try
+            {
+                // 收起侧栏
+                if (VideoPresenterSidebar != null)
+                {
+                    VideoPresenterSidebar.Visibility = Visibility.Collapsed;
+                }
+
+                if (BtnToggleVideoPresenterLiveOnCanvas != null)
+                {
+                    BtnToggleVideoPresenterLiveOnCanvas.IsChecked = false;
+                }
+
+                if (inkCanvas != null)
+                {
+                    foreach (var kv in _liveFrameImageByPage.ToList())
+                    {
+                        var img = kv.Value;
+                        if (img == null) continue;
+                        try
+                        {
+                            if (inkCanvas.Children.Contains(img))
+                            {
+                                inkCanvas.Children.Remove(img);
+                            }
+                            img.Visibility = Visibility.Collapsed;
+                        }
+                        catch { }
+                    }
+                }
+
+                try { _cameraService?.StopPreview(); } catch { }
+            }
+            catch { }
         }
 
         private static BitmapImage ConvertBitmapToBitmapImage(Bitmap bitmap)

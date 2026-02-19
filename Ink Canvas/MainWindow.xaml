@@ -10314,25 +10314,6 @@
                         <TextBlock Text="白板" Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,2,0,3" TextAlignment="Center" />
                     </ui:SimpleStackPanel>
                     <ui:SimpleStackPanel
-                        MouseUp="BtnToggleVideoPresenter_Click"
-                        Background="Transparent"
-                        Orientation="Vertical"
-                        HorizontalAlignment="Center"
-                        Width="32"
-                        Margin="0">
-                        <Image
-                            Source="/Resources/Icons-png/EasiCamera.png"
-                            RenderOptions.BitmapScalingMode="HighQuality"
-                            Height="17"
-                            Margin="0,3,0,0" />
-                        <TextBlock
-                            Text="展台"
-                            Foreground="{DynamicResource FloatBarForeground}"
-                            FontSize="8"
-                            Margin="0,2,0,3"
-                            TextAlignment="Center" />
-                    </ui:SimpleStackPanel>
-                    <ui:SimpleStackPanel
                         x:Name="BtnExitPptFromSidebarLeft"
                         MouseUp="ExitPPTSlideShow_MouseUp"
                         Background="Transparent" Orientation="Vertical" HorizontalAlignment="Center"
