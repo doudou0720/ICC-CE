@@ -1481,6 +1481,24 @@ namespace Ink_Canvas
         {
             SystemEvents.DisplaySettingsChanged -= SystemEventsOnDisplaySettingsChanged;
 
+            try
+            {
+                // 清理视频展台资源
+                if (_cameraService != null)
+                {
+                    _cameraService.FrameReceived -= CameraService_FrameReceived;
+                    _cameraService.ErrorOccurred -= CameraService_ErrorOccurred;
+                    _cameraService.Dispose();
+                    _cameraService = null;
+                }
+                lock (_videoPresenterFrameLock)
+                {
+                    _lastFrame?.Dispose();
+                    _lastFrame = null;
+                }
+            }
+            catch { }
+
             // 释放PPT管理器资源
             DisposePPTManagers();
 

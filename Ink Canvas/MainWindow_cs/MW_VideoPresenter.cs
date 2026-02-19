@@ -46,6 +46,7 @@ namespace Ink_Canvas
 
             VideoPresenterSidebar.Visibility = Visibility.Visible;
             EnsureCameraService();
+            if (BtnCapturePhoto != null) BtnCapturePhoto.IsEnabled = false;
             RefreshVideoPresenterDeviceList();
 
             if (CheckBoxEnablePhotoCorrection != null)
@@ -86,16 +87,25 @@ namespace Ink_Canvas
 
             try
             {
-                Bitmap copy;
+                Bitmap serviceCopy;
+                try
+                {
+                    serviceCopy = (Bitmap)frame.Clone();
+                }
+                catch
+                {
+                    // 可能在下一帧到来时被 CameraService 释放，直接忽略这一帧
+                    return;
+                }
+
                 lock (_videoPresenterFrameLock)
                 {
                     _lastFrame?.Dispose();
-                    _lastFrame = (Bitmap)frame.Clone();
-                    copy = (Bitmap)_lastFrame.Clone();
+                    _lastFrame = (Bitmap)serviceCopy.Clone();
                 }
 
-                var preview = ConvertBitmapToBitmapImage(copy);
-                copy.Dispose();
+                var preview = ConvertBitmapToBitmapImage(serviceCopy);
+                serviceCopy.Dispose();
                 if (preview == null) return;
 
                 Dispatcher.BeginInvoke(new Action(() =>
@@ -153,6 +163,19 @@ namespace Ink_Canvas
                 rb.SetResourceReference(Control.ForegroundProperty, "FloatBarForeground");
                 rb.Checked += (s, e) => StartVideoPresenterPreview(idx);
                 CameraDevicesStackPanel.Children.Add(rb);
+            }
+
+            // 自动启动第一个摄像头
+            if (_cameraService.AvailableCameras.Count > 0)
+            {
+                if (CameraDevicesStackPanel.Children.Count > 0 && CameraDevicesStackPanel.Children[0] is RadioButton first)
+                {
+                    first.IsChecked = true;
+                }
+                else
+                {
+                    StartVideoPresenterPreview(0);
+                }
             }
         }
 
