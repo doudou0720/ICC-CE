@@ -1,0 +1,472 @@
+using AForge.Imaging;
+using AForge.Imaging.Filters;
+using AForge.Math.Geometry;
+using Ink_Canvas.Helpers;
+using Ink_Canvas.Models;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media.Imaging;
+
+namespace Ink_Canvas
+{
+    public partial class MainWindow : Window
+    {
+        private CameraService _cameraService;
+        private readonly object _videoPresenterFrameLock = new object();
+        private Bitmap _lastFrame;
+
+        private readonly List<CapturedImage> _capturedPhotos = new List<CapturedImage>();
+
+        private DateTime _lastCaptureTime = DateTime.MinValue;
+        private const int VideoPresenterCaptureCooldownMs = 1000;
+
+        private const int CorrectedPaperHeight = 600;
+
+        private void BtnToggleVideoPresenter_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            ToggleVideoPresenterSidebar();
+        }
+
+        private void ToggleVideoPresenterSidebar()
+        {
+            if (VideoPresenterSidebar == null) return;
+
+            if (VideoPresenterSidebar.Visibility == Visibility.Visible)
+            {
+                VideoPresenterSidebar.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            VideoPresenterSidebar.Visibility = Visibility.Visible;
+            EnsureCameraService();
+            RefreshVideoPresenterDeviceList();
+
+            if (CheckBoxEnablePhotoCorrection != null)
+            {
+                CheckBoxEnablePhotoCorrection.IsChecked = Settings?.Automation?.IsEnablePhotoCorrection ?? false;
+            }
+        }
+
+        private void BtnCloseVideoPresenter_Click(object sender, RoutedEventArgs e)
+        {
+            if (VideoPresenterSidebar != null)
+            {
+                VideoPresenterSidebar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void EnsureCameraService()
+        {
+            if (_cameraService != null) return;
+
+            _cameraService = new CameraService();
+            _cameraService.FrameReceived += CameraService_FrameReceived;
+            _cameraService.ErrorOccurred += CameraService_ErrorOccurred;
+        }
+
+        private void CameraService_ErrorOccurred(object sender, string e)
+        {
+            try
+            {
+                LogHelper.WriteLogToFile($"视频展台摄像头错误: {e}", LogHelper.LogType.Error);
+            }
+            catch { }
+        }
+
+        private void CameraService_FrameReceived(object sender, Bitmap frame)
+        {
+            if (frame == null) return;
+
+            try
+            {
+                Bitmap copy;
+                lock (_videoPresenterFrameLock)
+                {
+                    _lastFrame?.Dispose();
+                    _lastFrame = (Bitmap)frame.Clone();
+                    copy = (Bitmap)_lastFrame.Clone();
+                }
+
+                var preview = ConvertBitmapToBitmapImage(copy);
+                copy.Dispose();
+                if (preview == null) return;
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (VideoPresenterPreviewImage != null)
+                    {
+                        VideoPresenterPreviewImage.Source = preview;
+                    }
+
+                    if (BtnCapturePhoto != null)
+                    {
+                        BtnCapturePhoto.IsEnabled = true;
+                    }
+                }));
+            }
+            catch
+            {
+                // 忽略预览刷新异常
+            }
+        }
+
+        private void RefreshVideoPresenterDeviceList()
+        {
+            if (_cameraService == null) return;
+            if (CameraDevicesStackPanel == null) return;
+
+            _cameraService.RefreshCameraList();
+            CameraDevicesStackPanel.Children.Clear();
+
+            if (_cameraService.AvailableCameras == null || _cameraService.AvailableCameras.Count == 0)
+            {
+                var tb = new TextBlock
+                {
+                    Text = "未检测到摄像头设备",
+                    FontSize = 12,
+                    Margin = new Thickness(5),
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                tb.SetResourceReference(TextBlock.ForegroundProperty, "FloatBarForeground");
+                CameraDevicesStackPanel.Children.Add(tb);
+                return;
+            }
+
+            for (int i = 0; i < _cameraService.AvailableCameras.Count; i++)
+            {
+                int idx = i;
+                var dev = _cameraService.AvailableCameras[i];
+                var rb = new RadioButton
+                {
+                    Content = dev.Name,
+                    Margin = new Thickness(0, 2, 0, 2),
+                    FontSize = 12,
+                    Tag = idx,
+                };
+                rb.SetResourceReference(Control.ForegroundProperty, "FloatBarForeground");
+                rb.Checked += (s, e) => StartVideoPresenterPreview(idx);
+                CameraDevicesStackPanel.Children.Add(rb);
+            }
+        }
+
+        private void StartVideoPresenterPreview(int cameraIndex)
+        {
+            try
+            {
+                EnsureCameraService();
+                if (_cameraService.StartPreview(cameraIndex))
+                {
+                    if (BtnCapturePhoto != null) BtnCapturePhoto.IsEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"启动视频展台预览失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void BtnCapturePhoto_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if ((DateTime.Now - _lastCaptureTime).TotalMilliseconds < VideoPresenterCaptureCooldownMs) return;
+                _lastCaptureTime = DateTime.Now;
+
+                Bitmap frame;
+                lock (_videoPresenterFrameLock)
+                {
+                    if (_lastFrame == null) return;
+                    frame = (Bitmap)_lastFrame.Clone();
+                }
+
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        using (frame)
+                        {
+                            Bitmap toSave = frame;
+
+                            if (Settings?.Automation?.IsEnablePhotoCorrection == true
+                                && TryDetectPaperCorners(toSave, out List<AForge.IntPoint> corners))
+                            {
+                                var corrected = ApplyPerspectiveCorrection(toSave, corners);
+                                if (corrected != null) toSave = corrected;
+                            }
+
+                            var bmpImage = ConvertBitmapToBitmapImage(toSave);
+                            if (!ReferenceEquals(toSave, frame))
+                            {
+                                toSave.Dispose();
+                            }
+
+                            if (bmpImage == null) return;
+
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                var ci = new CapturedImage(bmpImage);
+                                _capturedPhotos.Insert(0, ci);
+                                UpdateCapturedPhotosDisplay();
+                            }));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"视频展台拍照失败: {ex.Message}", LogHelper.LogType.Error);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"视频展台拍照失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void BtnRotateImage_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                EnsureCameraService();
+                _cameraService.RotationAngle = (_cameraService.RotationAngle + 1) % 4;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"视频展台旋转失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void CheckBoxEnablePhotoCorrection_Checked(object sender, RoutedEventArgs e)
+        {
+            if (Settings?.Automation == null) return;
+            Settings.Automation.IsEnablePhotoCorrection = true;
+            SaveSettingsToFile();
+        }
+
+        private void CheckBoxEnablePhotoCorrection_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (Settings?.Automation == null) return;
+            Settings.Automation.IsEnablePhotoCorrection = false;
+            SaveSettingsToFile();
+        }
+
+        private void UpdateCapturedPhotosDisplay()
+        {
+            if (CapturedPhotosStackPanel == null) return;
+
+            CapturedPhotosStackPanel.Children.Clear();
+
+            foreach (var photo in _capturedPhotos.Take(30))
+            {
+                var btn = new Button
+                {
+                    Margin = new Thickness(0, 0, 0, 6),
+                    Padding = new Thickness(0),
+                    BorderThickness = new Thickness(0),
+                    Background = System.Windows.Media.Brushes.Transparent,
+                    Tag = photo
+                };
+                btn.Click += (s, e) =>
+                {
+                    if (btn.Tag is CapturedImage p) InsertPhotoToCanvas(p);
+                };
+
+                var img = new System.Windows.Controls.Image
+                {
+                    Source = photo.Thumbnail,
+                    Stretch = System.Windows.Media.Stretch.UniformToFill,
+                    Height = 90
+                };
+                btn.Content = img;
+                CapturedPhotosStackPanel.Children.Add(btn);
+            }
+        }
+
+        private void InsertPhotoToCanvas(CapturedImage photo)
+        {
+            if (photo?.Image == null) return;
+
+            try
+            {
+                var img = new System.Windows.Controls.Image
+                {
+                    Source = photo.Image,
+                    Stretch = System.Windows.Media.Stretch.Uniform,
+                    Width = 500
+                };
+
+                double x = (inkCanvas?.ActualWidth ?? 0) / 2 - img.Width / 2;
+                double y = (inkCanvas?.ActualHeight ?? 0) / 2 - 200;
+                if (double.IsNaN(x) || double.IsInfinity(x)) x = 100;
+                if (double.IsNaN(y) || double.IsInfinity(y)) y = 100;
+
+                InkCanvas.SetLeft(img, Math.Max(0, x));
+                InkCanvas.SetTop(img, Math.Max(0, y));
+                inkCanvas?.Children.Add(img);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"插入展台照片失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private static BitmapImage ConvertBitmapToBitmapImage(Bitmap bitmap)
+        {
+            try
+            {
+                if (bitmap == null) return null;
+
+                using (var ms = new MemoryStream())
+                {
+                    bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    ms.Position = 0;
+                    var bi = new BitmapImage();
+                    bi.BeginInit();
+                    bi.CacheOption = BitmapCacheOption.OnLoad;
+                    bi.StreamSource = ms;
+                    bi.EndInit();
+                    bi.Freeze();
+                    return bi;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static bool TryDetectPaperCorners(Bitmap frame, out List<AForge.IntPoint> cornersOut)
+        {
+            cornersOut = null;
+            try
+            {
+                if (frame == null) return false;
+
+                int targetWidth = 640;
+                int ow = frame.Width;
+                int oh = frame.Height;
+                double scale = 1.0;
+                Bitmap work = frame;
+                if (ow > targetWidth)
+                {
+                    int nh = (int)Math.Round(oh * (targetWidth / (double)ow));
+                    var resize = new ResizeBilinear(targetWidth, nh);
+                    work = resize.Apply(frame);
+                    scale = (double)ow / targetWidth;
+                }
+
+                var gray = Grayscale.CommonAlgorithms.BT709.Apply(work);
+                var blur = new GaussianBlur(3, 3);
+                blur.ApplyInPlace(gray);
+                var canny = new CannyEdgeDetector();
+                canny.ApplyInPlace(gray);
+                var dilate = new Dilatation3x3();
+                dilate.ApplyInPlace(gray);
+
+                var bc = new BlobCounter
+                {
+                    FilterBlobs = true,
+                    MinHeight = 50,
+                    MinWidth = 50,
+                    ObjectsOrder = ObjectsOrder.Size
+                };
+                bc.ProcessImage(gray);
+                var blobs = bc.GetObjectsInformation();
+                var sc = new SimpleShapeChecker();
+                List<AForge.IntPoint> best = null;
+                double bestArea = 0;
+
+                foreach (var blob in blobs)
+                {
+                    var edgePoints = bc.GetBlobsEdgePoints(blob);
+                    if (edgePoints == null || edgePoints.Count < 4) continue;
+                    if (sc.IsQuadrilateral(edgePoints, out List<AForge.IntPoint> crn))
+                    {
+                        double area = Math.Abs(PolygonArea(crn));
+                        if (area > bestArea)
+                        {
+                            bestArea = area;
+                            best = crn;
+                        }
+                    }
+                }
+
+                if (best != null)
+                {
+                    var pts = best
+                        .Select(p => new AForge.IntPoint((int)Math.Round(p.X * scale), (int)Math.Round(p.Y * scale)))
+                        .ToList();
+                    pts.Sort((a, b) => a.Y.CompareTo(b.Y));
+                    if (pts[0].X > pts[1].X) (pts[0], pts[1]) = (pts[1], pts[0]);
+                    if (pts[2].X > pts[3].X) (pts[2], pts[3]) = (pts[3], pts[2]);
+                    cornersOut = pts;
+                    if (!ReferenceEquals(work, frame)) work.Dispose();
+                    gray.Dispose();
+                    return true;
+                }
+
+                if (!ReferenceEquals(work, frame)) work.Dispose();
+                gray.Dispose();
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static Bitmap ApplyPerspectiveCorrection(Bitmap frame, List<AForge.IntPoint> corners)
+        {
+            try
+            {
+                if (frame == null || corners == null || corners.Count != 4) return null;
+                var tl = corners[0];
+                var tr = corners[1];
+                var bl = corners[2];
+                var br = corners[3];
+
+                double topW = Math.Sqrt((tr.X - tl.X) * (tr.X - tl.X) + (tr.Y - tl.Y) * (tr.Y - tl.Y));
+                double bottomW = Math.Sqrt((br.X - bl.X) * (br.X - bl.X) + (br.Y - bl.Y) * (br.Y - bl.Y));
+                double leftH = Math.Sqrt((bl.X - tl.X) * (bl.X - tl.X) + (bl.Y - tl.Y) * (bl.Y - tl.Y));
+                double rightH = Math.Sqrt((br.X - tr.X) * (br.X - tr.X) + (br.Y - tr.Y) * (br.Y - tr.Y));
+
+                double avgW = (topW + bottomW) / 2.0;
+                double avgH = (leftH + rightH) / 2.0;
+                if (avgH <= 0) avgH = 1;
+                double ratio = avgW / avgH;
+
+                int targetH = CorrectedPaperHeight;
+                int targetW = Math.Max(1, (int)Math.Round(targetH * ratio));
+
+                var orderedCorners = new List<AForge.IntPoint> { tl, tr, br, bl };
+                var qtf = new QuadrilateralTransformation(orderedCorners, targetW, targetH);
+                return qtf.Apply(frame);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static double PolygonArea(List<AForge.IntPoint> pts)
+        {
+            int n = pts.Count;
+            if (n < 3) return 0;
+            long sum = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var p = pts[i];
+                var q = pts[(i + 1) % n];
+                sum += (long)p.X * q.Y - (long)p.Y * q.X;
+            }
+            return 0.5 * sum;
+        }
+    }
+}
+

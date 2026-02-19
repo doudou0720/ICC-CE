@@ -522,6 +522,9 @@ namespace Ink_Canvas
         [JsonProperty("isAutoSaveStrokesAtClear")]
         public bool IsAutoSaveStrokesAtClear { get; set; }
 
+        [JsonProperty("isEnablePhotoCorrection")]
+        public bool IsEnablePhotoCorrection { get; set; } = false;
+
         [JsonProperty("isAutoClearWhenExitingWritingMode")]
         public bool IsAutoClearWhenExitingWritingMode { get; set; }
 
