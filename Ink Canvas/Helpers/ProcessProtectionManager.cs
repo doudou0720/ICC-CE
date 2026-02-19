@@ -70,7 +70,7 @@ namespace Ink_Canvas.Helpers
                 try
                 {
                     LogHelper.WriteLogToFile($"ProcessProtectionManager.WithWriteAccess: 获取写入门闩超时({gateTimeoutMs}ms)，将降级直接执行写入动作。目标: {targetPath}",
-                        LogHelper.LogType.Warn);
+                        LogHelper.LogType.Warning);
                 }
                 catch
                 {

@@ -183,6 +183,15 @@ namespace Ink_Canvas
                 Visibility = Visibility.Visible,
                 Opacity = 1.0
             };
+
+            // 让它具备与“普通插入图片”一致的选中/拖拽/缩放行为
+            try
+            {
+                InitializeElementTransform(img);
+                BindElementEvents(img);
+            }
+            catch { }
+
             _liveFrameImageByPage[page] = img;
             return img;
         }
@@ -289,6 +298,15 @@ namespace Ink_Canvas
             {
                 inkCanvas.Children.Add(img);
             }
+
+            // 上屏后自动切到选择模式，否则用户在笔模式下点不中元素
+            try
+            {
+                SetCurrentToolMode(InkCanvasEditingMode.Select);
+                UpdateCurrentToolMode("select");
+                HideSubPanels("select");
+            }
+            catch { }
 
             // 立即用侧栏预览刷新一次
             if (VideoPresenterPreviewImage?.Source is BitmapImage bi)

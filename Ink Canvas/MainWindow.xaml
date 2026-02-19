@@ -10552,15 +10552,15 @@
                 </Border>
 
                 <!-- 底部按钮区域 -->
-                <Grid Grid.Row="4" Height="60">
-                    <StackPanel
+                <Grid Grid.Row="4" Height="Auto" Margin="0,0,0,6">
+                    <WrapPanel
                         Margin="10,5"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Orientation="Horizontal">
+                        Orientation="Horizontal"
+                        ItemHeight="40">
                         <ToggleButton
                             x:Name="BtnToggleVideoPresenterLiveOnCanvas"
-                            Width="90"
                             Height="40"
                             Margin="3,0"
                             Background="{DynamicResource FloatBarBackground}"
@@ -10576,7 +10576,6 @@
                         </ToggleButton>
                         <ToggleButton
                             x:Name="CheckBoxEnablePhotoCorrection"
-                            Width="110"
                             Height="40"
                             Margin="3,0"
                             Background="{DynamicResource FloatBarBackground}"
@@ -10588,11 +10587,10 @@
                                 FontSize="12"
                                 FontWeight="SemiBold"
                                 Foreground="{DynamicResource FloatBarForeground}"
-                                Text="实时矫正" />
+                                Text="矫正" />
                         </ToggleButton>
                         <Button
                             x:Name="BtnCapturePhoto"
-                            Width="90"
                             Height="40"
                             Margin="3,0"
                             Background="{DynamicResource FloatBarBackground}"
@@ -10607,7 +10605,6 @@
                         </Button>
                         <Button
                             x:Name="BtnRotateImage"
-                            Width="90"
                             Height="40"
                             Margin="3,0"
                             Background="{DynamicResource FloatBarBackground}"
@@ -10620,7 +10617,7 @@
                                 Foreground="{DynamicResource FloatBarForeground}"
                                 Text="旋转" />
                         </Button>
-                    </StackPanel>
+                    </WrapPanel>
                 </Grid>
             </Grid>
         </Border>
