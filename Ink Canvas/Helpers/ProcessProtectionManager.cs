@@ -64,11 +64,20 @@ namespace Ink_Canvas.Helpers
                 return;
             }
 
-            var waitStart = Environment.TickCount;
-            while (Interlocked.CompareExchange(ref _writeGate, 1, 0) != 0)
+            const int gateTimeoutMs = 10_000;
+            if (!TryEnterWriteGate(gateTimeoutMs))
             {
-                if (Environment.TickCount - waitStart < 2000) Thread.Sleep(10);
-                else Thread.Sleep(50);
+                try
+                {
+                    LogHelper.WriteLogToFile($"ProcessProtectionManager.WithWriteAccess: 获取写入门闩超时({gateTimeoutMs}ms)，将降级直接执行写入动作。目标: {targetPath}",
+                        LogHelper.LogType.Warn);
+                }
+                catch
+                {
+                }
+
+                action();
+                return;
             }
 
             var normalized = NormalizePath(targetPath);
@@ -132,6 +141,22 @@ namespace Ink_Canvas.Helpers
 
                 Interlocked.Exchange(ref _writeGate, 0);
             }
+        }
+
+        private static bool TryEnterWriteGate(int timeoutMs)
+        {
+            if (timeoutMs <= 0) timeoutMs = 1;
+
+            var start = Environment.TickCount;
+            while (Interlocked.CompareExchange(ref _writeGate, 1, 0) != 0)
+            {
+                var elapsed = unchecked(Environment.TickCount - start);
+                if (elapsed >= timeoutMs) return false;
+
+                if (elapsed < 2000) Thread.Sleep(10);
+                else Thread.Sleep(50);
+            }
+            return true;
         }
 
         private static void Enable()

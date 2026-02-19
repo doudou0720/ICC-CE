@@ -1388,9 +1388,19 @@ namespace Ink_Canvas
             }
         }
 
-        private async void Window_Closing(object sender, CancelEventArgs e)
+        private bool _allowCloseAfterExitVerification;
+        private bool _isExitVerificationInProgress;
+
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             LogHelper.WriteLogToFile("Ink Canvas closing", LogHelper.LogType.Event);
+
+            if (_allowCloseAfterExitVerification)
+            {
+                _allowCloseAfterExitVerification = false;
+                return;
+            }
+
             try
             {
                 // 快抽按钮现在集成在主窗口中，不需要单独关闭
@@ -1404,13 +1414,33 @@ namespace Ink_Canvas
             {
                 if (!App.IsUpdateInstalling && SecurityManager.IsPasswordRequiredForExit(Settings))
                 {
-                    bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
-                    if (!ok)
+                    e.Cancel = true;
+                    if (_isExitVerificationInProgress) return;
+
+                    _isExitVerificationInProgress = true;
+                    Dispatcher.BeginInvoke(new Action(async () =>
                     {
-                        e.Cancel = true;
-                        LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
-                        return;
-                    }
+                        try
+                        {
+                            bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
+                            if (!ok)
+                            {
+                                LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
+                                return;
+                            }
+
+                            _allowCloseAfterExitVerification = true;
+                            Close();
+                        }
+                        catch
+                        {
+                        }
+                        finally
+                        {
+                            _isExitVerificationInProgress = false;
+                        }
+                    }), DispatcherPriority.Normal);
+                    return;
                 }
             }
             catch
