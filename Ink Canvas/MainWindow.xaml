@@ -10540,7 +10540,7 @@
                 </Border>
 
                 <!-- 底部按钮区域 -->
-                <Grid Grid.Row="4" Height="Auto" Margin="0,0,0,6">
+                <Grid Grid.Row="4" Margin="0,0,0,6">
                     <WrapPanel
                         Margin="10,5"
                         HorizontalAlignment="Center"
@@ -10563,14 +10563,14 @@
                                 Text="上屏" />
                         </ToggleButton>
                         <ToggleButton
-                            x:Name="CheckBoxEnablePhotoCorrection"
+                            x:Name="ToggleBtnPhotoCorrection"
                             Height="40"
                             Margin="3,0"
                             Background="{DynamicResource FloatBarBackground}"
                             BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             BorderThickness="1"
-                            Checked="CheckBoxEnablePhotoCorrection_Checked"
-                            Unchecked="CheckBoxEnablePhotoCorrection_Unchecked">
+                            Checked="ToggleBtnPhotoCorrection_Checked"
+                            Unchecked="ToggleBtnPhotoCorrection_Unchecked">
                             <TextBlock
                                 FontSize="12"
                                 FontWeight="SemiBold"

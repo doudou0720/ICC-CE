@@ -26,6 +26,7 @@ namespace Ink_Canvas
         private Bitmap _lastFrame;
 
         private readonly List<CapturedImage> _capturedPhotos = new List<CapturedImage>();
+        private const int MaxCapturedPhotos = 50; // 容量上限：比 UI 显示的 30 项多一些，避免频繁清理
 
         // 按页绑定：每一页对应一个“实时画面”元素与布局/设备信息
         private readonly Dictionary<int, System.Windows.Controls.Image> _liveFrameImageByPage = new Dictionary<int, System.Windows.Controls.Image>();
@@ -59,9 +60,9 @@ namespace Ink_Canvas
             if (BtnCapturePhoto != null) BtnCapturePhoto.IsEnabled = false;
             RefreshVideoPresenterDeviceList();
 
-            if (CheckBoxEnablePhotoCorrection != null)
+            if (ToggleBtnPhotoCorrection != null)
             {
-                CheckBoxEnablePhotoCorrection.IsChecked = Settings?.Automation?.IsEnablePhotoCorrection ?? false;
+                ToggleBtnPhotoCorrection.IsChecked = Settings?.Automation?.IsEnablePhotoCorrection ?? false;
             }
 
             // 同步“上屏”按钮状态（按页绑定）
@@ -447,6 +448,13 @@ namespace Ink_Canvas
                             {
                                 var ci = new CapturedImage(bmpImage);
                                 _capturedPhotos.Insert(0, ci);
+                                
+                                while (_capturedPhotos.Count > MaxCapturedPhotos)
+                                {
+                                    var oldPhoto = _capturedPhotos[_capturedPhotos.Count - 1];
+                                    _capturedPhotos.RemoveAt(_capturedPhotos.Count - 1);
+                                }
+                                
                                 UpdateCapturedPhotosDisplay();
                             }));
                         }
@@ -476,14 +484,14 @@ namespace Ink_Canvas
             }
         }
 
-        private void CheckBoxEnablePhotoCorrection_Checked(object sender, RoutedEventArgs e)
+        private void ToggleBtnPhotoCorrection_Checked(object sender, RoutedEventArgs e)
         {
             if (Settings?.Automation == null) return;
             Settings.Automation.IsEnablePhotoCorrection = true;
             SaveSettingsToFile();
         }
 
-        private void CheckBoxEnablePhotoCorrection_Unchecked(object sender, RoutedEventArgs e)
+        private void ToggleBtnPhotoCorrection_Unchecked(object sender, RoutedEventArgs e)
         {
             if (Settings?.Automation == null) return;
             Settings.Automation.IsEnablePhotoCorrection = false;
