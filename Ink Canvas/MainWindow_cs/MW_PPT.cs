@@ -96,6 +96,8 @@ namespace Ink_Canvas
         
         // 当前播放页码跟踪
         private int _currentSlideShowPosition = 0;
+        private readonly object _slideSwitchLock = new object();
+        private bool _isProcessingSlideSwitch = false;
 
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
         private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
@@ -887,31 +889,46 @@ namespace Ink_Canvas
                 int currentSlide = wn.View.CurrentShowPosition;
                 int totalSlides = wn.Presentation.Slides.Count;
 
-                if (currentSlide == _currentSlideShowPosition) return;
-
-                Application.Current.Dispatcher.Invoke(() =>
+                lock (_slideSwitchLock)
                 {
+                    if (currentSlide == _currentSlideShowPosition) return;
+                    if (_isProcessingSlideSwitch) return;
+
+                    _isProcessingSlideSwitch = true;
                     int prev = _currentSlideShowPosition;
 
-                    if (inkCanvas.Strokes.Count > 0 && prev > 0 && prev != currentSlide)
-                        _singlePPTInkManager?.SaveCurrentSlideStrokes(prev, inkCanvas.Strokes);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        try
+                        {
+                            if (inkCanvas.Strokes.Count > 0 && prev > 0 && prev != currentSlide)
+                                _singlePPTInkManager?.SaveCurrentSlideStrokes(prev, inkCanvas.Strokes);
 
-                    ClearStrokes(true);
-                    timeMachine.ClearStrokeHistory();
+                            ClearStrokes(true);
+                            timeMachine.ClearStrokeHistory();
 
-                    StrokeCollection newStrokes = _singlePPTInkManager?.LoadSlideStrokes(currentSlide);
-                    if (newStrokes != null && newStrokes.Count > 0)
-                        inkCanvas.Strokes.Add(newStrokes);
+                            StrokeCollection newStrokes = _singlePPTInkManager?.LoadSlideStrokes(currentSlide);
+                            if (newStrokes != null && newStrokes.Count > 0)
+                                inkCanvas.Strokes.Add(newStrokes);
 
-                    _singlePPTInkManager?.LockInkForSlide(currentSlide);
-                    _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
-                });
-
-                _currentSlideShowPosition = currentSlide;
+                            _singlePPTInkManager?.LockInkForSlide(currentSlide);
+                            _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
+                        }
+                        finally
+                        {
+                            _currentSlideShowPosition = currentSlide;
+                            _isProcessingSlideSwitch = false;
+                        }
+                    });
+                }
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"处理幻灯片切换事件失败: {ex}", LogHelper.LogType.Error);
+                lock (_slideSwitchLock)
+                {
+                    _isProcessingSlideSwitch = false;
+                }
             }
         }
 
@@ -1280,6 +1297,10 @@ namespace Ink_Canvas
                 
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
+                lock (_slideSwitchLock)
+                {
+                    _isProcessingSlideSwitch = false;
+                }
 
 
                 LogHelper.WriteLogToFile("PPT状态变量已重置", LogHelper.LogType.Trace);
