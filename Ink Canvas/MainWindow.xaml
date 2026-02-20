@@ -10512,6 +10512,7 @@
                             Text="拍摄照片" />
                         <ScrollViewer
                             x:Name="CapturedPhotosScrollViewer"
+                            MaxHeight="280"
                             VerticalScrollBarVisibility="Auto"
                             PanningMode="VerticalFirst">
                             <StackPanel x:Name="CapturedPhotosStackPanel" Margin="0,0,0,5" />
