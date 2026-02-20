@@ -9,7 +9,7 @@ using System.Windows.Ink;
 namespace Ink_Canvas.Helpers
 {
     /// <summary>
-    /// PPT墨迹管理器 - 负责PPT中墨迹的保存、加载和同步
+    /// PPT墨迹管理器 - 负责按幻灯片保存/加载墨迹、自动保存与内存管理。
     /// </summary>
     public class PPTInkManager : IDisposable
     {
@@ -21,7 +21,8 @@ namespace Ink_Canvas.Helpers
 
         #region Private Fields
         private MemoryStream[] _memoryStreams;
-        private int _maxSlides = 100;
+        private const int DefaultMaxSlides = 100;
+        private int _maxSlides = DefaultMaxSlides;
         private string _currentPresentationId = "";
         private readonly object _lockObject = new object();
         private bool _disposed;
@@ -34,28 +35,30 @@ namespace Ink_Canvas.Helpers
         // 添加快速切换保护机制
         private DateTime _lastSwitchTime = DateTime.MinValue;
         private int _lastSwitchSlideIndex = -1;
-        private const int MinSwitchIntervalMs = 100; // 最小切换间隔100毫秒
+        private const int MinSwitchIntervalMs = 100;
 
-        // 内存管理相关字段
-        private long _totalMemoryUsage = 0;
-        private const long MaxMemoryUsageBytes = 100 * 1024 * 1024; // 100MB限制
+        private long _totalMemoryUsage;
+        private const long MaxMemoryUsageBytes = 100 * 1024 * 1024; // 100MB
         private DateTime _lastMemoryCleanup = DateTime.MinValue;
-        private const int MemoryCleanupIntervalMinutes = 5; // 5分钟清理一次
+        private const int MemoryCleanupIntervalMinutes = 5;
+
+        private const string StrokeFileExtension = ".icstk";
         #endregion
 
         #region Constructor
         public PPTInkManager()
         {
-            InitializeMemoryStreams();
+            InitializeMemoryStreams(DefaultMaxSlides + 2);
         }
 
-        private void InitializeMemoryStreams()
+        private void InitializeMemoryStreams(int capacity)
         {
-            _memoryStreams = new MemoryStream[_maxSlides + 2];
+            _memoryStreams = new MemoryStream[Math.Max(2, capacity)];
         }
         #endregion
 
         #region Public Methods
+
         /// <summary>
         /// 初始化新的演示文稿
         /// </summary>
@@ -67,17 +70,14 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    // 完全清理之前的墨迹状态
-                    ClearAllStrokes();
-
-                    // 重置墨迹锁定状态
+                    ClearAllStrokesInternal();
                     _inkLockUntil = DateTime.MinValue;
                     _lockedSlideIndex = -1;
+                    _lastSwitchSlideIndex = -1;
+                    _lastSwitchTime = DateTime.MinValue;
 
-                    // 生成演示文稿唯一标识符
                     _currentPresentationId = GeneratePresentationId(presentation);
 
-                    // 重新初始化内存流数组
                     int slideCount = 0;
                     try
                     {
@@ -85,21 +85,17 @@ namespace Ink_Canvas.Helpers
                     }
                     catch (COMException comEx)
                     {
-                        var hr = (uint)comEx.HResult;
-                        if (hr == 0x80048010)
-                        {
-                            return;
-                        }
+                        uint hr = (uint)comEx.HResult;
+                        if (hr == 0x80048010) return;
                         throw;
                     }
-                    _memoryStreams = new MemoryStream[slideCount + 2];
 
-                    // 如果启用自动保存，尝试加载已保存的墨迹
+                    int capacity = slideCount + 2;
+                    _maxSlides = Math.Max(_maxSlides, slideCount);
+                    _memoryStreams = new MemoryStream[capacity];
+
                     if (IsAutoSaveEnabled && !string.IsNullOrEmpty(AutoSaveLocation))
-                    {
                         LoadSavedStrokes();
-                    }
-
                 }
                 catch (Exception ex)
                 {
@@ -119,40 +115,11 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    // 检查墨迹锁定 
-                    if (!CanWriteInk(slideIndex))
-                    {
-                        if (DateTime.Now < _inkLockUntil)
-                        {
-                        }
-                        return;
-                    }
+                    if (!CanWriteInk(slideIndex)) return;
+                    if (slideIndex >= _memoryStreams.Length) return;
 
-                    if (slideIndex < _memoryStreams.Length)
-                    {
-                        // 先释放旧的内存流，防止内存泄漏
-                        try
-                        {
-                            _memoryStreams[slideIndex]?.Dispose();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"释放旧内存流失败: {ex}", LogHelper.LogType.Warning);
-                        }
-
-                        // 创建新的内存流
-                        var ms = new MemoryStream();
-                        strokes.Save(ms);
-                        ms.Position = 0;
-                        _memoryStreams[slideIndex] = ms;
-
-                        if (ms.Length > 0)
-                        {
-                        }
-
-                        // 检查内存使用情况
-                        CheckAndPerformMemoryCleanup();
-                    }
+                    ReplaceSlideStream(slideIndex, strokes);
+                    CheckAndPerformMemoryCleanup();
                 }
                 catch (Exception ex)
                 {
@@ -162,7 +129,7 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
-        /// 强制保存指定页面的墨迹
+        /// 强制保存指定页墨迹到内存（不受锁定限制）。用于放映结束前保存当前画布到当前页。
         /// </summary>
         public void ForceSaveSlideStrokes(int slideIndex, StrokeCollection strokes)
         {
@@ -172,26 +139,9 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    if (slideIndex < _memoryStreams.Length)
-                    {
-                        // 先释放旧的内存流，防止内存泄漏
-                        try
-                        {
-                            _memoryStreams[slideIndex]?.Dispose();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"释放旧内存流失败: {ex}", LogHelper.LogType.Warning);
-                        }
-
-                        // 创建新的内存流
-                        var ms = new MemoryStream();
-                        strokes.Save(ms);
-                        ms.Position = 0;
-                        _memoryStreams[slideIndex] = ms;
-
-                        LogHelper.WriteLogToFile($"已强制保存第{slideIndex}页墨迹，大小: {ms.Length} bytes", LogHelper.LogType.Trace);
-                    }
+                    if (slideIndex >= _memoryStreams.Length) return;
+                    ReplaceSlideStream(slideIndex, strokes);
+                    LogHelper.WriteLogToFile($"已强制保存第{slideIndex}页墨迹", LogHelper.LogType.Trace);
                 }
                 catch (Exception ex)
                 {
@@ -214,8 +164,7 @@ namespace Ink_Canvas.Helpers
                     if (slideIndex < _memoryStreams.Length && _memoryStreams[slideIndex] != null && _memoryStreams[slideIndex].Length > 0)
                     {
                         _memoryStreams[slideIndex].Position = 0;
-                        var strokes = new StrokeCollection(_memoryStreams[slideIndex]);
-                        return strokes;
+                        return new StrokeCollection(_memoryStreams[slideIndex]);
                     }
                 }
                 catch (Exception ex)
@@ -236,30 +185,17 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    // 检查快速切换保护
                     var now = DateTime.Now;
-                    if (now - _lastSwitchTime < TimeSpan.FromMilliseconds(MinSwitchIntervalMs) &&
-                        _lastSwitchSlideIndex == slideIndex)
+                    if (now - _lastSwitchTime < TimeSpan.FromMilliseconds(MinSwitchIntervalMs) && _lastSwitchSlideIndex == slideIndex)
                     {
-                        LogHelper.WriteLogToFile($"快速切换保护：忽略重复的页面切换请求 {slideIndex}", LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile($"快速切换保护：忽略重复请求 页{slideIndex}", LogHelper.LogType.Trace);
                         return LoadSlideStrokes(slideIndex);
                     }
 
-
-                    // 设置墨迹锁定
                     LockInkForSlide(slideIndex);
-
-                    // 加载新页面的墨迹
-                    var newStrokes = LoadSlideStrokes(slideIndex);
-
-                    // 更新切换记录
+                    StrokeCollection newStrokes = LoadSlideStrokes(slideIndex);
                     _lastSwitchTime = now;
                     _lastSwitchSlideIndex = slideIndex;
-
-                    if (newStrokes.Count > 0)
-                    {
-                    }
-
                     return newStrokes;
                 }
                 catch (Exception ex)
@@ -283,85 +219,51 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    var folderPath = GetPresentationFolderPath();
+                    string folderPath = GetPresentationFolderPath();
                     if (!Directory.Exists(folderPath))
-                    {
                         Directory.CreateDirectory(folderPath);
-                    }
 
-                    // 保存位置信息
-                    try
+                    int positionToSave = currentSlideIndex > 0 ? currentSlideIndex : (_lockedSlideIndex > 0 ? _lockedSlideIndex : _lastSwitchSlideIndex);
+                    if (positionToSave > 0)
                     {
-                        // 优先使用传入的当前页码，否则使用锁定的页码
-                        int positionToSave = currentSlideIndex > 0 ? currentSlideIndex : _lockedSlideIndex;
-                        // 如果都没有有效值，尝试使用最后切换的页码
-                        if (positionToSave <= 0 && _lastSwitchSlideIndex > 0)
-                        {
-                            positionToSave = _lastSwitchSlideIndex;
-                        }
-
-                        if (positionToSave > 0)
-                        {
-                            File.WriteAllText(Path.Combine(folderPath, "Position"), positionToSave.ToString());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"保存位置信息失败: {ex}", LogHelper.LogType.Error);
+                        try { File.WriteAllText(Path.Combine(folderPath, "Position"), positionToSave.ToString()); }
+                        catch (Exception ex) { LogHelper.WriteLogToFile($"保存 Position 失败: {ex}", LogHelper.LogType.Warning); }
                     }
 
-                    // 保存所有页面的墨迹
-                    int savedCount = 0;
                     int slideCount = 0;
-
-                    try
-                    {
-                        slideCount = presentation.Slides.Count;
-                    }
+                    try { slideCount = presentation.Slides.Count; }
                     catch (COMException comEx)
                     {
-                        var hr = (uint)comEx.HResult;
-                        if (hr == 0x80048010)
-                        {
-                            return;
-                        }
+                        if ((uint)comEx.HResult == 0x80048010) return;
                         throw;
                     }
 
                     for (int i = 1; i <= slideCount && i < _memoryStreams.Length; i++)
                     {
-                        if (_memoryStreams[i] != null)
+                        if (_memoryStreams[i] == null) continue;
+                        try
                         {
-                            try
+                            if (_memoryStreams[i].Length > 8)
                             {
-                                if (_memoryStreams[i].Length > 8)
+                                _memoryStreams[i].Position = 0;
+                                byte[] buf = new byte[_memoryStreams[i].Length];
+                                int read = _memoryStreams[i].Read(buf, 0, buf.Length);
+                                if (read > 0)
                                 {
-                                    var srcBuf = new byte[_memoryStreams[i].Length];
-                                    _memoryStreams[i].Position = 0;
-                                    var byteLength = _memoryStreams[i].Read(srcBuf, 0, srcBuf.Length);
-
-                                    var filePath = Path.Combine(folderPath, i.ToString("0000") + ".icstk");
-                                    File.WriteAllBytes(filePath, srcBuf);
-                                    savedCount++;
-
-                                }
-                                else
-                                {
-                                    // 删除空的墨迹文件
-                                    var filePath = Path.Combine(folderPath, i.ToString("0000") + ".icstk");
-                                    if (File.Exists(filePath))
-                                    {
-                                        File.Delete(filePath);
-                                    }
+                                    string basePath = Path.Combine(folderPath, i.ToString("0000"));
+                                    File.WriteAllBytes(basePath + StrokeFileExtension, buf);
                                 }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                LogHelper.WriteLogToFile($"保存第{i}页墨迹失败: {ex}", LogHelper.LogType.Error);
+                                TryDeleteStrokeFile(folderPath, i);
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"保存第{i}页墨迹到文件失败: {ex}", LogHelper.LogType.Error);
+                        }
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -381,33 +283,35 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    var folderPath = GetPresentationFolderPath();
+                    string folderPath = GetPresentationFolderPath();
                     if (!Directory.Exists(folderPath)) return;
 
-                    var files = new DirectoryInfo(folderPath).GetFiles("*.icstk");
+                    var dir = new DirectoryInfo(folderPath);
                     int loadedCount = 0;
-
-                    foreach (var file in files)
+                    foreach (FileInfo file in dir.GetFiles("*" + StrokeFileExtension))
                     {
+                        string nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
+                        if (!int.TryParse(nameWithoutExt, out int slideIndex) || slideIndex <= 0) continue;
+                        if (slideIndex >= _memoryStreams.Length) continue;
+
                         try
                         {
-                            if (int.TryParse(Path.GetFileNameWithoutExtension(file.Name), out int slideIndex))
+                            byte[] bytes = File.ReadAllBytes(file.FullName);
+                            if (bytes.Length > 8)
                             {
-                                if (slideIndex > 0 && slideIndex < _memoryStreams.Length)
-                                {
-                                    var fileBytes = File.ReadAllBytes(file.FullName);
-                                    _memoryStreams[slideIndex] = new MemoryStream(fileBytes);
-                                    _memoryStreams[slideIndex].Position = 0;
-                                    loadedCount++;
-                                }
+                                _memoryStreams[slideIndex] = new MemoryStream(bytes);
+                                _memoryStreams[slideIndex].Position = 0;
+                                loadedCount++;
                             }
                         }
                         catch (Exception ex)
                         {
-                            LogHelper.WriteLogToFile($"加载墨迹文件{file.Name}失败: {ex}", LogHelper.LogType.Error);
+                            LogHelper.WriteLogToFile($"加载墨迹文件 {file.Name} 失败: {ex}", LogHelper.LogType.Error);
                         }
                     }
 
+                    if (loadedCount > 0)
+                        LogHelper.WriteLogToFile($"已从磁盘加载 {loadedCount} 页墨迹", LogHelper.LogType.Trace);
                 }
                 catch (Exception ex)
                 {
@@ -423,81 +327,24 @@ namespace Ink_Canvas.Helpers
         {
             lock (_lockObject)
             {
-                try
-                {
-                    // 安全释放所有内存流
-                    if (_memoryStreams != null)
-                    {
-                        for (int i = 0; i < _memoryStreams.Length; i++)
-                        {
-                            try
-                            {
-                                _memoryStreams[i]?.Dispose();
-                            }
-                            catch (Exception ex)
-                            {
-                                LogHelper.WriteLogToFile($"释放内存流{i}失败: {ex}", LogHelper.LogType.Warning);
-                            }
-                            finally
-                            {
-                                _memoryStreams[i] = null;
-                            }
-                        }
-
-                        // 重新初始化数组
-                        _memoryStreams = new MemoryStream[_maxSlides + 2];
-                    }
-
-                    CurrentStrokes?.Clear();
-                    LogHelper.WriteLogToFile("已清除所有墨迹", LogHelper.LogType.Trace);
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"清除墨迹失败: {ex}", LogHelper.LogType.Error);
-                }
+                ClearAllStrokesInternal();
             }
         }
 
-        /// <summary>
-        /// 翻页后锁定墨迹写入
-        /// </summary>
         public void LockInkForSlide(int slideIndex)
         {
             _inkLockUntil = DateTime.Now.AddMilliseconds(InkLockMilliseconds);
             _lockedSlideIndex = slideIndex;
         }
 
-        /// <summary>
-        /// 检查是否可以写入墨迹
-        /// </summary>
         public bool CanWriteInk(int currentSlideIndex)
         {
-            // 如果锁定时间已过，允许写入
-            if (DateTime.Now >= _inkLockUntil)
-            {
-                return true;
-            }
-
-            // 如果当前页面与锁定页面相同，允许写入（用户在当前页面绘制）
-            if (currentSlideIndex == _lockedSlideIndex)
-            {
-                return true;
-            }
-
-            // 如果当前页面不是锁定页面，但锁定时间很短（小于50ms），允许写入
-            // 这样可以确保旧页面的墨迹能够及时保存
-            if (DateTime.Now - (_inkLockUntil.AddMilliseconds(-InkLockMilliseconds)) < TimeSpan.FromMilliseconds(50))
-            {
-                return true;
-            }
-
-            // 只有在快速切换且页面不同时才锁定
+            if (DateTime.Now >= _inkLockUntil) return true;
+            if (currentSlideIndex == _lockedSlideIndex) return true;
+            if (DateTime.Now - (_inkLockUntil.AddMilliseconds(-InkLockMilliseconds)) < TimeSpan.FromMilliseconds(50)) return true;
             return false;
         }
 
-        /// <summary>
-        /// 重置墨迹锁定状态
-        /// </summary>
         public void ResetLockState()
         {
             lock (_lockObject)
@@ -509,51 +356,65 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>
-        /// 检查并执行内存清理
-        /// </summary>
+        #endregion
+
+        #region Private Helpers
+
+        private void ClearAllStrokesInternal()
+        {
+            if (_memoryStreams != null)
+            {
+                for (int i = 0; i < _memoryStreams.Length; i++)
+                {
+                    try { _memoryStreams[i]?.Dispose(); } catch (Exception ex) { LogHelper.WriteLogToFile($"释放内存流 {i} 失败: {ex}", LogHelper.LogType.Warning); }
+                    finally { _memoryStreams[i] = null; }
+                }
+                _memoryStreams = new MemoryStream[_maxSlides + 2];
+            }
+            CurrentStrokes?.Clear();
+            LogHelper.WriteLogToFile("已清除所有墨迹", LogHelper.LogType.Trace);
+        }
+
+        private void ReplaceSlideStream(int slideIndex, StrokeCollection strokes)
+        {
+            try { _memoryStreams[slideIndex]?.Dispose(); } catch (Exception ex) { LogHelper.WriteLogToFile($"释放旧内存流失败: {ex}", LogHelper.LogType.Warning); }
+            var ms = new MemoryStream();
+            strokes.Save(ms);
+            ms.Position = 0;
+            _memoryStreams[slideIndex] = ms;
+        }
+
+        private void TryDeleteStrokeFile(string folderPath, int slideIndex)
+        {
+            try
+            {
+                string path = Path.Combine(folderPath, slideIndex.ToString("0000") + StrokeFileExtension);
+                if (File.Exists(path)) File.Delete(path);
+            }
+            catch { }
+        }
+
         private void CheckAndPerformMemoryCleanup()
         {
             try
             {
                 var now = DateTime.Now;
+                if (now - _lastMemoryCleanup < TimeSpan.FromMinutes(MemoryCleanupIntervalMinutes)) return;
 
-                // 检查是否需要执行内存清理
-                if (now - _lastMemoryCleanup < TimeSpan.FromMinutes(MemoryCleanupIntervalMinutes))
-                {
-                    return;
-                }
-
-                // 计算当前内存使用量
                 long currentMemoryUsage = 0;
                 if (_memoryStreams != null)
                 {
                     for (int i = 0; i < _memoryStreams.Length; i++)
-                    {
-                        if (_memoryStreams[i] != null)
-                        {
-                            currentMemoryUsage += _memoryStreams[i].Length;
-                        }
-                    }
+                        if (_memoryStreams[i] != null) currentMemoryUsage += _memoryStreams[i].Length;
                 }
-
                 _totalMemoryUsage = currentMemoryUsage;
 
-                // 如果内存使用量超过限制，执行清理
                 if (currentMemoryUsage > MaxMemoryUsageBytes)
                 {
-                    LogHelper.WriteLogToFile($"内存使用量超限 ({currentMemoryUsage / 1024 / 1024}MB)，开始清理", LogHelper.LogType.Warning);
-
-                    // 清理非当前页面的墨迹
+                    LogHelper.WriteLogToFile($"墨迹内存超限 ({currentMemoryUsage / (1024 * 1024)}MB)，执行清理", LogHelper.LogType.Warning);
                     CleanupInactiveSlideStrokes();
-
-                    _lastMemoryCleanup = now;
-                    LogHelper.WriteLogToFile($"内存清理完成，当前使用量: {_totalMemoryUsage / 1024 / 1024}MB", LogHelper.LogType.Trace);
                 }
-                else
-                {
-                    _lastMemoryCleanup = now;
-                }
+                _lastMemoryCleanup = now;
             }
             catch (Exception ex)
             {
@@ -561,90 +422,54 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        /// <summary>
-        /// 清理非活跃页面的墨迹
-        /// </summary>
         private void CleanupInactiveSlideStrokes()
         {
-            try
+            if (_memoryStreams == null) return;
+            int cleaned = 0;
+            long freed = 0;
+            for (int i = 0; i < _memoryStreams.Length; i++)
             {
-                if (_memoryStreams == null) return;
-
-                int cleanedCount = 0;
-                long freedMemory = 0;
-
-                for (int i = 0; i < _memoryStreams.Length; i++)
+                if (i == _lockedSlideIndex || i == _lastSwitchSlideIndex) continue;
+                if (_memoryStreams[i] != null)
                 {
-                    // 保留当前锁定页面和最近访问的页面
-                    if (i == _lockedSlideIndex || i == _lastSwitchSlideIndex)
-                    {
-                        continue;
-                    }
-
-                    if (_memoryStreams[i] != null)
-                    {
-                        long memorySize = _memoryStreams[i].Length;
-
-                        try
-                        {
-                            _memoryStreams[i].Dispose();
-                            freedMemory += memorySize;
-                            cleanedCount++;
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"清理页面{i}墨迹失败: {ex}", LogHelper.LogType.Warning);
-                        }
-                        finally
-                        {
-                            _memoryStreams[i] = null;
-                        }
-                    }
-                }
-
-                if (cleanedCount > 0)
-                {
-                    LogHelper.WriteLogToFile($"已清理{cleanedCount}个页面的墨迹，释放内存: {freedMemory / 1024}KB", LogHelper.LogType.Trace);
+                    long len = _memoryStreams[i].Length;
+                    try { _memoryStreams[i].Dispose(); freed += len; cleaned++; } catch { }
+                    finally { _memoryStreams[i] = null; }
                 }
             }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"清理非活跃页面墨迹失败: {ex}", LogHelper.LogType.Error);
-            }
+            if (cleaned > 0)
+                LogHelper.WriteLogToFile($"已清理 {cleaned} 页墨迹，释放 {freed / 1024}KB", LogHelper.LogType.Trace);
         }
-        #endregion
 
-        #region Private Methods
         private string GeneratePresentationId(Presentation presentation)
         {
             try
             {
-                var presentationPath = presentation.FullName;
-                var fileHash = GetFileHash(presentationPath);
-                return $"{presentation.Name}_{presentation.Slides.Count}_{fileHash}";
+                string path = presentation.FullName;
+                string hash = GetFileHash(path);
+                return $"{presentation.Name}_{presentation.Slides.Count}_{hash}";
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"生成演示文稿ID失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"生成演示文稿 ID 失败: {ex}", LogHelper.LogType.Error);
                 return $"unknown_{DateTime.Now.Ticks}";
             }
         }
 
-        private string GetFileHash(string filePath)
+        private static string GetFileHash(string filePath)
         {
             try
             {
                 if (string.IsNullOrEmpty(filePath)) return "unknown";
-
                 using (var md5 = MD5.Create())
                 {
-                    byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(filePath));
-                    return BitConverter.ToString(hashBytes).Replace("-", "").Substring(0, 8);
+                    byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(filePath));
+                    return BitConverter.ToString(hash).Replace("-", "").Substring(0, 8);
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"计算文件哈希值失败: {ex}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"计算文件哈希失败: {ex}", LogHelper.LogType.Error);
                 return "error";
             }
         }
@@ -653,20 +478,18 @@ namespace Ink_Canvas.Helpers
         {
             return Path.Combine(AutoSaveLocation, "Auto Saved - Presentations", _currentPresentationId);
         }
+
         #endregion
 
         #region Dispose
+
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                lock (_lockObject)
-                {
-                    ClearAllStrokes();
-                }
-                _disposed = true;
-            }
+            if (_disposed) return;
+            lock (_lockObject) { ClearAllStrokesInternal(); }
+            _disposed = true;
         }
+
         #endregion
     }
 }
