@@ -1337,10 +1337,9 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 重置PPT相关的状态变量，当PPT自动收纳设置变更时调用
-        /// <summary>
-        /// 将与 PowerPoint 播放和状态追踪相关的内部字段重置为初始默认值。
         /// </summary>
         /// <remarks>
+        /// 将与 PowerPoint 播放和状态追踪相关的内部字段重置为初始默认值。
         /// 重置的字段包括：播放结束重入保护标志、演示文稿黑边指示、上次播放页码及导航标志、当前放映位置和滑动切换处理状态。该方法在发生异常时会记录错误日志；成功时记录追踪日志。
         /// </remarks>
         public void ResetPPTStateVariables()
