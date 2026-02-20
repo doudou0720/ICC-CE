@@ -1480,11 +1480,6 @@ namespace Ink_Canvas
             {
                 try
                 {
-                    // 注意：不在这里保存墨迹，而是等待OnPPTSlideShowNextSlide事件触发时统一保存
-                    // 这样可以避免快速翻页时墨迹保存和加载的页码不匹配问题
-                    // 滚轮翻页之所以不会错页，是因为它直接触发事件，不会有双重保存的问题
-
-                    // 保存截图（如果启用）- 截图保存不影响墨迹，可以保留
                     var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                     if (inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
                         Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint && currentSlide > 0)
@@ -1496,7 +1491,6 @@ namespace Ink_Canvas
                     // 执行翻页
                     if (_pptManager?.TryNavigateNext() == true)
                     {
-                        // 翻页成功，等待OnPPTSlideShowNextSlide事件处理墨迹切换
                     }
                     else
                     {
