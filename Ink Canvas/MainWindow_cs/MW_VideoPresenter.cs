@@ -171,15 +171,27 @@ namespace Ink_Canvas
             catch { }
         }
 
+        private const double VideoPresenterLiveFrameScreenRatio = 0.75;
+
         private System.Windows.Controls.Image EnsureLiveFrameElementForPage(int page)
         {
             if (_liveFrameImageByPage.TryGetValue(page, out var existing) && existing != null) return existing;
+
+            double canvasW = inkCanvas?.ActualWidth ?? 0;
+            double canvasH = inkCanvas?.ActualHeight ?? 0;
+            double w = canvasW > 10 && canvasH > 10
+                ? canvasW * VideoPresenterLiveFrameScreenRatio
+                : 520;
+            double h = canvasW > 10 && canvasH > 10
+                ? canvasH * VideoPresenterLiveFrameScreenRatio
+                : 390;
 
             var img = new System.Windows.Controls.Image
             {
                 Tag = VideoPresenterLiveFrameTag,
                 Stretch = System.Windows.Media.Stretch.Uniform,
-                Width = 520,
+                Width = w,
+                Height = h,
                 Visibility = Visibility.Visible,
                 Opacity = 1.0
             };
@@ -206,9 +218,16 @@ namespace Ink_Canvas
                 return;
             }
 
-            // 默认位置：居中偏上
+            // 默认尺寸：画布宽高的 75%；位置居中
+            double cw = inkCanvas?.ActualWidth ?? 0;
+            double ch = inkCanvas?.ActualHeight ?? 0;
+            if (cw > 10 && ch > 10)
+            {
+                img.Width = cw * VideoPresenterLiveFrameScreenRatio;
+                img.Height = ch * VideoPresenterLiveFrameScreenRatio;
+            }
             double x = (inkCanvas?.ActualWidth ?? 0) / 2 - img.Width / 2;
-            double y = (inkCanvas?.ActualHeight ?? 0) / 2 - 200;
+            double y = (inkCanvas?.ActualHeight ?? 0) / 2 - img.Height / 2;
             if (double.IsNaN(x) || double.IsInfinity(x)) x = 100;
             if (double.IsNaN(y) || double.IsInfinity(y)) y = 100;
             InkCanvas.SetLeft(img, Math.Max(0, x));
