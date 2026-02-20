@@ -359,7 +359,11 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 保存设备ID到文件
+        /// <summary>
+        /// 将指定的 DeviceIdInfo 序列化为 JSON，并以受保护的写入方式保存到给定的文件路径。
         /// </summary>
+        /// <param name="filePath">目标文件的完整路径；如果父目录不存在则会创建。</param>
+        /// <param name="info">包含 DeviceId 和 HardwareFingerprint 的信息对象，序列化后写入文件。</param>
         private static void SaveDeviceIdToFile(string filePath, DeviceIdInfo info)
         {
             try
@@ -1619,4 +1623,3 @@ namespace Ink_Canvas.Helpers
         }
     }
 }
-

@@ -20,7 +20,14 @@ namespace Ink_Canvas
         private TimeMachineHistory[][] TimeMachineHistories = new TimeMachineHistory[101][];
         private bool[] savedMultiTouchModeStates = new bool[101];
 
-        // 保存每页白板图片信息
+        /// <summary>
+        /// 将当前画布上的未记录的元素和墨迹提交到时间机器历史，并将导出的历史保存到指定的白板存储位置。
+        /// </summary>
+        /// <param name="isBackupMain">为 true 时将历史保存到主备份位置（索引 0）；为 false 时保存到当前白板索引。</param>
+        /// <remarks>
+        /// 提交过程中会确保画布上的 Image/MediaElement（排除标记为直播帧的项）和未入历史的 Stroke 被记录为历史项；
+        /// 然后导出时间机器历史并存入 TimeMachineHistories 对应索引，同时保存当前的多指书写模式状态到 savedMultiTouchModeStates，并清空时间机器中的临时历史缓存。
+        /// </remarks>
         private void SaveStrokes(bool isBackupMain = false)
         {
             // 确保画布上的所有UI元素都被保存到时间机器历史记录中
@@ -277,6 +284,9 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 切换到前一页白板：在切换前保存并结算当前所选元素与画笔内容，清空当前画布，然后恢复前一页的历史内容并更新页面状态。
+        /// </summary>
         private void BtnWhiteBoardSwitchPrevious_Click(object sender, EventArgs e)
         {
             if (CurrentWhiteboardIndex <= 1) return;
@@ -304,6 +314,13 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 切换到下一页白板；若当前为最后一页则新建一页并切换到新页。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象。</param>
+        /// <param name="e">事件参数。</param>
+        /// <remarks>
+        /// 在切换前会在配置允许且满足笔画数量阈值时自动保存当前页的截图；会保存并清理当前页的笔画与插入元素，取消选中任何选中的元素；切换后恢复目标页的笔画历史并通知视频呈现器更新，同时刷新页码显示。</remarks>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
             Trace.WriteLine("113223234");
@@ -340,6 +357,11 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 在白板集合中添加一页并切换到该新页，同时保存并清理当前页的状态并更新界面状态。
+        /// </summary>
+        /// <param name="sender">触发此事件的源对象（通常为“添加白板”按钮）。</param>
+        /// <param name="e">与事件相关的事件参数。</param>
         private void BtnWhiteBoardAdd_Click(object sender, EventArgs e)
         {
             if (WhiteboardTotalCount >= 99) return;

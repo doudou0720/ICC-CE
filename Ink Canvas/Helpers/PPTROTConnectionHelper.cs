@@ -119,6 +119,15 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// 从运行对象表（ROT）中扫描并返回优先级最高的 PowerPoint 应用对象。
+        /// </summary>
+        /// <remarks>
+        /// 优先级含义：1 = 有打开的 ActivePresentation；2 = 存在 SlideShowWindow；3 = SlideShowWindow 处于前台/活动状态或被判定为活动的放映窗口。</remarks>
+        /// <param name="targetApp">可选的目标应用对象，用于判断并输出该对象的优先级（可为 null）。</param>
+        /// <param name="bestPriority">输出参数，返回找到的最佳应用对象的优先级（0 表示未找到）。</param>
+        /// <param name="targetPriority">输出参数，返回与 targetApp 匹配的应用对象的优先级（未匹配或未找到时为 0）。</param>
+        /// <returns>找到的优先级最高的 PowerPoint 应用对象；未找到时返回 null。</returns>
         public static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
@@ -480,4 +489,3 @@ namespace Ink_Canvas.Helpers
         #endregion
     }
 }
-

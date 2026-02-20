@@ -665,6 +665,11 @@ namespace Ink_Canvas
 
         private TaskbarIcon _taskbar;
 
+        /// <summary>
+        /// 启动应用的入口处理，负责初始化启动界面、组件和运行时环境，并根据命令行与更新状态决定启动流程或退出。
+        /// </summary>
+        /// <param name="sender">触发启动事件的对象（通常为 Application 实例）。</param>
+        /// <param name="e">包含启动时的命令行参数与上下文，用于决定模式（更新、最终应用、白板/展开浮动栏等）与后续行为。</param>
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
@@ -1159,6 +1164,17 @@ namespace Ink_Canvas
         private static DateTime splashScreenStartTime = DateTime.MinValue;
         private static DateTime appStartupStartTime = DateTime.MinValue;
 
+        /// <summary>
+        /// 启动并维护应用的心跳与看门狗监测，用于发现启动假死或主线程无响应并在必要时触发自动重启。
+        /// </summary>
+        /// <remarks>
+        /// - 启动一个每秒更新 lastHeartbeat 的 UI 计时器，用于表示主线程活动。<br/>
+        /// - 启动一个后台定时器定期检查：<br/>
+        ///   • 在启动尚未完成且从启动（或启动画面）开始已超过 2 分钟时，记录启动假死并根据设置尝试静默重启；<br/>
+        ///   • 在启动完成后若上次心跳超过 10 秒，记录主线程无响应并根据设置尝试静默重启。<br/>
+        /// - 在 IsOobeShowing 为 true 时跳过看门狗检查。<br/>
+        /// - 每次静默重启会增加 StartupCount；当连续重启次数达到或超过 5 次时，会弹出提示并停止自动重启然后退出进程。<br/>
+        /// </remarks>
         private void StartHeartbeatMonitor()
         {
             heartbeatTimer = new DispatcherTimer
@@ -1248,7 +1264,14 @@ namespace Ink_Canvas
             watchdogProcess = Process.Start(psi);
         }
 
-        // 看门狗主逻辑
+        /// <summary>
+        /// 作为守护进程监视由命令行参数指定的主进程存活性，并在主进程异常退出后根据当前崩溃策略选择重启或退出。 
+        /// </summary>
+        /// <remarks>
+        /// 该方法仅在以 `--watchdog <pid> <exitSignalFile>` 形式启动时生效：它轮询指定 pid 的进程，若发现退出信号文件则删除该文件并退出；若主进程退出则先同步崩溃策略（CrashAction），
+        /// 当启用 UIAccess 顶置模式时直接退出；若崩溃策略为 SilentRestart，则增加启动计数并在累计重启次数小于 5 时重新启动主可执行文件，
+        /// 若已连续重启 5 次则显示错误提示框、重置计数并以非零码退出。方法只对外部可观察的行为负责（进程启动/退出、删除信号文件、显示提示），内部错误被静默处理。
+        /// </remarks>
         public static void RunWatchdogIfNeeded()
         {
             var args = Environment.GetCommandLineArgs();

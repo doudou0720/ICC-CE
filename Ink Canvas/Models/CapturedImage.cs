@@ -12,6 +12,11 @@ namespace Ink_Canvas.Models
         public string Timestamp { get; }
         public string FilePath { get; }
 
+        /// <summary>
+        /// 使用提供的 BitmapImage 创建一个 CapturedImage 实例，生成可跨线程使用的冻结图像副本、缩略图，并初始化笔迹集合、时间戳和文件路径字段。
+        /// </summary>
+        /// <param name="image">源 BitmapImage；不能为空。构造后会被复制并冻结以便安全重用。</param>
+        /// <exception cref="ArgumentNullException">当 <paramref name="image"/> 为 null 时抛出。</exception>
         public CapturedImage(BitmapImage image)
         {
             if (image == null)
@@ -25,6 +30,12 @@ namespace Ink_Canvas.Models
             FilePath = null;
         }
 
+        /// <summary>
+        /// 使用指定的图像和可选的文件路径初始化一个 CapturedImage 实例。
+        /// </summary>
+        /// <param name="image">用于初始化的位图图像；不能为空。</param>
+        /// <param name="filePath">图像对应的文件路径（可为 null）；用于尝试从文件名提取时间戳。</param>
+        /// <exception cref="ArgumentNullException">当 <paramref name="image"/> 为 null 时抛出。</exception>
         public CapturedImage(BitmapImage image, string filePath)
         {
             if (image == null)
@@ -38,6 +49,11 @@ namespace Ink_Canvas.Models
             Timestamp = TryExtractTimestampFromFilePath(filePath) ?? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }
 
+        /// <summary>
+        /// 尝试从给定文件路径的文件名中提取时间戳并以 "yyyy-MM-dd HH:mm:ss.fff" 形式返回规范化字符串。
+        /// </summary>
+        /// <param name="filePath">包含可能带时间戳的文件名的文件路径。</param>
+        /// <returns>`yyyy-MM-dd HH:mm:ss.fff` 格式的时间字符串（若解析成功），解析失败或输入无效时返回 <c>null</c>。</returns>
         private static string TryExtractTimestampFromFilePath(string filePath)
         {
             try
@@ -74,6 +90,12 @@ namespace Ink_Canvas.Models
             }
         }
 
+        /// <summary>
+        /// 确保指定的 <see cref="BitmapImage"/> 已被冻结，以便可安全跨线程使用；如果输入未被冻结则返回其冻结副本，否则返回原始实例。
+        /// </summary>
+        /// <param name="image">要确保被冻结的 BitmapImage。</param>
+        /// <returns>已被冻结的 <see cref="BitmapImage"/>（可能是原始对象或其冻结副本）。</returns>
+        /// <exception cref="ArgumentNullException">当 <paramref name="image"/> 为 null 时抛出。</exception>
         private static BitmapImage EnsureFrozen(BitmapImage image)
         {
             if (image == null)
@@ -99,6 +121,14 @@ namespace Ink_Canvas.Models
             return frozenCopy;
         }
 
+        /// <summary>
+        /// 生成并返回一个固定（冻结）的缩略图，按 290×180 的目标框架等比缩放原图以适配最大尺寸。
+        /// </summary>
+        /// <param name="original">用于生成缩略图的源位图。</param>
+        /// <returns>按等比缩放并冻结后的缩略图（BitmapImage）。</returns>
+        /// <exception cref="ArgumentNullException">当 <paramref name="original"/> 为 null 时抛出。</exception>
+        /// <exception cref="ArgumentException">当 <paramref name="original"/> 的像素宽度或高度小于或等于 0 时抛出。</exception>
+        /// <exception cref="InvalidOperationException">当无法计算出有效的缩放比例（例如为 NaN、无穷或非正值）时抛出。</exception>
         private static BitmapImage CreateThumbnail(BitmapImage original)
         {
             if (original == null)
@@ -143,4 +173,3 @@ namespace Ink_Canvas.Models
         }
     }
 }
-

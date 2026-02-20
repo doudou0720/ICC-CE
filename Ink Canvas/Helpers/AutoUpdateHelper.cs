@@ -1320,7 +1320,13 @@ namespace Ink_Canvas.Helpers
             return -1;
         }
 
-        // 保存下载状态
+        /// <summary>
+        /// 将下载结果写入状态文件以便后续检查。
+        /// </summary>
+        /// <param name="isSuccess">如果下载成功则为 <c>true</c>，否则为 <c>false</c>。</param>
+        /// <remarks>
+        /// 会确保状态文件所在目录存在并将布尔值以文本形式写入 <see cref="statusFilePath"/>；写入失败时会捕获异常并记录错误日志。
+        /// </remarks>
         private static void SaveDownloadStatus(bool isSuccess)
         {
             try
@@ -1341,7 +1347,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 安装新版本应用
+        /// <summary>
+        /// 使用指定版本的安装包在后台安装并启动新版本应用，期间可能备份设置、解压安装包并启动新进程，然后终止当前进程。
+        /// </summary>
+        /// <param name="version">要安装的版本标识（用于定位和命名安装包与备份）。</param>
+        /// <param name="isInSilence">指示是否以静默模式传递给新进程，影响更新期间的用户可见性。</param>
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
             bool wasProcessProtectionEnabled = false;

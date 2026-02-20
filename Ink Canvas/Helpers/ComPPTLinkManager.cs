@@ -47,10 +47,19 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region 生命周期管理
-        public void StartMonitoring() => _inner.StartMonitoring();
+        /// <summary>
+/// 开始监控 PowerPoint 的 COM 连接及演示放映相关状态并使管理器进入活动监控状态。
+/// </summary>
+public void StartMonitoring() => _inner.StartMonitoring();
 
-        public void StopMonitoring() => _inner.StopMonitoring();
+        /// <summary>
+/// 停止对 PowerPoint COM 连接和放映状态的监视，终止由监控触发的相关事件通知。
+/// </summary>
+public void StopMonitoring() => _inner.StopMonitoring();
 
+        /// <summary>
+        /// 向日志写入一条热重载事件并停止对内部 PPT 管理器的监测，从而强制断开与 COM PPT 的连接。
+        /// </summary>
         public void ReloadConnection()
         {
             LogHelper.WriteLogToFile("COM PPT 执行热重载：强制断开并重新连接", LogHelper.LogType.Event);
@@ -90,4 +99,3 @@ namespace Ink_Canvas.Helpers
         #endregion
     }
 }
-

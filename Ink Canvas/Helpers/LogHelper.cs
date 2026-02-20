@@ -29,6 +29,16 @@ namespace Ink_Canvas.Helpers
             WriteLogToFile(msg, LogType.Error);
         }
 
+        /// <summary>
+        /// 将指定的日志消息写入磁盘日志文件，日志行包含 ISO 时间戳、线程 ID、日志类型和调用者信息，可按应用启动时间分文件保存或写入单个日志文件。
+        /// </summary>
+        /// <param name="str">要写入的日志消息文本。</param>
+        /// <param name="logType">日志级别；默认为 <see cref="LogType.Info"/>。</param>
+        /// <remarks>
+        /// - 若设置中禁用日志记录，则方法不会执行任何写入操作。 
+        /// - 若启用按日期保存，会在应用日志目录下以应用启动时间为文件名保存并在必要时清理日志目录以控制总大小。 
+        /// - 写入过程中发生的错误将被静默忽略，不会向外抛出异常。
+        /// </remarks>
         public static void WriteLogToFile(string str, LogType logType = LogType.Info)
         {
             // 检查日志是否启用
@@ -89,6 +99,10 @@ namespace Ink_Canvas.Helpers
             catch { }
         }
 
+        /// <summary>
+        /// 检查指定的日志目录总大小；当总大小超过预设阈值时，删除目录下的所有文件并在同一目录中追加一条清理记录。
+        /// </summary>
+        /// <param name="logsPath">要检查和可能清理的日志目录的完整路径。</param>
         private static void CheckAndCleanLogsFolder(string logsPath)
         {
             try

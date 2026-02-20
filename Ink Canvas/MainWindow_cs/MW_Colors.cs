@@ -81,6 +81,10 @@ namespace Ink_Canvas
         private int lastDesktopInkColor = 1, lastBoardInkColor = 5;
         private int highlighterColor = 102;
 
+        /// <summary>
+        /// 根据当前模式、主题设置和画笔类型配置画布与工具的颜色与相关 UI 状态。
+        /// </summary>
+        /// <param name="changeColorTheme">为 true 时在非桌面模式下根据白板/黑板设置切换背景与水印前景色，否则只应用颜色与控件状态更新。</param>
         private void CheckColorTheme(bool changeColorTheme = false)
         {
             if (changeColorTheme)

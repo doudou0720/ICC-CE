@@ -12,6 +12,11 @@ namespace Ink_Canvas.Windows
         private int _currentStep = 0;
         private const int MaxStepIndex = 11; 
 
+        /// <summary>
+        /// 使用指定的设置初始化首次运行体验（OOBE）窗口并准备初始界面状态。
+        /// </summary>
+        /// <param name="settings">包含应用当前配置的 <see cref="Settings"/> 实例，用于初始化各项 UI 控件并在完成向设置写回用户选择。</param>
+        /// <exception cref="ArgumentNullException">当 <paramref name="settings"/> 为 <c>null</c> 时抛出。</exception>
         public OobeWindow(Settings settings)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
@@ -26,6 +31,10 @@ namespace Ink_Canvas.Windows
             UpdateStepUI();
         }
 
+        /// <summary>
+        /// 将当前 Settings 的值回写到窗口中的各个控件以初始化 OOBE 界面的显示状态。
+        /// </summary>
+        /// <remarks>对各配置块的回显采用防御式处理：单个配置项的初始化失败会被忽略，以避免阻塞启动或破坏引导流程。</remarks>
         private void InitializeFromSettings()
         {
             // 根据当前设置回显遥测选项
@@ -214,6 +223,12 @@ namespace Ink_Canvas.Windows
             catch { }
         }
 
+        /// <summary>
+        /// 将当前界面上的选择写回到设置对象中，更新包括遥测、主题与外观、启动行为、托盘/快速面板、PowerPoint 联动、画板与墨迹、手势、墨迹纠正、快捷键、崩溃处理、自动化、随机点名和高级选项等配置项，并标记用户已确认遥测隐私说明。
+        /// </summary>
+        /// <remarks>
+        /// 对各配置块的写回操作采用局部防护；单个块写回过程中抛出的异常会被忽略以避免中断整个流程。方法直接修改类内的 _settings 实例并在完成后将 Startup.HasAcceptedTelemetryPrivacy 设为 true。
+        /// </remarks>
         private void ApplySelection()
         {
             // 将当前遥测选项写回到设置
@@ -394,6 +409,9 @@ namespace Ink_Canvas.Windows
             _settings.Startup.HasAcceptedTelemetryPrivacy = true;
         }
 
+        /// <summary>
+        /// 处理“确认”按钮点击：在多步骤向导中进入下一步；如果已到最后一步，则将当前选择应用到设置并关闭窗口（对话结果为成功）。
+        /// </summary>
         private void BtnConfirm_Click(object sender, RoutedEventArgs e)
         {
             // 如果还没到最后一步，则进入下一步
@@ -410,6 +428,11 @@ namespace Ink_Canvas.Windows
             Close();
         }
 
+        /// <summary>
+        /// 处理“上一步”按钮的点击，将当前步骤回退到前一步并刷新步骤界面。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnPreviousStep_Click(object sender, RoutedEventArgs e)
         {
             if (_currentStep <= 0) return;
@@ -419,7 +442,12 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 窗口加载完成时触发淡入动画。
+        /// <summary>
+        /// 在窗口加载时启动淡入动画以显示窗口。
         /// </summary>
+        /// <remarks>
+        /// 尝试以 220 毫秒的立方缓动动画将窗口不透明度从 0 过渡到 1；若动画抛出异常，则回退为立即将不透明度设置为 1。
+        /// </remarks>
         private void OobeWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             try
@@ -446,7 +474,12 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 根据当前步骤更新界面显示和按钮文案。
+        /// <summary>
+        /// 根据当前步骤更新 OOBE 窗口的可见面板、标题、按钮和动画。
         /// </summary>
+        /// <remarks>
+        /// 将对应步骤面板设为可见并隐藏其他面板；对激活面板应用淡入与向上滑动动画；更新步骤指示文本、上一步按钮可见性、步骤标题与副标题，以及确认按钮文本。方法在发生异常时会静默忽略错误以避免中断主流程。
+        /// </remarks>
         private void UpdateStepUI()
         {
             try
@@ -584,4 +617,3 @@ namespace Ink_Canvas.Windows
         }
     }
 }
-

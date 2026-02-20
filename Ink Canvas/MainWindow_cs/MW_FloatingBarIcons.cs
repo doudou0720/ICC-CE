@@ -2419,55 +2419,87 @@ namespace Ink_Canvas
             CursorIcon_Click(null, null);
         }
 
-        // 快捷调色盘事件处理方法
+        /// <summary>
+        /// 将快捷调色盘颜色切换为白色，并安排在短期内自动恢复先前的画笔颜色。
+        /// </summary>
         private void QuickColorWhite_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.White);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色切换为橙色并安排在之后自动恢复先前的画笔设置。
+        /// </summary>
         private void QuickColorOrange_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(251, 150, 80)); // 橙色
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色设为黄色，并安排在短时间后自动恢复先前使用的画笔颜色和属性。
+        /// </summary>
         private void QuickColorYellow_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Yellow);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色设置为黑色，并在短时间后自动恢复之前的画笔设置。
+        /// </summary>
         private void QuickColorBlack_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Black);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将画笔颜色设置为蓝色快捷色并安排在预定时间后自动恢复先前画笔设置。
+        /// </summary>
         private void QuickColorBlue_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(37, 99, 235)); // 蓝色
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将当前快速颜色设置为红色，并安排在短期后自动恢复先前的画笔设置。
+        /// </summary>
         private void QuickColorRed_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Red);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色切换为绿色（RGB 22,163,74），并安排在短时间后自动恢复先前的画笔设置。
+        /// </summary>
         private void QuickColorGreen_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(22, 163, 74));
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将画笔颜色设置为紫色快捷色，并安排自动恢复先前的画笔设置。
+        /// </summary>
         private void QuickColorPurple_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(147, 51, 234));
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将绘图颜色切换为指定颜色并同步相关画笔与界面状态。
+        /// </summary>
+        /// <remarks>
+        /// - 如果当前不是批注（Ink）模式，会先切换到笔工具。 
+        /// - 更新绘图属性和 InkCanvas 的默认绘图属性；若处于荧光笔（highlighter）类型，还会调整荧光笔宽度、形状与索引。 
+        /// - 根据当前模式（桌面或白板）记录最后使用的颜色索引，用于快速颜色恢复。 
+        /// - 刷新快捷调色盘的选中指示器并触发界面颜色检查/切换逻辑。
+        /// </remarks>
         private void SetQuickColor(Color color)
         {
             // 确保当前处于批注模式
@@ -2831,6 +2863,12 @@ namespace Ink_Canvas
         private bool wasNoFocusModeBeforeSettings;
         private bool userChangedNoFocusModeInSettings;
 
+        /// <summary>
+        /// 切换并展示应用的设置面板；如果面板已显示则隐藏子面板，否则在打开前（如配置要求）进行密码验证并以带遮罩的滑入动画显示设置面板，同时保存并调整与“无干扰模式”相关的临时状态标志。
+        /// </summary>
+        /// <remarks>
+        /// 在需要时会异步弹出密码输入并验证；验证失败或发生异常时会中止打开流程。打开时会重置用户对无干扰模式的修改标记，记录打开前的无干扰模式状态，并使设置面板以滑动动画与可点击半透明遮罩显示。关闭已显示的设置面板会调用 HideSubPanels() 隐藏相关子面板。
+        /// </remarks>
         private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
@@ -3006,6 +3044,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在屏幕、白板和黑板模式之间切换并相应更新窗口状态与界面元素。
+        /// </summary>
+        /// <remarks>
+        /// 切换时会保存/清理/恢复墨迹（strokes）、显示或隐藏黑板/白板相关面板与手势控件、调整浮动工具栏的可见性并更新主题与按键文本颜色。
+        /// 在进入/退出白板模式时，会根据设置在非 PPT 放映场景下应用或取消全屏处理；在进入白板时还会检查剪贴板并显示粘贴提示（若适用）。
+        /// 该处理还会根据当前模式控制 PPT 导航按钮的可见性以及 Topmost 行为，并在必要时触发自动收纳浮动栏的延迟操作。
+        /// </remarks>
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)

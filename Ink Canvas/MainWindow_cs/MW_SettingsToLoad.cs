@@ -21,6 +21,11 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 从配置文件或备份加载应用设置并根据加载的配置初始化界面、功能和相关管理器。
+        /// </summary>
+        /// <param name="isStartup">指示当前调用是否在应用启动阶段；为 true 时会执行与启动相关的初始化（例如触发光标图标、删除旧的自动保存文件、根据仅PPT模式隐藏窗口等）。</param>
+        /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时即使启用了自动更新也不执行检查。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -1227,6 +1232,16 @@ namespace Ink_Canvas
             LoadBrushAutoRestoreSettings();
         }
 
+        /// <summary>
+        /// 将画笔自动恢复相关的设置从用户配置同步到界面控件并在需要时初始化定时器。
+        /// </summary>
+        /// <remarks>
+        /// 同步的控件包括 ToggleSwitchBrushAutoRestore、BrushAutoRestoreTimesTextBox、
+        /// ComboBoxBrushAutoRestoreColor、BrushAutoRestoreWidthSlider 和 BrushAutoRestoreAlphaSlider。  
+        /// 若配置中缺失恢复颜色则使用默认值 "#FFFF0000"。  
+        /// 当 Settings.Canvas.EnableBrushAutoRestore 为真时，初始化并调度画笔自动恢复的定时器。  
+        /// 方法在成功加载时记录事件，发生异常时记录错误但不会抛出异常。
+        /// </remarks>
         private void LoadBrushAutoRestoreSettings()
         {
             try

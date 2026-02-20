@@ -195,6 +195,12 @@ namespace Ink_Canvas.Helpers
                 OnSlideShowStateCheckTimerElapsed(sender, e);
         }
 
+        /// <summary>
+        /// 启动用于定期检查并维护与 PowerPoint ROT 连接的计时器。
+        /// </summary>
+        /// <remarks>
+        /// 如果管理器已被释放（disposed），该方法不会执行任何操作。    
+        /// </remarks>
         public void StartMonitoring()
         {
             if (_disposed) return;
@@ -202,12 +208,24 @@ namespace Ink_Canvas.Helpers
             _unifiedRotTimer?.Start();
         }
 
+        /// <summary>
+        /// 停止内部的 ROT 轮询并断开与 PowerPoint 的连接。
+        /// </summary>
+        /// <remarks>
+        /// 停止用于检测和维护 ROT 连接的计时器，并执行安全的断开流程释放相关资源。该方法不会抛出异常以外的特殊行为；调用后管理器进入未监控状态直到再次启动监控或重新连接。
+        /// </remarks>
         public void StopMonitoring()
         {
             _unifiedRotTimer?.Stop();
             DisconnectFromPPT();
         }
 
+        /// <summary>
+        /// 触发热重载：强制断开当前与 PowerPoint 的 ROT 连接以促使后续重连。
+        /// </summary>
+        /// <remarks>
+        /// 如果管理器已被释放则不执行任何操作；否则将记录事件并强制断开当前连接，监控流程会在断开后尝试重新建立连接。
+        /// </remarks>
         public void ReloadConnection()
         {
             if (_disposed) return;
@@ -217,6 +235,12 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Connection Management
+        /// <summary>
+        /// 在计时器触发时触发一次连接检查并尝试通过 ROT 建立或维护与 PowerPoint 的连接。
+        /// </summary>
+        /// <remarks>
+        /// 当管理器已释放或模块正在卸载时不会执行任何操作。若检查或连接过程中发生异常，异常信息会被记录到日志文件中。
+        /// </remarks>
         private void OnConnectionCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
             try
@@ -231,6 +255,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 由计时器触发时执行：在未释放、未卸载且已连接到 PowerPoint 的情况下检查当前放映状态，发生异常时将错误写入日志。
+        /// </summary>
+        /// <param name="sender">触发该事件的计时器对象（通常为 System.Timers.Timer）。</param>
+        /// <param name="e">事件参数，包含计时信息（System.Timers.ElapsedEventArgs）。</param>
         private void OnSlideShowStateCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
             try
@@ -245,6 +274,14 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 检查 ROT 中的可用 PowerPoint 实例并在需要时建立、切换或断开与之的连接。
+        /// </summary>
+        /// <remarks>
+        /// 在未处于释放或模块卸载状态时：查询 ROT 以获取当前“最佳”PowerPoint 应用实例；
+        /// 如果当前未连接且找到了实例则建立连接；如果当前已连接但 ROT 不再提供实例则断开；
+        /// 如果找到的实例与当前连接不同则切换到新的实例。方法在内部使用同步锁以避免并发状态竞争并在发生异常时记录错误并尝试断开现有连接。
+        /// </remarks>
         private void CheckAndConnectToPPTViaRot()
         {
             if (_disposed || _isModuleUnloading) return;
@@ -318,6 +355,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 建立并关联到通过 ROT 获取的 PowerPoint 应用实例，并在 UI 线程上为该实例注册必要的事件处理器。
+        /// </summary>
+        /// <param name="appObj">通过 ROT 获取的 PowerPoint 应用对象（应为 Microsoft.Office.Interop.PowerPoint.Application 的 COM 实例）；方法会保存该引用并为其注册事件处理器。</param>
+        /// <remarks>方法会触发 <c>PPTConnectionChanged</c> 事件并记录连接信息；如果当前 PowerPoint 已处于放映状态，会额外触发一次放映开始的内部处理。</remarks>
         private void ConnectToPPT(object appObj)
         {
             try
@@ -371,6 +413,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 断开与 PowerPoint 的 ROT 连接并清理相关资源与状态。
+        /// </summary>
+        /// <remarks>
+        /// 停止统一轮询定时器、将内部 PPT 应用引用置空、在 UI 线程取消注册 PowerPoint 事件、释放相关 COM 对象并触发垃圾回收；
+        /// 在后台线程中短暂延迟后恢复监控（若管理器未被销毁），并在过程中维护模块卸载状态标志以避免竞态。任何内部异常均被捕获并记录，不会向上抛出。
+        /// </remarks>
         private void DisconnectFromPPT()
         {
             object appToRelease = null;

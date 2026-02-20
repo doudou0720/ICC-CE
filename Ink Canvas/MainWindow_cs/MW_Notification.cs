@@ -17,6 +17,16 @@ namespace Ink_Canvas
                 ?.ShowNotification(notice, isShowImmediately);
         }
 
+        /// <summary>
+        /// 显示一条通知文本并以从下方滑入并淡入的动画展示，若在指定显示时长后未被覆盖则以滑出并淡出的动画隐藏。
+        /// </summary>
+        /// <param name="notice">要显示的通知文本。</param>
+        /// <param name="isShowImmediately">指示是否立即显示通知。</param>
+        /// <remarks>
+        /// - 如果用于显示的 UI 元素未初始化（null），方法会直接返回且不抛出异常。 
+        /// - 方法内部捕获所有异常并将错误写入日志，不会向调用方抛出异常。 
+        /// - 隐藏动作在当前通知显示至少持续设定时长（由类内的 notificationShowTime 控制）后触发；若有新通知到来，会延后隐藏时间以保证最新通知可见。
+        /// </remarks>
         public void ShowNotification(string notice, bool isShowImmediately = true)
         {
             try

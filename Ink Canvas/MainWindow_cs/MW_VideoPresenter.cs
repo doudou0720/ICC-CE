@@ -40,11 +40,22 @@ namespace Ink_Canvas
 
         private const int CorrectedPaperHeight = 600;
 
+        /// <summary>
+        /// 处理用于切换视频演示侧栏的鼠标点击事件，切换侧栏的显示状态。
+        /// </summary>
+        /// <param name="sender">触发事件的控件。</param>
+        /// <param name="e">包含鼠标按键事件的详细信息。</param>
         private void BtnToggleVideoPresenter_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             ToggleVideoPresenterSidebar();
         }
 
+        /// <summary>
+        /// 切换视频面板的显示状态，并在打开时初始化相关摄像头与 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// 当面板从隐藏切换为可见时：确保摄像头服务已初始化、禁用拍照按钮（待预览启动后启用）、刷新可用摄像头列表、同步照片自动校正开关的状态，并将按页绑定的“上屏（在画布显示实时帧）”开关与当前页状态对齐；当面板可见时再次调用该方法会将其隐藏。
+        /// </remarks>
         private void ToggleVideoPresenterSidebar()
         {
             if (VideoPresenterSidebar == null) return;
@@ -72,6 +83,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 将视频演示侧栏隐藏（折叠侧边栏）。
+        /// </summary>
         private void BtnCloseVideoPresenter_Click(object sender, RoutedEventArgs e)
         {
             if (VideoPresenterSidebar != null)
@@ -80,6 +94,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 确保 CameraService 已初始化并为其注册帧与错误事件处理器。
+        /// </summary>
+        /// <remarks>
+        /// 如果 _cameraService 已存在则不作任何操作；否则会创建新的 CameraService 实例并订阅 FrameReceived 与 ErrorOccurred 事件。
+        /// </remarks>
         private void EnsureCameraService()
         {
             if (_cameraService != null) return;
@@ -89,6 +109,11 @@ namespace Ink_Canvas
             _cameraService.ErrorOccurred += CameraService_ErrorOccurred;
         }
 
+        /// <summary>
+        /// 将摄像头错误信息记录到错误日志文件。
+        /// </summary>
+        /// <param name="sender">事件发送者（通常为 CameraService 实例）。</param>
+        /// <param name="e">描述错误的字符串消息。</param>
         private void CameraService_ErrorOccurred(object sender, string e)
         {
             try
@@ -98,6 +123,10 @@ namespace Ink_Canvas
             catch { }
         }
 
+        /// <summary>
+        /// 处理来自相机服务的新帧：保存为最新可用帧以供捕获，更新预览控件并在当前页（如启用）刷新画布上的实时画面元素，同时启用拍照按钮。
+        /// </summary>
+        /// <param name="frame">相机提供的位图帧；为 null 时将被忽略。</param>
         private void CameraService_FrameReceived(object sender, Bitmap frame)
         {
             if (frame == null) return;
@@ -147,11 +176,19 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 获取当前白板页面的索引，确保返回值至少为 1。
+        /// </summary>
+        /// <returns>当前白板页面索引；如果索引小于 1，则返回 1。</returns>
         private int GetCurrentPageIndex()
         {
             return Math.Max(1, CurrentWhiteboardIndex);
         }
 
+        /// <summary>
+        /// 在当前页（若已启用实时显示）将传入的预览图像设置到白板画布上的实时帧控件并确保控件已添加并可见。
+        /// </summary>
+        /// <param name="preview">要显示的 BitmapImage 预览；为 <c>null</c> 时会清除控件的图像来源。</param>
         private void TryUpdateLiveFrameOnCanvas(BitmapImage preview)
         {
             try
@@ -174,6 +211,11 @@ namespace Ink_Canvas
 
         private const double VideoPresenterLiveFrameScreenRatio = 0.75;
 
+        /// <summary>
+        /// 为指定页面获取或创建用于显示实时视频帧的 Image 元素，并初始化其交互变换与事件绑定。
+        /// </summary>
+        /// <param name="page">目标页面的索引（1 开始的页面编号）。</param>
+        /// <returns>与该页面关联的 Image 控件实例；如果尚不存在则创建并返回新实例。</returns>
         private System.Windows.Controls.Image EnsureLiveFrameElementForPage(int page)
         {
             if (_liveFrameImageByPage.TryGetValue(page, out var existing) && existing != null) return existing;
@@ -207,6 +249,11 @@ namespace Ink_Canvas
             return img;
         }
 
+        /// <summary>
+        /// 将指定页面的已保存布局应用到给定的 Image 元素；若无保存布局则使用画布中心的默认尺寸和位置。
+        /// </summary>
+        /// <param name="page">目标页面编号。</param>
+        /// <param name="img">要应用布局的 Image 控件；为 null 时不进行任何操作。</param>
         private void ApplyLiveFrameLayoutForPage(int page, System.Windows.Controls.Image img)
         {
             if (img == null) return;
@@ -235,6 +282,15 @@ namespace Ink_Canvas
             InkCanvas.SetTop(img, Math.Max(0, y));
         }
 
+        /// <summary>
+        /// 刷新可用摄像头列表并在侧栏中重建设备项，用于选择和启动摄像头预览。
+        /// </summary>
+        /// <remarks>
+        /// 如果未提供相机服务或设备面板则不执行任何操作。方法将从相机服务获取当前可用摄像头，清空并填充 CameraDevicesStackPanel：
+        /// - 当无可用摄像头时显示提示文本；
+        /// - 否则为每个摄像头创建一个单选项供选择。若存在至少一个摄像头，则自动选中并启动第一个摄像头的预览。
+        /// 此方法会修改 UI 元素并可能触发预览启动的副作用。
+        /// </remarks>
         private void RefreshVideoPresenterDeviceList()
         {
             if (_cameraService == null) return;
@@ -287,6 +343,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 为当前页面启动指定摄像头的预览并保存该页面的摄像头选择状态。
+        /// </summary>
+        /// <param name="cameraIndex">要启动的摄像头设备索引（用于标识并启动对应的摄像头）。</param>
+        /// <remarks>
+        /// 如果预览成功，会启用捕获按钮并将所选摄像头索引记录为当前页面的设置；在启动失败或发生异常时会记录错误日志。
+        /// </remarks>
         private void StartVideoPresenterPreview(int cameraIndex)
         {
             try
@@ -304,6 +367,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在当前页启用画布上的实时视频帧，创建并应用该页的帧元素与布局，将其添加到画布，并切换到选择工具以便交互。
+        /// </summary>
+        /// <remarks>
+        /// 如果侧栏预览已有图像，则立即用该预览更新画布上的帧显示。
+        /// </remarks>
         private void BtnToggleVideoPresenterLiveOnCanvas_Checked(object sender, RoutedEventArgs e)
         {
             int page = GetCurrentPageIndex();
@@ -332,6 +401,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 禁用当前页的画布上实时视频覆盖，并移除对应的直播帧图像元素（如存在）。
+        /// </summary>
         private void BtnToggleVideoPresenterLiveOnCanvas_Unchecked(object sender, RoutedEventArgs e)
         {
             int page = GetCurrentPageIndex();
@@ -350,7 +422,12 @@ namespace Ink_Canvas
             }
         }
 
-        // 翻页前调用：保存当前页实时画面的位置/大小
+        /// <summary>
+        /// 在切换页面前保存当前页面的实时画面位置与宽度布局信息。
+        /// </summary>
+        /// <remarks>
+        /// 如果当前页面没有已创建的实时画面控件则不执行任何操作。保存的数据为画面左上角坐标（左、上）和宽度；当坐标为 NaN 时使用 0 代替。异常被静默吞掉以保证翻页流程不中断。
+        /// </remarks>
         private void VideoPresenter_BeforePageLeave()
         {
             try
@@ -368,7 +445,12 @@ namespace Ink_Canvas
             catch { }
         }
 
-        // 翻页后调用：根据该页状态恢复实时画面，并同步设备选择
+        /// <summary>
+        /// 在页面切换后恢复该页的视频实时显示状态并同步该页的摄像头选择与布局。
+        /// </summary>
+        /// <remarks>
+        /// 同步“上屏”开关的选中状态；如果该页启用了实时画面，确保并恢复对应的 Image 元素及其保存的布局并将最新预览图像赋予该元素；如果为该页记录了摄像头索引，则启动对应摄像头的预览。
+        /// </remarks>
         private void VideoPresenter_OnPageChanged()
         {
             try
@@ -407,6 +489,12 @@ namespace Ink_Canvas
             catch { }
         }
 
+        /// <summary>
+        /// 从当前视频帧捕获一张照片并将处理后的图像添加到已捕获照片集合以显示为缩略图。
+        /// </summary>
+        /// <remarks>
+        /// 若启用了自动照片校正且能检测到纸张四角，会对图像应用透视矫正。捕获操作受冷却时间限制，图像处理在后台线程完成，完成后在 UI 线程将缩略图插入集合并维护集合最大长度。发生异常时记录错误日志。
+        /// </remarks>
         private void BtnCapturePhoto_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -471,6 +559,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 将当前摄像头预览的旋转角度顺时针增加 90°，超出 360° 时循环回 0°。
+        /// </summary>
+        /// <remarks>
+        /// 在必要时会初始化摄像头服务；若操作失败会将错误写入日志且不会抛出异常。
+        /// </remarks>
         private void BtnRotateImage_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -484,6 +578,10 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 启用拍照时的自动透视校正设置并将配置保存到文件。
+        /// </summary>
+        /// <remarks>当 Settings 或 Settings.Automation 为 null 时不作任何操作。</remarks>
         private void ToggleBtnPhotoCorrection_Checked(object sender, RoutedEventArgs e)
         {
             if (Settings?.Automation == null) return;
@@ -491,6 +589,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 禁用拍照时的自动透视校正并将更改保存到设置文件。
+        /// </summary>
+        /// <remarks>
+        /// 如果 Settings 或其 Automation 字段为 null，则不执行任何操作。
+        /// </remarks>
         private void ToggleBtnPhotoCorrection_Unchecked(object sender, RoutedEventArgs e)
         {
             if (Settings?.Automation == null) return;
@@ -498,6 +602,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 使用当前已捕获的照片集合刷新侧边栏的缩略图列表并为每张缩略图绑定插入画布的点击行为。
+        /// </summary>
+        /// <remarks>
+        /// 如果 CapturedPhotosStackPanel 为 null 则不执行任何操作。最多显示 30 张缩略图，缩略图高度为 90 像素；点击缩略图会将对应的照片插入到画布中。
+        /// </remarks>
         private void UpdateCapturedPhotosDisplay()
         {
             if (CapturedPhotosStackPanel == null) return;
@@ -530,6 +640,10 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 将捕获的照片作为可交互的图像元素插入到白板画布中心并准备为编辑使用。
+        /// </summary>
+        /// <param name="photo">包含要插入的图片的 CapturedImage 实例；若为 null 或其 Image 为 null 则不执行任何操作。</param>
         private void InsertPhotoToCanvas(CapturedImage photo)
         {
             if (photo?.Image == null) return;
@@ -566,6 +680,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在退出白板模式时清理并关闭视频呈现器相关的 UI 和预览资源。
+        /// </summary>
+        /// <remarks>
+        /// 隐藏视频呈现侧栏、取消页面上的“在画布上显示实时画面”开关、从画布中移除并隐藏所有按页面保存的实时画面元素，并尝试停止相机预览；内部捕获并吞掉可能的异常以保证退出流程稳健。
+        /// </remarks>
         private void VideoPresenter_OnExitWhiteboardMode()
         {
             try
@@ -604,6 +724,11 @@ namespace Ink_Canvas
             catch { }
         }
 
+        /// <summary>
+        /// 将 System.Drawing.Bitmap 转换为可在 WPF 中使用的 BitmapImage。
+        /// </summary>
+        /// <param name="bitmap">要转换的位图；如果为 null，方法将返回 null。</param>
+        /// <returns>转换得到的 BitmapImage；如果输入为 null 或转换失败，则返回 null。</returns>
         private static BitmapImage ConvertBitmapToBitmapImage(Bitmap bitmap)
         {
             try
@@ -629,6 +754,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 尝试在指定位图中检测纸张状的四边形并返回其四个角点。
+        /// </summary>
+        /// <param name="frame">要分析的输入位图（可能为彩色照片）。</param>
+        /// <param name="cornersOut">输出检测到的四个角点（按顺序：左上、右上、左下、右下），坐标基于传入的原始位图；检测失败时为 null。</param>
+        /// <returns>`true` 表示成功检测到四个角点并已填充 <paramref name="cornersOut"/>，`false` 表示未检测到或发生错误。</returns>
         private static bool TryDetectPaperCorners(Bitmap frame, out List<AForge.IntPoint> cornersOut)
         {
             cornersOut = null;
@@ -709,6 +840,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 对给定图像中的四个角指定的四边形应用透视矫正并返回矫正后的矩形图像。
+        /// </summary>
+        /// <param name="frame">包含要矫正内容的源位图。</param>
+        /// <param name="corners">表示目标四边形四个角的点列表，必须包含且仅包含 4 个点，且顺序为：左上、右上、左下、右下。</param>
+        /// <returns>矫正后的位图，输出图像高度为 CorrectedPaperHeight、宽度按源四边形的宽高比计算；输入无效或矫正失败时返回 <c>null</c>。</returns>
         private static Bitmap ApplyPerspectiveCorrection(Bitmap frame, List<AForge.IntPoint> corners)
         {
             try
@@ -742,6 +879,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 计算由给定顶点列表定义的多边形的有向面积（使用多边形顶点的顺序确定符号）。
+        /// </summary>
+        /// <param name="pts">按顶点顺序排列的多边形顶点列表（顺序可以是顺时针或逆时针）。</param>
+        /// <returns>`signed` 多边形面积：当顶点按逆时针顺序时为正，按顺时针顺序时为负；顶点少于 3 个或退化时返回 0。</returns>
         private static double PolygonArea(List<AForge.IntPoint> pts)
         {
             int n = pts.Count;
@@ -757,4 +899,3 @@ namespace Ink_Canvas
         }
     }
 }
-

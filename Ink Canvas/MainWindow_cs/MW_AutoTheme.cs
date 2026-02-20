@@ -16,6 +16,11 @@ namespace Ink_Canvas
     {
         private Color FloatBarForegroundColor;
 
+        /// <summary>
+        /// 应用指定主题（Light 或 Dark），更新应用资源字典并刷新与主题相关的 UI 元素和窗口。
+        /// </summary>
+        /// <param name="theme">目标主题字符串，支持 "Light" 或 "Dark"。其他值不会改变主题。</param>
+        /// <param name="autoSwitchIcon">为 true 时根据所选主题自动切换并保存浮动栏图标设置。</param>
         private void SetTheme(string theme, bool autoSwitchIcon = false)
         {
             // 清理现有的主题资源

@@ -17,6 +17,12 @@ namespace Ink_Canvas.Windows
     {
         private MainWindow _mainWindow;
 
+        /// <summary>
+        /// 初始化 SettingsWindow 窗口并设置其所有子组件、事件和初始状态。
+        /// </summary>
+        /// <remarks>
+        /// 构造函数负责初始化界面组件、绑定与 MainWindow 的引用、注册搜索面板与各面板的事件、构建侧边栏项与对应面板集合、设置主题状态、为自定义滑块启用触摸支持、加载各面板设置并应用主题。构造完成后窗口处于已准备就绪且各设置面板已预加载和已应用当前主题的状态。
+        /// </remarks>
         public SettingsWindow()
         {
             InitializeComponent();
@@ -323,7 +329,12 @@ namespace Ink_Canvas.Windows
         
         /// <summary>
         /// 通知所有面板应用主题
+        /// <summary>
+        /// 根据主窗口的外观设置决定当前为深色或浅色主题，并通知所有已加载的设置面板应用该主题（如果面板实现了 `ApplyTheme` 方法）。
         /// </summary>
+        /// <remarks>
+        /// 对每个面板通过反射查找并调用 `ApplyTheme`（存在时）。调用过程中发生的异常会被捕获并记录，不会向上抛出或中断其它面板的处理。
+        /// </remarks>
         private void ApplyThemeToAllPanels()
         {
             try
@@ -754,7 +765,12 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 加载所有设置面板的设置
+        /// <summary>
+        /// 预加载并初始化所有设置面板，确保每个面板的设置、触摸支持和主题在首次显示前已准备就绪。
         /// </summary>
+        /// <remarks>
+        /// 在 UI Dispatcher 的延迟队列中执行，对每个已创建的面板（如 Startup、CanvasAndInk、Gestures、Security 等）尝试调用其 LoadSettings、EnableTouchSupport 和 ApplyTheme 方法（若存在）；若面板缺失 EnableTouchSupport，则使用 MainWindowSettingsHelper 为其启用触摸支持。完成后再次调度调用 ApplyThemeToAllPanels 以确保主题彻底应用。方法内部对各面板的反射调用和异常进行局部捕获并记录，不会抛出异常到调用者。
+        /// </remarks>
         private void LoadAllPanelsSettings()
         {
             try
@@ -938,6 +954,15 @@ namespace Ink_Canvas.Windows
         public string[] SettingsPaneTitles;
         public string[] SettingsPaneNames;
 
+        /// <summary>
+        /// 根据当前选择的侧边栏项更新侧边栏视觉状态并切换对应设置面板的可见性与主题。
+        /// </summary>
+        /// <remarks>
+        /// - 将 SidebarItems 中的 Selected 和 SettingsWindowTitle 同步为当前选中项。
+        /// - 同步每个侧边栏项的主题标记（IsDarkTheme）。
+        /// - 根据当前选中项显示或隐藏对应的设置面板，并在面板显示后调度调用其 ApplyTheme 方法（若存在）。
+        /// - 将所有 SettingsPaneScrollViewers 滚动到顶部。
+        /// </remarks>
         public void UpdateSidebarItemsSelection()
         {
             foreach (var si in SidebarItems)
