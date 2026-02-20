@@ -904,6 +904,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据当前外观设置更新白板水印的名言文本。
+        /// </summary>
+        /// <remarks>
+        /// 当配置为内置来源时（0：OSUPlayer、1：名言警句、2：高考俗语）从对应数组中随机选择一条并设置为水印文本；
+        /// 当配置为一言（3）时会异步请求 Hitokoto API 并在请求中显示占位提示，成功时将返回文本设为水印，失败时记录警告日志并设置可读的失败提示文本。此方法会修改 BlackBoardWaterMark.Text，并在发生异常时记录日志且设置合适的回退文本。
+        /// </remarks>
         private async Task UpdateChickenSoupTextAsync()
         {
             try
@@ -2331,6 +2338,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 将画笔不透明度更新为滑块的当前值，并保存到设置中。
+        /// </summary>
+        /// <remarks>
+        /// 使用滑块的当前值作为 alpha 通道更新 drawingAttributes.Color，同时将该值写入 Settings.Canvas.InkAlpha 并持久化配置文件。
+        /// </remarks>
         private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2345,6 +2358,9 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 根据组合框的当前选择更新双曲线渐近线选项（Settings.Canvas.HyperbolaAsymptoteOption），并将更改保存到设置文件。
+        /// </summary>
         private void ComboBoxHyperbolaAsymptoteOption_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3173,6 +3189,13 @@ namespace Ink_Canvas
 
         #region Reset
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认配置。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会重新创建全局 Settings 实例并应用推荐值，覆盖大部分子模块配置（如外观、画布、自动化、PPT、手势、高级选项等）。
+        /// 在重置过程中会保留并恢复当前 Settings.Automation 中的 AutoDelSavedFiles 与 AutoDelSavedFilesDaysThreshold 两项值以避免意外删除策略变化。
+        /// </remarks>
         public static void SetSettingsToRecommendation()
         {
             var AutoDelSavedFilesDays = Settings.Automation.AutoDelSavedFiles;
@@ -3320,6 +3343,12 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认值，并保存与重新加载配置以应用更改。
+        /// </summary>
+        /// <remarks>
+        /// 如果配置重置受安全密码保护，则会提示用户输入密码；在验证失败时中止重置。方法会暂时停止加载标志以避免触发事件、将“开机启动”切换置为关闭，并在完成后显示一条通知。任何内部异常将被吞噬以保证流程不中断。
+        /// </remarks>
         public async void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -4409,6 +4438,12 @@ namespace Ink_Canvas
 
         #endregion
 
+        /// <summary>
+        /// 将当前内存中的 Settings 序列化为格式化的 JSON 并写入应用程序配置文件（位于 App.RootPath 下的 Configs 目录或根设置文件）。
+        /// </summary>
+        /// <remarks>
+        /// 在写入前会确保目标目录/文件具有写入权限（使用 ProcessProtectionManager）。任何写入失败或异常都会被吞掉，调用方不会收到异常抛出。
+        /// </remarks>
         public static void SaveSettingsToFile()
         {
             var text = JsonConvert.SerializeObject(Settings, Formatting.Indented);

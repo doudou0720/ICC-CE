@@ -115,6 +115,12 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Manager Initialization
+        /// <summary>
+        /// 初始化并配置用于 PowerPoint 集成的管理器与相关状态。
+        /// </summary>
+        /// <remarks>
+        /// 清理并释放现有的 PPT 管理器与 COM/Interop 状态，创建并配置新的 PPT 管理器（ROT 或 COM 实现，取决于设置）、单一的 PPT 墨迹管理器及其自动保存行为，以及 PPT UI 管理器与其显示/按钮位置选项。方法内部会订阅必要的 PPT 事件并记录初始化过程中的错误或警告。同时初始化长按页翻页定时器以支持长按翻页功能。
+        /// </remarks>
         private void InitializePPTManagers()
         {
             try
@@ -201,6 +207,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 停止 PowerPoint 相关的监控：停止并清除用于延迟退出 PPT 模式的定时器，并停止 PPT 管理器的监控，同时记录事件日志。
+        /// </summary>
         private void StopPPTMonitoring()
         {
             try
@@ -219,7 +228,12 @@ namespace Ink_Canvas
         #region PowerPoint Application Management
         /// <summary>
         /// 启动PowerPoint应用程序守护
+        /// <summary>
+        /// 启动对本地 PowerPoint 应用实例的守护监控并在需要时创建应用程序实例。
         /// </summary>
+        /// <remarks>
+        /// 仅在 PowerPoint 增强功能已启用且未使用 ROT 链接时生效；方法将创建 PowerPoint 应用（若不存在）并启动用于定期检查应用状态的定时器。
+        /// </remarks>
         private void StartPowerPointProcessMonitoring()
         {
             try
@@ -270,7 +284,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 创建PowerPoint应用程序实例
+        /// <summary>
+        /// 创建并初始化一个隐藏的 PowerPoint 应用程序 COM 实例，并在可用时将该实例注入到当前的 PPT 管理器中。
         /// </summary>
+        /// <remarks>
+        /// 如果配置为使用 ROT 链接或已有有效的 PowerPoint 实例，则不会创建新实例。创建的实例会被设置为不可见并最小化；在实例准备就绪后会通过延迟调用将其设置到 PPT 管理器（SetPPTManagerApplication）。任何创建或注入失败的情况会被记录日志，但不会抛出异常给调用者。
+        /// </remarks>
         private void CreatePowerPointApplication()
         {
             try
@@ -323,7 +342,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 设置PPTManager的PowerPoint应用程序实例
+        /// <summary>
+        /// 将给定的 PowerPoint 应用实例注入到当前的 PPT 管理器中，若管理器为 null 或启用 ROT 链接则不做任何操作。
+        /// 尝试使用非公开的 `ConnectToPPT` 方法进行绑定，若不可用则回退到写入公共 `PPTApplication` 属性；操作结果和异常通过日志记录。
         /// </summary>
+        /// <param name="app">要注入的 PowerPoint 应用实例（Microsoft.Office.Interop.PowerPoint.Application）。</param>
         private void SetPPTManagerApplication(Microsoft.Office.Interop.PowerPoint.Application app)
         {
             try
@@ -396,7 +419,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 关闭PowerPoint应用程序
-        /// </summary>
+        /// <summary>
+        /// 关闭当前的 PowerPoint 应用程序及其所有打开的演示文稿，释放相关 COM 资源并清理静态互操作状态。</summary>
+        /// <remarks>
+        /// 会尝试关闭所有打开的演示文稿、退出 PowerPoint 进程、释放 COM 对象引用，并将内部 PowerPoint 互操作状态重置为初始值；操作结果会被记录到日志，发生异常时会记录错误并仍然尝试清理互操作状态。
+        /// </remarks>
         private void ClosePowerPointApplication()
         {
             try
@@ -434,6 +461,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 释放并清理与 PowerPoint COM 互操作相关的引用（演示文稿、Slides、当前幻灯片），并将幻灯片计数重置为 0。
+        /// </summary>
+        /// <remarks>
+        /// 在释放过程中若发生异常会被捕获并以警告级别记录日志，不会抛出异常到调用者。
+        /// </remarks>
         private void ClearStaticInteropState()
         {
             try
@@ -463,6 +496,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// PowerPoint应用程序监控定时器事件
+        /// <summary>
+        /// 周期性监控嵌入的 PowerPoint 应用实例的可用性，并在检测到失效时尝试重建实例；当增强功能被禁用时停止监控，并在使用 ROT 链接时不进行检查。
         /// </summary>
         private void OnPowerPointApplicationMonitorTick(object sender, EventArgs e)
         {
@@ -489,6 +524,12 @@ namespace Ink_Canvas
         }
         #endregion
 
+        /// <summary>
+        /// 释放并停止所有与 PowerPoint 集成相关的管理器与资源，恢复和清理应用的 PPT 相关运行状态。
+        /// </summary>
+        /// <remarks>
+        /// 操作包括停止并释放 PPT 管理器、墨迹管理器和长按计时器，停止 PowerPoint 进程监控，关闭 PowerPoint 应用并清除静态 COM/互操作状态；所有异常会被捕获并记录为错误日志。
+        /// </remarks>
         private void DisposePPTManagers()
         {
             try
@@ -571,6 +612,10 @@ namespace Ink_Canvas
         #endregion
 
         #region New PPT Event Handlers
+        /// <summary>
+        /// 处理 PowerPoint 连接状态的变更：更新界面连接/放映状态，并在断开时启动一个短延迟以安全退出 PPT 模式。
+        /// </summary>
+        /// <param name="isConnected">指示当前是否已与 PowerPoint 建立连接；`true` 表示已连接，`false` 表示已断开。</param>
         private void OnPPTConnectionChanged(bool isConnected)
         {
             try
@@ -880,6 +925,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理幻灯片放映中的切换：在幻灯片变更时保存当前页墨迹、加载目标页墨迹并更新界面状态。
+        /// </summary>
+        /// <param name="wn">当前的幻灯片放映窗口；若为 null 或其 View/Presentation 无效则方法不执行。</param>
+        /// <remarks>
+        /// - 如果收到与当前记录相同的页码或已有切换正在处理，则忽略该事件。 
+        /// - 在切换过程中会保存前一页的墨迹（如存在）、清空画布与历史、加载新页的墨迹、锁定新页墨迹并刷新当前页显示序号，同时更新内部的当前播放位置状态。
+        /// </remarks>
         private void OnPPTSlideShowNextSlide(SlideShowWindow wn)
         {
             try
@@ -932,6 +985,10 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理 PowerPoint 幻灯片放映结束时的清理与界面恢复，包括保存当前幻灯片墨迹、重置墨迹管理器状态、恢复主题与工具栏显示，并根据配置折叠或展示浮动工具栏等 UI 调整。
+        /// </summary>
+        /// <param name="pres">触发结束事件的 PowerPoint 演示文稿（Presentation）实例，用于保存墨迹并尝试读取放映时的当前页码。</param>
         private async void OnPPTSlideShowEnd(Presentation pres)
         {
             try
@@ -1280,7 +1337,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 重置PPT相关的状态变量，当PPT自动收纳设置变更时调用
+        /// <summary>
+        /// 将与 PowerPoint 播放和状态追踪相关的内部字段重置为初始默认值。
         /// </summary>
+        /// <remarks>
+        /// 重置的字段包括：播放结束重入保护标志、演示文稿黑边指示、上次播放页码及导航标志、当前放映位置和滑动切换处理状态。该方法在发生异常时会记录错误日志；成功时记录追踪日志。
+        /// </remarks>
         public void ResetPPTStateVariables()
         {
             try
@@ -1331,6 +1393,14 @@ namespace Ink_Canvas
         }
         #endregion
 
+        /// <summary>
+        /// 发起一次手动的 PowerPoint 连接检查并在短延迟后报告结果。
+        /// </summary>
+        /// <remarks>
+        /// 如果尚未初始化 PPT 管理器则先进行初始化，然后重载连接并启动监控；
+        /// 延迟约 800 毫秒后在 UI 线程上检查连接状态：若已连接仅记录事件日志，若未连接则弹出提示并记录警告；
+        /// 若过程中抛出异常则记录错误日志、将 UI 连接状态置为断开并提示用户未找到幻灯片。
+        /// </remarks>
         private void BtnCheckPPT_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1442,6 +1512,11 @@ namespace Ink_Canvas
         public static bool IsShowingRestoreHiddenSlidesWindow;
         private static bool IsShowingAutoplaySlidesWindow;
 
+        /// <summary>
+        /// 处理“上一页”按钮的点击操作：在满足自动保存条件时保存当前幻灯片截图并尝试切换到上一张幻灯片；在切换失败或发生异常时记录日志并更新连接状态。
+        /// </summary>
+        /// <param name="sender">事件的来源对象（通常是触发按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnPPTSlidesUp_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -1474,6 +1549,12 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// 处理“下一页”按钮点击：在满足自动保存条件时保存当前幻灯片的截图并尝试切换到下一张幻灯片。
+        /// </summary>
+        /// <remarks>
+        /// 如果切换操作失败或发生异常，会写入日志并将 PPT 连接状态更新为断开。
+        /// </remarks>
         private void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Dispatcher.Invoke(() =>
