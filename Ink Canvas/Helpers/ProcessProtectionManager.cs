@@ -535,17 +535,17 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
-            /// 使用原生 CreateFile API 打开或创建一个文件/目录并返回底层句柄的包装函数声明。
-            /// </summary>
-            /// <param name="lpFileName">要打开或创建的文件或目录的完整路径（UTF-16 编码）。</param>
-            /// <param name="dwDesiredAccess">请求的访问权限位掩码（例如读取或写入访问）。</param>
-            /// <param name="dwShareMode">共享模式位掩码，指定其他进程可以如何共享此文件句柄。</param>
-            /// <param name="lpSecurityAttributes">指向安全属性结构的指针，或为 <see cref="IntPtr.Zero"/> 表示默认安全性。</param>
-            /// <param name="dwCreationDisposition">指定如何处理已存在或不存在的文件（例如打开、创建或截断）。</param>
-            /// <param name="dwFlagsAndAttributes">文件属性和标志位，用于控制文件或目录的特殊行为（例如备份语义）。</param>
-            /// <param name="hTemplateFile">用于创建新文件时的模板句柄，通常为 <see cref="IntPtr.Zero"/>。</param>
-            /// <returns>表示文件或目录句柄的 <see cref="Microsoft.Win32.SafeHandles.SafeFileHandle"/>；调用失败时返回无效的句柄（可通过检查句柄或调用 <see cref="System.Runtime.InteropServices.Marshal.GetLastWin32Error"/> 获取错误码）。</returns>
-            [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        /// 使用原生 CreateFile API 打开或创建一个文件/目录并返回底层句柄的包装函数声明。
+        /// </summary>
+        /// <param name="lpFileName">要打开或创建的文件或目录的完整路径（UTF-16 编码）。</param>
+        /// <param name="dwDesiredAccess">请求的访问权限位掩码（例如读取或写入访问）。</param>
+        /// <param name="dwShareMode">共享模式位掩码，指定其他进程可以如何共享此文件句柄。</param>
+        /// <param name="lpSecurityAttributes">指向安全属性结构的指针，或为 <see cref="IntPtr.Zero"/> 表示默认安全性。</param>
+        /// <param name="dwCreationDisposition">指定如何处理已存在或不存在的文件（例如打开、创建或截断）。</param>
+        /// <param name="dwFlagsAndAttributes">文件属性和标志位，用于控制文件或目录的特殊行为（例如备份语义）。</param>
+        /// <param name="hTemplateFile">用于创建新文件时的模板句柄，通常为 <see cref="IntPtr.Zero"/>。</param>
+        /// <returns>表示文件或目录句柄的 <see cref="Microsoft.Win32.SafeHandles.SafeFileHandle"/>；调用失败时返回无效的句柄（可通过检查句柄或调用 <see cref="System.Runtime.InteropServices.Marshal.GetLastWin32Error"/> 获取错误码）。</returns>
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern SafeFileHandle CreateFile(
             string lpFileName,
             uint dwDesiredAccess,
