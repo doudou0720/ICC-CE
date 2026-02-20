@@ -490,6 +490,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理选择覆盖层的操作增量事件，将来自触摸或操作的平移、缩放和旋转应用到当前选中的墨迹上并更新选择控件位置。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（通常为选择覆盖层）。</param>
+        /// <param name="e">包含平移、缩放和旋转增量的 ManipulationDeltaEventArgs。</param>
+        /// <remarks>
+        /// - 当只有单指触摸且已有选中墨迹时，不在此处处理拖动（由 TouchMove 处理）。
+        /// - 三指及以上触摸时禁用缩放。 
+        /// - 若 StrokesSelectionClone 非空，则对其内的墨迹应用变换；否则在允许两指旋转时也会应用旋转变换。 
+        /// - 处理完成后会刷新并更新边框/选择控件的位置。
+        /// </remarks>
         private void GridInkCanvasSelectionCover_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
             try
@@ -543,6 +554,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理选区覆盖层的触摸按下事件：记录触摸设备 ID，并在第一个触点时保存选择中心与用于拖拽的初始触点位置。
+        /// </summary>
+        /// <param name="sender">事件源（触摸事件的发送者）。</param>
+        /// <param name="e">触摸事件参数，包含触点位置与设备 ID。</param>
         private void GridInkCanvasSelectionCover_TouchDown(object sender, TouchEventArgs e)
         {
             dec.Add(e.TouchDevice.Id);
@@ -558,6 +574,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理选区覆盖层的触摸结束事件：更新触摸跟踪状态并根据触摸位置和当前选区状态显示或隐藏选区覆盖层与克隆集合。
+        /// </summary>
+        /// <param name="sender">触发事件的对象（通常为选区覆盖层）。</param>
+        /// <param name="e">触摸事件参数，包含触点信息。</param>
         private void GridInkCanvasSelectionCover_TouchUp(object sender, TouchEventArgs e)
         {
             dec.Remove(e.TouchDevice.Id);
@@ -597,6 +618,10 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理触摸移动事件，按单指拖动并平移当前选中的墨迹，同时更新选择控件的位置。
+        /// </summary>
+        /// <remarks>仅在存在选中墨迹且当前仅有一个触摸点时生效；若起始触摸点未记录（lastDragPointInCanvas 为 (0,0)）则不移动。只有当触摸位移在任一方向超过 1 像素时，才对每条选中墨迹应用平移变换，并更新选择控件位置与最后触摸点。</remarks>
         private void GridInkCanvasSelectionCover_TouchMove(object sender, TouchEventArgs e)
         {
             // 处理触摸移动事件 - 用于拖动选中的墨迹
@@ -636,6 +661,12 @@ namespace Ink_Canvas
         private Point lastTouchPointOnGridInkCanvasCover = new Point(0, 0);
         private Point lastDragPointInCanvas = new Point(0, 0);
 
+        /// <summary>
+        /// 切换到选择（套索）工具模式并同步光标显示。
+        /// </summary>
+        /// <remarks>
+        /// 同时取消强制橡皮擦和点式橡皮擦状态，并将绘制形状模式重置为默认（0）。
+        /// </remarks>
         private void LassoSelect_Click(object sender, RoutedEventArgs e)
         {
             forceEraser = false;
@@ -701,6 +732,12 @@ namespace Ink_Canvas
 
         #region Selection Display and Resize Handles
 
+        /// <summary>
+        /// 在画布上显示当前选中墨迹的可视选择框与调整控件（如有选中墨迹则显示，否则隐藏）。
+        /// </summary>
+        /// <remarks>
+        /// 如果没有选中任何墨迹，隐藏选择显示；否则计算选区边界，将选择框在所有方向各扩展 8 像素，设置选择框的位置与尺寸，并更新调整句柄的位置后显示句柄画布。
+        /// </remarks>
         private void UpdateSelectionDisplay()
         {
             if (inkCanvas.GetSelectedStrokes().Count == 0)
@@ -731,6 +768,10 @@ namespace Ink_Canvas
             SelectionHandlesCanvas.Visibility = Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// 根据给定的选择边界定位并设置八个缩放/移动把手的位置，四个把手在各边外扩展 8 像素，四个角把手完全位于外部。
+        /// </summary>
+        /// <param name="bounds">当前选区在画布坐标系中的边界矩形（未包含用于显示的 8 像素外扩展）。</param>
         private void UpdateSelectionHandles(Rect bounds)
         {
             // 四个边选择点，向外扩展8像素
@@ -746,6 +787,14 @@ namespace Ink_Canvas
             BottomRightHandle.Margin = new Thickness(bounds.Right + 4, bounds.Bottom + 4, 0, 0);
         }
 
+        /// <summary>
+        /// 在用户按下选择框的缩放把手时开始缩放操作。
+        /// </summary>
+        /// <remarks>
+        /// 记录缩放开始位置和当前选区的初始边界，设置当前活动把手并捕获鼠标以便后续移动/释放事件处理。
+        /// </remarks>
+        /// <param name="sender">触发事件的缩放把手，预期为一个 Rectangle。</param>
+        /// <param name="e">包含鼠标按下事件的位置信息和处理标志的 <see cref="MouseButtonEventArgs"/> 实例。</param>
         private void SelectionHandle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -775,6 +824,11 @@ namespace Ink_Canvas
             UpdateSelectionDisplay();
         }
 
+        /// <summary>
+        /// 在选择框的大小调整句柄上释放鼠标时结束调整操作、释放句柄的鼠标捕获并将事件标记为已处理。
+        /// </summary>
+        /// <param name="sender">触发事件的对象，应为表示调整句柄的 <see cref="System.Windows.Shapes.Rectangle"/>。</param>
+        /// <param name="e">鼠标事件参数；在处理后该事件会被标记为已处理。</param>
         private void SelectionHandle_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -786,6 +840,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在触摸按下选择调整句柄时开始调整操作并记录初始状态（活动句柄、起始点和当前选区边界）。
+        /// </summary>
+        /// <param name="sender">触发事件的调整句柄（应为 Rectangle）。</param>
+        /// <param name="e">触摸事件数据；方法会标记事件为已处理并使用其触点相对于 inkCanvas 的位置。</param>
         private void SelectionHandle_TouchDown(object sender, TouchEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -799,6 +858,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在触摸移动时根据拖动更新选区的边界并将其应用到当前所选的墨迹。
+        /// </summary>
+        /// <param name="sender">触发事件的调整句柄（应为一个 Rectangle）。</param>
+        /// <param name="e">包含触摸位置和状态的事件参数。</param>
+        /// <remarks>计算新的选择边界、将其应用到所选墨迹并刷新选择显示；将事件标记为已处理。</remarks>
         private void SelectionHandle_TouchMove(object sender, TouchEventArgs e)
         {
             if (!isResizing || !(sender is Rectangle handle)) return;
@@ -818,6 +883,11 @@ namespace Ink_Canvas
             e.Handled = true;
         }
 
+        /// <summary>
+        /// 结束触摸对选择框调整大小的交互，重置调整状态并标记事件已处理。
+        /// </summary>
+        /// <param name="sender">触发事件的调整句柄（Rectangle）。</param>
+        /// <param name="e">触摸事件数据；方法会将其标记为已处理。</param>
         private void SelectionHandle_TouchUp(object sender, TouchEventArgs e)
         {
             if (sender is Rectangle handle)
@@ -828,6 +898,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据指定的拖动增量和所操作的调整柄，计算并返回调整后的边界矩形。
+        /// </summary>
+        /// <param name="originalBounds">调整前的原始边界矩形。</param>
+        /// <param name="delta">从初始位置到当前拖动位置的偏移量，用于更新对应边或角的位置和尺寸。</param>
+        /// <param name="handleName">被拖动的调整柄的名称，支持的值：`TopLeftHandle`、`TopRightHandle`、`BottomLeftHandle`、`BottomRightHandle`、`TopHandle`、`BottomHandle`、`LeftHandle`、`RightHandle`。</param>
+        /// <returns>应用偏移并强制最小宽高限制（10×10）后的新的边界矩形。</returns>
         private Rect CalculateNewBounds(Rect originalBounds, Point delta, string handleName)
         {
             var newBounds = originalBounds;
@@ -914,4 +991,3 @@ namespace Ink_Canvas
         #endregion
     }
 }
-

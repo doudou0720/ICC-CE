@@ -360,6 +360,11 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 保存设备ID到文件
         /// </summary>
+        /// <remarks>
+        /// 将设备标识信息以格式化的 JSON 写入指定文件，并确保目标目录存在；在失败时记录错误但不抛出异常。
+        /// </remarks>
+        /// <param name="filePath">目标文件的完整路径，用于保存设备标识信息。</param>
+        /// <param name="info">要保存的设备标识信息对象（包含 DeviceId 和 可选的硬件指纹）。</param>
         private static void SaveDeviceIdToFile(string filePath, DeviceIdInfo info)
         {
             try
@@ -1619,4 +1624,3 @@ namespace Ink_Canvas.Helpers
         }
     }
 }
-
