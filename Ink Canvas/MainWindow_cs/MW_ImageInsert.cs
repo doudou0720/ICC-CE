@@ -29,13 +29,16 @@ namespace Ink_Canvas
         public List<Point> Path;
         public Bitmap CameraImage;
         public BitmapSource CameraBitmapSource;
+        public bool AddToWhiteboard;
 
-        public ScreenshotResult(Rectangle area, List<Point> path = null, Bitmap cameraImage = null, BitmapSource cameraBitmapSource = null)
+        public ScreenshotResult(Rectangle area, List<Point> path = null, Bitmap cameraImage = null,
+            BitmapSource cameraBitmapSource = null, bool addToWhiteboard = false)
         {
             Area = area;
             Path = path;
             CameraImage = cameraImage;
             CameraBitmapSource = cameraBitmapSource;
+            AddToWhiteboard = addToWhiteboard;
         }
     }
 
@@ -177,7 +180,8 @@ namespace Ink_Canvas
                                 Rectangle.Empty, // 摄像头截图不需要区域
                                 null, // 摄像头截图不需要路径
                                 null, // 不再使用Bitmap
-                                selectorWindow.CameraBitmapSource // 摄像头BitmapSource
+                                selectorWindow.CameraBitmapSource, // 摄像头BitmapSource
+                                selectorWindow.ShouldAddToWhiteboard
                             );
                         }
                         else if (selectorWindow.CameraImage != null)
@@ -185,14 +189,19 @@ namespace Ink_Canvas
                             result = new ScreenshotResult(
                                 Rectangle.Empty, // 摄像头截图不需要区域
                                 null, // 摄像头截图不需要路径
-                                selectorWindow.CameraImage // 摄像头图像
+                                selectorWindow.CameraImage, // 摄像头图像
+                                null,
+                                selectorWindow.ShouldAddToWhiteboard
                             );
                         }
                         else
                         {
                             result = new ScreenshotResult(
                                 selectorWindow.SelectedArea.Value,
-                                selectorWindow.SelectedPath
+                                selectorWindow.SelectedPath,
+                                null,
+                                null,
+                                selectorWindow.ShouldAddToWhiteboard
                             );
                         }
                     }

@@ -49,6 +49,7 @@ namespace Ink_Canvas
         public List<WpfPoint> SelectedPath { get; private set; }
         public Bitmap CameraImage { get; private set; }
         public System.Windows.Media.Imaging.BitmapSource CameraBitmapSource { get; private set; }
+        public bool ShouldAddToWhiteboard { get; private set; }
 
         public ScreenshotSelectorWindow()
         {
@@ -484,6 +485,8 @@ namespace Ink_Canvas
 
         private void ConfirmButton_Click(object sender, RoutedEventArgs e)
         {
+            ShouldAddToWhiteboard = false;
+
             // 在自由绘制模式下，确认按钮不执行任何操作
             if (_isFreehandMode)
             {
@@ -491,6 +494,25 @@ namespace Ink_Canvas
             }
 
             // 在摄像头模式下，执行摄像头截图
+            if (_isCameraMode)
+            {
+                ConfirmCameraCapture();
+                return;
+            }
+
+            ConfirmSelection();
+        }
+
+        private void AddToWhiteboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShouldAddToWhiteboard = true;
+
+            // 在自由绘制模式下，按钮同样不执行确认逻辑
+            if (_isFreehandMode)
+            {
+                return;
+            }
+
             if (_isCameraMode)
             {
                 ConfirmCameraCapture();
@@ -1007,6 +1029,7 @@ namespace Ink_Canvas
             SelectedArea = null;
             SelectedPath = null;
             CameraImage = null;
+            ShouldAddToWhiteboard = false;
             DialogResult = false;
             Close();
         }
