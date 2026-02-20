@@ -118,15 +118,7 @@ namespace Ink_Canvas
 
         private async Task AddScreenshotToNewWhiteboardPage(ScreenshotResult screenshotResult)
         {
-            if (currentMode != 1)
-            {
-                SwitchToBoardMode();
-                await Task.Delay(150);
-            }
-
-            BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
-
-            // 曲线救国：统一走“复制到剪贴板 + 粘贴”流程，规避直接插入偶发不生效问题
+            // 先在当前场景准备截图数据，再进白板，避免误截到白板页面
             BitmapSource bitmapSourceForClipboard = null;
 
             // 摄像头截图（BitmapSource）
@@ -184,7 +176,17 @@ namespace Ink_Canvas
                 return;
             }
 
+            // 图像已拷贝到内存后再进入白板
             bitmapSourceForClipboard.Freeze();
+
+            if (currentMode != 1)
+            {
+                SwitchToBoardMode();
+                await Task.Delay(150);
+            }
+
+            BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
+
             System.Windows.Clipboard.SetImage(bitmapSourceForClipboard);
             await Task.Delay(60);
             await PasteImageFromClipboard();
