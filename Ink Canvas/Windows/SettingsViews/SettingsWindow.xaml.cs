@@ -17,6 +17,12 @@ namespace Ink_Canvas.Windows
     {
         private MainWindow _mainWindow;
 
+        /// <summary>
+        /// 初始化设置窗口的 UI、事件和面板并加载初始状态与主题。
+        /// </summary>
+        /// <remarks>
+        /// 构造函数完成以下工作：获取主窗口引用，注册搜索与菜单事件，构建并绑定侧栏条目，挂接各设置面板的滚动/阴影事件，初始化面板数组、滚动容器、标题与名称映射，设置初始选中项与主题状态，为自定义滑块添加触摸支持，预加载所有面板设置，并多次应用主题以确保视觉元素正确呈现（包含延迟再应用以修正标题栏等）。
+        /// </remarks>
         public SettingsWindow()
         {
             InitializeComponent();
@@ -323,7 +329,12 @@ namespace Ink_Canvas.Windows
         
         /// <summary>
         /// 通知所有面板应用主题
+        /// <summary>
+        /// 通知所有已注册的设置面板应用当前主题配置，使各面板更新其视觉样式以匹配窗口主题。
         /// </summary>
+        /// <remarks>
+        /// 对每个面板尝试通过反射调用其 `ApplyTheme` 方法；如果某面板不存在该方法则会跳过，调用过程中发生的异常会被捕获并写入调试输出，但不会中断对其它面板的处理。
+        /// </remarks>
         private void ApplyThemeToAllPanels()
         {
             try
@@ -754,7 +765,13 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 加载所有设置面板的设置
+        /// <summary>
+        /// 预加载并初始化所有设置面板：对每个面板尝试加载设置、启用触摸支持并应用当前主题。
         /// </summary>
+        /// <remarks>
+        /// 该操作在 UI 线程上以 DispatcherPriority.Loaded 异步调度执行，并在完成后再次触发对所有面板的主题应用以确保视觉状态一致。
+        /// 对单个面板的初始化错误会被捕获并处理，不会中断其它面板的预加载流程。
+        /// </remarks>
         private void LoadAllPanelsSettings()
         {
             try
@@ -938,6 +955,16 @@ namespace Ink_Canvas.Windows
         public string[] SettingsPaneTitles;
         public string[] SettingsPaneNames;
 
+        /// <summary>
+        /// 根据当前选中的侧边栏项更新侧边栏条目状态、面板可见性与主题并将视图滚动到顶部。
+        /// </summary>
+        /// <remarks>
+        /// - 将 SidebarItems 中的 Selected 与 SettingsWindowTitle.Text 与字段 _selectedSidebarItemName 同步；
+        /// - 根据应用设置计算并同步每个 SidebarItem 的 IsDarkTheme；
+        /// - 切换各个面板（Pane）的 Visibility，仅显示与 _selectedSidebarItemName 对应的面板；
+        /// - 异步调用所选面板（若存在）的 ApplyTheme 方法以确保新显示面板使用正确主题；
+        /// - 将所有已注册的 SettingsPaneScrollViewers 滚动到顶部以重置视图位置。
+        /// </remarks>
         public void UpdateSidebarItemsSelection()
         {
             foreach (var si in SidebarItems)

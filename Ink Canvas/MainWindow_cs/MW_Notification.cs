@@ -17,6 +17,11 @@ namespace Ink_Canvas
                 ?.ShowNotification(notice, isShowImmediately);
         }
 
+        /// <summary>
+        /// 在窗口中显示带从底部滑入并淡入的通知文本，并在配置的时长后自动隐藏（若未被新通知覆盖）。
+        /// </summary>
+        /// <param name="notice">要显示的通知文本。</param>
+        /// <param name="isShowImmediately">指示是否应立即显示通知；当前实现默认立即显示。</param>
         public void ShowNotification(string notice, bool isShowImmediately = true)
         {
             try

@@ -20,6 +20,12 @@ namespace Ink_Canvas.Windows.SettingsViews
             Loaded += SettingsPanelBase_Loaded;
         }
 
+        /// <summary>
+        /// 处理控件的 Loaded 事件：加载面板设置、启用触摸支持，尝试调用面板的 ApplyTheme 方法（若存在），
+        /// 再次加载设置并将内部已加载标志设为 true。
+        /// </summary>
+        /// <param name="sender">触发事件的对象（通常是当前面板实例）。</param>
+        /// <param name="e">事件参数，包含路由事件的相关信息。</param>
         private void SettingsPanelBase_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
@@ -272,4 +278,3 @@ namespace Ink_Canvas.Windows.SettingsViews
         protected abstract void HandleOptionChange(string group, string value);
     }
 }
-

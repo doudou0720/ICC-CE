@@ -20,7 +20,16 @@ namespace Ink_Canvas
         private TimeMachineHistory[][] TimeMachineHistories = new TimeMachineHistory[101][];
         private bool[] savedMultiTouchModeStates = new bool[101];
 
-        // 保存每页白板图片信息
+        /// <summary>
+        /// 将当前画布上的所有未保存的图片/媒体和墨迹提交到时间机器历史并将导出结果保存为指定页的快照。
+        /// </summary>
+        /// <param name="isBackupMain">为 true 时将导出结果保存到主备份槽（索引 0）；为 false 时保存到当前白板索引。</param>
+        /// <remarks>
+        /// - 会提交画布上缺失于历史记录的 Image/MediaElement（但跳过 Tag 等于 VideoPresenterLiveFrameTag 的 Image）和缺失的墨迹；  
+        /// - 导出后把结果存入 TimeMachineHistories 的相应索引，并保存当前多指书写模式到 savedMultiTouchModeStates；  
+        /// - 导出后会清除时间机器的临时墨迹历史以释放内存。  
+        /// - 此方法有副作用：修改 TimeMachineHistories、savedMultiTouchModeStates，并通过 timeMachine 的提交方法改变其内部历史状态。
+        /// </remarks>
         private void SaveStrokes(bool isBackupMain = false)
         {
             // 确保画布上的所有UI元素都被保存到时间机器历史记录中
@@ -277,6 +286,12 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 切换到前一白板页并在切换过程中保存与恢复画布和相关状态（如果当前已是第一页则不执行任何操作）。
+        /// </summary>
+        /// <remarks>
+        /// 该方法在切换前会取消当前选中元素（同时保留并恢复编辑模式）、调用视频呈现器的离开页前钩子、保存当前页的笔迹与元素、清空画布；切换到前一页后恢复该页内容、调用视频呈现器的页已更改钩子并刷新页面索引显示。
+        /// </remarks>
         private void BtnWhiteBoardSwitchPrevious_Click(object sender, EventArgs e)
         {
             if (CurrentWhiteboardIndex <= 1) return;
@@ -304,6 +319,11 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 切换到白板的下一页；在到达最后一页时会新增一页。方法在切页前保存当前页面的笔迹/多媒体状态，在切页后恢复目标页面的内容并更新界面状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为按钮）。</param>
+        /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
             Trace.WriteLine("113223234");
@@ -340,6 +360,16 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 在白板集合中添加一个新页面：在切换前保存并清除当前页面的笔迹与状态，插入新空白页面，恢复并刷新与页面相关的 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// - 在达到最大页面数（99）时不执行任何操作。  
+        /// - 在切换前若启用了自动保存且笔迹数量超过阈值，会保存当前画面截图。  
+        /// - 若有选中元素，会取消选中并恢复编辑模式。  
+        /// - 将当前页面的历史保存到时间轴并清空画布，然后在白板集合中插入一个空白页面（其历史为 null），随后恢复该页面并触发页面变更回调。  
+        /// - 更新页码显示并在达到上限时禁用添加按钮；若侧边页列表可见，则刷新该列表。  
+        /// </remarks>
         private void BtnWhiteBoardAdd_Click(object sender, EventArgs e)
         {
             if (WhiteboardTotalCount >= 99) return;
