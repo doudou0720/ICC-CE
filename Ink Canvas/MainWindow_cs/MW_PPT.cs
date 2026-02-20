@@ -419,9 +419,9 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 关闭PowerPoint应用程序
-        /// <summary>
-        /// 关闭当前的 PowerPoint 应用程序及其所有打开的演示文稿，释放相关 COM 资源并清理静态互操作状态。</summary>
+        /// </summary>
         /// <remarks>
+        /// 关闭当前的 PowerPoint 应用程序及其所有打开的演示文稿，释放相关 COM 资源并清理静态互操作状态。</summary>
         /// 会尝试关闭所有打开的演示文稿、退出 PowerPoint 进程、释放 COM 对象引用，并将内部 PowerPoint 互操作状态重置为初始值；操作结果会被记录到日志，发生异常时会记录错误并仍然尝试清理互操作状态。
         /// </remarks>
         private void ClosePowerPointApplication()
@@ -496,9 +496,10 @@ namespace Ink_Canvas
 
         /// <summary>
         /// PowerPoint应用程序监控定时器事件
-        /// <summary>
-        /// 周期性监控嵌入的 PowerPoint 应用实例的可用性，并在检测到失效时尝试重建实例；当增强功能被禁用时停止监控，并在使用 ROT 链接时不进行检查。
         /// </summary>
+        /// <remarks>
+        /// 周期性监控嵌入的 PowerPoint 应用实例的可用性，并在检测到失效时尝试重建实例；当增强功能被禁用时停止监控，并在使用 ROT 链接时不进行检查。
+        /// </remarks>
         private void OnPowerPointApplicationMonitorTick(object sender, EventArgs e)
         {
             try

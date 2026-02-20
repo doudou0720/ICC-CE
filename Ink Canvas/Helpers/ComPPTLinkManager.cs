@@ -48,14 +48,14 @@ namespace Ink_Canvas.Helpers
 
         #region 生命周期管理
         /// <summary>
-/// 开始监控本地 PowerPoint 的连接与运行状态，并在状态变化时触发相应事件。
-/// </summary>
-public void StartMonitoring() => _inner.StartMonitoring();
+        /// 开始监控本地 PowerPoint 的连接与运行状态，并在状态变化时触发相应事件。
+        /// </summary>
+        public void StartMonitoring() => _inner.StartMonitoring();
 
-        /// <summary>
-/// 停止对 PowerPoint 的监控，断开当前连接并停止触发相关事件。
-/// </summary>
-public void StopMonitoring() => _inner.StopMonitoring();
+                /// <summary>
+        /// 停止对 PowerPoint 的监控，断开当前连接并停止触发相关事件。
+        /// </summary>
+        public void StopMonitoring() => _inner.StopMonitoring();
 
         /// <summary>
         /// 强制断开当前 COM PPT 连接并停止对其监控，同时写入事件日志。
