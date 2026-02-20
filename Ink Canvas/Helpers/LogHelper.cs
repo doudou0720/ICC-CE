@@ -17,6 +17,10 @@ namespace Ink_Canvas.Helpers
             WriteLogToFile(str);
         }
 
+        /// <summary>
+        /// 将异常的类型、消息、堆栈跟踪及其内部异常信息格式化并作为错误条目写入日志。
+        /// </summary>
+        /// <param name="ex">要记录的异常；若为 <c>null</c> 则方法不执行任何写入操作。</param>
         public static void NewLog(Exception ex)
         {
             if (ex == null) return;
@@ -29,6 +33,15 @@ namespace Ink_Canvas.Helpers
             WriteLogToFile(msg, LogType.Error);
         }
 
+        /// <summary>
+        /// 将一条日志消息记录到应用的日志文件中（可能是单一日志文件或按启动时间存档的文件），同时在日志条目中包含时间戳、线程 ID 和调用者信息，并遵循应用的日志设置。
+        /// </summary>
+        /// <param name="str">要记录的日志文本消息。</param>
+        /// <summary>
+        /// 将一条文本日志写入应用的日志文件。
+        /// </summary>
+        /// <param name="str">要写入的日志消息文本。</param>
+        /// <param name="logType">日志的类型/等级，用于在日志条目中标识（例如 Info、Error、Warning 等）。如果全局日志被禁用则不会写入。</param>
         public static void WriteLogToFile(string str, LogType logType = LogType.Info)
         {
             // 检查日志是否启用
@@ -89,6 +102,23 @@ namespace Ink_Canvas.Helpers
             catch { }
         }
 
+        /// <summary>
+        /// 检查指定日志文件夹的总大小，并在超过 MaxLogsFolderSizeBytes 时删除该文件夹下的所有文件并记录清理日志。
+        /// </summary>
+        /// <param name="logsPath">要检查和清理的日志文件夹路径。</param>
+        /// <remarks>
+        /// - 如果目录不存在则直接返回。 
+        /// - 当总大小超过 MaxLogsFolderSizeBytes 时，会尝试删除目录下的每个文件（单个删除失败将被忽略）。 
+        /// - 清理完成后会向该目录下的 Log_{AppStartTime}.txt 写入一条带有时间戳和 [Cleanup] 标签的记录。 
+        /// - 方法内部捕获并忽略所有异常以避免影响调用者流程。
+        /// <summary>
+        /// 检查并在达到阈值时清理指定日志文件夹的内容。
+        /// </summary>
+        /// <param name="logsPath">要检查和清理的日志文件夹的完整路径。</param>
+        /// <remarks>
+        /// 如果目标目录不存在则不进行任何操作；若目录内所有文件总大小超过 <c>MaxLogsFolderSizeBytes</c>，则尝试删除该目录下的所有文件并向位于该目录的 <c>Log_{AppStartTime}.txt</c> 写入一条带时间戳的清理记录以说明已执行清理操作。
+        /// 任何在清理过程中的异常都会被捕获并忽略，方法不会抛出异常。
+        /// </remarks>
         private static void CheckAndCleanLogsFolder(string logsPath)
         {
             try

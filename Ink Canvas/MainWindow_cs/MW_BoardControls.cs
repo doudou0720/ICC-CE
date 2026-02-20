@@ -20,7 +20,23 @@ namespace Ink_Canvas
         private TimeMachineHistory[][] TimeMachineHistories = new TimeMachineHistory[101][];
         private bool[] savedMultiTouchModeStates = new bool[101];
 
-        // 保存每页白板图片信息
+        /// <summary>
+        /// 将当前画布上的所有未保存的图片/媒体和墨迹提交到时间机器历史并将导出结果保存为指定页的快照。
+        /// </summary>
+        /// <param name="isBackupMain">为 true 时将导出结果保存到主备份槽（索引 0）；为 false 时保存到当前白板索引。</param>
+        /// <remarks>
+        /// - 会提交画布上缺失于历史记录的 Image/MediaElement（但跳过 Tag 等于 VideoPresenterLiveFrameTag 的 Image）和缺失的墨迹；  
+        /// - 导出后把结果存入 TimeMachineHistories 的相应索引，并保存当前多指书写模式到 savedMultiTouchModeStates；  
+        /// - 导出后会清除时间机器的临时墨迹历史以释放内存。  
+        /// - 此方法有副作用：修改 TimeMachineHistories、savedMultiTouchModeStates，并通过 timeMachine 的提交方法改变其内部历史状态。
+        /// <summary>
+        /// 将当前画布上的未记录内容保存到时间机器历史并更新相应页面的快照和多指书写模式状态。
+        /// </summary>
+        /// <remarks>
+        /// 会确保画布上的图像、媒体元素（跳过标记为实时视频帧的 Image）和所有当前尚未记录的墨迹都被提交到时间机器历史中，
+        /// 将导出的历史存入目标页的 TimeMachineHistories 条目，并保存该页的多指书写模式状态；最后清除临时的笔迹历史以便后续使用。
+        /// </remarks>
+        /// <param name="isBackupMain">为 true 时将历史保存到备份主页（索引 0），为 false 时保存到当前白板索引。</param>
         private void SaveStrokes(bool isBackupMain = false)
         {
             // 确保画布上的所有UI元素都被保存到时间机器历史记录中
@@ -232,6 +248,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 切换并显示或隐藏左右侧白板页列表：根据触发的按钮（左/右），在显示时刷新页列表并以动画展开，隐藏另一侧列表；展开后将滚动视图定位到当前页。
+        /// </summary>
+        /// <param name="sender">触发事件的控件，期望为左侧按钮（BtnLeftPageListWB）或右侧按钮（BtnRightPageListWB）。</param>
+        /// <param name="e">事件参数（未使用）。</param>
         private async void BtnWhiteBoardPageIndex_Click(object sender, EventArgs e)
         {
             if (sender == BtnLeftPageListWB)
@@ -277,6 +298,17 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 切换到前一白板页并在切换过程中保存与恢复画布和相关状态（如果当前已是第一页则不执行任何操作）。
+        /// </summary>
+        /// <remarks>
+        /// 该方法在切换前会取消当前选中元素（同时保留并恢复编辑模式）、调用视频呈现器的离开页前钩子、保存当前页的笔迹与元素、清空画布；切换到前一页后恢复该页内容、调用视频呈现器的页已更改钩子并刷新页面索引显示。
+        /// <summary>
+        /// 切换到上一页白板，同时保存当前页并恢复上一页的内容与 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果存在被选中的元素，会取消选中但保留并恢复画布的编辑模式；在切换过程中会触发页面离开与页面已改变的相关回调，并在切换完成后更新页码显示。
+        /// </remarks>
         private void BtnWhiteBoardSwitchPrevious_Click(object sender, EventArgs e)
         {
             if (CurrentWhiteboardIndex <= 1) return;
@@ -304,6 +336,15 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 切换到白板的下一页；在到达最后一页时会新增一页。方法在切页前保存当前页面的笔迹/多媒体状态，在切页后恢复目标页面的内容并更新界面状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为按钮）。</param>
+        /// <summary>
+        /// 切换到下一白板页；若当前为最后一页则新建一页并切换过去，同时保存当前页面内容、清空画布并更新相关 UI 与视频呈现器状态。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
             Trace.WriteLine("113223234");
@@ -340,6 +381,21 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 在白板集合中添加一个新页面：在切换前保存并清除当前页面的笔迹与状态，插入新空白页面，恢复并刷新与页面相关的 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// - 在达到最大页面数（99）时不执行任何操作。  
+        /// - 在切换前若启用了自动保存且笔迹数量超过阈值，会保存当前画面截图。  
+        /// - 若有选中元素，会取消选中并恢复编辑模式。  
+        /// - 将当前页面的历史保存到时间轴并清空画布，然后在白板集合中插入一个空白页面（其历史为 null），随后恢复该页面并触发页面变更回调。  
+        /// - 更新页码显示并在达到上限时禁用添加按钮；若侧边页列表可见，则刷新该列表。  
+        /// <summary>
+        /// 在当前白板之后插入一个新的白板页面并切换到该页面。
+        /// </summary>
+        /// <remarks>
+        /// 如果达到页面上限则不执行任何操作；在满足自动保存条件时可先保存当前页面的截图。方法会保存当前页面的可恢复内容到页面历史、清空画布以创建新页面、将内部历史数组向后移动以为新页面腾出位置、确保新页面的历史记录为空并切换到该页面。最后更新页面索引的显示状态、在必要时禁用“添加页面”按钮并刷新左侧页列表视图的可见性。
+        /// </remarks>
         private void BtnWhiteBoardAdd_Click(object sender, EventArgs e)
         {
             if (WhiteboardTotalCount >= 99) return;

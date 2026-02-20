@@ -47,10 +47,34 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region 生命周期管理
+        /// <summary>
+        /// 开始监控本地 PowerPoint 的连接与运行状态，并在状态变化时触发相应事件。
+        /// <summary>
+/// 开始监控 PowerPoint COM 连接并使本管理器在连接、放映及幻灯片变化时转发相应事件。
+/// </summary>
         public void StartMonitoring() => _inner.StartMonitoring();
 
+                /// <summary>
+        /// 停止对 PowerPoint 的监控，断开当前连接并停止触发相关事件。
+        /// <summary>
+/// 停止对 PowerPoint 连接及幻灯放映状态的监控。
+/// </summary>
+/// <remarks>
+/// 该操作仅停止监控流程，不会释放资源或主动断开已存在的连接。
+/// </remarks>
         public void StopMonitoring() => _inner.StopMonitoring();
 
+        /// <summary>
+        /// 强制断开当前 COM PPT 连接并停止对其监控，同时写入事件日志。
+        /// </summary>
+        /// <remarks>
+        /// 会向日志记录一条事件信息并调用内部管理器停止监控；该方法不会重新启动监控或重新初始化内部管理器实例。
+        /// <summary>
+        /// 强制重新加载与 PowerPoint 的 COM 连接：停止当前的 PPT 监控并记录该操作。
+        /// </summary>
+        /// <remarks>
+        /// 调用后会写入一条事件日志“COM PPT 执行热重载：强制断开并重新连接”，并停止内部监控以强制断开连接。此方法不会自动重新启动监控或重新初始化内部管理器；需要由调用方在适当时机重新建立或重启监控。
+        /// </remarks>
         public void ReloadConnection()
         {
             LogHelper.WriteLogToFile("COM PPT 执行热重载：强制断开并重新连接", LogHelper.LogType.Event);
@@ -90,4 +114,3 @@ namespace Ink_Canvas.Helpers
         #endregion
     }
 }
-

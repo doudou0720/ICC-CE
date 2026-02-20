@@ -185,6 +185,9 @@ namespace Ink_Canvas.Helpers
             _unifiedRotTimer.AutoReset = true;
         }
 
+        /// <summary>
+        /// 统一计时器回调：递增内部计数并触发连接检查；每隔一次（偶数刻）额外触发幻灯片放映状态检查。
+        /// </summary>
         private void OnUnifiedRotTimerElapsed(object sender, ElapsedEventArgs e)
         {
             var tick = Interlocked.Increment(ref _rotTickCount);
@@ -195,6 +198,17 @@ namespace Ink_Canvas.Helpers
                 OnSlideShowStateCheckTimerElapsed(sender, e);
         }
 
+        /// <summary>
+        /// 启动内部轮询计时器以开始监测 ROT/PPT 连接状态和幻灯片放映状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果实例已被释放（Dispose 已调用）或计时器未初始化，则此方法不会执行任何操作。
+        /// <summary>
+        /// 启动内部轮询计时器以定期检查并维护与 PowerPoint 的 ROT 连接状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果管理器已处于已释放状态（_disposed 为 true），本方法不会执行任何操作。
+        /// </remarks>
         public void StartMonitoring()
         {
             if (_disposed) return;
@@ -202,12 +216,22 @@ namespace Ink_Canvas.Helpers
             _unifiedRotTimer?.Start();
         }
 
+        /// <summary>
+        /// 停止内部的 ROT 监视计时器并断开与当前 PowerPoint 实例的连接。
+        /// <summary>
+        /// 停止内部 ROT/PPT 监视并断开与 PowerPoint 的连接。
+        /// </summary>
         public void StopMonitoring()
         {
             _unifiedRotTimer?.Stop();
             DisconnectFromPPT();
         }
 
+        /// <summary>
+        /// 强制断开当前与 PowerPoint 的 ROT 连接并触发后续的重连流程。
+        /// <summary>
+        /// 强制断开当前与 PowerPoint 的 ROT 连接并触发后续的重新连接流程。
+        /// </summary>
         public void ReloadConnection()
         {
             if (_disposed) return;
@@ -217,6 +241,19 @@ namespace Ink_Canvas.Helpers
         #endregion
 
         #region Connection Management
+        /// <summary>
+        /// 在计时器触发时检查与 PowerPoint 的 ROT 连接，并在尚未处于已释放或模块卸载期间时尝试通过 ROT 建立连接。
+        /// </summary>
+        /// <remarks>
+        /// 如果在检查或连接过程中发生异常，异常信息会记录到日志并被吞掉，不会向上抛出。
+        /// <summary>
+        /// 处理定时器的 Elapsed 事件并触发对 PowerPoint ROT 连接的检查。
+        /// </summary>
+        /// <param name="sender">事件源（计时器）。</param>
+        /// <param name="e">计时器的事件参数。</param>
+        /// <remarks>
+        /// 在处理前会检查对象是否已释放或模块是否正在卸载；方法内部捕获并记录所有异常，不会向外抛出异常。
+        /// </remarks>
         private void OnConnectionCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
             try
@@ -231,6 +268,17 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 在定时器触发时检查并在必要时更新 PPT 的放映状态。
+        /// </summary>
+        /// <remarks>
+        /// 当实例未被释放、模块未在卸载过程中且与 PowerPoint 仍保持连接时会调用内部的放映状态检查逻辑。若检查过程中发生异常，会将错误写入日志并吞并异常以保证定时器循环继续运行。
+        /// <summary>
+        /// 在计时器触发时检查并更新 PowerPoint 的放映状态（如有必要）。
+        /// </summary>
+        /// <remarks>
+        /// 只有在未释放、模块未卸载且已连接到 PowerPoint 时才会执行检查；若检查过程中发生异常，会将错误记录到日志并吞噬异常以保证计时器继续运行。
+        /// </remarks>
         private void OnSlideShowStateCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
             try
@@ -245,6 +293,24 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 使用 ROT 检查并在必要时建立、切换或断开与 PowerPoint 的 COM 连接。
+        /// </summary>
+        /// <remarks>
+        /// 当管理器已释放或模块正在卸载时不执行任何操作。此方法在内部加锁以防止并发切换；会通过 ROT 获取当前可用的 PowerPoint 实例并：
+        /// - 若尚未连接则建立连接；
+        /// - 若当前无可用实例则断开现有连接；
+        /// - 若检测到已连接的实例发生变化则先断开再重新连接。
+        /// 遇到异常时会记录错误日志，并在存在活动连接时尝试断开以保证状态一致性。
+        /// <summary>
+        /// 使用 ROT 检查并维持与 PowerPoint 的连接状态（按需连接、切换或断开）。 
+        /// </summary>
+        /// <remarks>
+        /// - 在已释放或模块正在卸载时不会执行任何操作。  
+        /// - 通过互斥锁确保线程安全。  
+        /// - 从 ROT 获取当前最佳 PowerPoint 实例：如果之前未连接则建立连接；如果实例消失则断开连接；如果检测到已连接实例与 ROT 返回的实例不同则切换连接；否则释放临时引用。  
+        /// - 在检测或切换过程中遇到异常时记录错误日志并尝试断开现有连接以恢复一致性。  
+        /// </remarks>
         private void CheckAndConnectToPPTViaRot()
         {
             if (_disposed || _isModuleUnloading) return;
@@ -299,6 +365,12 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 检查当前 PowerPoint 放映状态；若状态与上次不同，则更新内部记录并触发 <c>SlideShowStateChanged</c> 事件。
+        /// </summary>
+        /// <remarks>
+        /// 如果当前未连接到 PowerPoint，方法立即返回。方法会捕获并记录异常（不会向上抛出）。
+        /// </remarks>
         private void CheckSlideShowState()
         {
             try
@@ -318,6 +390,19 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 将指定的 PowerPoint COM 应用对象作为当前连接并在 UI 线程上注册必要的演示文稿与幻灯片放映事件，触发连接通知并在已处于放映时尝试触发一次放映开始回调。
+        /// </summary>
+        /// <param name="appObj">要绑定的 PowerPoint COM 应用对象（通常来自 ROT）。</param>
+        /// <remarks>
+        /// 如果事件注册或后续处理失败，会记录错误并在异常路径上清除内部引用（将内部应用对象置空）。方法会触发 <c>PPTConnectionChanged(true)</c> 并记录连接成功的事件日志；若检测到当前正处于幻灯片放映，则尝试调用一次放映开始的内部处理以同步状态。异常信息会写入日志，但方法不会向外抛出未捕获的异常（内部会捕获并记录错误后清理状态）。
+        /// <summary>
+        /// 将来自 ROT 的 PowerPoint 应用对象绑定到管理器并启用与 PowerPoint 的交互事件处理。
+        /// </summary>
+        /// <param name="appObj">通过 ROT 获取到的 PowerPoint 应用对象（COM 对象），或 null 表示未连接。</param>
+        /// <remarks>
+        /// 绑定后会在 UI 线程上为该应用注册演示文稿及幻灯片放映相关事件，触发 <see cref="PPTConnectionChanged"/>（参数为 true），并在当前已处于放映时触发一次放映开始事件。若绑定失败或发生异常，则不会保留该应用引用并会记录错误日志。
+        /// </remarks>
         private void ConnectToPPT(object appObj)
         {
             try
@@ -371,6 +456,19 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 断开与 PowerPoint 的 ROT 注册连接：停止监控、取消事件订阅、释放相关 COM 对象，并在清理后尝试恢复监控计时器。
+        /// </summary>
+        /// <remarks>
+        /// 方法会触发 PPTConnectionChanged(false)，将内部 PPT 应用引用置空，取消在 UI 线程上的事件订阅并释放 COM 对象，执行垃圾回收以回收最终化资源；
+        /// 清理完成后会在工作线程中短暂等待并再次触发垃圾回收，然后将模块从“卸载”状态恢复并在未处于已释放状态时重启统一定时器。
+        /// 所有异常由内部捕获并记录，不会向调用方抛出异常。
+        /// <summary>
+        /// 安全断开与 PowerPoint 的 ROT 建立的 COM 连接并释放相关资源。
+        /// </summary>
+        /// <remarks>
+        /// 操作包括：触发连接变更事件以通知断开、在 UI 线程取消注册 PowerPoint 事件、释放 COM 引用并进行垃圾回收、以及在短暂延迟后恢复监控定时器。该方法在线程内使用锁保证状态一致性，并在发生异常时尽量清理资源且恢复 _isModuleUnloading 标志以避免死锁或挂起状态。不会抛出异常到调用者；所有错误会被记录。
+        /// </remarks>
         private void DisconnectFromPPT()
         {
             object appToRelease = null;

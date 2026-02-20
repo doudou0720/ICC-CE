@@ -21,6 +21,15 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 从配置文件加载用户设置并将其应用到主窗口和相关控件的状态（包括启动、外观、画布、手势、PPT、自动化等各项配置）。
+        /// </summary>
+        /// <param name="isStartup">指示当前为应用启动阶段；为 true 时按启动流程应用启动相关设置（例如触发启动专用动作和启动时的行为）。</param>
+        /// <summary>
+        /// 从配置文件加载并应用用户设置到主窗口及其各个控件，并在启动阶段执行与启动相关的初始化操作。
+        /// </summary>
+        /// <param name="isStartup">指示当前调用是否发生在应用启动阶段；为 true 时会执行启动专属的初始化（例如光标图标初始化、启动时自动更新检查、按需折叠浮动栏等）。</param>
+        /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时在加载设置后不会触发自动更新检测。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -1227,6 +1236,17 @@ namespace Ink_Canvas
             LoadBrushAutoRestoreSettings();
         }
 
+        /// <summary>
+        /// 将画笔自动恢复相关的设置应用到界面控件并在启用时初始化自动恢复定时器。
+        /// </summary>
+        /// <remarks>
+        /// 会将 Settings.Canvas 中的 BrushAutoRestore 配置同步到对应的切换开关、时间文本框、颜色下拉框、宽度和透明度滑块；当颜色缺失时会使用默认值 `#FFFF0000`，当宽度无效时使用默认值 `5`。若功能被启用，会初始化并启动定时器以执行自动恢复任务。方法执行过程中会记录加载结果或错误信息到日志。
+        /// <summary>
+        /// 将画笔自动恢复相关设置应用到界面控件并在启用时初始化并启动自动恢复定时器。
+        /// </summary>
+        /// <remarks>
+        /// 同步开关、时间输入、颜色、宽度与透明度的 UI 值；若颜色未设置则使用默认值 "#FFFF0000"。当画笔自动恢复被启用时，会初始化并调度相关定时器以开始自动恢复流程。异常会被捕获并记录，不会向外抛出。
+        /// </remarks>
         private void LoadBrushAutoRestoreSettings()
         {
             try
@@ -1406,7 +1426,12 @@ namespace Ink_Canvas
 
         /// <param name="userObj">用户配置的JObject</param>
         /// <param name="defaultObj">默认配置的JObject</param>
-        /// <param name="hasChanges">是否有变更的引用标志</param>
+        /// <summary>
+        /// 从用户配置对象中移除在默认配置中不存在的属性，递归处理嵌套对象和对象数组的结构差异。
+        /// </summary>
+        /// <param name="userObj">要清理的用户配置对象；该对象会被就地修改以删除多余的属性。</param>
+        /// <param name="defaultObj">用于对照的默认配置对象，决定哪些属性应被保留。</param>
+        /// <param name="hasChanges">引用标志；如果发生任何删除操作，则此标志会被设置为 <c>true</c>。</param>
         private void RemoveObsoleteProperties(JObject userObj, JObject defaultObj, ref bool hasChanges)
         {
             if (userObj == null || defaultObj == null)

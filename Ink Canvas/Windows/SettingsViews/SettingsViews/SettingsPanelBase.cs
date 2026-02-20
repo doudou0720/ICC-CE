@@ -15,11 +15,28 @@ namespace Ink_Canvas.Windows.SettingsViews
     {
         protected bool _isLoaded = false;
 
+        /// <summary>
+        /// 初始化 SettingsPanelBase 的实例并订阅 Loaded 事件，以便在控件首次加载时执行面板的初始化逻辑。
+        /// </summary>
+        /// <remarks>
+        /// 在 Loaded 事件触发时，关联的处理器会加载设置、启用触摸支持、尝试应用主题并将内部加载标志设置为已加载。
+        /// </remarks>
         public SettingsPanelBase()
         {
             Loaded += SettingsPanelBase_Loaded;
         }
 
+        /// <summary>
+        /// 处理控件的 Loaded 事件：加载面板设置、启用触摸支持，尝试调用面板的 ApplyTheme 方法（若存在），
+        /// 再次加载设置并将内部已加载标志设为 true。
+        /// </summary>
+        /// <param name="sender">触发事件的对象（通常是当前面板实例）。</param>
+        /// <summary>
+        /// 在控件加载后执行初始化：加载设置、启用触摸支持、尝试调用面板的 ApplyTheme 方法以应用主题，并将面板标记为已加载。
+        /// </summary>
+        /// <remarks>该处理程序会调用 LoadSettings（注意可能被调用两次）、调用 EnableTouchSupport，并在反射调用 ApplyTheme 时吞去异常并写入调试信息。</remarks>
+        /// <param name="sender">触发 Loaded 事件的对象。</param>
+        /// <param name="e">事件参数，包含路由事件的相关信息。</param>
         private void SettingsPanelBase_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
@@ -269,7 +286,11 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
         }
 
-        protected abstract void HandleOptionChange(string group, string value);
+        /// <summary>
+/// 处理某个选项组中选项值的更改。
+/// </summary>
+/// <param name="group">选项所属的分组标识（对应 UI 中 Border 的 Tag 的 group 部分）。</param>
+/// <param name="value">被选中的选项值（对应 UI 中 Border 的 Tag 的 value 部分）。</param>
+protected abstract void HandleOptionChange(string group, string value);
     }
 }
-

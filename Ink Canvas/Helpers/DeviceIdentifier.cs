@@ -360,6 +360,18 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 保存设备ID到文件
         /// </summary>
+        /// <remarks>
+        /// 将设备标识信息以格式化的 JSON 写入指定文件，并确保目标目录存在；在失败时记录错误但不抛出异常。
+        /// </remarks>
+        /// <param name="filePath">目标文件的完整路径，用于保存设备标识信息。</param>
+        /// <summary>
+        /// 将设备标识信息以格式化 JSON 写入指定路径的文件，并确保目标目录存在。
+        /// </summary>
+        /// <param name="filePath">目标文件完整路径。</param>
+        /// <param name="info">要保存的设备标识信息对象（包含 DeviceId 和可选的硬件指纹）。</param>
+        /// <remarks>
+        /// 方法会创建缺失的目录并以缩进格式序列化 `info` 写入文件。发生异常时会记录错误并吞掉异常（不会抛出）。
+        /// </remarks>
         private static void SaveDeviceIdToFile(string filePath, DeviceIdInfo info)
         {
             try
@@ -1575,7 +1587,13 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 关机时保存使用时间数据
+        /// <summary>
+        /// 在应用退出或关机时保存并更新使用统计数据。
         /// </summary>
+        /// <remarks>
+        /// 计算当前会话时长（以应用启动时间为基准），将其加入总使用时长并将会话次数加一，更新平均会话时长和最后启动时间，然后将统计数据持久化到存储中。  
+        /// 会话时长会被限制为最大 86400 秒（24 小时）。方法内部捕获并记录所有异常，不会向上传播异常。
+        /// </remarks>
         public static void SaveUsageStatsOnShutdown()
         {
             try
@@ -1619,4 +1637,3 @@ namespace Ink_Canvas.Helpers
         }
     }
 }
-

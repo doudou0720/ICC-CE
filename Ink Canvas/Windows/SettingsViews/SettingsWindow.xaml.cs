@@ -17,6 +17,17 @@ namespace Ink_Canvas.Windows
     {
         private MainWindow _mainWindow;
 
+        /// <summary>
+        /// 初始化设置窗口的 UI、事件和面板并加载初始状态与主题。
+        /// </summary>
+        /// <remarks>
+        /// 构造函数完成以下工作：获取主窗口引用，注册搜索与菜单事件，构建并绑定侧栏条目，挂接各设置面板的滚动/阴影事件，初始化面板数组、滚动容器、标题与名称映射，设置初始选中项与主题状态，为自定义滑块添加触摸支持，预加载所有面板设置，并多次应用主题以确保视觉元素正确呈现（包含延迟再应用以修正标题栏等）。
+        /// <summary>
+        /// 初始化 SettingsWindow：构建并绑定侧边栏项与设置面板，订阅面板与主题相关事件，应用初始主题，预加载各面板的设置，并为自定义滑块添加触摸支持。
+        /// </summary>
+        /// <remarks>
+        /// 构造过程会获取 MainWindow 实例、配置搜索面板与菜单事件、初始化 SidebarItems、SettingsPanes、滚动容器与标题映射，设置各面板的顶部阴影事件处理器，确定初始暗/亮主题并更新侧边栏项状态，调用 UpdateSidebarItemsSelection、AddTouchSupportToCustomSliders、ApplyTheme、LoadAllPanelsSettings 与 ApplyThemeToAllPanels。为了确保全部元素（尤其标题栏）正确应用主题，会通过 Dispatcher 延迟再次调用主题应用逻辑。
+        /// </remarks>
         public SettingsWindow()
         {
             InitializeComponent();
@@ -322,8 +333,16 @@ namespace Ink_Canvas.Windows
         }
         
         /// <summary>
-        /// 通知所有面板应用主题
+        /// 通知所有已注册的设置面板应用当前主题配置，使各面板更新其视觉样式以匹配窗口主题。
         /// </summary>
+        /// <remarks>
+        /// 对每个面板尝试通过反射调用其 `ApplyTheme` 方法；如果某面板不存在该方法则会跳过，调用过程中发生的异常会被捕获并写入调试输出，但不会中断对其它面板的处理。
+        /// <summary>
+        /// 通知所有已注册的设置面板应用当前主题，使各面板同步呈现深色或浅色样式。
+        /// </summary>
+        /// <remarks>
+        /// 对每个已知的面板（例如 SecurityPanel、ThemePanel 等）尝试调用其 `ApplyTheme` 方法（若存在）；每个面板的调用会单独捕获并写入调试输出，方法本身也会捕获并记录任何总体异常，确保调用过程不会中断程序流程。
+        /// </remarks>
         private void ApplyThemeToAllPanels()
         {
             try
@@ -735,7 +754,10 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 检查系统主题是否为浅色
+        /// <summary>
+        /// 检查当前 Windows 系统主题是否为浅色。
         /// </summary>
+        /// <returns>`true` 如果系统主题为浅色；在无法读取注册表时也返回 `true`；否则返回 `false`。</returns>
         private bool IsSystemThemeLight()
         {
             try
@@ -753,8 +775,19 @@ namespace Ink_Canvas.Windows
         }
 
         /// <summary>
-        /// 加载所有设置面板的设置
+        /// 预加载并初始化所有设置面板：对每个面板尝试加载设置、启用触摸支持并应用当前主题。
         /// </summary>
+        /// <remarks>
+        /// 该操作在 UI 线程上以 DispatcherPriority.Loaded 异步调度执行，并在完成后再次触发对所有面板的主题应用以确保视觉状态一致。
+        /// 对单个面板的初始化错误会被捕获并处理，不会中断其它面板的预加载流程。
+        /// <summary>
+        /// 预初始化所有设置面板，使各面板在首次显示前完成设置加载、触摸支持启用与主题应用。
+        /// </summary>
+        /// <remarks>
+        /// 在 UI 线程上通过 Dispatcher 延迟执行面板初始化。对于每个已创建的面板，尝试调用其 `LoadSettings`、`EnableTouchSupport` 与 `ApplyTheme`（若存在），
+        /// 对不提供触摸支持方法的面板会回退到 MainWindowSettingsHelper 启用触摸支持。方法对单个面板的初始化错误进行局部捕获并记录，整个过程尽量保持对其它面板的容错性。
+        /// 完成初始化后会再次调度一次对所有面板统一应用主题的调用以确保主题一致性。
+        /// </remarks>
         private void LoadAllPanelsSettings()
         {
             try
@@ -938,6 +971,25 @@ namespace Ink_Canvas.Windows
         public string[] SettingsPaneTitles;
         public string[] SettingsPaneNames;
 
+        /// <summary>
+        /// 根据当前选中的侧边栏项更新侧边栏条目状态、面板可见性与主题并将视图滚动到顶部。
+        /// </summary>
+        /// <remarks>
+        /// - 将 SidebarItems 中的 Selected 与 SettingsWindowTitle.Text 与字段 _selectedSidebarItemName 同步；
+        /// - 根据应用设置计算并同步每个 SidebarItem 的 IsDarkTheme；
+        /// - 切换各个面板（Pane）的 Visibility，仅显示与 _selectedSidebarItemName 对应的面板；
+        /// - 异步调用所选面板（若存在）的 ApplyTheme 方法以确保新显示面板使用正确主题；
+        /// - 将所有已注册的 SettingsPaneScrollViewers 滚动到顶部以重置视图位置。
+        /// <summary>
+        /// 根据当前选中项同步侧栏条目状态，切换对应设置面板的可见性并确保面板使用正确的主题和初始滚动位置。
+        /// </summary>
+        /// <remarks>
+        /// - 将 SidebarItems 中的 Selected 与窗口内部的选中项标识同步，并更新窗口标题显示。  
+        /// - 根据当前外观设置计算并同步每个侧栏项的 IsDarkTheme 标志。  
+        /// - 将各设置面板的 Visibility 切换为可见或折叠，以匹配当前选中项。  
+        /// - 对新显示的面板在调度器的 Loaded 优先级下尝试调用其 `ApplyTheme`（若存在），在调用过程中捕获并记录异常以保证稳定性。  
+        /// - 将所有已注册的 SettingsPaneScrollViewers 滚动到顶部以重置视图位置。
+        /// </remarks>
         public void UpdateSidebarItemsSelection()
         {
             foreach (var si in SidebarItems)

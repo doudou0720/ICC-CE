@@ -665,6 +665,29 @@ namespace Ink_Canvas
 
         private TaskbarIcon _taskbar;
 
+        /// <summary>
+        /// 处理应用启动流程：根据命令行与设置显示启动画面、初始化组件与遥测、处理更新相关逻辑、单实例检查并在必要时通过 IPC 与已运行实例通信，最终创建并显示主窗口并启动文件关联与 IPC 监听器。
+        /// </summary>
+        /// <param name="sender">事件的发送者（通常为 Application 对象）。</param>
+        /// <param name="e">启动事件参数；其 Args 可包含控制启动流程的标志，例如:
+        /// - "--final-app"：表示这是更新后的最终应用启动（会清理更新标记等）
+        /// - "--update-mode"：表示以更新模式启动（跳过主窗口显示）
+        /// - "--board"：直接进入白板模式
+        /// - "--show"：退出收纳模式并恢复浮动栏
+        /// - "--skip-mutex-check"：跳过单实例互斥检查
+        /// - "-m"：允许多实例启动
+        /// <summary>
+        /// 处理应用程序启动流程并完成初始化与主窗口展示。
+        /// </summary>
+        /// <param name="sender">启动事件的发送者（通常为 Application）。</param>
+        /// <param name="e">启动事件参数，e.Args 可包含启动控制标志或 IPC 指令，例如:
+        /// - "--final-app"：表示为更新后最终启动，用于清理更新临时文件；
+        /// - "--update-mode" / AutoUpdate 相关标志：表示在更新流程中启动；
+        /// - "--skip-mutex-check"：跳过单实例互斥检查；
+        /// - "-m"：允许多实例；
+        /// - "--board"：以白板模式启动；
+        /// - "--show"：请求展开浮动栏；
+        /// - 以 "icc:" 开头的 URI（例如 icc:...）或 .icstk 文件路径，用于通过 IPC 与已运行实例通信。</param>
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
@@ -1159,6 +1182,27 @@ namespace Ink_Canvas
         private static DateTime splashScreenStartTime = DateTime.MinValue;
         private static DateTime appStartupStartTime = DateTime.MinValue;
 
+        /// <summary>
+        /// 启动并管理应用的心跳与守护检查定时器，监测启动阶段与主线程是否无响应，并在符合配置的情况下尝试静默重启应用。
+        /// </summary>
+        /// <remarks>
+        /// - 启动一个每秒更新心跳时间戳的调度定时器和一个每3秒运行的守护定时器。  
+        /// - 守护定时器在首次运行的启动阶段若检测到超过两分钟未完成启动，会根据 CrashAction 配置尝试静默重启。  
+        /// - 在启动完成后若检测到主线程超过10秒无响应，会根据 CrashAction 配置尝试静默重启。  
+        /// - 对连续重启次数有保护：若重启计数达到或超过5次，会弹出提示并停止自动重启（重置重启计数并退出进程）。  
+        /// - 在 OOBE（首次引导）展示期间不执行守护检查。  
+        /// - 该方法会产生外部可观察的副作用：可能启动新进程并调用 Environment.Exit 终止当前进程，或显示消息框。
+        /// <summary>
+        /// 启动应用的心跳与守护监控：维护定期心跳并在检测到启动假死或主线程无响应时根据配置触发静默重启或其它预定动作。
+        /// </summary>
+        /// <remarks>
+        /// - 创建并启动一个 1 秒间隔的 UI 线程心跳计时器，用于更新内部的最后心跳时间戳。  
+        /// - 创建并启动一个约 3 秒间隔的后台守护计时器，用于检测两类不可恢复的运行状态并采取行动：  
+        ///   1. 启动阶段假死：如果启动尚未完成且自启动（或启动画面）开始已持续 >= 2 分钟且未收到启动完成心跳，则根据 CrashAction 执行静默重启流程（包含重启次数上限保护）。  
+        ///   2. 运行阶段无响应：如果启动已完成且最后心跳距今超过 10 秒，则根据 CrashAction 执行静默重启流程（包含重启次数上限保护）。  
+        /// - 在 OOBE/首次运行流程正在显示时跳过守护检测。  
+        /// - 重启流程可能启动新的进程、显示错误提示并调用 Environment.Exit；重启次数达到阈值时会停止自动重启并重置计数。  
+        /// </remarks>
         private void StartHeartbeatMonitor()
         {
             heartbeatTimer = new DispatcherTimer
@@ -1230,7 +1274,12 @@ namespace Ink_Canvas
             }, null, 0, 3000);
         }
 
-        // 看门狗进程
+        /// <summary>
+        /// 在当前进程不是看门狗子进程时，启动一个看门狗子进程以监控当前进程的存活并把子进程句柄保存在 <c>watchdogProcess</c> 字段中。
+        /// </summary>
+        /// <remarks>
+        /// 启动时会以当前可执行文件为程序，传入参数格式 <c>--watchdog &lt;pid&gt; "&lt;exitSignalFile&gt;"</c>，其中 &lt;pid&gt; 为当前进程 ID，&lt;exitSignalFile&gt; 为用于通知看门狗退出的信号文件路径。若当前进程的命令行已包含 <c>--watchdog</c>，则不会再次启动以避免递归启动。
+        /// </remarks>
         public static void StartWatchdogIfNeeded()
         {
             // 避免递归启动
@@ -1248,7 +1297,26 @@ namespace Ink_Canvas
             watchdogProcess = Process.Start(psi);
         }
 
-        // 看门狗主逻辑
+        /// <summary>
+        /// 作为守护进程监视指定的主进程，并在主进程异常退出时根据配置执行重启或退出操作。
+        /// </summary>
+        /// <remarks>
+        /// 该方法期望命令行参数格式为："--watchdog &lt;pid&gt; &lt;exitSignalFile&gt;"（args[1..3]）。
+        /// - 每 2 秒检查一次指定的主进程是否仍在运行；同时检测退出信号文件，若存在则删除该文件并以代码 0 退出守护进程。  
+        /// - 当主进程退出时，会同步崩溃处理设置（SyncCrashActionFromSettings）。若启用了 UIA 顶层访问（IsUIAccessTopMostEnabled），守护进程直接退出。  
+        /// - 若崩溃动作为 SilentRestart，则增加启动计数并：当连续重启计数达到 5 次及以上时弹出错误对话框、重置计数并以代码 1 退出；否则启动新的主进程实例。  
+        /// 方法对内部异常静默处理，并在完成后确保进程退出。
+        /// <summary>
+        /// 当以 watchdog 模式启动时，监视指定的主进程并根据配置决定退出或重启主程序。
+        /// </summary>
+        /// <remarks>
+        /// 期望的命令行格式为：--watchdog &lt;主进程 pid&gt; &lt;退出信号文件路径&gt;。行为包括：
+        /// - 在主进程存续期间，监视退出信号文件以便被外部指示提前终止 watchdog。  
+        /// - 在检测到主进程终止后，同步崩溃处理策略并根据配置决定是否尝试静默重启主程序。  
+        /// - 若配置为静默重启（SilentRestart），将增加启动计数；当连续重启次数达到上限（5 次）时，会显示错误提示并停止自动重启，随后以非零退出码终止。  
+        /// - 若启用了 UIA 顶置（IsUIAccessTopMostEnabled），watchdog 不会执行重启并直接退出。  
+        /// 本方法会在完成监视或处理后终止当前进程（通过调用 Environment.Exit）。
+        /// </remarks>
         public static void RunWatchdogIfNeeded()
         {
             var args = Environment.GetCommandLineArgs();
@@ -1363,6 +1431,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理应用程序退出逻辑：记录退出信息、保存设备退出标识、在用户主动退出时向看门狗写入退出信号并终止看门狗进程。
+        /// </summary>
+        /// <param name="sender">触发退出事件的源。</param>
+        /// <param name="e">包含应用程序退出代码的事件参数（ApplicationExitCode）。</param>
         private void App_Exit(object sender, ExitEventArgs e)
         {
             // 仅在软件内主动退出时关闭看门狗，并写入退出信号

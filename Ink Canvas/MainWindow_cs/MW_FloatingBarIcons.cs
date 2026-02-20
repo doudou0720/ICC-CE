@@ -2408,6 +2408,12 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 取消先前按下元素的高亮（若存在），执行对当前选中对象的删除操作，然后切换到光标工具模式。
+        /// 在浮动工具栏上的重复点击（当按下对象不是触发者时）会被忽略以避免重复触发删除动作。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（可能为浮动工具栏按钮或其他 UI 元素）。</param>
+        /// <param name="e">事件参数；在某些调用路径中可为 null。</param>
         private void CursorWithDelIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2419,55 +2425,117 @@ namespace Ink_Canvas
             CursorIcon_Click(null, null);
         }
 
-        // 快捷调色盘事件处理方法
+        /// <summary>
+        /// 将当前绘笔颜色设置为白色并安排在短时间后自动恢复到之前的笔刷。
+        /// <summary>
+        /// 将当前画笔颜色切换为白色并安排在一段时间后自动恢复为先前的画笔颜色。
+        /// </summary>
         private void QuickColorWhite_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.White);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色设置为橙色，并安排稍后自动恢复到先前的画笔颜色。
+        /// <summary>
+        /// 将画笔颜色设置为快速调色板的橙色，并安排延迟后恢复先前的画笔颜色。
+        /// </summary>
+        /// <param name="sender">事件的触发源。</param>
+        /// <param name="e">路由事件参数。</param>
         private void QuickColorOrange_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(251, 150, 80)); // 橙色
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将画笔颜色切换为黄色并安排自动恢复为先前的画笔设置。
+        /// <summary>
+        /// 切换当前画笔颜色为黄色，并在预设延迟后自动恢复到先前的画刷。
+        /// </summary>
         private void QuickColorYellow_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Yellow);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色设置为黑色并安排在稍后自动恢复为先前的画笔颜色。
+        /// <summary>
+        /// 将画笔颜色设置为黑色，并安排在预定时间后自动恢复为先前的画笔颜色。
+        /// </summary>
         private void QuickColorBlack_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Black);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将当前画笔颜色设置为蓝色并安排在一段时间后自动恢复到之前的画笔颜色。
+        /// <summary>
+        /// 将画笔颜色设置为蓝色，并在短暂延迟后自动恢复到先前的画笔设置。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象。</param>
+        /// <param name="e">事件参数。</param>
         private void QuickColorBlue_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(37, 99, 235)); // 蓝色
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色切换为红色，并安排稍后自动恢复为先前的画笔颜色。
+        /// <summary>
+        /// 将当前画笔切换为红色并安排在短时间后自动恢复为先前的画笔颜色。
+        /// </summary>
+        /// <param name="sender">触发该事件的源对象（UI 元素）。</param>
+        /// <param name="e">事件参数，包含路由事件数据。</param>
         private void QuickColorRed_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Colors.Red);
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将快速颜色切换为绿色并安排在一段时间后自动恢复先前画笔颜色。
+        /// <summary>
+        /// 将当前画笔切换为预设的绿色快捷颜色，并安排在短时间后自动恢复到先前使用的画笔颜色。
+        /// </summary>
         private void QuickColorGreen_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(22, 163, 74));
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 将当前画笔颜色切换为紫色快捷色并安排自动恢复先前画笔设置。
+        /// <summary>
+        /// 将当前画笔颜色设置为紫色并安排在短时间后自动恢复到先前的画笔颜色。
+        /// </summary>
         private void QuickColorPurple_Click(object sender, RoutedEventArgs e)
         {
             SetQuickColor(Color.FromRgb(147, 51, 234));
             ScheduleBrushAutoRestore();
         }
 
+        /// <summary>
+        /// 设置并应用快速颜色到当前画笔与相关状态，包括必要时切换到批注模式、更新荧光笔属性与颜色索引、记录桌面/白板的最近颜色，以及刷新调色盘指示器和颜色显示。
+        /// </summary>
+        /// <param name="color">要应用的颜色。</param>
+        /// <remarks>
+        /// 此方法会：
+        /// - 在非批注模式时切换到绘制（Ink）模式；
+        /// - 将指定颜色应用到绘图属性和 InkCanvas 的默认绘图属性；
+        /// - 在荧光笔模式下更新荧光笔的内部颜色索引与绘图属性（宽度、笔尖形状、IsHighlighter 等）；
+        /// - 根据当前模式（桌面或白板）记录最近使用的颜色索引；
+        /// - 更新快速调色盘的选中指示器并刷新颜色显示状态。
+        /// <summary>
+        /// 将指定颜色应用为快速颜色，并同步画笔、荧光笔和相关 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// 确保画布处于画笔（Ink）模式后，将颜色应用到当前绘图属性与默认绘图属性；若处于荧光笔模式则同时更新荧光笔的颜色索引与尺寸/形状属性。方法还会更新桌面/白板模式下的最近使用颜色索引，刷新快捷调色板的选中指示，并触发颜色切换的界面更新检查。
+        /// </remarks>
         private void SetQuickColor(Color color)
         {
             // 确保当前处于批注模式
@@ -2831,6 +2899,16 @@ namespace Ink_Canvas
         private bool wasNoFocusModeBeforeSettings;
         private bool userChangedNoFocusModeInSettings;
 
+        /// <summary>
+        /// 切换并打开设置面板；在需要时先进行安全密码校验，然后显示设置面板并启动打开动画，同时根据设置暂时调整无焦点模式与遮罩交互状态。
+        /// <summary>
+        /// 在点击设置按钮时显示或隐藏设置面板；在显示前可按配置要求弹出安全密码验证，验证通过后开启设置面板、保存并临时调整“无焦点模式”等相关 UI 状态，并启动面板入场动画。
+        /// </summary>
+        /// <remarks>
+        /// - 如果设置面板已可见，则会隐藏所有子面板并返回。 
+        /// - 如果需要安全密码且验证未通过，则不会打开设置面板。 
+        /// - 打开面板时会记录并可能短暂调整无焦点模式状态、启用设置遮罩并将设置面板滚动到顶部，同时触发入场动画；完成动画后会重置面板打开/关闭的标志位。
+        /// </remarks>
         private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
@@ -2982,7 +3060,12 @@ namespace Ink_Canvas
 
         private int currentMode;
 
-        // 退出批注模式时的全屏还原处理
+        /// <summary>
+        /// 在退出批注（注释）模式时，根据当前设置和状态恢复因进入画板模式而强制的全屏限制并还原窗口到工作区域大小。
+        /// </summary>
+        /// <remarks>
+        /// 当且仅当“启用避免全屏辅助”设置已打开、当前已应用全屏方案、不处于白板编辑模式且不在 PPT 放映模式时执行。方法会将 AvoidFullScreenHelper 切回非画板模式、将主窗口移动到主显示器的工作区并将 isFullScreenApplied 标记为 false，表示全屏还原已完成。
+        /// </remarks>
         private void RestoreFullScreenOnExitAnnotationMode()
         {
             if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
@@ -3006,6 +3089,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 在屏幕模式、白板与黑板模式之间切换并同步相关的 UI 状态与资源处理。
+        /// </summary>
+        /// <remarks>
+        /// 切换过程中会保存/清理/恢复画笔轨迹，显示或隐藏白板/黑板面板、手势面板与 PPT 控件，调整主题与悬浮工具栏可见性，处理全屏/工作区尺寸恢复或进入全屏，以及在进入白板时检查剪贴板并显示粘贴提示。该方法还会触发隐藏/显示墨迹画布的逻辑（通过调用 BtnHideInkCanvas_Click）。
+        /// <summary>
+        /// 在屏幕、白板和黑板三种展示模式之间切换，并同步相关的 UI、画布与应用状态。
+        /// </summary>
+        /// <remarks>
+        /// 切换时会处理以下行为：保存/清理/恢复笔迹，显示或隐藏黑板面板与手势面板，调整浮动工具栏可见性与折叠行为，切换主题颜色与退出/进入全屏（仅在非 PPT 放映时受全屏辅助设置控制），并在进入白板/黑板模式时检查剪贴板图片以显示粘贴提示。该方法同时协调 PPT 模式下的按钮可见性及相关界面动画，而不返回值也不抛出显式异常。
+        /// </remarks>
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {
             if (GridTransparencyFakeBackground.Background == Brushes.Transparent)

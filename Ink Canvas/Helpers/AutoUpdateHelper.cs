@@ -1303,7 +1303,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 获取文件总大小
+        /// <summary>
+        /// 获取指定文件 URL 的内容长度（字节）。
+        /// </summary>
+        /// <param name="fileUrl">文件的 HTTP/HTTPS URL。</param>
+        /// <returns>文件的总字节数；在无法确定长度或请求失败时返回 -1。</returns>
         private static async Task<long> GetContentLength(string fileUrl)
         {
             try
@@ -1320,7 +1324,17 @@ namespace Ink_Canvas.Helpers
             return -1;
         }
 
-        // 保存下载状态
+        /// <summary>
+        /// 将下载完成状态写入预定义的状态文件以供后续检查。
+        /// </summary>
+        /// <param name="isSuccess">指示下载是否成功；将以字符串形式写入状态文件（"True" 或 "False"）。</param>
+        /// <remarks>
+        /// 如果状态文件路径为空则不执行任何操作；方法内部捕获异常并记录日志，不会向调用方抛出异常。
+        /// <summary>
+        /// 将下载结果写入预定义的状态文件，保存为文本 "True" 或 "False"。
+        /// </summary>
+        /// <param name="isSuccess">指示下载是否成功；为 true 时写入 "True"，为 false 时写入 "False"。</param>
+        /// <remarks>若 <c>statusFilePath</c> 为 null 则不执行任何操作。方法会在必要时创建父目录；发生异常时将记录错误日志但不会抛出异常。</remarks>
         private static void SaveDownloadStatus(bool isSuccess)
         {
             try
@@ -1341,7 +1355,19 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 安装新版本应用
+        /// <summary>
+        /// 安装指定版本的更新包并启动新版本进程以完成替换，然后退出当前应用程序。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会临时将 App.IsUpdateInstalling 置为 true、尝试关闭进程保护（并在结束时还原）、在必要时备份当前设置、解压更新 ZIP、启动解压后的新可执行文件（以更新模式传递旧进程 ID、解压路径和目标路径等参数），并在新进程启动后关闭当前进程。方法会记录日志并在遇到错误时安全退出相应步骤，但不会抛出异常给调用方以外的上下文。</remarks>
+        /// <param name="version">要安装的版本号，用于定位更新包文件名（例如 InkCanvasForClass.CE.{version}.zip）。</param>
+        /// <summary>
+        /// 安装指定版本的更新包并启动更新流程。
+        /// </summary>
+        /// <remarks>
+        /// 方法会（在可能的情况下）备份当前设置、验证并解压对应版本的安装包，启动新版本的程序以进入更新模式并终止当前进程。整个过程会记录操作日志；发生错误时记录错误信息但不会向调用方抛出异常。</remarks>
+        /// <param name="version">要安装的目标版本号字符串（用于定位更新包和构造解压/启动路径）。</param>
+        /// <param name="isInSilence">指示是否以静默模式启动新版本（影响传递给新进程的参数和可能的用户提示）。</param>
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
             bool wasProcessProtectionEnabled = false;
@@ -2290,6 +2316,12 @@ namespace Ink_Canvas.Helpers
             endTimeComboBox.ItemsSource = Hours.SelectMany(h => Minutes.Select(m => $"{h}:{m}"));
         }
 
+        /// <summary>
+        /// 判断当前时间是否位于指定的静默（禁止）时间段内。
+        /// </summary>
+        /// <param name="startTime">静默期开始时间，格式为 "HH:mm"（24 小时制）。</param>
+        /// <param name="endTime">静默期结束时间，格式为 "HH:mm"（24 小时制）。</param>
+        /// <returns>`true` 当当前时间在静默期内，`false` 否则。相同的开始和结束时间视为始终处于静默期。</returns>
         public static bool CheckIsInSilencePeriod(string startTime, string endTime)
         {
             if (startTime == endTime) return true;

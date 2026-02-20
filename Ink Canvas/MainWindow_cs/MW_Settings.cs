@@ -874,6 +874,10 @@ namespace Ink_Canvas
 
         private static readonly Lazy<object> HitokotoHttpClient = new Lazy<object>(CreateHitokotoClient, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
+        /// <summary>
+        /// 创建用于请求 Hitokoto API 的 HttpClient 实例，配置了 5 秒超时并尝试设置 User-Agent。
+        /// </summary>
+        /// <returns>`HttpClient` 实例（已设置 5 秒超时并尝试设置 User-Agent），如果无法创建则返回 `null`（失败时会尝试记录警告日志）。</returns>
         private static object CreateHitokotoClient()
         {
             try
@@ -904,6 +908,21 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据当前外观设置更新白板水印的名言文本。
+        /// </summary>
+        /// <remarks>
+        /// 当配置为内置来源时（0：OSUPlayer、1：名言警句、2：高考俗语）从对应数组中随机选择一条并设置为水印文本；
+        /// 当配置为一言（3）时会异步请求 Hitokoto API 并在请求中显示占位提示，成功时将返回文本设为水印，失败时记录警告日志并设置可读的失败提示文本。此方法会修改 BlackBoardWaterMark.Text，并在发生异常时记录日志且设置合适的回退文本。
+        /// <summary>
+        /// 根据当前设置为白板水印选择并更新一句“鸡汤/名言”文本。
+        /// </summary>
+        /// <remarks>
+        /// - 当设置的来源为内置集合（0、1、2）时，从对应数组中随机选取一条并应用。
+        /// - 当来源为 3 时，尝试从 Hitokoto（一言）API 拉取文本；请求失败或返回空文本时会使用本地提示性文字作为回退。
+        /// - 如果功能被禁用或在初始化 HTTP 客户端时发生错误，会将水印设置为相应的不可用提示且记录日志。
+        /// </remarks>
+        /// <returns>表示更新操作的任务；完成时白板水印文本已被更新或设置为错误/回退提示。</returns>
         private async Task UpdateChickenSoupTextAsync()
         {
             try
@@ -2320,6 +2339,11 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理高亮笔宽度滑块的值变更：将新的宽度应用到绘图属性、更新设置并持久化到配置文件。
+        /// </summary>
+        /// <param name="sender">触发事件的滑块控件（Slider）。</param>
+        /// <param name="e">包含新的滑块值的事件参数。</param>
         private void HighlighterWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2331,6 +2355,17 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 将画笔不透明度更新为滑块的当前值，并保存到设置中。
+        /// </summary>
+        /// <remarks>
+        /// 使用滑块的当前值作为 alpha 通道更新 drawingAttributes.Color，同时将该值写入 Settings.Canvas.InkAlpha 并持久化配置文件。
+        /// <summary>
+        /// 更新画笔（墨迹）不透明度并将变更应用到绘制属性与持久化设置。
+        /// </summary>
+        /// <remarks>
+        /// 在窗口已加载时，将滑块的当前值写入 drawingAttributes.Color 的 alpha 分量，更新 Settings.Canvas.InkAlpha 并调用 SaveSettingsToFile 持久化更改。
+        /// </remarks>
         private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2345,6 +2380,13 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 根据组合框的当前选择更新双曲线渐近线选项（Settings.Canvas.HyperbolaAsymptoteOption），并将更改保存到设置文件。
+        /// <summary>
+        /// 在用户更改“双曲线渐近线”选项时更新对应设置并保存到配置文件。
+        /// </summary>
+        /// <param name="sender">引发事件的控件（通常为 ComboBox）。</param>
+        /// <param name="e">选择更改事件的参数。</param>
         private void ComboBoxHyperbolaAsymptoteOption_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3173,6 +3215,18 @@ namespace Ink_Canvas
 
         #region Reset
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认配置。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会重新创建全局 Settings 实例并应用推荐值，覆盖大部分子模块配置（如外观、画布、自动化、PPT、手势、高级选项等）。
+        /// 在重置过程中会保留并恢复当前 Settings.Automation 中的 AutoDelSavedFiles 与 AutoDelSavedFilesDaysThreshold 两项值以避免意外删除策略变化。
+        /// <summary>
+        /// 将全局设置重置为推荐的默认配置。
+        /// </summary>
+        /// <remarks>
+        /// 该方法用推荐值替换全局 Settings 对象，旨在恢复一组经过调整的默认行为以便快速恢复到建议配置。重置会覆盖大部分设置分组（Advanced、Appearance、Automation、PowerPointSettings、Canvas、Gesture、InkToShape、Startup 等），但会保留并恢复调用前的两个自动清理相关值：Automation.AutoDelSavedFiles 与 Automation.AutoDelSavedFilesDaysThreshold，以免改变已配置的自动删除策略。
+        /// </remarks>
         public static void SetSettingsToRecommendation()
         {
             var AutoDelSavedFilesDays = Settings.Automation.AutoDelSavedFiles;
@@ -3320,6 +3374,17 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认值，并保存与重新加载配置以应用更改。
+        /// </summary>
+        /// <remarks>
+        /// 如果配置重置受安全密码保护，则会提示用户输入密码；在验证失败时中止重置。方法会暂时停止加载标志以避免触发事件、将“开机启动”切换置为关闭，并在完成后显示一条通知。任何内部异常将被吞噬以保证流程不中断。
+        /// <summary>
+        /// 在用户触发时将应用设置恢复为推荐配置，并保存与重新加载界面以应用这些更改。
+        /// </summary>
+        /// <remarks>
+        /// 如果当前配置要求重置时输入安全密码，本方法会提示并验证密码；在验证未通过时中止重置流程。重置流程将调用 SetSettingsToRecommendation、保存到配置文件并通过 LoadSettings 刷新 UI；完成后会将“开机运行”开关设为关闭并显示通知。
+        /// </remarks>
         public async void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -4409,6 +4474,18 @@ namespace Ink_Canvas
 
         #endregion
 
+        /// <summary>
+        /// 将当前内存中的 Settings 序列化为格式化的 JSON 并写入应用程序配置文件（位于 App.RootPath 下的 Configs 目录或根设置文件）。
+        /// </summary>
+        /// <remarks>
+        /// 在写入前会确保目标目录/文件具有写入权限（使用 ProcessProtectionManager）。任何写入失败或异常都会被吞掉，调用方不会收到异常抛出。
+        /// <summary>
+        /// 将当前全局设置序列化为格式化的 JSON 并写入应用配置文件，以持久化设置更改。
+        /// </summary>
+        /// <remarks>
+        /// 如果目标目录不存在，会尝试创建 "Configs" 目录；写入操作通过 ProcessProtectionManager 获取写权限后执行。
+        /// 写入过程中遇到任何异常会被静默吞掉（不会抛出），因此失败不会中断调用者流程但可能导致设置未保存。
+        /// </remarks>
         public static void SaveSettingsToFile()
         {
             var text = JsonConvert.SerializeObject(Settings, Formatting.Indented);
