@@ -97,13 +97,6 @@ namespace Ink_Canvas
         // 当前播放页码跟踪
         private int _currentSlideShowPosition = 0;
 
-        // 页面切换防抖机制
-        private DateTime _lastSlideSwitchTime = DateTime.MinValue;
-        private int _pendingSlideIndex = -1;
-        private int _pendingPreviousSlideIndex = -1;
-        private System.Timers.Timer _slideSwitchDebounceTimer;
-        private const int SlideSwitchDebounceMs = 150; // 防抖延迟150毫秒
-
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
         private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
         #endregion
@@ -889,23 +882,32 @@ namespace Ink_Canvas
         {
             try
             {
-                Application.Current.Dispatcher.InvokeAsync(() =>
+                if (wn?.View == null || wn.Presentation == null) return;
+
+                int currentSlide = wn.View.CurrentShowPosition;
+                int totalSlides = wn.Presentation.Slides.Count;
+
+                if (currentSlide == _currentSlideShowPosition) return;
+
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (wn?.View == null || wn.Presentation == null)
-                    {
-                        return;
-                    }
+                    int prev = _currentSlideShowPosition;
 
-                    var currentSlide = wn.View.CurrentShowPosition;
-                    var activePresentation = wn.Presentation;
-                    var totalSlides = activePresentation.Slides.Count;
+                    if (inkCanvas.Strokes.Count > 0 && prev > 0 && prev != currentSlide)
+                        _singlePPTInkManager?.SaveCurrentSlideStrokes(prev, inkCanvas.Strokes);
 
-                    int previousSlide = _currentSlideShowPosition;
-                    _currentSlideShowPosition = currentSlide;
+                    ClearStrokes(true);
+                    timeMachine.ClearStrokeHistory();
 
-                    HandleSlideSwitchWithDebounce(previousSlide, currentSlide, totalSlides);
+                    StrokeCollection newStrokes = _singlePPTInkManager?.LoadSlideStrokes(currentSlide);
+                    if (newStrokes != null && newStrokes.Count > 0)
+                        inkCanvas.Strokes.Add(newStrokes);
 
+                    _singlePPTInkManager?.LockInkForSlide(currentSlide);
+                    _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
                 });
+
+                _currentSlideShowPosition = currentSlide;
             }
             catch (Exception ex)
             {
@@ -1279,91 +1281,12 @@ namespace Ink_Canvas
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
 
-                // 重置页面切换防抖机制
-                _lastSlideSwitchTime = DateTime.MinValue;
-                _pendingSlideIndex = -1;
 
                 LogHelper.WriteLogToFile("PPT状态变量已重置", LogHelper.LogType.Trace);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"重置PPT状态变量失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 使用防抖机制处理页面切换
-        /// </summary>
-        private void HandleSlideSwitchWithDebounce(int previousSlideIndex, int newSlideIndex, int totalSlides)
-        {
-            try
-            {
-                var now = DateTime.Now;
-
-                if (now - _lastSlideSwitchTime < TimeSpan.FromMilliseconds(SlideSwitchDebounceMs))
-                {
-                    _pendingSlideIndex = newSlideIndex;
-                    _pendingPreviousSlideIndex = previousSlideIndex;
-
-                    _slideSwitchDebounceTimer?.Stop();
-                    _slideSwitchDebounceTimer = new System.Timers.Timer(SlideSwitchDebounceMs);
-                    _slideSwitchDebounceTimer.Elapsed += (sender, e) =>
-                    {
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            if (_pendingSlideIndex > 0)
-                            {
-                                SwitchSlideInk(_pendingPreviousSlideIndex, _pendingSlideIndex);
-                                _pptUIManager?.UpdateCurrentSlideNumber(_pendingSlideIndex, totalSlides);
-                                _pendingSlideIndex = -1;
-                                _pendingPreviousSlideIndex = -1;
-                            }
-                        });
-                        _slideSwitchDebounceTimer?.Stop();
-                    };
-                    _slideSwitchDebounceTimer.Start();
-                }
-                else
-                {
-                    SwitchSlideInk(previousSlideIndex, newSlideIndex);
-                    _pptUIManager?.UpdateCurrentSlideNumber(newSlideIndex, totalSlides);
-                }
-
-                _lastSlideSwitchTime = now;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"处理页面切换防抖失败: {ex}", LogHelper.LogType.Error);
-            }
-        }
-
-        private void SwitchSlideInk(int previousSlideIndex, int newSlideIndex)
-        {
-            try
-            {
-                if (_pptManager?.IsConnected != true || _pptManager?.IsInSlideShow != true) return;
-                if (newSlideIndex <= 0)
-                {
-                    LogHelper.WriteLogToFile($"无效的新页面索引: {newSlideIndex}，跳过页面切换", LogHelper.LogType.Warning);
-                    return;
-                }
-
-                // 先保存上一页墨迹
-                if (inkCanvas.Strokes.Count > 0 && previousSlideIndex > 0 && previousSlideIndex != newSlideIndex)
-                {
-                    if (_singlePPTInkManager?.CanWriteInk(previousSlideIndex) == true)
-                        _singlePPTInkManager?.SaveCurrentSlideStrokes(previousSlideIndex, inkCanvas.Strokes);
-                }
-
-                ClearStrokes(true);
-                timeMachine.ClearStrokeHistory();
-                StrokeCollection newStrokes = _singlePPTInkManager?.SwitchToSlide(newSlideIndex, null);
-                if (newStrokes != null && newStrokes.Count > 0)
-                    inkCanvas.Strokes.Add(newStrokes);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换页面墨迹失败: {ex}", LogHelper.LogType.Error);
             }
         }
 
