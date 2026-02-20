@@ -52,6 +52,12 @@ namespace Ink_Canvas
                     return;
                 }
 
+                if (screenshotResult.Value.AddToWhiteboard)
+                {
+                    await AddScreenshotToNewWhiteboardPage(screenshotResult.Value);
+                    return;
+                }
+
                 if (screenshotResult.Value.Area.Width <= 0 || screenshotResult.Value.Area.Height <= 0)
                 {
                     ShowNotification("未选择有效截图区域");
@@ -106,6 +112,67 @@ namespace Ink_Canvas
             {
                 Visibility = Visibility.Visible;
                 ShowNotification($"截图失败: {ex.Message}");
+            }
+        }
+
+        private async Task AddScreenshotToNewWhiteboardPage(ScreenshotResult screenshotResult)
+        {
+            if (currentMode != 1)
+            {
+                SwitchToBoardMode();
+                await Task.Delay(150);
+            }
+
+            BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
+
+            // 摄像头截图（BitmapSource）
+            if (screenshotResult.CameraBitmapSource != null)
+            {
+                await InsertBitmapSourceToCanvas(screenshotResult.CameraBitmapSource);
+                return;
+            }
+
+            // 摄像头截图（Bitmap）
+            if (screenshotResult.CameraImage != null)
+            {
+                await InsertScreenshotToCanvas(screenshotResult.CameraImage);
+                return;
+            }
+
+            if (screenshotResult.Area.Width <= 0 || screenshotResult.Area.Height <= 0)
+            {
+                ShowNotification("未选择有效截图区域");
+                return;
+            }
+
+            using (var originalBitmap = CaptureScreenArea(screenshotResult.Area))
+            {
+                if (originalBitmap == null)
+                {
+                    ShowNotification("截图失败");
+                    return;
+                }
+
+                Bitmap finalBitmap = originalBitmap;
+                bool needDisposeFinalBitmap = false;
+
+                try
+                {
+                    if (screenshotResult.Path != null && screenshotResult.Path.Count > 0)
+                    {
+                        finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Path, screenshotResult.Area);
+                        needDisposeFinalBitmap = true;
+                    }
+
+                    await InsertScreenshotToCanvas(finalBitmap);
+                }
+                finally
+                {
+                    if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                    {
+                        finalBitmap.Dispose();
+                    }
+                }
             }
         }
 
