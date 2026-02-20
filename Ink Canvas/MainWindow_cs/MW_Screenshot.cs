@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas
 {
@@ -125,55 +126,68 @@ namespace Ink_Canvas
 
             BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
 
+            // 曲线救国：统一走“复制到剪贴板 + 粘贴”流程，规避直接插入偶发不生效问题
+            BitmapSource bitmapSourceForClipboard = null;
+
             // 摄像头截图（BitmapSource）
             if (screenshotResult.CameraBitmapSource != null)
             {
-                await InsertBitmapSourceToCanvas(screenshotResult.CameraBitmapSource);
-                return;
+                bitmapSourceForClipboard = screenshotResult.CameraBitmapSource;
             }
-
             // 摄像头截图（Bitmap）
-            if (screenshotResult.CameraImage != null)
+            else if (screenshotResult.CameraImage != null)
             {
-                await InsertScreenshotToCanvas(screenshotResult.CameraImage);
-                return;
+                bitmapSourceForClipboard = ConvertBitmapToBitmapSource(screenshotResult.CameraImage);
             }
-
-            if (screenshotResult.Area.Width <= 0 || screenshotResult.Area.Height <= 0)
+            else
             {
-                ShowNotification("未选择有效截图区域");
-                return;
-            }
-
-            using (var originalBitmap = CaptureScreenArea(screenshotResult.Area))
-            {
-                if (originalBitmap == null)
+                if (screenshotResult.Area.Width <= 0 || screenshotResult.Area.Height <= 0)
                 {
-                    ShowNotification("截图失败");
+                    ShowNotification("未选择有效截图区域");
                     return;
                 }
 
-                Bitmap finalBitmap = originalBitmap;
-                bool needDisposeFinalBitmap = false;
-
-                try
+                using (var originalBitmap = CaptureScreenArea(screenshotResult.Area))
                 {
-                    if (screenshotResult.Path != null && screenshotResult.Path.Count > 0)
+                    if (originalBitmap == null)
                     {
-                        finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Path, screenshotResult.Area);
-                        needDisposeFinalBitmap = true;
+                        ShowNotification("截图失败");
+                        return;
                     }
 
-                    await InsertScreenshotToCanvas(finalBitmap);
-                }
-                finally
-                {
-                    if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                    Bitmap finalBitmap = originalBitmap;
+                    bool needDisposeFinalBitmap = false;
+
+                    try
                     {
-                        finalBitmap.Dispose();
+                        if (screenshotResult.Path != null && screenshotResult.Path.Count > 0)
+                        {
+                            finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Path, screenshotResult.Area);
+                            needDisposeFinalBitmap = true;
+                        }
+
+                        bitmapSourceForClipboard = ConvertBitmapToBitmapSource(finalBitmap);
+                    }
+                    finally
+                    {
+                        if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                        {
+                            finalBitmap.Dispose();
+                        }
                     }
                 }
             }
+
+            if (bitmapSourceForClipboard == null)
+            {
+                ShowNotification("截图转换失败");
+                return;
+            }
+
+            bitmapSourceForClipboard.Freeze();
+            System.Windows.Clipboard.SetImage(bitmapSourceForClipboard);
+            await Task.Delay(60);
+            await PasteImageFromClipboard();
         }
 
         // 提取公共的截图和保存逻辑
