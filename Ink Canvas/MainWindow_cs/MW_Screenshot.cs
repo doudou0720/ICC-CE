@@ -35,6 +35,80 @@ namespace Ink_Canvas
                 SaveInkCanvasStrokes(false);
         }
 
+        internal async Task SaveAreaScreenShotToDesktop()
+        {
+            try
+            {
+                var originalVisibility = Visibility;
+                Visibility = Visibility.Hidden;
+                await Task.Delay(200);
+
+                var screenshotResult = await ShowScreenshotSelector();
+                Visibility = originalVisibility;
+
+                if (!screenshotResult.HasValue)
+                {
+                    ShowNotification("截图已取消");
+                    return;
+                }
+
+                if (screenshotResult.Value.Area.Width <= 0 || screenshotResult.Value.Area.Height <= 0)
+                {
+                    ShowNotification("未选择有效截图区域");
+                    return;
+                }
+
+                var desktopPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                    $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
+
+                using (var originalBitmap = CaptureScreenArea(screenshotResult.Value.Area))
+                {
+                    if (originalBitmap == null)
+                    {
+                        ShowNotification("截图失败");
+                        return;
+                    }
+
+                    Bitmap finalBitmap = originalBitmap;
+                    bool needDisposeFinalBitmap = false;
+
+                    try
+                    {
+                        if (screenshotResult.Value.Path != null && screenshotResult.Value.Path.Count > 0)
+                        {
+                            finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Value.Path, screenshotResult.Value.Area);
+                            needDisposeFinalBitmap = true;
+                        }
+
+                        var directory = Path.GetDirectoryName(desktopPath);
+                        if (!Directory.Exists(directory))
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+
+                        finalBitmap.Save(desktopPath, ImageFormat.Png);
+                        ShowNotification($"截图成功保存至 {desktopPath}");
+                    }
+                    finally
+                    {
+                        if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                        {
+                            finalBitmap.Dispose();
+                        }
+                    }
+                }
+
+                if (Settings.Automation.IsAutoSaveStrokesAtScreenshot)
+                    SaveInkCanvasStrokes(false);
+            }
+            catch (Exception ex)
+            {
+                Visibility = Visibility.Visible;
+                ShowNotification($"截图失败: {ex.Message}");
+            }
+        }
+
         // 提取公共的截图和保存逻辑
         private void CaptureAndSaveScreenshot(string savePath, bool isHideNotification)
         {
