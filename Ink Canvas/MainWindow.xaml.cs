@@ -318,7 +318,77 @@ namespace Ink_Canvas
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
                 }
+                CheckAndShowOobe();
             }), DispatcherPriority.Loaded);
+        }
+
+        private void CheckAndShowOobe()
+        {
+            try
+            {
+                if (Settings?.Startup?.HasShownOobe == false)
+                {
+                    var oobeTimer = new DispatcherTimer(DispatcherPriority.Loaded, Dispatcher)
+                    {
+                        Interval = TimeSpan.FromMilliseconds(500)
+                    };
+                    oobeTimer.Tick += (s, e) =>
+                    {
+                        oobeTimer.Stop();
+                        oobeTimer = null;
+                        try
+                        {
+                            if (ViewboxFloatingBar != null)
+                            {
+                                ViewboxFloatingBar.Visibility = Visibility.Collapsed;
+                            }
+
+                            var oobeWindow = new OobeWindow(Settings);
+                            oobeWindow.Owner = this;
+                            oobeWindow.ShowDialog();
+
+                            OnOobeCompleted();
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"显示 OOBE 时出错: {ex.Message}", LogHelper.LogType.Error);
+                            if (ViewboxFloatingBar != null)
+                            {
+                                ViewboxFloatingBar.Visibility = Visibility.Visible;
+                            }
+                        }
+                    };
+                    oobeTimer.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"检查 OOBE 时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void OnOobeCompleted()
+        {
+            try
+            {
+                if (Settings?.Startup != null)
+                {
+                    Settings.Startup.HasShownOobe = true;
+                    SaveSettingsToFile();
+                }
+
+                if (ViewboxFloatingBar != null && currentMode == 0)
+                {
+                    ViewboxFloatingBar.Visibility = Visibility.Visible;
+                    ViewboxFloatingBarMarginAnimation(100, true);
+                }
+
+                LogHelper.WriteLogToFile("OOBE 已完成", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"完成 OOBE 时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         private void TimerControl_ShowMinimizedRequested(object sender, EventArgs e)
@@ -974,8 +1044,6 @@ namespace Ink_Canvas
             LoadSettings(true);
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
-
-            ShowOobeIfNeeded();
 
             // 初始化Dlass上传队列（恢复上次的上传队列）
             DlassNoteUploader.InitializeQueue();
