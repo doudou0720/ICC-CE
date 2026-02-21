@@ -357,7 +357,7 @@ namespace Ink_Canvas
                 if (themeKey != null) keyValue = (int)themeKey.GetValue("SystemUsesLightTheme");
                 if (keyValue == 1) light = true;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             return light;
         }

@@ -95,7 +95,7 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"视频展台摄像头错误: {e}", LogHelper.LogType.Error);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void CameraService_FrameReceived(object sender, Bitmap frame)
@@ -169,7 +169,7 @@ namespace Ink_Canvas
                 img.Source = preview;
                 img.Visibility = Visibility.Visible;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private const double VideoPresenterLiveFrameScreenRatio = 0.75;
@@ -201,7 +201,7 @@ namespace Ink_Canvas
                 InitializeElementTransform(img);
                 BindElementEvents(img);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             _liveFrameImageByPage[page] = img;
             return img;
@@ -323,7 +323,7 @@ namespace Ink_Canvas
                 UpdateCurrentToolMode("select");
                 HideSubPanels("select");
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 立即用侧栏预览刷新一次
             if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
@@ -346,7 +346,7 @@ namespace Ink_Canvas
                         inkCanvas.Children.Remove(img);
                     }
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             }
         }
 
@@ -365,7 +365,7 @@ namespace Ink_Canvas
 
                 _liveFrameLayoutByPage[page] = (left, top, img.Width);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         // 翻页后调用：根据该页状态恢复实时画面，并同步设备选择
@@ -404,7 +404,7 @@ namespace Ink_Canvas
                     _cameraService?.StartPreview(idx);
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void BtnCapturePhoto_Click(object sender, RoutedEventArgs e)
@@ -595,13 +595,13 @@ namespace Ink_Canvas
                             }
                             img.Visibility = Visibility.Collapsed;
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
 
-                try { _cameraService?.StopPreview(); } catch { }
+                try { _cameraService?.StopPreview(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private static BitmapImage ConvertBitmapToBitmapImage(Bitmap bitmap)

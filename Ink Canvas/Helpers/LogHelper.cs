@@ -86,7 +86,10 @@ namespace Ink_Canvas.Helpers
                     }
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LogHelper] WriteLogToFile failed: {ex.Message}");
+            }
         }
 
         private static void CheckAndCleanLogsFolder(string logsPath)
@@ -114,7 +117,10 @@ namespace Ink_Canvas.Helpers
                         {
                             file.Delete();
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[LogHelper] Delete log file failed: {ex.Message}");
+                        }
                     }
 
                     // 记录清理操作
@@ -129,7 +135,10 @@ namespace Ink_Canvas.Helpers
                     });
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LogHelper] CheckAndCleanLogsFolder failed: {ex.Message}");
+            }
         }
 
         internal static void WriteLogToFile(string v, object warning)

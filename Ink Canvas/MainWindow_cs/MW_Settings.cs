@@ -977,7 +977,7 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"更新白板名言时出错: {ex.Message}", LogHelper.LogType.Warning);
                 if (Settings.Appearance.ChickenSoupSource == 3 && BlackBoardWaterMark != null)
                 {
-                    try { BlackBoardWaterMark.Text = "一言功能不可用"; } catch { }
+                    try { BlackBoardWaterMark.Text = "一言功能不可用"; } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                 }
             }
         }
@@ -3344,7 +3344,7 @@ namespace Ink_Canvas
 
                 ToggleSwitchRunAtStartup.IsOn = false;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             ShowNotification("设置已重置为默认推荐设置~");
         }
@@ -3363,7 +3363,7 @@ namespace Ink_Canvas
                 LoadSettings(isStartup: false, skipAutoUpdateCheck: true);
                 isLoaded = true;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         #endregion
@@ -4423,7 +4423,7 @@ namespace Ink_Canvas
                 var path = App.RootPath + settingsFileName;
                 ProcessProtectionManager.WithWriteAccess(path, () => File.WriteAllText(path, text));
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void SCManipulationBoundaryFeedback(object sender, ManipulationBoundaryFeedbackEventArgs e)

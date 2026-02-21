@@ -124,7 +124,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxHideStrokeWhenSelecting.IsChecked = _settings.Canvas.HideStrokeWhenSelecting;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 手势操作
             try
@@ -137,7 +137,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxEnablePalmEraser.IsChecked = _settings.Canvas != null && _settings.Canvas.EnablePalmEraser;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 墨迹纠正
             try
@@ -147,7 +147,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxInkToShapeEnabled.IsChecked = _settings.InkToShape.IsInkToShapeEnabled;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 快捷键（外观）
             try
@@ -157,7 +157,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxEnableHotkeysInMouseMode.IsChecked = _settings.Appearance.EnableHotkeysInMouseMode;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 崩溃处理
             try
@@ -165,7 +165,7 @@ namespace Ink_Canvas.Windows
                 RadioCrashSilentRestart.IsChecked = _settings.Startup.CrashAction == 0;
                 RadioCrashNoAction.IsChecked = _settings.Startup.CrashAction != 0;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 自动化行为
             try
@@ -180,7 +180,7 @@ namespace Ink_Canvas.Windows
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 随机点名
             try
@@ -190,7 +190,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxShowRandomAndSingleDraw.IsChecked = _settings.RandSettings.ShowRandomAndSingleDraw;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 高级选项
             try
@@ -200,7 +200,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxIsLogEnabled.IsChecked = _settings.Advanced.IsLogEnabled;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 截图（自动化中的截图相关）
             try
@@ -211,7 +211,7 @@ namespace Ink_Canvas.Windows
                     CheckBoxSaveScreenshotsInDateFolders.IsChecked = _settings.Automation.IsSaveScreenshotsInDateFolders;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void ApplySelection()
@@ -312,7 +312,7 @@ namespace Ink_Canvas.Windows
                     _settings.Canvas.EnablePalmEraser = CheckBoxEnablePalmEraser.IsChecked == true;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回手势操作
             try
@@ -324,7 +324,7 @@ namespace Ink_Canvas.Windows
                     _settings.Gesture.AutoSwitchTwoFingerGesture = CheckBoxAutoSwitchTwoFingerGesture.IsChecked == true;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回墨迹纠正
             try
@@ -334,7 +334,7 @@ namespace Ink_Canvas.Windows
                     _settings.InkToShape.IsInkToShapeEnabled = CheckBoxInkToShapeEnabled.IsChecked == true;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回快捷键（外观）
             try
@@ -344,14 +344,14 @@ namespace Ink_Canvas.Windows
                     _settings.Appearance.EnableHotkeysInMouseMode = CheckBoxEnableHotkeysInMouseMode.IsChecked == true;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回崩溃处理（0=静默重启，1=无操作）
             try
             {
                 _settings.Startup.CrashAction = RadioCrashNoAction.IsChecked == true ? 1 : 0;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回自动化行为
             try
@@ -368,7 +368,7 @@ namespace Ink_Canvas.Windows
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回随机点名
             try
@@ -378,7 +378,7 @@ namespace Ink_Canvas.Windows
                     _settings.RandSettings.ShowRandomAndSingleDraw = CheckBoxShowRandomAndSingleDraw.IsChecked == true;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 写回高级选项
             try
@@ -388,7 +388,7 @@ namespace Ink_Canvas.Windows
                     _settings.Advanced.IsLogEnabled = CheckBoxIsLogEnabled.IsChecked == true;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 标记用户已经阅读并确认过隐私说明
             _settings.Startup.HasAcceptedTelemetryPrivacy = true;

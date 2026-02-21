@@ -453,7 +453,7 @@ namespace Ink_Canvas
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
 
@@ -550,7 +550,7 @@ namespace Ink_Canvas
                                     return true;
                                 }
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
                     }
                     else if (Settings.Automation.IsAutoFoldInEasiCamera && windowProcessName == "EasiCamera")
@@ -617,7 +617,7 @@ namespace Ink_Canvas
                                     return true;
                                 }
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
                     }
                 }
@@ -699,7 +699,7 @@ namespace Ink_Canvas
                                 return true;
                             }
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
                 // 检查EasiCamera
@@ -809,7 +809,7 @@ namespace Ink_Canvas
                                 return true;
                             }
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
             }

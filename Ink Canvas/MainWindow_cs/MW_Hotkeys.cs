@@ -1,4 +1,5 @@
-﻿using System.Windows;
+using System;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Ink_Canvas
@@ -39,7 +40,7 @@ namespace Ink_Canvas
             {
                 SymbolIconUndo_MouseUp(lastBorderMouseDownObject, null);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void HotKey_Redo(object sender, ExecutedRoutedEventArgs e)
@@ -48,7 +49,7 @@ namespace Ink_Canvas
             {
                 SymbolIconRedo_MouseUp(lastBorderMouseDownObject, null);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void HotKey_Clear(object sender, ExecutedRoutedEventArgs e)

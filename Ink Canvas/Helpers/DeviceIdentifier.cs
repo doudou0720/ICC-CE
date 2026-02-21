@@ -146,7 +146,7 @@ namespace Ink_Canvas.Helpers
                         var disposeMethod = searcher.GetType().GetMethod("Dispose");
                         disposeMethod?.Invoke(searcher, null);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     // 主板序列号
                     try
@@ -170,7 +170,7 @@ namespace Ink_Canvas.Helpers
                         var disposeMethod = searcher.GetType().GetMethod("Dispose");
                         disposeMethod?.Invoke(searcher, null);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     // BIOS序列号
                     try
@@ -194,7 +194,7 @@ namespace Ink_Canvas.Helpers
                         var disposeMethod = searcher.GetType().GetMethod("Dispose");
                         disposeMethod?.Invoke(searcher, null);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     // 主硬盘序列号
                     try
@@ -218,7 +218,7 @@ namespace Ink_Canvas.Helpers
                         var disposeMethod = searcher.GetType().GetMethod("Dispose");
                         disposeMethod?.Invoke(searcher, null);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
             }
             catch

@@ -435,7 +435,7 @@ namespace Ink_Canvas.Helpers
                                     refCount = Marshal.ReleaseComObject(appToRelease);
                                 }
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
                     }
                 }

@@ -288,7 +288,7 @@ namespace Ink_Canvas.Helpers
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             return -1;
         }
 
@@ -1130,7 +1130,7 @@ namespace Ink_Canvas.Helpers
                                     // 清理可能损坏的分块文件
                                     if (File.Exists(tempPath))
                                     {
-                                        try { File.Delete(tempPath); } catch { }
+                                        try { File.Delete(tempPath); } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                                     }
 
                                     // 增加重试间隔，避免频繁重试
@@ -1316,7 +1316,7 @@ namespace Ink_Canvas.Helpers
                         return resp.Content.Headers.ContentLength.Value;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             return -1;
         }
 
@@ -1358,7 +1358,7 @@ namespace Ink_Canvas.Helpers
                 App.IsUpdateInstalling = true;
                 if (wasProcessProtectionEnabled)
                 {
-                    try { ProcessProtectionManager.SetEnabled(false); } catch { }
+                    try { ProcessProtectionManager.SetEnabled(false); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
 
                 // 在更新前备份设置文件
@@ -2086,16 +2086,16 @@ namespace Ink_Canvas.Helpers
                 {
                     foreach (string file in Directory.GetFiles(updatesFolderPath, "*", SearchOption.AllDirectories))
                     {
-                        try { File.Delete(file); } catch { }
+                        try { File.Delete(file); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                     foreach (string dir in Directory.GetDirectories(updatesFolderPath))
                     {
-                        try { Directory.Delete(dir, true); } catch { }
+                        try { Directory.Delete(dir, true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
-                    try { Directory.Delete(updatesFolderPath, true); } catch { }
+                    try { Directory.Delete(updatesFolderPath, true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         // 版本修复方法，强制下载并安装指定通道的最新版本

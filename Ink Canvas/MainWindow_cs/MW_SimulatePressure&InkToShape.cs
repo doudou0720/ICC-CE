@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -162,7 +162,7 @@ namespace Ink_Canvas
 
                                         e.Stroke.StylusPoints = stylusPoints;
                                     }
-                                    catch { }
+                                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                                 break;
                             case 0:
                                 if (penType == 0)
@@ -210,7 +210,7 @@ namespace Ink_Canvas
 
                                         e.Stroke.StylusPoints = stylusPoints;
                                     }
-                                    catch { }
+                                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                                 break;
                         }
                     }
@@ -603,7 +603,7 @@ namespace Ink_Canvas
                                 }
                             }
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
 
                     InkToShapeProcess();
@@ -630,7 +630,7 @@ namespace Ink_Canvas
                         RandWindow.randSeed = (int)(_speed * 100000 * 1000);
                     }
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                 switch (Settings.Canvas.InkStyle)
                 {
@@ -663,7 +663,7 @@ namespace Ink_Canvas
 
                                 e.Stroke.StylusPoints = stylusPoints;
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                         break;
                     case 0:
@@ -712,12 +712,12 @@ namespace Ink_Canvas
 
                                 e.Stroke.StylusPoints = stylusPoints;
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                         break;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 应用高级贝塞尔曲线平滑（仅在未进行直线拉直时）
             Debug.WriteLine($"墨迹平滑检查: UseAdvancedBezierSmoothing={Settings.Canvas.UseAdvancedBezierSmoothing}, wasStraightened={wasStraightened}");

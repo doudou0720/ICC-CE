@@ -544,7 +544,7 @@ namespace Ink_Canvas
 
                 inkCanvas.Gesture += InkCanvas_Gesture;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
 
@@ -586,7 +586,7 @@ namespace Ink_Canvas
                     return Color.FromArgb(alpha, r, g, b);
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             return Color.FromArgb(alpha, 255, 0, 0);
         }
 
@@ -866,7 +866,7 @@ namespace Ink_Canvas
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             if (!nextInterval.HasValue)
             {
@@ -975,7 +975,7 @@ namespace Ink_Canvas
                         }
                     }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void inkCanvas_EditingModeChanged(object sender, RoutedEventArgs e)
@@ -1595,7 +1595,7 @@ namespace Ink_Canvas
                     _lastFrame = null;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 释放PPT管理器资源
             DisposePPTManagers();

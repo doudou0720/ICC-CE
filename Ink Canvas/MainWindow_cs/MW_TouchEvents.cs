@@ -388,7 +388,7 @@ namespace Ink_Canvas
                     TouchDownPointsList.Clear();
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             inkCanvas.ReleaseStylusCapture();
             ViewboxFloatingBar.IsHitTestVisible = true;
@@ -415,7 +415,7 @@ namespace Ink_Canvas
                 {
                     if (e.StylusDevice.StylusButtons[1].StylusButtonState == StylusButtonState.Down) return;
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
 
                 var strokeVisual = GetStrokeVisual(e.StylusDevice.Id);
@@ -424,7 +424,7 @@ namespace Ink_Canvas
                     strokeVisual.Add(new StylusPoint(stylusPoint.X, stylusPoint.Y, stylusPoint.PressureFactor));
                 strokeVisual.Redraw();
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private StrokeVisual GetStrokeVisual(int id)
@@ -729,7 +729,7 @@ namespace Ink_Canvas
                             stroke.DrawingAttributes.Width *= md.Scale.X;
                             stroke.DrawingAttributes.Height *= md.Scale.Y;
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
                 else
@@ -744,7 +744,7 @@ namespace Ink_Canvas
                                 stroke.DrawingAttributes.Width *= md.Scale.X;
                                 stroke.DrawingAttributes.Height *= md.Scale.Y;
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
 
                         // 同时变换画布上的图片元素

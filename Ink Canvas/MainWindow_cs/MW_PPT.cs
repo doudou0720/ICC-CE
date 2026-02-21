@@ -416,7 +416,7 @@ namespace Ink_Canvas
                             {
                                 pptApplication.Presentations[i].Close();
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
                     }
 
@@ -444,17 +444,17 @@ namespace Ink_Canvas
             {
                 if (presentation != null)
                 {
-                    try { if (Marshal.IsComObject(presentation)) Marshal.ReleaseComObject(presentation); } catch { }
+                    try { if (Marshal.IsComObject(presentation)) Marshal.ReleaseComObject(presentation); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     presentation = null;
                 }
                 if (slides != null)
                 {
-                    try { if (Marshal.IsComObject(slides)) Marshal.ReleaseComObject(slides); } catch { }
+                    try { if (Marshal.IsComObject(slides)) Marshal.ReleaseComObject(slides); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     slides = null;
                 }
                 if (slide != null)
                 {
-                    try { if (Marshal.IsComObject(slide)) Marshal.ReleaseComObject(slide); } catch { }
+                    try { if (Marshal.IsComObject(slide)) Marshal.ReleaseComObject(slide); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     slide = null;
                 }
                 slidescount = 0;
@@ -1030,7 +1030,7 @@ namespace Ink_Canvas
                                 currentPage = pres.SlideShowWindow.View.CurrentShowPosition;
                             }
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
 

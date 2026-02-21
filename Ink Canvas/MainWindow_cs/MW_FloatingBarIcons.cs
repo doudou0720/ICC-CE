@@ -1380,7 +1380,7 @@ namespace Ink_Canvas
                                     {
                                         InkCanvasForInkReplay.Strokes.Remove(s);
                                     }
-                                    catch { }
+                                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                                     stylusPoints.Add(stylusPoint);
                                     s = new Stroke(stylusPoints.Clone())
@@ -1417,7 +1417,7 @@ namespace Ink_Canvas
                                     {
                                         InkCanvasForInkReplay.Strokes.Remove(s);
                                     }
-                                    catch { }
+                                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                                     stylusPoints.Add(stylusPoint);
                                     s = new Stroke(stylusPoints.Clone())
@@ -2759,7 +2759,7 @@ namespace Ink_Canvas
                 else
                     ((UIElement)((Button)sender).Content).Opacity = 0.25;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         #endregion Left Side Panel

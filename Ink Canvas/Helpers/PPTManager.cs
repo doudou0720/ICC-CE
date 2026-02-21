@@ -451,7 +451,7 @@ namespace Ink_Canvas.Helpers
                                     refCount = Marshal.ReleaseComObject(PPTApplication);
                                 }
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
                     }
                 }
@@ -517,7 +517,7 @@ namespace Ink_Canvas.Helpers
                     Marshal.ReleaseComObject(comObject);
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void SafeReleaseComObject(object comObject, string objectName)
@@ -1559,7 +1559,7 @@ namespace Ink_Canvas.Helpers
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     return true;
                 }, IntPtr.Zero);
 
@@ -1697,19 +1697,19 @@ namespace Ink_Canvas.Helpers
                 // 确保清理状态
                 if (CurrentSlide != null && Marshal.IsComObject(CurrentSlide))
                 {
-                    try { Marshal.ReleaseComObject(CurrentSlide); } catch { }
+                    try { Marshal.ReleaseComObject(CurrentSlide); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
                 if (CurrentSlides != null && Marshal.IsComObject(CurrentSlides))
                 {
-                    try { Marshal.ReleaseComObject(CurrentSlides); } catch { }
+                    try { Marshal.ReleaseComObject(CurrentSlides); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
                 if (CurrentPresentation != null && Marshal.IsComObject(CurrentPresentation))
                 {
-                    try { Marshal.ReleaseComObject(CurrentPresentation); } catch { }
+                    try { Marshal.ReleaseComObject(CurrentPresentation); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
                 if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
                 {
-                    try { Marshal.ReleaseComObject(PPTApplication); } catch { }
+                    try { Marshal.ReleaseComObject(PPTApplication); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
 
                 CurrentSlide = null;
@@ -1858,7 +1858,7 @@ namespace Ink_Canvas.Helpers
                 var proc = Process.GetProcessById((int)processId);
                 windowInfo.ProcessName = proc.ProcessName.ToLower();
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             return windowInfo;
         }

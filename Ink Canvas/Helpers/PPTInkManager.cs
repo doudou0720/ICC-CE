@@ -391,7 +391,7 @@ namespace Ink_Canvas.Helpers
                 string path = Path.Combine(folderPath, slideIndex.ToString("0000") + StrokeFileExtension);
                 if (File.Exists(path)) File.Delete(path);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void CheckAndPerformMemoryCleanup()
@@ -433,7 +433,7 @@ namespace Ink_Canvas.Helpers
                 if (_memoryStreams[i] != null)
                 {
                     long len = _memoryStreams[i].Length;
-                    try { _memoryStreams[i].Dispose(); freed += len; cleaned++; } catch { }
+                    try { _memoryStreams[i].Dispose(); freed += len; cleaned++; } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     finally { _memoryStreams[i] = null; }
                 }
             }

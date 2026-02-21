@@ -623,7 +623,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -681,7 +681,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -870,7 +870,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -895,7 +895,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -912,7 +912,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -931,7 +931,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -957,7 +957,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStroke);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStroke = stroke;
                     inkCanvas.Strokes.Add(stroke);
@@ -1019,7 +1019,7 @@ namespace Ink_Canvas
                     {
                         inkCanvas.Strokes.Remove(lastTempStrokeCollection);
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                     lastTempStrokeCollection = strokes;
                     inkCanvas.Strokes.Add(strokes);
@@ -1554,10 +1554,10 @@ namespace Ink_Canvas
                         // 如果更新失败，确保清理状态
                         if (lastTempStroke != null && inkCanvas.Strokes.Contains(lastTempStroke))
                         {
-                            try { inkCanvas.Strokes.Remove(lastTempStroke); } catch { }
+                            try { inkCanvas.Strokes.Remove(lastTempStroke); } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                         }
                         lastTempStroke = newStroke;
-                        try { inkCanvas.Strokes.Add(newStroke); } catch { }
+                        try { inkCanvas.Strokes.Add(newStroke); } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                     }
                 }), DispatcherPriority.Render);
             }
@@ -1612,11 +1612,11 @@ namespace Ink_Canvas
                         {
                             foreach (var stroke in lastTempStrokeCollection)
                             {
-                                try { inkCanvas.Strokes.Remove(stroke); } catch { }
+                                try { inkCanvas.Strokes.Remove(stroke); } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                             }
                         }
                         lastTempStrokeCollection = newStrokeCollection;
-                        try { inkCanvas.Strokes.Add(newStrokeCollection); } catch { }
+                        try { inkCanvas.Strokes.Add(newStrokeCollection); } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                     }
                 }), DispatcherPriority.Render);
             }

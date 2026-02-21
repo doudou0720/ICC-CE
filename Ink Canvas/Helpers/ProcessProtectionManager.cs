@@ -37,8 +37,9 @@ namespace Ink_Canvas.Helpers
                 var enabled = settings?.Security != null && settings.Security.EnableProcessProtection;
                 SetEnabled(enabled);
             }
-            catch
+            catch (Exception ex)
             {
+                LogHelper.WriteLogToFile($"ProcessProtectionManager.ApplyFromSettings 失败: {ex.Message}", LogHelper.LogType.Warning);
             }
         }
 
@@ -72,8 +73,9 @@ namespace Ink_Canvas.Helpers
                     LogHelper.WriteLogToFile($"ProcessProtectionManager.WithWriteAccess: 获取写入门闩超时({gateTimeoutMs}ms)，将降级直接执行写入动作。目标: {targetPath}",
                         LogHelper.LogType.Warning);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[ProcessProtectionManager] 写日志失败: {ex.Message}");
                 }
 
                 action();
@@ -113,14 +115,14 @@ namespace Ink_Canvas.Helpers
                 {
                     foreach (var kv in releasedFiles)
                     {
-                        try { kv.Value.Dispose(); } catch { }
+                        try { kv.Value.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
                 if (releasedDirs != null)
                 {
                     foreach (var kv in releasedDirs)
                     {
-                        try { kv.Value.Dispose(); } catch { }
+                        try { kv.Value.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     }
                 }
 
@@ -217,13 +219,13 @@ namespace Ink_Canvas.Helpers
             {
                 foreach (var kv in _lockedFiles)
                 {
-                    try { kv.Value.Dispose(); } catch { }
+                    try { kv.Value.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
                 _lockedFiles.Clear();
 
                 foreach (var kv in _lockedDirs)
                 {
-                    try { kv.Value.Dispose(); } catch { }
+                    try { kv.Value.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 }
                 _lockedDirs.Clear();
             }

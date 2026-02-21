@@ -171,7 +171,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 ThemeHelper.ApplyThemeToControl(this);
                 LoadSettings();
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
     }
 }

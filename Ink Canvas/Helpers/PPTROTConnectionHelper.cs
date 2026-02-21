@@ -175,7 +175,7 @@ namespace Ink_Canvas.Helpers
                                     object appObj = comObject.GetType().InvokeMember("Application", BindingFlags.GetProperty, null, comObject, null);
                                     candidateApp = appObj;
                                 }
-                                catch { }
+                                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                             }
                         }
                         bool isDuplicate = false;
@@ -213,7 +213,7 @@ namespace Ink_Canvas.Helpers
                                 {
                                     activePres = candidateApp.ActivePresentation;
                                 }
-                                catch { }
+                                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                                 if (activePres != null)
                                 {
@@ -223,7 +223,7 @@ namespace Ink_Canvas.Helpers
                                     {
                                         ssWindow = activePres.SlideShowWindow;
                                     }
-                                    catch { }
+                                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                                     if (ssWindow != null)
                                     {
@@ -238,7 +238,7 @@ namespace Ink_Canvas.Helpers
                                                 if (val is int && (int)val == -1) isActive = true;
                                                 else if (val is bool && (bool)val == true) isActive = true;
                                             }
-                                            catch { }
+                                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                                             if (isActive)
                                             {
@@ -252,7 +252,7 @@ namespace Ink_Canvas.Helpers
                                                 }
                                             }
                                         }
-                                        catch { }
+                                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                                     }
                                 }
                             }
@@ -397,7 +397,7 @@ namespace Ink_Canvas.Helpers
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                 return false;
             }
@@ -420,7 +420,7 @@ namespace Ink_Canvas.Helpers
 
                 hwnd = new IntPtr(hwndVal);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             return hwnd;
         }
@@ -435,7 +435,7 @@ namespace Ink_Canvas.Helpers
                 {
                     Marshal.ReleaseComObject(comObj);
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             }
         }
 

@@ -420,7 +420,7 @@ namespace Ink_Canvas
                         $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] 记录未处理异常时发生错误: {ex.Message}\r\n"
                     );
                 }
-                catch { }
+                catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
             }
         }
 
@@ -576,7 +576,7 @@ namespace Ink_Canvas
                 // 同时记录到主日志
                 LogHelper.WriteLogToFile(message, LogHelper.LogType.Error);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         // 增加字段保存崩溃后操作设置
@@ -593,7 +593,7 @@ namespace Ink_Canvas
                     var json = File.ReadAllText(settingsPath);
                     dynamic obj = JsonConvert.DeserializeObject(json);
                     int crashAction = 0;
-                    try { crashAction = (int)(obj["startup"]["crashAction"] ?? 0); } catch { }
+                    try { crashAction = (int)(obj["startup"]["crashAction"] ?? 0); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     CrashAction = (CrashActionType)crashAction;
                 }
                 // 从主窗口同步
@@ -602,7 +602,7 @@ namespace Ink_Canvas
                     CrashAction = (CrashActionType)Ink_Canvas.MainWindow.Settings.Startup.CrashAction;
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -657,7 +657,7 @@ namespace Ink_Canvas
                     string exePath = Process.GetCurrentProcess().MainModule.FileName;
                     Process.Start(exePath);
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 Environment.Exit(1);
             }
             // CrashActionType.NoAction 时不做处理
@@ -909,7 +909,7 @@ namespace Ink_Canvas
                             LogHelper.WriteLogToFile("App | 清理损坏的更新标记文件");
                         }
                     }
-                    catch { }
+                    catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                 }
             }
 
@@ -1002,7 +1002,7 @@ namespace Ink_Canvas
                             watchdogProcess.Kill();
                         }
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     Environment.Exit(0);
                 }
             }
@@ -1138,9 +1138,9 @@ namespace Ink_Canvas
                         SenderScrollViewer.ScrollToVerticalOffset(SenderScrollViewer.VerticalOffset - e.Delta * 10 * SystemInformation.MouseWheelScrollLines / (double)120);
                         e.Handled = true;
                     }
-                    catch { }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         // 用于设置崩溃后操作类型
@@ -1198,7 +1198,7 @@ namespace Ink_Canvas
                                 string exePath = Process.GetCurrentProcess().MainModule.FileName;
                                 Process.Start(exePath);
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                             Environment.Exit(1);
                         }
                         return;
@@ -1223,7 +1223,7 @@ namespace Ink_Canvas
                             string exePath = Process.GetCurrentProcess().MainModule.FileName;
                             Process.Start(exePath);
                         }
-                        catch { }
+                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         Environment.Exit(1);
                     }
                 }
@@ -1264,7 +1264,7 @@ namespace Ink_Canvas
                         // 检查退出信号文件
                         if (File.Exists(exitSignalFile))
                         {
-                            try { File.Delete(exitSignalFile); } catch { }
+                            try { File.Delete(exitSignalFile); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                             Environment.Exit(0);
                         }
                         Thread.Sleep(2000);
@@ -1293,7 +1293,7 @@ namespace Ink_Canvas
                         }
                     }
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                 Environment.Exit(0);
             }
         }
@@ -1401,7 +1401,7 @@ namespace Ink_Canvas
                 {
                     LogHelper.WriteLogToFile($"退出处理时发生错误: {ex.Message}", LogHelper.LogType.Error);
                 }
-                catch { }
+                catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
             }
         }
     }
