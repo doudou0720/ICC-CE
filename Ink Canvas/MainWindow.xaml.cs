@@ -1448,40 +1448,6 @@ namespace Ink_Canvas
             AddTouchSupportToSliders();
         }
 
-        private void ShowOobeIfNeeded()
-        {
-            try
-            {
-                if (Settings?.Startup == null) return;
-                if (Settings.Startup.HasShownOobe) return;
-
-                var oobeWindow = new OobeWindow(Settings)
-                {
-                    Owner = this,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
-                };
-                try
-                {
-                    App.IsOobeShowing = true;
-                    oobeWindow.ShowDialog();
-                }
-                finally
-                {
-                    App.IsOobeShowing = false;
-                }
-
-                Settings.Startup.HasShownOobe = true;
-                SaveSettingsToFile();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"显示首次启动体验(OOBE)时出错: {ex}", LogHelper.LogType.Error);
-            }
-            finally
-            {
-                App.IsOobeShowing = false;
-            }
-        }
 
         /// <summary>
         /// 响应显示器/分辨率配置变化：在检测启用时显示分辨率变更通知，并在后台检查悬浮工具栏是否位于屏幕之外，若是则在延迟后尝试将其通过动画恢复到可见区域（在演示模式下使用不同的动画偏移）。 
