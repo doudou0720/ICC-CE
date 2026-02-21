@@ -19,7 +19,7 @@ namespace Ink_Canvas.Helpers
         /// 检查是否需要执行自动备份
         /// </summary>
         /// <param name="settings">设置对象</param>
-        /// <returns>如果需要备份返回true，否则返回false</returns>
+        /// <returns>如果需要备份返回<see langword="true"/>，否则返回<see langword="false"/></returns>
         public static bool ShouldPerformAutoBackup(Settings settings)
         {
             try
@@ -163,7 +163,7 @@ namespace Ink_Canvas.Helpers
         /// 保留最近30天的备份文件
         /// </summary>
         /// <remarks>
-        /// 删除备份目录中按备份前缀匹配且创建时间早于 30 天的自动备份文件。
+        /// 删除备份目录中按“备份前缀”匹配且创建时间早于 30 天的自动备份文件（即自动备份文件的命名前缀），不会删除诸如 Settings_Corrupted_*.json 之类的其他备份或错误状态文件。
         /// 如果备份目录不存在则不执行任何操作；删除操作在受写入保护的上下文中执行，任何错误会被记录但不会抛出异常。
         /// </remarks>
         public static void CleanupOldBackups()

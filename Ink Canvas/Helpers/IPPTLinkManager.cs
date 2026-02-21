@@ -25,7 +25,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         void StartMonitoring();
         /// <summary>
-        /// 停止监控 PowerPoint 的连接与事件，停止接收并处理与演示文稿和幻灯放映相关的通知。
+        /// 停止监控 PowerPoint 的连接与事件，停止接收并处理与演示文稿和幻灯片放映相关的通知。
         /// </summary>
         void StopMonitoring();
 

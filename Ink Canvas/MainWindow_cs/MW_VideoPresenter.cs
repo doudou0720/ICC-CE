@@ -96,7 +96,7 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 懒惰初始化摄像头服务并订阅其帧和错误事件；如果服务已存在则不做任何操作。
+        /// 延迟初始化摄像头服务并订阅其帧和错误事件；如果服务已存在则不做任何操作。
         /// </summary>
         private void EnsureCameraService()
         {
@@ -123,7 +123,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 处理来自摄像头的单帧图像，用于更新预览、缓存最新帧并刷新当前页的实时画面显示。
         /// </summary>
-        /// <param name="frame">来自摄像头的位图帧；为 null 时忽略。方法会缓存该帧为最新帧、更新预览控件的图像来源、启用拍照按钮并尝试在当前白板页上刷新实时画面。</param>
+        /// <param name="frame">来自摄像头的位图帧；为 null 时忽略。</param>
+        /// <remarks>
+        /// 缓存该帧为最新帧、更新预览控件的图像来源、启用拍照按钮并尝试在当前白板页上刷新实时画面。
+        /// </remarks>
         private void CameraService_FrameReceived(object sender, Bitmap frame)
         {
             if (frame == null) return;
@@ -737,8 +740,8 @@ namespace Ink_Canvas
         /// <summary>
         /// 将一个 System.Drawing.Bitmap 转换为可跨线程使用的 WPF BitmapImage。
         /// </summary>
-        /// <param name="bitmap">要转换的源位图；若为 <c>null</c> 则直接返回 <c>null</c>。</param>
-        /// <returns>转换得到的 <see cref="BitmapImage"/>；若输入为 <c>null</c> 或转换失败则返回 <c>null</c>。</returns>
+        /// <param name="bitmap">要转换的源位图；若为 <see langword="null"/> 则直接返回 <see langword="null"/>。</param>
+        /// <returns>转换得到的 <see cref="BitmapImage"/>；若输入为 <see langword="null"/> 或转换失败则返回 <see langword="null"/>。</returns>
         private static BitmapImage ConvertBitmapToBitmapImage(Bitmap bitmap)
         {
             try
@@ -855,7 +858,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="frame">包含待矫正纸张的源位图。</param>
         /// <param name="corners">纸张在源图像中的四个角点，按顺序提供：左上 (top-left)、右上 (top-right)、左下 (bottom-left)、右下 (bottom-right)。坐标为图像像素坐标系。</param>
-        /// <returns>透视矫正并裁切后的位图；在输入无效或矫正失败时返回 <c>null</c>。</returns>
+        /// <returns>透视矫正并裁切后的位图；在输入无效或矫正失败时返回 <see langword="null"/>。</returns>
         private static Bitmap ApplyPerspectiveCorrection(Bitmap frame, List<AForge.IntPoint> corners)
         {
             try

@@ -2730,36 +2730,36 @@ namespace Ink_Canvas
 
         #region 新设置窗口
 
-            /// <summary>
-            /// 在隐藏子面板后打开新的设置窗口；若需要则先提示并验证安全密码，并在正在打开或隐藏设置面板时不执行任何操作。
-            /// </summary>
-            /// <remarks>
-            /// 在验证密码失败或发生异常时会中止操作。成功通过验证后以模式窗口方式显示设置窗口并将当前窗口设为其所有者。
-            /// </remarks>
-            private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 在隐藏子面板后打开新的设置窗口；若需要则先提示并验证安全密码，并在正在打开或隐藏设置面板时不执行任何操作。
+        /// </summary>
+        /// <remarks>
+        /// 在验证密码失败或发生异常时会中止操作。成功通过验证后以模式窗口方式显示设置窗口并将当前窗口设为其所有者。
+        /// </remarks>
+        private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningOrHidingSettingsPane) return;
+            HideSubPanels();
             {
-                if (isOpeningOrHidingSettingsPane) return;
-                HideSubPanels();
+                try
                 {
-                    try
+                    if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
                     {
-                        if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
-                        {
-                            bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
-                            if (!ok) return;
-                        }
+                        bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
+                        if (!ok) return;
                     }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
-                        return;
-                    }
-
-                    var settingsWindow = new SettingsWindow();
-                    settingsWindow.Owner = this;
-                    settingsWindow.ShowDialog();
                 }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
+                    return;
+                }
+
+                var settingsWindow = new SettingsWindow();
+                settingsWindow.Owner = this;
+                settingsWindow.ShowDialog();
             }
+        }
 
         #endregion 新设置窗口
 
@@ -3397,7 +3397,9 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 在笔工具菜单中隐藏墨迹渐隐控制开关切换事件处理：切换“在笔工具菜单中隐藏墨迹渐隐控制开关”设置并立即应用该更改。
+        /// 在笔工具菜单中隐藏墨迹渐隐控制开关切换事件处理
+        /// <summary>
+        /// 切换“在笔工具菜单中隐藏墨迹渐隐控制开关”设置并立即应用该更改。
         /// </summary>
         /// <remarks>
         /// 当控件切换时，方法会更新 Settings.Canvas.HideInkFadeControlInPenMenu 的值、将设置写回配置文件、刷新墨迹渐隐控件的可见性，并记录事件日志或错误日志。
@@ -3878,7 +3880,9 @@ namespace Ink_Canvas
         #region 滑块触摸支持
 
         /// <summary>
-        /// 为所有滑块控件添加触摸和手写笔事件支持：为窗口中预定义的一组滑块控件注册触摸交互支持并记录操作结果。
+        /// 为所有滑块控件添加触摸和手写笔事件支持
+        /// <summary>
+        /// 为窗口中预定义的一组滑块控件注册触摸交互支持并记录操作结果。
         /// </summary>
         /// <remarks>
         /// 如果在添加触摸支持过程中发生错误，会捕获异常并将错误信息记录到日志中。
