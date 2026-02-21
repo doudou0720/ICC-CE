@@ -40,7 +40,7 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 尝试启动当前演示文稿的放映模式。
         /// </summary>
-        /// <returns>`true` 如果放映已成功启动，`false` 否则。</returns>
+        /// <returns><c>true</c> 如果放映已成功启动，<c>false</c> 否则。</returns>
         bool TryStartSlideShow();
         /// <summary>
         /// 尝试结束当前正在进行的幻灯片放映。

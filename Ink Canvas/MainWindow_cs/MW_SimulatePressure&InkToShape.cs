@@ -39,10 +39,7 @@ namespace Ink_Canvas
         /// </summary>
         private List<Circle> circles = new List<Circle>();
 
-        /// <summary>
-        /// 直线拉直的阈值
-        /// </summary>
-        private const double LINE_STRAIGHTEN_THRESHOLD = 0.20;
+
 
         /// <summary>
         /// 矩形参考线的列表
@@ -141,6 +138,9 @@ namespace Ink_Canvas
         /// 4. 检查是否是压感笔书写，如果是则返回
         /// 5. 根据墨水风格设置模拟压感
         /// 6. 应用高级贝塞尔曲线平滑（仅在未进行直线拉直时）
+        /// <para>
+        /// 注意：形状识别（圆形、椭圆、三角形、矩形等）仅在32位进程中可用。当 Environment.Is64BitProcess 为 true 时，形状识别功能会被禁用。
+        /// </para>
         /// </remarks>
         private void inkCanvas_StrokeCollected(object sender, InkCanvasStrokeCollectedEventArgs e)
         {

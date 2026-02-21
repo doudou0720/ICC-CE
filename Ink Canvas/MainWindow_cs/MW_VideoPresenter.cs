@@ -288,7 +288,7 @@ namespace Ink_Canvas
         /// 刷新视频呈现器侧栏中的摄像头设备列表并在界面上显示可选项。
         /// </summary>
         /// <remarks>
-        /// 若未检测到摄像头，会在面板中显示提示文本；若存在设备，则为每个设备创建一个用于选择的单选按钮，选择某项会启动对应的摄像头预览。函数在列表生成后会自动选中并启动第一个可用摄像头（如果有）。
+        /// 若未检测到摄像头，会在面板中显示提示文本；若存在设备，则为每个设备创建一个用于选择的单选按钮，选择某项会启动对应的摄像头预览。函数在列表生成后会尝试恢复并启动当前页面在 _cameraIndexByPage 中存储的摄像头索引，仅当没有保存的索引时才会选择并启动第一个可用设备。保存的每页选择优先于默认选择第一个设备。
         /// </remarks>
         private void RefreshVideoPresenterDeviceList()
         {
@@ -648,11 +648,11 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// — 将选定的捕获图片作为图像元素插入到画布中央并切换到选择工具模式。
+        /// 将选定的捕获图片作为图像元素插入到画布中央并切换到选择工具模式。
         /// </summary>
         /// <param name="photo">要插入的捕获图片；若为 null 或其 Image 为 null，则不进行任何操作。</param>
         /// <remarks>
-        /// — 在画布上创建并配置一个 Image 元素（设置 Source、Stretch、默认宽度及位置），初始化其变换与事件绑定，提交插入历史记录，添加到 inkCanvas，并将当前工具切换为“选择”同时隐藏相关子面板。方法内部捕获并记录异常，不会向外抛出。
+        /// 在画布上创建并配置一个 Image 元素（设置 Source、Stretch、默认宽度及位置），初始化其变换与事件绑定，提交插入历史记录，添加到 inkCanvas，并将当前工具切换为“选择”同时隐藏相关子面板。方法内部捕获并记录异常，不会向外抛出。
         /// </remarks>
         private void InsertPhotoToCanvas(CapturedImage photo)
         {
@@ -769,7 +769,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="frame">要检测的输入位图帧。</param>
         /// <param name="cornersOut">检测到的四个角点（按顺序：左上、右上、左下、右下），坐标以输入帧的像素空间为准；检测失败时为 null。</param>
-        /// <returns>`true` 如果成功检测到四个角点并填充 <paramref name="cornersOut"/>，`false` 否则（包括输入为 null 或检测过程中发生错误）。</returns>
+        /// <returns><see langword="true"/> 如果成功检测到四个角点并填充 <paramref name="cornersOut"/>，<see langword="false"/> 否则（包括输入为 null 或检测过程中发生错误）。</returns>
         private static bool TryDetectPaperCorners(Bitmap frame, out List<AForge.IntPoint> cornersOut)
         {
             cornersOut = null;

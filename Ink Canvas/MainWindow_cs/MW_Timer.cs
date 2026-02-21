@@ -471,7 +471,11 @@ namespace Ink_Canvas
         /// </remarks>
         private void TimerDisplayDate_Elapsed(object sender, ElapsedEventArgs e)
         {
-            nowTimeVM.nowDate = DateTime.Now.ToString("yyyy'年'MM'月'dd'日' dddd");
+            // 使用BeginInvoke异步更新UI，避免阻塞
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                nowTimeVM.nowDate = DateTime.Now.ToString("yyyy'年'MM'月'dd'日' dddd");
+            }));
         }
 
         /// <summary>
