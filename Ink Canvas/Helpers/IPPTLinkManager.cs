@@ -45,7 +45,7 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 尝试结束当前正在进行的幻灯片放映。
         /// </summary>
-        /// <returns>如果放映已成功结束则为 true，否则为 false。</returns>
+        /// <returns><c>true</c> 如果放映已成功结束，<c>false</c> 否则。</returns>
         bool TryEndSlideShow();
 
         // 导航控制
