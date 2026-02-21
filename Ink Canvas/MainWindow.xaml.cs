@@ -345,7 +345,15 @@ namespace Ink_Canvas
 
                             var oobeWindow = new OobeWindow(Settings);
                             oobeWindow.Owner = this;
-                            oobeWindow.ShowDialog();
+                            try
+                            {
+                                App.IsOobeShowing = true;
+                                oobeWindow.ShowDialog();
+                            }
+                            finally
+                            {
+                                App.IsOobeShowing = false;
+                            }
 
                             OnOobeCompleted();
                         }
@@ -1340,41 +1348,6 @@ namespace Ink_Canvas
                 }
             }), DispatcherPriority.Loaded);
             AddTouchSupportToSliders();
-        }
-
-        private void ShowOobeIfNeeded()
-        {
-            try
-            {
-                if (Settings?.Startup == null) return;
-                if (Settings.Startup.HasShownOobe) return;
-
-                var oobeWindow = new OobeWindow(Settings)
-                {
-                    Owner = this,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
-                };
-                try
-                {
-                    App.IsOobeShowing = true;
-                    oobeWindow.ShowDialog();
-                }
-                finally
-                {
-                    App.IsOobeShowing = false;
-                }
-
-                Settings.Startup.HasShownOobe = true;
-                SaveSettingsToFile();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"显示首次启动体验(OOBE)时出错: {ex}", LogHelper.LogType.Error);
-            }
-            finally
-            {
-                App.IsOobeShowing = false;
-            }
         }
 
         private void SystemEventsOnDisplaySettingsChanged(object sender, EventArgs e)
