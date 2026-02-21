@@ -273,16 +273,23 @@ namespace Ink_Canvas
                 CameraDevicesStackPanel.Children.Add(rb);
             }
 
-            // 自动启动第一个摄像头
+            // 预选该页已保存的摄像头，否则使用第一个
             if (_cameraService.AvailableCameras.Count > 0)
             {
-                if (CameraDevicesStackPanel.Children.Count > 0 && CameraDevicesStackPanel.Children[0] is RadioButton first)
+                int currentPage = GetCurrentPageIndex();
+                int cameraToSelect = 0;
+                if (_cameraIndexByPage.TryGetValue(currentPage, out int savedIdx) && savedIdx >= 0 && savedIdx < _cameraService.AvailableCameras.Count)
                 {
-                    first.IsChecked = true;
+                    cameraToSelect = savedIdx;
+                }
+
+                if (cameraToSelect < CameraDevicesStackPanel.Children.Count && CameraDevicesStackPanel.Children[cameraToSelect] is RadioButton rb)
+                {
+                    rb.IsChecked = true;
                 }
                 else
                 {
-                    StartVideoPresenterPreview(0);
+                    StartVideoPresenterPreview(cameraToSelect);
                 }
             }
         }
@@ -451,7 +458,6 @@ namespace Ink_Canvas
                                 
                                 while (_capturedPhotos.Count > MaxCapturedPhotos)
                                 {
-                                    var oldPhoto = _capturedPhotos[_capturedPhotos.Count - 1];
                                     _capturedPhotos.RemoveAt(_capturedPhotos.Count - 1);
                                 }
                                 
