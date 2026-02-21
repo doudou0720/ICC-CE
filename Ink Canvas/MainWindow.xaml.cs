@@ -385,6 +385,8 @@ namespace Ink_Canvas
                     SaveSettingsToFile();
                 }
 
+                LoadSettings(false, skipAutoUpdateCheck: true);
+
                 if (ViewboxFloatingBar != null && currentMode == 0)
                 {
                     ViewboxFloatingBar.Visibility = Visibility.Visible;
