@@ -1260,7 +1260,8 @@ namespace Ink_Canvas
 
             // 使用海伦公式计算面积
             double s = (a + b + c) / 2;
-            double area = Math.Sqrt(s * (s - a) * (s - b) * (s - c));
+            double areaSquared = s * (s - a) * (s - b) * (s - c);
+            double area = areaSquared > 0 ? Math.Sqrt(areaSquared) : 0;
 
             // 曲率 = 4 * 面积 / (a * b * c)
             return 4 * area / (a * b * c);
@@ -1361,7 +1362,8 @@ namespace Ink_Canvas
             // 计算特征值和特征向量
             double trace = covXX + covYY;
             double determinant = covXX * covYY - covXY * covXY;
-            double discriminant = Math.Sqrt(trace * trace - 4 * determinant);
+            double discriminantSquared = trace * trace - 4 * determinant;
+            double discriminant = discriminantSquared > 0 ? Math.Sqrt(discriminantSquared) : 0;
 
             double eigenvalue1 = (trace + discriminant) / 2;
             double eigenvalue2 = (trace - discriminant) / 2;
@@ -2008,10 +2010,13 @@ namespace Ink_Canvas
 
         public Point[] FixPointsDirection(Point p1, Point p2)
         {
-            if (Math.Abs(p1.X - p2.X) / Math.Abs(p1.Y - p2.Y) > 8)
+            double deltaY = Math.Abs(p1.Y - p2.Y);
+            double deltaX = Math.Abs(p1.X - p2.X);
+            
+            if (deltaY < 1e-10 || deltaX / deltaY > 8)
             {
                 //水平
-                var x = Math.Abs(p1.Y - p2.Y) / 2;
+                var x = deltaY / 2;
                 if (p1.Y > p2.Y)
                 {
                     p1.Y -= x;
@@ -2023,10 +2028,10 @@ namespace Ink_Canvas
                     p2.Y -= x;
                 }
             }
-            else if (Math.Abs(p1.Y - p2.Y) / Math.Abs(p1.X - p2.X) > 8)
+            else if (deltaX < 1e-10 || deltaY / deltaX > 8)
             {
                 //垂直
-                var x = Math.Abs(p1.X - p2.X) / 2;
+                var x = deltaX / 2;
                 if (p1.X > p2.X)
                 {
                     p1.X -= x;
