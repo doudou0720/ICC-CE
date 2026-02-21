@@ -2829,7 +2829,6 @@ namespace Ink_Canvas
 
         private bool isOpeningOrHidingSettingsPane;
         private bool wasNoFocusModeBeforeSettings;
-        private bool userChangedNoFocusModeInSettings;
 
         private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -2855,7 +2854,6 @@ namespace Ink_Canvas
 
                 BorderSettings.Visibility = Visibility.Visible;
                 wasNoFocusModeBeforeSettings = Settings.Advanced.IsNoFocusMode;
-                userChangedNoFocusModeInSettings = false; // 重置用户修改标志
                 if (wasNoFocusModeBeforeSettings)
                 {
                     isTemporarilyDisablingNoFocusMode = true;

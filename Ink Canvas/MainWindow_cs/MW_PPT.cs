@@ -97,8 +97,6 @@ namespace Ink_Canvas
         
         // 当前播放页码跟踪
         private int _currentSlideShowPosition = 0;
-        private readonly object _slideSwitchLock = new object();
-        private bool _isProcessingSlideSwitch = false;
 
         private Dictionary<int, MemoryStream> _memoryStreams = new Dictionary<int, MemoryStream>();
         private int _previousSlideID = 0;
@@ -1466,10 +1464,6 @@ namespace Ink_Canvas
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
                 _previousSlideID = 0;
-                lock (_slideSwitchLock)
-                {
-                    _isProcessingSlideSwitch = false;
-                }
                 lock (_memoryStreams)
                 {
                     foreach (var stream in _memoryStreams.Values)
