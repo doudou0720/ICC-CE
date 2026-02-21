@@ -30,9 +30,9 @@ namespace Ink_Canvas.Helpers
         /// <param name="settings">应用的设置；为 null 或未包含 Security 部分时视为未配置密码。</param>
         /// <returns>`true` 如果设置包含非空的 PasswordSalt 和 PasswordHash，否则 `false`。</returns>
         public static bool HasPasswordConfigured(Settings settings)
-        => settings?.Security != null
-            && !string.IsNullOrWhiteSpace(settings.Security.PasswordSalt)
-            && !string.IsNullOrWhiteSpace(settings.Security.PasswordHash);
+            => settings?.Security != null
+                && !string.IsNullOrWhiteSpace(settings.Security.PasswordSalt)
+                && !string.IsNullOrWhiteSpace(settings.Security.PasswordHash);
 
         /// <summary>
         /// 确定在退出应用时是否需要输入密码。
@@ -40,7 +40,7 @@ namespace Ink_Canvas.Helpers
         /// <param name="settings">应用配置；如果为 null，则视为未启用或未配置密码。</param>
         /// <returns>`true` 当密码功能已启用、已配置密码且设置要求在退出时需要密码，`false` 否则。</returns>
         public static bool IsPasswordRequiredForExit(Settings settings)
-        => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnExit;
+            => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnExit;
 
         /// <summary>
         /// 确定在进入设置界面时是否需要输入密码。
@@ -48,7 +48,7 @@ namespace Ink_Canvas.Helpers
         /// <param name="settings">应用配置；为 null 或未启用密码功能时视为未配置密码。</param>
         /// <returns>`true` 如果已启用密码功能、已配置密码且已设置为在进入设置时要求密码，`false` 否则。</returns>
         public static bool IsPasswordRequiredForEnterSettings(Settings settings)
-        => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnEnterSettings;
+            => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnEnterSettings;
 
         /// <summary>
         /// 指示在重置配置时是否需要输入密码。
@@ -56,7 +56,7 @@ namespace Ink_Canvas.Helpers
         /// <param name="settings">应用设置对象；如果为 null 或未启用密码功能，则视为不需要密码。</param>
         /// <returns>`true` 如果已启用密码功能、已有配置的密码且设置要求在重置配置时进行密码验证；`false` 否则。</returns>
         public static bool IsPasswordRequiredForResetConfig(Settings settings)
-        => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnResetConfig;
+            => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnResetConfig;
 
         /// <summary>
         /// 将提供的明文密码与 Settings 中存储的密码散列进行比对以验证密码是否正确。

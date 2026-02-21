@@ -640,8 +640,6 @@ namespace Ink_Canvas
             return Color.FromArgb(alpha, 255, 0, 0);
         }
 
-        /// <param name="color">目标颜色</param>
-        /// <param name="width">目标粗细</param>
         /// <summary>
         /// 立即应用画笔颜色、粗细与高度到当前画布并同步相关状态与 UI 元素。
         /// </summary>

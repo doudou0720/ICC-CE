@@ -52,7 +52,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void StartMonitoring() => _inner.StartMonitoring();
 
-                /// <summary>
+        /// <summary>
         /// 停止对 PowerPoint 的监控，断开当前连接并停止触发相关事件。
         /// </summary>
         public void StopMonitoring() => _inner.StopMonitoring();
