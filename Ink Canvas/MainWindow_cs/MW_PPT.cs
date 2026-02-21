@@ -3,6 +3,7 @@ using iNKORE.UI.WPF.Modern;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -98,6 +99,9 @@ namespace Ink_Canvas
         private int _currentSlideShowPosition = 0;
         private readonly object _slideSwitchLock = new object();
         private bool _isProcessingSlideSwitch = false;
+
+        private Dictionary<int, MemoryStream> _memoryStreams = new Dictionary<int, MemoryStream>();
+        private int _previousSlideID = 0;
 
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
         private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
@@ -665,7 +669,12 @@ namespace Ink_Canvas
             {
                 Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    _singlePPTInkManager?.SaveAllStrokesToFile(pres);
+                    lock (_memoryStreams)
+                    {
+                        foreach (var stream in _memoryStreams.Values)
+                            stream?.Dispose();
+                        _memoryStreams.Clear();
+                    }
 
                     _pptUIManager?.UpdateConnectionStatus(false);
                 });
@@ -725,40 +734,88 @@ namespace Ink_Canvas
 
                 isStopInkReplay = true;
 
-                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                int currentSlide = 0;
+                int totalSlides = 0;
+                string presentationName = null;
+                Presentation activePresentation = null;
+
+                if (wn?.View != null && wn.Presentation != null)
                 {
-                    Presentation activePresentation = null;
-                    int currentSlide = 0;
-                    int totalSlides = 0;
+                    activePresentation = wn.Presentation;
+                    currentSlide = wn.View.CurrentShowPosition;
+                    totalSlides = activePresentation.Slides.Count;
+                    presentationName = activePresentation.Name;
+                }
+                else
+                {
+                    activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
+                    currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                    totalSlides = _pptManager?.SlidesCount ?? 0;
+                    presentationName = _pptManager?.GetPresentationName() ?? activePresentation?.Name;
+                }
 
-                    if (wn?.View != null && wn.Presentation != null)
-                    {
-                        activePresentation = wn.Presentation;
-                        currentSlide = wn.View.CurrentShowPosition;
-                        totalSlides = activePresentation.Slides.Count;
-                        // 初始化当前播放页码跟踪
-                        _currentSlideShowPosition = currentSlide;
-                    }
-                    else
-                    {
-                        activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
-                        currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        totalSlides = _pptManager?.SlidesCount ?? 0;
-                        // 初始化当前播放页码跟踪
-                        _currentSlideShowPosition = currentSlide;
-                    }
+                _currentSlideShowPosition = currentSlide;
+                _previousSlideID = currentSlide;
 
-                    if (activePresentation != null)
+                foreach (var stream in _memoryStreams.Values)
+                {
+                    stream?.Dispose();
+                }
+                _memoryStreams.Clear();
+
+                if (Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint && !string.IsNullOrEmpty(presentationName))
+                {
+                    string strokePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations", presentationName + "_" + totalSlides);
+                    if (Directory.Exists(strokePath))
                     {
-                        if (_singlePPTInkManager != null)
+                        await Task.Run(() =>
                         {
                             try
                             {
-                                _singlePPTInkManager.InitializePresentation(activePresentation);
+                                var files = new DirectoryInfo(strokePath).GetFiles("*.icstk");
+                                foreach (var file in files)
+                                {
+                                    int pageNum = 0;
+                                    try
+                                    {
+                                        string name = Path.GetFileNameWithoutExtension(file.Name);
+                                        if (int.TryParse(name, out pageNum) && pageNum > 0)
+                                        {
+                                            byte[] bytes = File.ReadAllBytes(file.FullName);
+                                            if (bytes.Length > 8)
+                                            {
+                                                lock (_memoryStreams)
+                                                {
+                                                    _memoryStreams[pageNum] = new MemoryStream(bytes);
+                                                    _memoryStreams[pageNum].Position = 0;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogHelper.WriteLogToFile($"加载第 {pageNum} 页墨迹文件失败: {ex}", LogHelper.LogType.Warning);
+                                    }
+                                }
                             }
-                            catch (Exception)
+                            catch (Exception ex)
                             {
+                                LogHelper.WriteLogToFile($"加载PPT墨迹文件失败: {ex}", LogHelper.LogType.Error);
                             }
+                        });
+                    }
+                }
+
+                await Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    if (activePresentation != null && _singlePPTInkManager != null)
+                    {
+                        try
+                        {
+                            _singlePPTInkManager.InitializePresentation(activePresentation);
+                        }
+                        catch (Exception)
+                        {
                         }
                     }
 
@@ -889,46 +946,57 @@ namespace Ink_Canvas
                 int currentSlide = wn.View.CurrentShowPosition;
                 int totalSlides = wn.Presentation.Slides.Count;
 
-                lock (_slideSwitchLock)
+                if (currentSlide == _previousSlideID) return;
+
+                int prev = _previousSlideID;
+
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (currentSlide == _currentSlideShowPosition) return;
-                    if (_isProcessingSlideSwitch) return;
+                    var ms = new MemoryStream();
+                    inkCanvas.Strokes.Save(ms);
+                    ms.Position = 0;
+                    if (_memoryStreams.ContainsKey(prev))
+                        _memoryStreams[prev]?.Dispose();
+                    _memoryStreams[prev] = ms;
 
-                    _isProcessingSlideSwitch = true;
-                    int prev = _currentSlideShowPosition;
+                    ClearStrokes(true);
+                    timeMachine.ClearStrokeHistory();
 
-                    Application.Current.Dispatcher.Invoke(() =>
+                    _currentSlideShowPosition = currentSlide;
+                    _singlePPTInkManager?.LockInkForSlide(currentSlide);
+                    _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
+
+                    if (_memoryStreams.ContainsKey(currentSlide) && _memoryStreams[currentSlide] != null)
                     {
-                        try
+                        byte[] bytes = _memoryStreams[currentSlide].ToArray();
+                        int loadingPage = currentSlide;
+                        Task.Run(() =>
                         {
-                            if (inkCanvas.Strokes.Count > 0 && prev > 0 && prev != currentSlide)
-                                _singlePPTInkManager?.SaveCurrentSlideStrokes(prev, inkCanvas.Strokes);
-
-                            ClearStrokes(true);
-                            timeMachine.ClearStrokeHistory();
-
-                            StrokeCollection newStrokes = _singlePPTInkManager?.LoadSlideStrokes(currentSlide);
-                            if (newStrokes != null && newStrokes.Count > 0)
-                                inkCanvas.Strokes.Add(newStrokes);
-
-                            _singlePPTInkManager?.LockInkForSlide(currentSlide);
-                            _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
-                        }
-                        finally
+                            try
+                            {
+                                return new StrokeCollection(new MemoryStream(bytes));
+                            }
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"从内存流加载第 {loadingPage} 页墨迹失败: {ex}", LogHelper.LogType.Warning);
+                                return null;
+                            }
+                        }).ContinueWith(t =>
                         {
-                            _currentSlideShowPosition = currentSlide;
-                            _isProcessingSlideSwitch = false;
-                        }
-                    });
-                }
+                            if (t.IsFaulted || t.Result == null) return;
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                if (_currentSlideShowPosition != loadingPage) return;
+                                inkCanvas.Strokes.Add(t.Result);
+                            });
+                        });
+                    }
+                });
+                _previousSlideID = currentSlide;
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"处理幻灯片切换事件失败: {ex}", LogHelper.LogType.Error);
-                lock (_slideSwitchLock)
-                {
-                    _isProcessingSlideSwitch = false;
-                }
             }
         }
 
@@ -966,13 +1034,79 @@ namespace Ink_Canvas
                     }
                 }
 
-                // 先保存当前画布墨迹到当前页
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    if (currentPage > 0 && _singlePPTInkManager != null && inkCanvas?.Strokes != null)
-                        _singlePPTInkManager.ForceSaveSlideStrokes(currentPage, inkCanvas.Strokes);
+                    if (currentPage > 0 && inkCanvas?.Strokes != null && inkCanvas.Strokes.Count > 0)
+                    {
+                        var ms = new MemoryStream();
+                        inkCanvas.Strokes.Save(ms);
+                        ms.Position = 0;
+                        if (_memoryStreams.ContainsKey(currentPage))
+                            _memoryStreams[currentPage]?.Dispose();
+                        _memoryStreams[currentPage] = ms;
+                    }
                 });
-                _singlePPTInkManager?.SaveAllStrokesToFile(pres, currentPage);
+
+                string presentationNameForSave = _pptManager?.GetPresentationName() ?? (pres != null ? pres.Name : null);
+                int totalSlidesForSave = _pptManager?.SlidesCount ?? (pres != null ? pres.Slides.Count : 0);
+
+                if (Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint && !string.IsNullOrEmpty(presentationNameForSave) && totalSlidesForSave > 0)
+                {
+                    await Task.Run(() =>
+                    {
+                        try
+                        {
+                            string folderPath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations", presentationNameForSave + "_" + totalSlidesForSave);
+                            if (!Directory.Exists(folderPath))
+                                Directory.CreateDirectory(folderPath);
+
+                            lock (_memoryStreams)
+                            {
+                                for (int i = 1; i <= totalSlidesForSave; i++)
+                                {
+                                    if (_memoryStreams.TryGetValue(i, out MemoryStream value) && value != null)
+                                    {
+                                        try
+                                        {
+                                            byte[] allBytes = value.ToArray();
+                                            string filePath = Path.Combine(folderPath, i.ToString("0000") + ".icstk");
+                                            if (allBytes.Length > 8)
+                                                File.WriteAllBytes(filePath, allBytes);
+                                            else if (File.Exists(filePath))
+                                                File.Delete(filePath);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            LogHelper.WriteLogToFile($"为第 {i} 页保存墨迹文件失败: {ex}", LogHelper.LogType.Warning);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.WriteLogToFile($"保存PPT墨迹文件失败: {ex}", LogHelper.LogType.Error);
+                        }
+                        finally
+                        {
+                            lock (_memoryStreams)
+                            {
+                                foreach (var stream in _memoryStreams.Values)
+                                    stream?.Dispose();
+                                _memoryStreams.Clear();
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    lock (_memoryStreams)
+                    {
+                        foreach (var stream in _memoryStreams.Values)
+                            stream?.Dispose();
+                        _memoryStreams.Clear();
+                    }
+                }
 
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
@@ -1250,11 +1384,17 @@ namespace Ink_Canvas
                 ClearStrokes(true);
                 timeMachine.ClearStrokeHistory();
 
-                StrokeCollection strokes = _singlePPTInkManager?.LoadSlideStrokes(slideIndex);
-
-                if (strokes != null && strokes.Count > 0)
+                if (_memoryStreams.ContainsKey(slideIndex) && _memoryStreams[slideIndex] != null)
                 {
-                    inkCanvas.Strokes.Add(strokes);
+                    try
+                    {
+                        _memoryStreams[slideIndex].Position = 0;
+                        inkCanvas.Strokes.Add(new StrokeCollection(_memoryStreams[slideIndex]));
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"从内存流加载第 {slideIndex} 页墨迹失败: {ex}", LogHelper.LogType.Warning);
+                    }
                 }
             }
             catch (Exception ex)
@@ -1297,11 +1437,17 @@ namespace Ink_Canvas
                 
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
+                _previousSlideID = 0;
                 lock (_slideSwitchLock)
                 {
                     _isProcessingSlideSwitch = false;
                 }
-
+                lock (_memoryStreams)
+                {
+                    foreach (var stream in _memoryStreams.Values)
+                        stream?.Dispose();
+                    _memoryStreams.Clear();
+                }
 
                 LogHelper.WriteLogToFile("PPT状态变量已重置", LogHelper.LogType.Trace);
             }
@@ -1630,13 +1776,20 @@ namespace Ink_Canvas
         {
             try
             {
-                // 保存当前页墨迹
                 var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                 if (currentSlide > 0)
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        _singlePPTInkManager?.SaveCurrentSlideStrokes(currentSlide, inkCanvas.Strokes);
+                        if (inkCanvas?.Strokes != null && inkCanvas.Strokes.Count > 0)
+                        {
+                            var ms = new MemoryStream();
+                            inkCanvas.Strokes.Save(ms);
+                            ms.Position = 0;
+                            if (_memoryStreams.ContainsKey(currentSlide))
+                                _memoryStreams[currentSlide]?.Dispose();
+                            _memoryStreams[currentSlide] = ms;
+                        }
                         timeMachine.ClearStrokeHistory();
                     });
                 }

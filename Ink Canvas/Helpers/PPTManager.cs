@@ -526,8 +526,7 @@ namespace Ink_Canvas.Helpers
             {
                 if (comObject != null && Marshal.IsComObject(comObject))
                 {
-                    int refCount = Marshal.ReleaseComObject(comObject);
-                    LogHelper.WriteLogToFile($"已释放COM对象 {objectName}，引用计数: {refCount}", LogHelper.LogType.Trace);
+                    Marshal.ReleaseComObject(comObject);
                 }
             }
             catch (COMException comEx)

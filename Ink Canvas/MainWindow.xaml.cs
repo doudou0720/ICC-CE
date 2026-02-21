@@ -2802,38 +2802,6 @@ namespace Ink_Canvas
 
         private IntPtr KeyboardHookProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0)
-            {
-                if (Settings.Advanced.IsNoFocusMode &&
-                    BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
-                    currentMode == 0)
-                {
-                    KBDLLHOOKSTRUCT hookStruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
-                    uint vkCode = hookStruct.vkCode;
-
-                    if (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN)
-                    {
-                        if (vkCode == 0x22 || vkCode == 0x28 || vkCode == 0x27 ||
-                            vkCode == 0x4E || vkCode == 0x20)
-                        {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                BtnPPTSlidesDown_Click(null, null);
-                            }), DispatcherPriority.Normal);
-                            return (IntPtr)1;
-                        }
-                        else if (vkCode == 0x21 || vkCode == 0x26 || vkCode == 0x25 ||
-                                 vkCode == 0x50)
-                        {
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                BtnPPTSlidesUp_Click(null, null);
-                            }), DispatcherPriority.Normal);
-                            return (IntPtr)1;
-                        }
-                    }
-                }
-            }
             return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
         }
 
