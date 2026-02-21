@@ -948,67 +948,55 @@ namespace Ink_Canvas
 
                 if (currentSlide == _previousSlideID) return;
 
-                lock (_slideSwitchLock)
-                {
-                    if (currentSlide == _currentSlideShowPosition) return;
-                    if (_isProcessingSlideSwitch) return;
-                    _isProcessingSlideSwitch = true;
-                }
-
-                int prev = _currentSlideShowPosition;
+                int prev = _previousSlideID;
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    try
+                    var ms = new MemoryStream();
+                    inkCanvas.Strokes.Save(ms);
+                    ms.Position = 0;
+                    if (_memoryStreams.ContainsKey(prev))
+                        _memoryStreams[prev]?.Dispose();
+                    _memoryStreams[prev] = ms;
+
+                    ClearStrokes(true);
+                    timeMachine.ClearStrokeHistory();
+
+                    _currentSlideShowPosition = currentSlide;
+                    _singlePPTInkManager?.LockInkForSlide(currentSlide);
+                    _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
+
+                    if (_memoryStreams.ContainsKey(currentSlide) && _memoryStreams[currentSlide] != null)
                     {
-                        if (inkCanvas.Strokes.Count > 0 && prev > 0 && prev != currentSlide)
+                        byte[] bytes = _memoryStreams[currentSlide].ToArray();
+                        int loadingPage = currentSlide;
+                        Task.Run(() =>
                         {
-                            var ms = new MemoryStream();
-                            inkCanvas.Strokes.Save(ms);
-                            ms.Position = 0;
-                            if (_memoryStreams.ContainsKey(prev))
-                                _memoryStreams[prev]?.Dispose();
-                            _memoryStreams[prev] = ms;
-                        }
-
-                        ClearStrokes(true);
-                        timeMachine.ClearStrokeHistory();
-
-                        // 从内存流加载新页墨迹（无文件I/O）
-                        try
-                        {
-                            if (_memoryStreams.ContainsKey(currentSlide) && _memoryStreams[currentSlide] != null)
+                            try
                             {
-                                _memoryStreams[currentSlide].Position = 0;
-                                inkCanvas.Strokes.Add(new StrokeCollection(_memoryStreams[currentSlide]));
+                                return new StrokeCollection(new MemoryStream(bytes));
                             }
-                        }
-                        catch (Exception ex)
+                            catch (Exception ex)
+                            {
+                                LogHelper.WriteLogToFile($"从内存流加载第 {loadingPage} 页墨迹失败: {ex}", LogHelper.LogType.Warning);
+                                return null;
+                            }
+                        }).ContinueWith(t =>
                         {
-                            LogHelper.WriteLogToFile($"从内存流加载第 {currentSlide} 页墨迹失败: {ex}", LogHelper.LogType.Warning);
-                        }
-
-                        _singlePPTInkManager?.LockInkForSlide(currentSlide);
-                        _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
-                    }
-                    finally
-                    {
-                        _currentSlideShowPosition = currentSlide;
-                        _previousSlideID = currentSlide;
-                        lock (_slideSwitchLock)
-                        {
-                            _isProcessingSlideSwitch = false;
-                        }
+                            if (t.IsFaulted || t.Result == null) return;
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                if (_currentSlideShowPosition != loadingPage) return;
+                                inkCanvas.Strokes.Add(t.Result);
+                            });
+                        });
                     }
                 });
+                _previousSlideID = currentSlide;
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"处理幻灯片切换事件失败: {ex}", LogHelper.LogType.Error);
-                lock (_slideSwitchLock)
-                {
-                    _isProcessingSlideSwitch = false;
-                }
             }
         }
 
