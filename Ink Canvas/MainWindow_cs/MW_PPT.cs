@@ -279,6 +279,12 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 启动PPT监控：当PowerPoint支持功能启用时，启动PPT管理器的监控功能。
+        /// </summary>
+        /// <remarks>
+        /// 只有当Settings.PowerPointSettings.PowerPointSupport为true时才会启动监控，并记录启动事件日志。
+        /// </remarks>
         private void StartPPTMonitoring()
         {
             if (Settings.PowerPointSettings.PowerPointSupport)
@@ -1782,6 +1788,20 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理PowerPoint增强功能开关的切换事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当PowerPoint增强功能被启用时：
+        /// 1. 禁用WPS支持
+        /// 2. 更新PPT管理器的WPS支持设置
+        /// 3. 启动PowerPoint进程守护
+        /// 当PowerPoint增强功能被禁用时：
+        /// 1. 停止PowerPoint进程守护
+        /// 无论开关状态如何变化，都会保存设置到文件
+        /// </remarks>
         private void ToggleSwitchPowerPointEnhancement_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1813,6 +1833,20 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理WPS支持开关的切换事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当WPS支持被启用时：
+        /// 1. 如果PowerPoint支持未启用，则启用PowerPoint支持
+        /// 2. 启动PPT监控
+        /// 3. 如果PowerPoint增强功能已启用，则禁用它并停止PowerPoint进程守护
+        /// 无论开关状态如何变化，都会：
+        /// 1. 更新PPT管理器的WPS支持设置
+        /// 2. 保存设置到文件
+        /// </remarks>
         private void ToggleSwitchSupportWPS_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1851,9 +1885,20 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 获取当前是否启用了WPS支持
+        /// </summary>
+        /// <value>如果启用了WPS支持，则为true；否则为false</value>
         private static bool isWPSSupportOn => Settings.PowerPointSettings.IsSupportWPS;
 
+        /// <summary>
+        /// 指示是否正在显示恢复隐藏幻灯片的窗口
+        /// </summary>
         public static bool IsShowingRestoreHiddenSlidesWindow;
+        
+        /// <summary>
+        /// 指示是否正在显示自动播放提示窗口
+        /// </summary>
         private static bool IsShowingAutoplaySlidesWindow;
 
         /// <summary>
@@ -1931,6 +1976,17 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// 处理PPT导航按钮的鼠标按下事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户按下PPT导航按钮时执行以下操作：
+        /// 1. 记录按下的按钮对象
+        /// 2. 检查是否启用了PPT按钮页码点击功能
+        /// 3. 根据按下的按钮设置相应的反馈边框透明度
+        /// </remarks>
         private void PPTNavigationBtn_MouseDown(object sender, MouseButtonEventArgs e)
         {
             lastBorderMouseDownObject = sender;
@@ -1953,6 +2009,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理PPT导航按钮的鼠标离开事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标事件参数</param>
+        /// <remarks>
+        /// 该方法在用户鼠标离开PPT导航按钮时执行以下操作：
+        /// 1. 重置按下的按钮对象为null
+        /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
+        /// </remarks>
         private void PPTNavigationBtn_MouseLeave(object sender, MouseEventArgs e)
         {
             lastBorderMouseDownObject = null;
@@ -1974,6 +2040,23 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理PPT导航按钮的鼠标释放事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户释放PPT导航按钮时执行以下操作：
+        /// 1. 检查释放的按钮是否与按下的按钮一致
+        /// 2. 隐藏按钮的反馈效果
+        /// 3. 检查是否启用了PPT按钮页码点击功能
+        /// 4. 检查PPT是否已连接且在放映状态
+        /// 5. 设置背景透明度和颜色
+        /// 6. 切换到光标模式
+        /// 7. 尝试显示PPT幻灯片导航
+        /// 8. 如果浮动栏未折叠，则调整其位置
+        /// 9. 捕获并记录可能的异常
+        /// </remarks>
         private async void PPTNavigationBtn_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -2033,6 +2116,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理“开始幻灯片放映”按钮的点击事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 该方法在用户点击“开始幻灯片放映”按钮时执行以下操作：
+        /// 1. 在新线程中尝试启动PPT幻灯片放映
+        /// 2. 如果启动失败，记录警告日志
+        /// 3. 捕获并记录可能的异常
+        /// </remarks>
         private void BtnPPTSlideShow_Click(object sender, RoutedEventArgs e)
         {
             new Thread(() =>
@@ -2159,6 +2253,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理PPT上一页控制按钮的鼠标按下事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户按下PPT上一页控制按钮时执行以下操作：
+        /// 1. 记录按下的按钮对象
+        /// 2. 根据按下的按钮设置相应的反馈边框透明度
+        /// 3. 如果启用了PPT按钮长按翻页功能，则启动长按检测
+        /// </remarks>
         private void GridPPTControlPrevious_MouseDown(object sender, MouseButtonEventArgs e)
         {
             lastBorderMouseDownObject = sender;
@@ -2185,6 +2290,17 @@ namespace Ink_Canvas
                 StartLongPressDetection(sender, false);
             }
         }
+        /// <summary>
+        /// 处理PPT上一页控制按钮的鼠标离开事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标事件参数</param>
+        /// <remarks>
+        /// 该方法在用户鼠标离开PPT上一页控制按钮时执行以下操作：
+        /// 1. 重置按下的按钮对象为null
+        /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
+        /// 3. 停止长按检测
+        /// </remarks>
         private void GridPPTControlPrevious_MouseLeave(object sender, MouseEventArgs e)
         {
             lastBorderMouseDownObject = null;
@@ -2208,6 +2324,18 @@ namespace Ink_Canvas
             // 停止长按检测
             StopLongPressDetection();
         }
+        /// <summary>
+        /// 处理PPT上一页控制按钮的鼠标释放事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户释放PPT上一页控制按钮时执行以下操作：
+        /// 1. 检查释放的按钮是否与按下的按钮一致
+        /// 2. 根据释放的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
+        /// 3. 停止长按检测
+        /// 4. 调用上一页按钮的点击事件处理方法，实现切换到上一页的功能
+        /// </remarks>
         private void GridPPTControlPrevious_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -2235,6 +2363,17 @@ namespace Ink_Canvas
         }
 
 
+        /// <summary>
+        /// 处理PPT下一页控制按钮的鼠标按下事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户按下PPT下一页控制按钮时执行以下操作：
+        /// 1. 记录按下的按钮对象
+        /// 2. 根据按下的按钮设置相应的反馈边框透明度
+        /// 3. 如果启用了PPT按钮长按翻页功能，则启动长按检测
+        /// </remarks>
         private void GridPPTControlNext_MouseDown(object sender, MouseButtonEventArgs e)
         {
             lastBorderMouseDownObject = sender;
@@ -2261,6 +2400,17 @@ namespace Ink_Canvas
                 StartLongPressDetection(sender, true);
             }
         }
+        /// <summary>
+        /// 处理PPT下一页控制按钮的鼠标离开事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标事件参数</param>
+        /// <remarks>
+        /// 该方法在用户鼠标离开PPT下一页控制按钮时执行以下操作：
+        /// 1. 重置按下的按钮对象为null
+        /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
+        /// 3. 停止长按检测
+        /// </remarks>
         private void GridPPTControlNext_MouseLeave(object sender, MouseEventArgs e)
         {
             lastBorderMouseDownObject = null;
@@ -2284,6 +2434,18 @@ namespace Ink_Canvas
             // 停止长按检测
             StopLongPressDetection();
         }
+        /// <summary>
+        /// 处理PPT下一页控制按钮的鼠标释放事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户释放PPT下一页控制按钮时执行以下操作：
+        /// 1. 检查释放的按钮是否与按下的按钮一致
+        /// 2. 根据释放的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
+        /// 3. 停止长按检测
+        /// 4. 调用下一页按钮的点击事件处理方法，实现切换到下一页的功能
+        /// </remarks>
         private void GridPPTControlNext_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -2310,6 +2472,14 @@ namespace Ink_Canvas
             BtnPPTSlidesDown_Click(BtnPPTSlidesDown, null);
         }
 
+        /// <summary>
+        /// 处理PPT结束控制按钮的鼠标释放事件
+        /// </summary>
+        /// <param name="sender">事件的来源对象</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法在用户释放PPT结束控制按钮时调用BtnPPTSlideShowEnd_Click方法，实现结束幻灯片放映的功能
+        /// </remarks>
         private void ImagePPTControlEnd_MouseUp(object sender, MouseButtonEventArgs e)
         {
             BtnPPTSlideShowEnd_Click(BtnPPTSlideShowEnd, null);
