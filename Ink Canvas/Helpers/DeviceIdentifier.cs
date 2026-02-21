@@ -999,7 +999,7 @@ namespace Ink_Canvas.Helpers
                 var directory = Path.GetDirectoryName(filePath);
                 if (!Directory.Exists(directory))
                 {
-                    Directory.CreateDirectory(directory);
+                    ProcessProtectionManager.WithWriteAccess(directory, () => Directory.CreateDirectory(directory));
                 }
 
                 string json = JsonConvert.SerializeObject(stats, Formatting.Indented);
@@ -1023,7 +1023,7 @@ namespace Ink_Canvas.Helpers
                     checksum.CopyTo(finalData, 0);
                     encryptedData.CopyTo(finalData, checksum.Length);
 
-                    File.WriteAllBytes(filePath, finalData);
+                    ProcessProtectionManager.WithWriteAccess(filePath, () => File.WriteAllBytes(filePath, finalData));
 
                     LogHelper.WriteLogToFile($"DeviceIdentifier | 加密使用统计已保存到: {filePath}");
                 }

@@ -51,8 +51,22 @@ namespace Ink_Canvas.Helpers
                 _enabled = enabled;
             }
 
-            if (enabled) Enable();
-            else Disable();
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    if (enabled) Enable();
+                    else Disable();
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        LogHelper.WriteLogToFile($"ProcessProtectionManager.SetEnabled 后台执行失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+                    catch { }
+                }
+            });
         }
 
         public static void WithWriteAccess(string targetPath, Action action)
@@ -70,7 +84,7 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
-                    LogHelper.WriteLogToFile($"ProcessProtectionManager.WithWriteAccess: 获取写入门闩超时({gateTimeoutMs}ms)，将降级直接执行写入动作。目标: {targetPath}",
+                    LogHelper.WriteLogToFile($"ProcessProtectionManager.WithWriteAccess: 获取写入门闩超时({gateTimeoutMs}ms)，将降级释放目标路径锁后执行写入。目标: {targetPath}",
                         LogHelper.LogType.Warning);
                 }
                 catch (Exception ex)
@@ -78,7 +92,62 @@ namespace Ink_Canvas.Helpers
                     System.Diagnostics.Debug.WriteLine($"[ProcessProtectionManager] 写日志失败: {ex.Message}");
                 }
 
-                action();
+                var normPath = NormalizePath(targetPath);
+                var dirsChain = GetDirChainToRoot(normPath);
+                Dictionary<string, SafeFileHandle> fallbackDirs = null;
+                Dictionary<string, FileStream> fallbackFiles = null;
+
+                try
+                {
+                    lock (_lock)
+                    {
+                        fallbackDirs = new Dictionary<string, SafeFileHandle>(StringComparer.OrdinalIgnoreCase);
+                        fallbackFiles = new Dictionary<string, FileStream>(StringComparer.OrdinalIgnoreCase);
+
+                        foreach (var dir in dirsChain)
+                        {
+                            if (_lockedDirs.TryGetValue(dir, out var handle))
+                            {
+                                _lockedDirs.Remove(dir);
+                                fallbackDirs[dir] = handle;
+                            }
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(normPath) && File.Exists(normPath) && _lockedFiles.TryGetValue(normPath, out var fs))
+                        {
+                            _lockedFiles.Remove(normPath);
+                            fallbackFiles[normPath] = fs;
+                        }
+                    }
+
+                    if (fallbackFiles != null)
+                    {
+                        foreach (var kv in fallbackFiles)
+                        {
+                            try { kv.Value.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                        }
+                    }
+                    if (fallbackDirs != null)
+                    {
+                        foreach (var kv in fallbackDirs)
+                        {
+                            try { kv.Value.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                        }
+                    }
+
+                    action();
+                }
+                finally
+                {
+                    try
+                    {
+                        if (Enabled)
+                        {
+                            Enable(rescanRoot: false, rescanDirs: dirsChain);
+                        }
+                    }
+                    catch { }
+                }
                 return;
             }
 
