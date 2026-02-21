@@ -663,6 +663,17 @@ namespace Ink_Canvas
             }
         }
 
+        private string GetPresentationStrokeFolderPath(Presentation presentation, string presentationName, int totalSlides)
+        {
+            string basePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations");
+            if (presentation != null && !string.IsNullOrEmpty(presentation.FullName))
+            {
+                string hash = HashHelper.GetFileHash(presentation.FullName);
+                return Path.Combine(basePath, $"{presentation.Name}_{presentation.Slides.Count}_{hash}");
+            }
+            return Path.Combine(basePath, $"{presentationName ?? ""}_{totalSlides}");
+        }
+
         private void OnPPTPresentationClose(Presentation pres)
         {
             try
@@ -757,15 +768,16 @@ namespace Ink_Canvas
                 _currentSlideShowPosition = currentSlide;
                 _previousSlideID = currentSlide;
 
-                foreach (var stream in _memoryStreams.Values)
+                lock (_memoryStreams)
                 {
-                    stream?.Dispose();
+                    foreach (var stream in _memoryStreams.Values)
+                        stream?.Dispose();
+                    _memoryStreams.Clear();
                 }
-                _memoryStreams.Clear();
 
                 if (Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint && !string.IsNullOrEmpty(presentationName))
                 {
-                    string strokePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations", presentationName + "_" + totalSlides);
+                    string strokePath = GetPresentationStrokeFolderPath(activePresentation, presentationName, totalSlides);
                     if (Directory.Exists(strokePath))
                     {
                         await Task.Run(() =>
@@ -955,9 +967,12 @@ namespace Ink_Canvas
                     var ms = new MemoryStream();
                     inkCanvas.Strokes.Save(ms);
                     ms.Position = 0;
-                    if (_memoryStreams.ContainsKey(prev))
-                        _memoryStreams[prev]?.Dispose();
-                    _memoryStreams[prev] = ms;
+                    lock (_memoryStreams)
+                    {
+                        if (_memoryStreams.ContainsKey(prev))
+                            _memoryStreams[prev]?.Dispose();
+                        _memoryStreams[prev] = ms;
+                    }
 
                     ClearStrokes(true);
                     timeMachine.ClearStrokeHistory();
@@ -966,15 +981,20 @@ namespace Ink_Canvas
                     _singlePPTInkManager?.LockInkForSlide(currentSlide);
                     _pptUIManager?.UpdateCurrentSlideNumber(currentSlide, totalSlides);
 
-                    if (_memoryStreams.ContainsKey(currentSlide) && _memoryStreams[currentSlide] != null)
+                    byte[] bytesToLoad = null;
+                    lock (_memoryStreams)
                     {
-                        byte[] bytes = _memoryStreams[currentSlide].ToArray();
+                        if (_memoryStreams.ContainsKey(currentSlide) && _memoryStreams[currentSlide] != null)
+                            bytesToLoad = _memoryStreams[currentSlide].ToArray();
+                    }
+                    if (bytesToLoad != null)
+                    {
                         int loadingPage = currentSlide;
                         Task.Run(() =>
                         {
                             try
                             {
-                                return new StrokeCollection(new MemoryStream(bytes));
+                                return new StrokeCollection(new MemoryStream(bytesToLoad));
                             }
                             catch (Exception ex)
                             {
@@ -1041,9 +1061,12 @@ namespace Ink_Canvas
                         var ms = new MemoryStream();
                         inkCanvas.Strokes.Save(ms);
                         ms.Position = 0;
-                        if (_memoryStreams.ContainsKey(currentPage))
-                            _memoryStreams[currentPage]?.Dispose();
-                        _memoryStreams[currentPage] = ms;
+                        lock (_memoryStreams)
+                        {
+                            if (_memoryStreams.ContainsKey(currentPage))
+                                _memoryStreams[currentPage]?.Dispose();
+                            _memoryStreams[currentPage] = ms;
+                        }
                     }
                 });
 
@@ -1052,13 +1075,13 @@ namespace Ink_Canvas
 
                 if (Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint && !string.IsNullOrEmpty(presentationNameForSave) && totalSlidesForSave > 0)
                 {
+                    string folderPathForSave = GetPresentationStrokeFolderPath(pres, presentationNameForSave, totalSlidesForSave);
                     await Task.Run(() =>
                     {
                         try
                         {
-                            string folderPath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations", presentationNameForSave + "_" + totalSlidesForSave);
-                            if (!Directory.Exists(folderPath))
-                                Directory.CreateDirectory(folderPath);
+                            if (!Directory.Exists(folderPathForSave))
+                                Directory.CreateDirectory(folderPathForSave);
 
                             lock (_memoryStreams)
                             {
@@ -1069,7 +1092,7 @@ namespace Ink_Canvas
                                         try
                                         {
                                             byte[] allBytes = value.ToArray();
-                                            string filePath = Path.Combine(folderPath, i.ToString("0000") + ".icstk");
+                                            string filePath = Path.Combine(folderPathForSave, i.ToString("0000") + ".icstk");
                                             if (allBytes.Length > 8)
                                                 File.WriteAllBytes(filePath, allBytes);
                                             else if (File.Exists(filePath))
@@ -1231,10 +1254,7 @@ namespace Ink_Canvas
             {
                 if (pres == null) return;
 
-                var presentationPath = pres.FullName;
-                var fileHash = GetFileHash(presentationPath);
-                var folderName = pres.Name + "_" + pres.Slides.Count + "_" + fileHash;
-                var folderPath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations", folderName);
+                var folderPath = GetPresentationStrokeFolderPath(pres, pres.Name, pres.Slides.Count);
                 var positionFile = Path.Combine(folderPath, "Position");
 
                 if (!File.Exists(positionFile)) return;
@@ -1384,12 +1404,20 @@ namespace Ink_Canvas
                 ClearStrokes(true);
                 timeMachine.ClearStrokeHistory();
 
-                if (_memoryStreams.ContainsKey(slideIndex) && _memoryStreams[slideIndex] != null)
+                byte[] bytes = null;
+                lock (_memoryStreams)
+                {
+                    if (_memoryStreams.TryGetValue(slideIndex, out var ms) && ms != null && ms.Length > 0)
+                    {
+                        ms.Position = 0;
+                        bytes = ms.ToArray();
+                    }
+                }
+                if (bytes != null)
                 {
                     try
                     {
-                        _memoryStreams[slideIndex].Position = 0;
-                        inkCanvas.Strokes.Add(new StrokeCollection(_memoryStreams[slideIndex]));
+                        inkCanvas.Strokes.Add(new StrokeCollection(new MemoryStream(bytes)));
                     }
                     catch (Exception ex)
                     {
@@ -1457,24 +1485,6 @@ namespace Ink_Canvas
             }
         }
 
-        private string GetFileHash(string filePath)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(filePath)) return "unknown";
-
-                using (var md5 = MD5.Create())
-                {
-                    byte[] hashBytes = md5.ComputeHash(Encoding.UTF8.GetBytes(filePath));
-                    return BitConverter.ToString(hashBytes).Replace("-", "").Substring(0, 8);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"计算文件哈希值失败: {ex}", LogHelper.LogType.Error);
-                return "error";
-            }
-        }
         #endregion
 
         private void BtnCheckPPT_Click(object sender, RoutedEventArgs e)

@@ -53,6 +53,13 @@ namespace Ink_Canvas.Helpers
 
         private void InitializeMemoryStreams(int capacity)
         {
+            if (_memoryStreams != null)
+            {
+                for (int i = 0; i < _memoryStreams.Length; i++)
+                {
+                    try { _memoryStreams[i]?.Dispose(); } catch (Exception ex) { LogHelper.WriteLogToFile($"InitializeMemoryStreams 释放内存流 {i} 失败: {ex}", LogHelper.LogType.Warning); }
+                }
+            }
             _memoryStreams = new MemoryStream[Math.Max(2, capacity)];
         }
         #endregion
@@ -64,6 +71,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void InitializePresentation(Presentation presentation)
         {
+            ThrowIfDisposed();
             if (presentation == null) return;
 
             lock (_lockObject)
@@ -109,6 +117,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void SaveCurrentSlideStrokes(int slideIndex, StrokeCollection strokes)
         {
+            ThrowIfDisposed();
             if (slideIndex <= 0 || strokes == null) return;
 
             lock (_lockObject)
@@ -133,6 +142,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void ForceSaveSlideStrokes(int slideIndex, StrokeCollection strokes)
         {
+            ThrowIfDisposed();
             if (slideIndex <= 0 || strokes == null) return;
 
             lock (_lockObject)
@@ -155,6 +165,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public StrokeCollection LoadSlideStrokes(int slideIndex)
         {
+            ThrowIfDisposed();
             if (slideIndex <= 0) return new StrokeCollection();
 
             lock (_lockObject)
@@ -181,6 +192,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public StrokeCollection SwitchToSlide(int slideIndex, StrokeCollection currentStrokes = null)
         {
+            ThrowIfDisposed();
             lock (_lockObject)
             {
                 try
@@ -213,6 +225,7 @@ namespace Ink_Canvas.Helpers
         /// <param name="currentSlideIndex">当前播放的页码，如果提供则使用此值保存位置，否则使用_lockedSlideIndex</param>
         public void SaveAllStrokesToFile(Presentation presentation, int currentSlideIndex = -1)
         {
+            ThrowIfDisposed();
             if (!IsAutoSaveEnabled || string.IsNullOrEmpty(AutoSaveLocation) || presentation == null) return;
 
             lock (_lockObject)
@@ -277,6 +290,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void LoadSavedStrokes()
         {
+            ThrowIfDisposed();
             if (!IsAutoSaveEnabled || string.IsNullOrEmpty(AutoSaveLocation)) return;
 
             lock (_lockObject)
@@ -325,6 +339,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void ClearAllStrokes()
         {
+            ThrowIfDisposed();
             lock (_lockObject)
             {
                 ClearAllStrokesInternal();
@@ -333,12 +348,14 @@ namespace Ink_Canvas.Helpers
 
         public void LockInkForSlide(int slideIndex)
         {
+            ThrowIfDisposed();
             _inkLockUntil = DateTime.Now.AddMilliseconds(InkLockMilliseconds);
             _lockedSlideIndex = slideIndex;
         }
 
         public bool CanWriteInk(int currentSlideIndex)
         {
+            ThrowIfDisposed();
             if (DateTime.Now >= _inkLockUntil) return true;
             if (currentSlideIndex == _lockedSlideIndex) return true;
             if (DateTime.Now - (_inkLockUntil.AddMilliseconds(-InkLockMilliseconds)) < TimeSpan.FromMilliseconds(50)) return true;
@@ -347,6 +364,7 @@ namespace Ink_Canvas.Helpers
 
         public void ResetLockState()
         {
+            ThrowIfDisposed();
             lock (_lockObject)
             {
                 _inkLockUntil = DateTime.MinValue;
@@ -446,31 +464,13 @@ namespace Ink_Canvas.Helpers
             try
             {
                 string path = presentation.FullName;
-                string hash = GetFileHash(path);
+                string hash = HashHelper.GetFileHash(path);
                 return $"{presentation.Name}_{presentation.Slides.Count}_{hash}";
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"生成演示文稿 ID 失败: {ex}", LogHelper.LogType.Error);
                 return $"unknown_{DateTime.Now.Ticks}";
-            }
-        }
-
-        private static string GetFileHash(string filePath)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(filePath)) return "unknown";
-                using (var md5 = MD5.Create())
-                {
-                    byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(filePath));
-                    return BitConverter.ToString(hash).Replace("-", "").Substring(0, 8);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"计算文件哈希失败: {ex}", LogHelper.LogType.Error);
-                return "error";
             }
         }
 
@@ -488,6 +488,12 @@ namespace Ink_Canvas.Helpers
             if (_disposed) return;
             lock (_lockObject) { ClearAllStrokesInternal(); }
             _disposed = true;
+            GC.SuppressFinalize(this);
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed) throw new ObjectDisposedException(nameof(PPTInkManager));
         }
 
         #endregion

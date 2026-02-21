@@ -842,8 +842,8 @@ namespace Ink_Canvas
                     if (!string.IsNullOrEmpty(savedPptPath) && !string.IsNullOrEmpty(currentPptPath))
                     {
                         // 使用文件路径哈希值进行比较，避免路径格式差异
-                        string savedHash = GetFileHash(savedPptPath);
-                        string currentHash = GetFileHash(currentPptPath);
+                        string savedHash = HashHelper.GetFileHash(savedPptPath);
+                        string currentHash = HashHelper.GetFileHash(currentPptPath);
 
                         if (savedHash != currentHash)
                         {

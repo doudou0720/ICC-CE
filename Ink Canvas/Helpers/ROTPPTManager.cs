@@ -205,14 +205,14 @@ namespace Ink_Canvas.Helpers
         public void StopMonitoring()
         {
             _unifiedRotTimer?.Stop();
-            DisconnectFromPPT();
+            DisconnectFromPPT(restartMonitoring: false);
         }
 
         public void ReloadConnection()
         {
             if (_disposed) return;
             LogHelper.WriteLogToFile("[ROT] 执行热重载：强制断开并重新连接", LogHelper.LogType.Event);
-            DisconnectFromPPT();
+            DisconnectFromPPT(restartMonitoring: true);
         }
         #endregion
 
@@ -371,7 +371,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private void DisconnectFromPPT()
+        private void DisconnectFromPPT(bool restartMonitoring = true)
         {
             object appToRelease = null;
             try
@@ -461,7 +461,7 @@ namespace Ink_Canvas.Helpers
                         lock (_lockObject)
                         {
                             _isModuleUnloading = false;
-                            if (!_disposed)
+                            if (restartMonitoring && !_disposed)
                                 _unifiedRotTimer?.Start();
                         }
                     }
