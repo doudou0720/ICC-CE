@@ -388,6 +388,20 @@ namespace Ink_Canvas
                 ComboBoxTheme.SelectedIndex = Settings.Appearance.Theme;
 
                 ComboBoxChickenSoupSource.SelectedIndex = Settings.Appearance.ChickenSoupSource;
+                
+                // 初始化自定义按钮的可见性（仅在选择API时显示）
+                if (BtnHitokotoCustomize != null)
+                {
+                    BtnHitokotoCustomize.Visibility = Settings.Appearance.ChickenSoupSource == 3 
+                        ? Visibility.Visible 
+                        : Visibility.Collapsed;
+                }
+                
+                // 初始化HitokotoCategories，如果为空则默认全选
+                if (Settings.Appearance.HitokotoCategories == null || Settings.Appearance.HitokotoCategories.Count == 0)
+                {
+                    Settings.Appearance.HitokotoCategories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
+                }
 
                 ToggleSwitchEnableQuickPanel.IsOn = Settings.Appearance.IsShowQuickPanel;
 

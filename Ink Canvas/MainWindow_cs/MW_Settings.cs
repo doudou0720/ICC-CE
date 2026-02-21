@@ -3,8 +3,10 @@ using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using OSVersionExtension;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -952,7 +954,22 @@ namespace Ink_Canvas
                             return;
                         }
 
-                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text").ConfigureAwait(true);
+                        // 构建API URL，包含选中的分类参数
+                        var categories = Settings.Appearance.HitokotoCategories;
+                        if (categories == null || categories.Count == 0)
+                        {
+                            // 如果没有选中任何分类，默认全选
+                            categories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
+                            Settings.Appearance.HitokotoCategories = categories;
+                        }
+
+                        var urlBuilder = new StringBuilder("https://v1.hitokoto.cn/?encode=text");
+                        foreach (var category in categories)
+                        {
+                            urlBuilder.Append($"&c={category}");
+                        }
+
+                        var response = await client.GetAsync(urlBuilder.ToString()).ConfigureAwait(true);
                         response.EnsureSuccessStatusCode();
 
                         var text = await response.Content.ReadAsStringAsync().ConfigureAwait(true);
@@ -986,8 +1003,168 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.Appearance.ChickenSoupSource = ComboBoxChickenSoupSource.SelectedIndex;
+            
+            if (BtnHitokotoCustomize != null)
+            {
+                BtnHitokotoCustomize.Visibility = ComboBoxChickenSoupSource.SelectedIndex == 3 
+                    ? Visibility.Visible 
+                    : Visibility.Collapsed;
+            }
+            
             SaveSettingsToFile();
             await UpdateChickenSoupTextAsync();
+        }
+
+        private async void BtnHitokotoCustomize_Click(object sender, RoutedEventArgs e)
+        {
+            var categories = new Dictionary<string, string>
+            {
+                { "a", "动画" },
+                { "b", "漫画" },
+                { "c", "游戏" },
+                { "d", "文学" },
+                { "e", "原创" },
+                { "f", "来自网络" },
+                { "g", "其他" },
+                { "h", "影视" },
+                { "i", "诗词" },
+                { "j", "网易云" },
+                { "k", "哲学" },
+                { "l", "抖机灵" }
+            };
+
+            // 创建弹窗内容
+            var contentPanel = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Orientation = System.Windows.Controls.Orientation.Vertical
+            };
+
+            // 全选复选框
+            var selectAllCheckBox = new CheckBox
+            {
+                Content = "全选",
+                FontSize = 14,
+                FontFamily = new FontFamily("Microsoft YaHei UI"),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            // 存储各个分类的复选框
+            var categoryCheckBoxes = new Dictionary<string, CheckBox>();
+
+            // 创建分类复选框
+            foreach (var category in categories)
+            {
+                var checkBox = new CheckBox
+                {
+                    Content = category.Value,
+                    Tag = category.Key,
+                    FontSize = 13,
+                    FontFamily = new FontFamily("Microsoft YaHei UI"),
+                    IsChecked = Settings.Appearance.HitokotoCategories.Contains(category.Key),
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                categoryCheckBoxes[category.Key] = checkBox;
+                contentPanel.Children.Add(checkBox);
+            }
+
+            // 全选复选框逻辑
+            bool isUpdatingSelectAll = false;
+            selectAllCheckBox.IsChecked = Settings.Appearance.HitokotoCategories.Count == categories.Count;
+            
+            selectAllCheckBox.Checked += (s, args) =>
+            {
+                if (isUpdatingSelectAll) return;
+                isUpdatingSelectAll = true;
+                foreach (var checkBox in categoryCheckBoxes.Values)
+                {
+                    checkBox.IsChecked = true;
+                }
+                isUpdatingSelectAll = false;
+            };
+
+            selectAllCheckBox.Unchecked += (s, args) =>
+            {
+                if (isUpdatingSelectAll) return;
+                isUpdatingSelectAll = true;
+                foreach (var checkBox in categoryCheckBoxes.Values)
+                {
+                    checkBox.IsChecked = false;
+                }
+                isUpdatingSelectAll = false;
+            };
+
+            // 监听各个复选框的变化，更新全选状态
+            foreach (var checkBox in categoryCheckBoxes.Values)
+            {
+                checkBox.Checked += (s, args) =>
+                {
+                    if (isUpdatingSelectAll) return;
+                    isUpdatingSelectAll = true;
+                    selectAllCheckBox.IsChecked = categoryCheckBoxes.Values.All(cb => cb.IsChecked == true);
+                    isUpdatingSelectAll = false;
+                };
+                checkBox.Unchecked += (s, args) =>
+                {
+                    if (isUpdatingSelectAll) return;
+                    isUpdatingSelectAll = true;
+                    selectAllCheckBox.IsChecked = false;
+                    isUpdatingSelectAll = false;
+                };
+            }
+
+            // 将全选复选框添加到顶部
+            var mainPanel = new StackPanel
+            {
+                Margin = new Thickness(0),
+                Orientation = System.Windows.Controls.Orientation.Vertical
+            };
+            mainPanel.Children.Add(selectAllCheckBox);
+            mainPanel.Children.Add(new Separator { Margin = new Thickness(0, 8, 0, 8) });
+            mainPanel.Children.Add(contentPanel);
+
+            var scrollViewer = new ScrollViewer
+            {
+                Content = mainPanel,
+                MaxHeight = 400,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+            };
+
+            // 创建ContentDialog显示自定义内容
+            var contentDialog = new iNKORE.UI.WPF.Modern.Controls.ContentDialog
+            {
+                Title = "自定义一言分类",
+                Content = scrollViewer,
+                PrimaryButtonText = "确定",
+                SecondaryButtonText = "取消",
+                DefaultButton = iNKORE.UI.WPF.Modern.Controls.ContentDialogButton.Primary,
+                Owner = this
+            };
+
+            var dialogResult = await contentDialog.ShowAsync();
+
+            if (dialogResult == iNKORE.UI.WPF.Modern.Controls.ContentDialogResult.Primary)
+            {
+                // 保存选中的分类
+                Settings.Appearance.HitokotoCategories = categoryCheckBoxes
+                    .Where(kvp => kvp.Value.IsChecked == true)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                // 如果没有任何选中，默认全选
+                if (Settings.Appearance.HitokotoCategories.Count == 0)
+                {
+                    Settings.Appearance.HitokotoCategories = categories.Keys.ToList();
+                }
+
+                SaveSettingsToFile();
+                
+                // 如果当前正在使用API，更新名言
+                if (Settings.Appearance.ChickenSoupSource == 3 && Settings.Appearance.EnableChickenSoupInWhiteboardMode)
+                {
+                    _ = UpdateChickenSoupTextAsync();
+                }
+            }
         }
 
         private void ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled(object sender, RoutedEventArgs e)
