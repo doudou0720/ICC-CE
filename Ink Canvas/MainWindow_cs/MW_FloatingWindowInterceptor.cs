@@ -9,10 +9,6 @@ namespace Ink_Canvas
     public partial class MainWindow : Window
     {
         #region 悬浮窗拦截功能
-        /// <summary>
-        /// 悬浮窗拦截管理器实例
-        /// </summary>
-        private FloatingWindowInterceptorManager _floatingWindowInterceptorManager;
 
         /// <summary>
         /// 初始化悬浮窗拦截管理器

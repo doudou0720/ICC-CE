@@ -163,6 +163,24 @@ namespace Ink_Canvas
         }
 
 
+        /// <summary>
+        /// 左侧页面列表视图的鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 隐藏左右侧页面边框
+        /// 2. 获取选中的项目和索引
+        /// 3. 只有当选择的页面与当前页面不同时才进行切换
+        /// 4. 如果有选中的元素，先取消选择
+        /// 5. 保存当前页面的笔画
+        /// 6. 清空画布
+        /// 7. 更新当前白板索引
+        /// 8. 恢复新页面的笔画
+        /// 9. 更新索引信息显示
+        /// 10. 更新选择索引
+        /// </remarks>
         private void BlackBoardLeftSidePageListView_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             AnimationsHelper.HideWithSlideAndFade(BoardBorderLeftPageListView);
@@ -196,6 +214,24 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 右侧页面列表视图的鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 隐藏左右侧页面边框
+        /// 2. 获取选中的项目和索引
+        /// 3. 只有当选择的页面与当前页面不同时才进行切换
+        /// 4. 如果有选中的元素，先取消选择
+        /// 5. 保存当前页面的笔画
+        /// 6. 清空画布
+        /// 7. 更新当前白板索引
+        /// 8. 恢复新页面的笔画
+        /// 9. 更新索引信息显示
+        /// 10. 更新选择索引
+        /// </remarks>
         private void BlackBoardRightSidePageListView_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             AnimationsHelper.HideWithSlideAndFade(BoardBorderLeftPageListView);

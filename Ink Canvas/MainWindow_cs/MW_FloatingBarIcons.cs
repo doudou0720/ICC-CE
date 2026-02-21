@@ -2245,6 +2245,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 画笔图标点击事件处理，用于切换到批注模式或显示画笔调色盘
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         internal void PenIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2471,6 +2476,11 @@ namespace Ink_Canvas
             drawingShapeMode = 0;
         }
 
+        /// <summary>
+        /// 颜色主题切换鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void ColorThemeSwitch_MouseUp(object sender, RoutedEventArgs e)
         {
             isUselightThemeColor = !isUselightThemeColor;
@@ -2478,6 +2488,11 @@ namespace Ink_Canvas
             CheckColorTheme();
         }
 
+        /// <summary>
+        /// 橡皮擦图标点击事件处理，用于切换到橡皮擦模式或显示橡皮擦尺寸面板
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         internal void EraserIcon_Click(object sender, RoutedEventArgs e)
         {
             bool isAlreadyEraser = inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
@@ -2529,6 +2544,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 白板模式下的橡皮擦图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void BoardEraserIcon_Click(object sender, RoutedEventArgs e)
         {
             bool isAlreadyEraser = inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
@@ -2567,6 +2587,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 墨迹擦除图标点击事件处理，用于切换到按笔画擦除模式
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void EraserIconByStrokes_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2599,6 +2624,11 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 光标删除图标点击事件处理，用于删除选中内容并切换到光标模式
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void CursorWithDelIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2803,6 +2833,10 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 更新快速调色盘的选中指示器，根据当前选中的颜色显示对应的勾选图标
+        /// </summary>
+        /// <param name="selectedColor">当前选中的颜色</param>
         private void UpdateQuickColorPaletteIndicator(Color selectedColor)
         {
             // 隐藏所有check图标（双行显示）
@@ -2891,6 +2925,11 @@ namespace Ink_Canvas
             return rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance;
         }
 
+        /// <summary>
+        /// 选择工具图标鼠标释放事件处理，用于切换到选择模式或选择所有墨迹
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void SelectIcon_MouseUp(object sender, RoutedEventArgs e)
         {
             // 禁用高级橡皮擦系统
@@ -2914,6 +2953,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 从图形绘制模式切换到画笔模式的提示处理
+        /// </summary>
         private void DrawShapePromptToPen()
         {
             if (isLongPressSelected)
@@ -2930,6 +2972,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 关闭工具面板鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void CloseBordertools_MouseUp(object sender, MouseButtonEventArgs e)
         {
             HideSubPanels();
@@ -2937,6 +2984,11 @@ namespace Ink_Canvas
 
         #region Left Side Panel
 
+        /// <summary>
+        /// 手指拖动模式切换按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void BtnFingerDragMode_Click(object sender, RoutedEventArgs e)
         {
             if (isSingleFingerDragMode)
@@ -2951,6 +3003,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 撤销按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void BtnUndo_Click(object sender, RoutedEventArgs e)
         {
             if (inkCanvas.GetSelectedStrokes().Count != 0)
@@ -2963,6 +3020,11 @@ namespace Ink_Canvas
             ApplyHistoryToCanvas(item);
         }
 
+        /// <summary>
+        /// 重做按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void BtnRedo_Click(object sender, RoutedEventArgs e)
         {
             if (inkCanvas.GetSelectedStrokes().Count != 0)
@@ -2975,6 +3037,11 @@ namespace Ink_Canvas
             ApplyHistoryToCanvas(item);
         }
 
+        /// <summary>
+        /// 按钮启用状态变更事件处理，用于更新按钮内容的透明度
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">依赖属性变更事件参数</param>
         private void Btn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -2994,6 +3061,11 @@ namespace Ink_Canvas
 
         public static bool CloseIsFromButton;
 
+        /// <summary>
+        /// 退出按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         public void BtnExit_Click(object sender, RoutedEventArgs e)
         {
             // 如果当前在设置面板中，需要先恢复无焦点模式状态
@@ -3012,6 +3084,11 @@ namespace Ink_Canvas
             Close();
         }
 
+        /// <summary>
+        /// 重启按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         public void BtnRestart_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
@@ -3030,6 +3107,11 @@ namespace Ink_Canvas
             Close();
         }
 
+        /// <summary>
+        /// 设置覆盖层点击事件处理，用于点击设置面板外部时关闭设置面板
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void SettingsOverlayClick(object sender, MouseButtonEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
@@ -3059,6 +3141,8 @@ namespace Ink_Canvas
         /// <summary>
         /// 切换并打开设置面板；在需要时先进行安全密码校验，然后显示设置面板并启动打开动画，同时根据设置暂时调整无焦点模式与遮罩交互状态。
         /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)

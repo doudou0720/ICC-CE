@@ -1396,7 +1396,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 清理配置文件中的过期设置
+        /// </summary>
         /// <param name="userConfigJson">用户配置的JSON字符串</param>
+        /// <remarks>
+        /// 清理过期设置时：
+        /// 1. 创建默认配置对象
+        /// 2. 将默认配置和用户配置都序列化为JObject
+        /// 3. 递归比较并删除用户配置中多余的键
+        /// 4. 如果有清理操作，重新反序列化并保存
+        /// 5. 记录清理结果到日志
+        /// </remarks>
         private void CleanupObsoleteSettings(string userConfigJson)
         {
             try
@@ -1429,9 +1440,23 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 递归删除用户配置中多余的属性
+        /// </summary>
         /// <param name="userObj">用户配置的JObject</param>
         /// <param name="defaultObj">默认配置的JObject</param>
         /// <param name="hasChanges">是否有变更的引用标志</param>
+        /// <remarks>
+        /// 递归删除多余属性时：
+        /// 1. 检查用户配置和默认配置是否为空
+        /// 2. 获取需要删除的键列表
+        /// 3. 遍历用户配置的所有属性
+        /// 4. 如果默认配置中不存在该属性，标记为删除
+        /// 5. 如果两个属性都是对象类型，递归比较
+        /// 6. 处理数组中的对象（如自定义图标列表等）
+        /// 7. 删除标记的键
+        /// 8. 设置变更标志
+        /// </remarks>
         private void RemoveObsoleteProperties(JObject userObj, JObject defaultObj, ref bool hasChanges)
         {
             if (userObj == null || defaultObj == null)
