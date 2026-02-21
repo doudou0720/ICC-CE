@@ -14,6 +14,9 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 浮动栏前景色，根据当前主题动态更新。
+        /// </summary>
         private Color FloatBarForegroundColor;
 
         /// <summary>
@@ -333,6 +336,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理系统主题偏好变化事件，根据当前设置更新应用主题。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">用户偏好变化事件参数。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 根据当前主题设置（Settings.Appearance.Theme）决定使用哪种主题
+        /// 2. 如果设置为0（浅色主题），则设置为Light主题
+        /// 3. 如果设置为1（深色主题），则设置为Dark主题
+        /// 4. 如果设置为2（跟随系统主题），则根据系统主题设置应用相应的主题
+        /// </remarks>
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             switch (Settings.Appearance.Theme)
@@ -350,6 +365,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 检查系统主题是否为浅色主题。
+        /// </summary>
+        /// <returns>系统主题为浅色返回true，深色返回false。</returns>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 从注册表中读取系统主题设置
+        /// 2. 检查"SystemUsesLightTheme"键的值
+        /// 3. 如果值为1，则表示系统使用浅色主题
+        /// 4. 捕获可能的异常，确保方法不会因异常而崩溃
+        /// </remarks>
         private bool IsSystemThemeLight()
         {
             var light = false;

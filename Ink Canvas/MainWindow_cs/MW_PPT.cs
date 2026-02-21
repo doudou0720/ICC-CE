@@ -70,49 +70,128 @@ namespace Ink_Canvas
         #endregion
 
         #region PPT Application Variables
+        /// <summary>
+        /// PowerPoint应用程序实例，用于与PowerPoint进行交互。
+        /// </summary>
         public static Microsoft.Office.Interop.PowerPoint.Application pptApplication;
+        
+        /// <summary>
+        /// 当前活动的PowerPoint演示文稿。
+        /// </summary>
         public static Presentation presentation;
+        
+        /// <summary>
+        /// 当前演示文稿的幻灯片集合。
+        /// </summary>
         public static Slides slides;
+        
+        /// <summary>
+        /// 当前活动的幻灯片。
+        /// </summary>
         public static Slide slide;
+        
+        /// <summary>
+        /// 当前演示文稿的幻灯片总数。
+        /// </summary>
         public static int slidescount;
         #endregion
 
         #region PPT State Management
+        /// <summary>
+        /// 幻灯片放映结束事件重入保护标志，防止重复处理放映结束事件。
+        /// </summary>
         private bool isEnteredSlideShowEndEvent; 
+        
+        /// <summary>
+        /// 演示文稿是否有黑边的指示标志。
+        /// </summary>
         private bool isPresentationHaveBlackSpace;
 
         // 长按翻页相关字段
+        /// <summary>
+        /// 用于处理长按翻页功能的定时器。
+        /// </summary>
         private DispatcherTimer _longPressTimer;
+        
+        /// <summary>
+        /// 长按翻页方向标志，true表示下一页，false表示上一页。
+        /// </summary>
         private bool _isLongPressNext = true; // true为下一页，false为上一页
+        
+        /// <summary>
+        /// 长按延迟时间（毫秒），即用户需要按住按钮多长时间才开始连续翻页。
+        /// </summary>
         private const int LongPressDelay = 500; // 长按延迟时间（毫秒）
+        
+        /// <summary>
+        /// 长按翻页间隔（毫秒），即连续翻页的时间间隔。
+        /// </summary>
         private const int LongPressInterval = 50; // 长按翻页间隔（毫秒）
 
         // PowerPoint应用程序守护相关字段
+        /// <summary>
+        /// 用于监控PowerPoint应用程序状态的定时器。
+        /// </summary>
         private DispatcherTimer _powerPointProcessMonitorTimer;
+        
+        /// <summary>
+        /// 应用程序监控间隔（毫秒），即每隔多长时间检查一次PowerPoint应用程序状态。
+        /// </summary>
         private const int ProcessMonitorInterval = 1000; // 应用程序监控间隔（毫秒）
 
         // 上次播放位置相关字段
+        /// <summary>
+        /// 上次播放的幻灯片页码。
+        /// </summary>
         private int _lastPlaybackPage = 0;
+        
+        /// <summary>
+        /// 是否应该导航到上次播放页码的标志。
+        /// </summary>
         private bool _shouldNavigateToLastPage = false;
         
         // 当前播放页码跟踪
+        /// <summary>
+        /// 当前幻灯片放映的位置（页码）。
+        /// </summary>
         private int _currentSlideShowPosition = 0;
 
         private Dictionary<int, MemoryStream> _memoryStreams = new Dictionary<int, MemoryStream>();
         private int _previousSlideID = 0;
 
+        /// <summary>
+        /// 用于在PowerPoint连接断开后延迟退出PPT模式的定时器。
+        /// </summary>
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
+        
+        /// <summary>
+        /// 断开连接后退出PPT模式的延迟时间（毫秒），即连接断开后多长时间才退出PPT模式。
+        /// </summary>
         private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
         #endregion
 
         #region PPT Managers
+        /// <summary>
+        /// PPT链接管理器，用于管理与PowerPoint的连接和事件处理。
+        /// </summary>
         private IPPTLinkManager _pptManager;
+        
+        /// <summary>
+        /// PPT墨迹管理器，用于管理PowerPoint幻灯片上的墨迹。
+        /// </summary>
         private PPTInkManager _singlePPTInkManager;
+        
+        /// <summary>
+        /// PPT UI管理器，用于管理与PowerPoint相关的用户界面元素。
+        /// </summary>
         private PPTUIManager _pptUIManager;
 
         /// <summary>
         /// 获取PPT管理器实例
         /// </summary>
+        /// <remarks>
+        /// 提供对内部PPT链接管理器的公共访问，用于外部代码与PowerPoint进行交互。
+        /// </remarks>
         public IPPTLinkManager PPTManager => _pptManager;
         #endregion
 
@@ -664,6 +743,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理 PowerPoint 演示文稿打开事件：清理画布墨迹、初始化墨迹管理器、处理导航逻辑、检查隐藏幻灯片和自动播放设置，并更新连接状态。
+        /// </summary>
+        /// <param name="pres">已打开的 PowerPoint 演示文稿（Presentation）实例。</param>
+        /// <remarks>
+        /// 操作包括：清理画布墨迹和备份历史记录，初始化墨迹管理器，处理跳转到首页或上次播放页的逻辑，检查隐藏幻灯片和自动播放设置，更新UI连接状态，并记录事件日志。
+        /// 所有操作在UI线程异步执行，异常会被捕获并记录为错误日志。
+        /// </remarks>
         private void OnPPTPresentationOpen(Presentation pres)
         {
             try
@@ -747,6 +834,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理 PowerPoint 幻灯片放映状态变化事件：更新UI管理器的放映状态并检查主窗口可见性。
+        /// </summary>
+        /// <param name="isInSlideShow">指示当前是否处于幻灯片放映状态；`true` 表示正在放映，`false` 表示已退出放映。</param>
+        /// <remarks>
+        /// 操作包括：在UI线程异步通知UI管理器放映状态变化，检查并更新主窗口的可见性（用于仅PPT模式）。
+        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// </remarks>
         private void OnPPTSlideShowStateChanged(bool isInSlideShow)
         {
             try
@@ -770,6 +865,31 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理 PowerPoint 幻灯片放映开始事件：根据设置折叠或展开浮动栏，初始化放映状态，更新UI，加载当前页墨迹，并设置相关参数。
+        /// </summary>
+        /// <param name="wn">PowerPoint 幻灯片放映窗口（SlideShowWindow）实例，包含当前放映状态和视图信息。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 根据设置自动折叠或展开浮动栏
+        /// 2. 停止墨迹重放
+        /// 3. 获取当前活动演示文稿、当前幻灯片和总幻灯片数
+        /// 4. 初始化墨迹管理器
+        /// 5. 处理跳转到首页或上次播放位置的逻辑
+        /// 6. 更新UI状态，包括放映状态、当前幻灯片编号
+        /// 7. 设置浮动栏透明度和边距
+        /// 8. 显示侧边栏退出按钮
+        /// 9. 处理画板显示
+        /// 10. 关闭白板模式（如果当前在白板模式）
+        /// 11. 显示浮动栏主控件
+        /// 12. 根据设置隐藏或显示手势面板和按钮
+        /// 13. 如果设置了在新放映时显示画布，则进入批注模式并显示调色盘
+        /// 14. 重置幻灯片放映结束事件标志
+        /// 15. 加载当前页墨迹
+        /// 16. 调整浮动栏边距动画
+        /// 
+        /// 所有UI操作在UI线程异步执行，异常会被捕获并记录为错误日志。
+        /// </remarks>
         private async void OnPPTSlideShowBegin(SlideShowWindow wn)
         {
             try
@@ -1285,6 +1405,16 @@ namespace Ink_Canvas
         #endregion
 
         #region Helper Methods
+        /// <summary>
+        /// 处理演示文稿打开时的导航逻辑：根据设置决定跳转到首页或显示上次播放页通知。
+        /// </summary>
+        /// <param name="pres">当前打开的 PowerPoint 演示文稿（Presentation）实例。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 如果设置了总是跳转到首页，则尝试导航到第1页
+        /// 2. 否则，如果设置了显示上次播放页通知，则显示上次播放页通知
+        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// </remarks>
         private void HandlePresentationOpenNavigation(Presentation pres)
         {
             try
@@ -1304,6 +1434,20 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 显示上次播放页通知：检查演示文稿的上次播放位置并显示跳转提示。
+        /// </summary>
+        /// <param name="pres">当前打开的 PowerPoint 演示文稿（Presentation）实例。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 检查演示文稿是否为null
+        /// 2. 获取演示文稿路径并计算文件哈希值
+        /// 3. 构建保存位置文件夹路径和位置文件路径
+        /// 4. 检查位置文件是否存在
+        /// 5. 尝试解析位置文件中的页码
+        /// 6. 如果解析成功且页码大于0，则保存上次播放页码并显示跳转提示窗口
+        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// </remarks>
         private void ShowPreviousPageNotification(Presentation pres)
         {
             try
@@ -1348,6 +1492,19 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 检查并通知隐藏幻灯片：扫描演示文稿中的所有幻灯片，检测隐藏幻灯片并显示取消隐藏的提示。
+        /// </summary>
+        /// <param name="pres">要检查的 PowerPoint 演示文稿（Presentation）实例。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 检查演示文稿及其幻灯片集合是否为null
+        /// 2. 遍历所有幻灯片，检测是否存在隐藏的幻灯片
+        /// 3. 如果存在隐藏幻灯片且未显示过恢复隐藏幻灯片窗口，则显示确认窗口
+        /// 4. 如果用户确认，则取消所有幻灯片的隐藏状态
+        /// 5. 无论用户选择如何，都会重置IsShowingRestoreHiddenSlidesWindow标志
+        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// </remarks>
         private void CheckAndNotifyHiddenSlides(Presentation pres)
         {
             try
@@ -1401,6 +1558,20 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 检查并通知自动播放设置：扫描演示文稿中的所有幻灯片，检测自动播放或排练计时设置并显示取消提示。
+        /// </summary>
+        /// <param name="pres">要检查的 PowerPoint 演示文稿（Presentation）实例。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 检查是否正在显示PPT放映结束按钮，如果是则直接返回
+        /// 2. 检查演示文稿及其幻灯片集合是否为null
+        /// 3. 遍历所有幻灯片，检测是否存在自动播放或排练计时设置
+        /// 4. 如果存在自动播放设置且未显示过自动播放提示窗口，则显示确认窗口
+        /// 5. 如果用户确认，则将演示文稿的放映设置设置为手动播放模式
+        /// 6. 无论用户选择如何，都会重置IsShowingAutoplaySlidesWindow标志
+        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// </remarks>
         private void CheckAndNotifyAutoPlaySettings(Presentation pres)
         {
             try
@@ -1453,6 +1624,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 加载当前幻灯片的墨迹：清空画布和历史记录，然后加载指定幻灯片的墨迹。
+        /// </summary>
+        /// <param name="slideIndex">要加载墨迹的幻灯片索引。</param>
+        /// <remarks>
+        /// 操作包括：
+        /// 1. 清空画布上的所有墨迹
+        /// 2. 清空时间机器的墨迹历史记录
+        /// 3. 从墨迹管理器加载指定幻灯片的墨迹
+        /// 4. 如果加载到墨迹且墨迹集合不为空，则将墨迹添加到画布
+        /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// </remarks>
         private void LoadCurrentSlideInk(int slideIndex)
         {
             try
@@ -1507,7 +1690,18 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 将与 PowerPoint 播放和状态追踪相关的内部字段重置为初始默认值。
-        /// 重置的字段包括：播放结束重入保护标志、演示文稿黑边指示、上次播放页码及导航标志、当前放映位置和滑动切换处理状态。该方法在发生异常时会记录错误日志；成功时记录追踪日志。
+        /// 具体重置的字段包括：
+        /// 1. 播放结束重入保护标志（isEnteredSlideShowEndEvent）
+        /// 2. 演示文稿黑边指示（isPresentationHaveBlackSpace）
+        /// 3. 上次播放页码（_lastPlaybackPage）
+        /// 4. 导航标志（_shouldNavigateToLastPage）
+        /// 5. 当前放映位置（_currentSlideShowPosition）
+        /// 6. 滑动切换处理状态（_isProcessingSlideSwitch）
+        /// 
+        /// 该方法在执行过程中会：
+        /// - 使用线程安全的方式重置滑动切换处理状态
+        /// - 成功时记录追踪日志
+        /// - 发生异常时记录错误日志并继续执行
         /// </remarks>
         public void ResetPPTStateVariables()
         {

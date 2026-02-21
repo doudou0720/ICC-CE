@@ -29,6 +29,9 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 当前工具模式
+        /// </summary>
         private string _currentToolMode = "cursor";
 
         #region "手勢"按鈕
@@ -180,12 +183,32 @@ namespace Ink_Canvas
 
         #region 浮動工具欄的拖動實現
 
+        /// <summary>
+        /// 是否正在拖动浮动工具栏
+        /// </summary>
         private bool isDragDropInEffect;
+        /// <summary>
+        /// 当前位置
+        /// </summary>
         private Point pos;
+        /// <summary>
+        /// 按下鼠标时的位置
+        /// </summary>
         private Point downPos;
-        private Point pointDesktop = new Point(-1, -1); //用于记录上次在桌面时的坐标
-        private Point pointPPT = new Point(-1, -1); //用于记录上次在PPT中的坐标
+        /// <summary>
+        /// 用于记录上次在桌面时的坐标
+        /// </summary>
+        private Point pointDesktop = new Point(-1, -1);
+        /// <summary>
+        /// 用于记录上次在PPT中的坐标
+        /// </summary>
+        private Point pointPPT = new Point(-1, -1);
 
+        /// <summary>
+        /// 浮动工具栏移动事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标事件参数</param>
         private void SymbolIconEmoji_MouseMove(object sender, MouseEventArgs e)
         {
             if (isDragDropInEffect)
@@ -202,6 +225,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 浮动工具栏鼠标按下事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void SymbolIconEmoji_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (isViewboxFloatingBarMarginAnimationRunning)
@@ -216,6 +244,11 @@ namespace Ink_Canvas
             GridForFloatingBarDraging.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// 浮动工具栏鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconEmoji_MouseUp(object sender, MouseButtonEventArgs e)
         {
             isDragDropInEffect = false;
@@ -243,7 +276,7 @@ namespace Ink_Canvas
         #region 隱藏子面板和按鈕背景高亮
 
         /// <summary>
-        /// 隱藏形狀繪製面板
+        /// 隐藏形状绘制面板
         /// </summary>
         private void CollapseBorderDrawShape()
         {
@@ -252,7 +285,7 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        ///     <c>HideSubPanels</c>的青春版。目前需要修改<c>BorderSettings</c>的關閉機制（改為動畫關閉）。
+        /// HideSubPanels的简化版，立即隐藏所有子面板，无动画效果
         /// </summary>
         private void HideSubPanelsImmediately()
         {
@@ -587,6 +620,11 @@ namespace Ink_Canvas
 
         #region 撤銷重做按鈕
 
+        /// <summary>
+        /// 撤销按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconUndo_MouseUp(object sender, MouseButtonEventArgs e)
         {
             //if (lastBorderMouseDownObject != sender) return;
@@ -600,6 +638,11 @@ namespace Ink_Canvas
             HideSubPanels();
         }
 
+        /// <summary>
+        /// 重做按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconRedo_MouseUp(object sender, MouseButtonEventArgs e)
         {
             //if (lastBorderMouseDownObject != sender) return;
@@ -617,9 +660,16 @@ namespace Ink_Canvas
 
         #region 白板按鈕和退出白板模式按鈕
 
-        //private bool Not_Enter_Blackboard_fir_Mouse_Click = true;
+        /// <summary>
+        /// 是否正在显示或隐藏黑板
+        /// </summary>
         private bool isDisplayingOrHidingBlackboard;
 
+        /// <summary>
+        /// 白板按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         internal void ImageBlackboard_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -868,6 +918,11 @@ namespace Ink_Canvas
         }
 
         #endregion
+        /// <summary>
+        /// 光标图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private async void SymbolIconCursor_Click(object sender, RoutedEventArgs e)
         {
             if (currentMode != 0)
@@ -888,6 +943,11 @@ namespace Ink_Canvas
 
         #region 清空畫布按鈕
 
+        /// <summary>
+        /// 清空画布按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -935,10 +995,10 @@ namespace Ink_Canvas
         #region 主要的工具按鈕事件
 
         /// <summary>
-        /// 浮動工具欄的"套索選"按鈕事件，重定向到舊UI的<c>BtnSelect_Click</c>方法
+        /// 浮动工具栏的"套索选"按钮事件，重定向到旧UI的BtnSelect_Click方法
         /// </summary>
-        /// <param name="sender">sender</param>
-        /// <param name="e">MouseButtonEventArgs</param>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconSelect_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -957,6 +1017,11 @@ namespace Ink_Canvas
 
         #endregion
 
+        /// <summary>
+        /// 浮动工具栏按钮鼠标按下反馈效果处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void FloatingBarToolBtnMouseDownFeedback_Panel(object sender, MouseButtonEventArgs e)
         {
             if (sender is Panel panel)
@@ -984,6 +1049,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 浮动工具栏按钮鼠标离开反馈效果处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标事件参数</param>
         private void FloatingBarToolBtnMouseLeaveFeedback_Panel(object sender, MouseEventArgs e)
         {
             if (sender is Panel panel)
@@ -1039,12 +1109,23 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 设置图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         private void SymbolIconSettings_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
             HideSubPanels();
             BtnSettings_Click(null, null);
+
         }
+        /// <summary>
+        /// 截图图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private async void SymbolIconScreenshot_MouseUp(object sender, MouseButtonEventArgs e)
         {
             HideSubPanelsImmediately();
@@ -1052,6 +1133,11 @@ namespace Ink_Canvas
             SaveScreenShotToDesktop();
         }
 
+        /// <summary>
+        /// 倒计时计时器图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void ImageCountdownTimer_MouseUp(object sender, MouseButtonEventArgs e)
         {
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
@@ -1101,6 +1187,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 操作指南窗口图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void OperatingGuideWindowIcon_MouseUp(object sender, MouseButtonEventArgs e)
         {
             AnimationsHelper.HideWithSlideAndFade(BorderTools);
@@ -1110,6 +1201,11 @@ namespace Ink_Canvas
             new OperatingGuideWindow().Show();
         }
 
+        /// <summary>
+        /// 随机点名图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void SymbolIconRand_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // 如果控件被隐藏，不处理事件
@@ -1175,6 +1271,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 检查并更新橡皮擦类型标签的状态
+        /// </summary>
         public void CheckEraserTypeTab()
         {
             if (Settings.Canvas.EraserShapeType == 0)
@@ -1235,6 +1334,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 单次点名图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void SymbolIconRandOne_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // 如果控件被隐藏，不处理事件
@@ -1306,6 +1410,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 墨迹重播按钮点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void GridInkReplayButton_MouseUp(object sender, MouseButtonEventArgs e)
         {
             //if (lastBorderMouseDownObject != sender) return;
@@ -1455,11 +1564,28 @@ namespace Ink_Canvas
             }).Start();
         }
 
+        /// <summary>
+        /// 是否停止墨迹重播
+        /// </summary>
         private bool isStopInkReplay;
+        /// <summary>
+        /// 是否暂停墨迹重播
+        /// </summary>
         private bool isPauseInkReplay;
+        /// <summary>
+        /// 是否重新开始墨迹重播
+        /// </summary>
         private bool isRestartInkReplay;
+        /// <summary>
+        /// 墨迹重播速度
+        /// </summary>
         private double inkReplaySpeed = 1;
 
+        /// <summary>
+        /// 墨迹重播画布鼠标按下事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkCanvasForInkReplay_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
@@ -1485,11 +1611,21 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 墨迹重播播放/暂停按钮鼠标按下事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplayPlayPauseBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplayPlayPauseBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
         }
 
+        /// <summary>
+        /// 墨迹重播播放/暂停按钮鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplayPlayPauseBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplayPlayPauseBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1499,11 +1635,21 @@ namespace Ink_Canvas
             InkReplayPauseButtonImage.Visibility = !isPauseInkReplay ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// 墨迹重播停止按钮鼠标按下事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplayStopButtonBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplayStopButtonBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
         }
 
+        /// <summary>
+        /// 墨迹重播停止按钮鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplayStopButtonBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplayStopButtonBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1518,11 +1664,21 @@ namespace Ink_Canvas
             isStopInkReplay = true;
         }
 
+        /// <summary>
+        /// 墨迹重播重新开始按钮鼠标按下事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplayReplayButtonBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplayReplayButtonBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
         }
 
+        /// <summary>
+        /// 墨迹重播重新开始按钮鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplayReplayButtonBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplayReplayButtonBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1533,11 +1689,21 @@ namespace Ink_Canvas
             InkReplayPauseButtonImage.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// 墨迹重播速度按钮鼠标按下事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplaySpeedButtonBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplaySpeedButtonBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
         }
 
+        /// <summary>
+        /// 墨迹重播速度按钮鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void InkReplaySpeedButtonBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplaySpeedButtonBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1548,6 +1714,11 @@ namespace Ink_Canvas
             InkReplaySpeedTextBlock.Text = inkReplaySpeed + "x";
         }
 
+        /// <summary>
+        /// 工具图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
         private void SymbolIconTools_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -1573,8 +1744,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 浮动工具栏边距动画是否正在运行
+        /// </summary>
         private bool isViewboxFloatingBarMarginAnimationRunning;
 
+        /// <summary>
+        /// 浮动工具栏边距动画处理
+        /// </summary>
+        /// <param name="MarginFromEdge">边缘边距</param>
+        /// <param name="PosXCaculatedWithTaskbarHeight">是否考虑任务栏高度计算位置</param>
         public async void ViewboxFloatingBarMarginAnimation(int MarginFromEdge,
             bool PosXCaculatedWithTaskbarHeight = false)
         {
@@ -1722,6 +1901,9 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// 桌面模式下的浮动工具栏边距动画处理
+        /// </summary>
         public async void PureViewboxFloatingBarMarginAnimationInDesktopMode()
         {
             // 在白板模式下不执行浮动栏动画
@@ -1826,6 +2008,10 @@ namespace Ink_Canvas
             });
         }
 
+        /// <summary>
+        /// PPT模式下的浮动工具栏边距动画处理
+        /// </summary>
+        /// <param name="isRetry">是否为重试操作</param>
         public async void PureViewboxFloatingBarMarginAnimationInPPTMode(bool isRetry = false)
         {
             // 新增：在白板模式下不执行浮动栏动画
@@ -1943,6 +2129,11 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 光标图标点击事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">路由事件参数</param>
         internal async void CursorIcon_Click(object sender, RoutedEventArgs e)
         {
             if (lastBorderMouseDownObject is Panel panel)
