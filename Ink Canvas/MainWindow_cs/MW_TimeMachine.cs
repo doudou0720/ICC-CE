@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,29 +12,70 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 提交原因枚举，用于标识不同类型的操作
+        /// </summary>
         private enum CommitReason
         {
+            /// <summary>用户输入操作</summary>
             UserInput,
+            /// <summary>代码输入操作</summary>
             CodeInput,
+            /// <summary>形状绘制操作</summary>
             ShapeDrawing,
+            /// <summary>形状识别操作</summary>
             ShapeRecognition,
+            /// <summary>清除画布操作</summary>
             ClearingCanvas,
+            /// <summary>笔画操作操作</summary>
             Manipulation
         }
 
+        /// <summary>
+        /// 当前提交类型
+        /// </summary>
         private CommitReason _currentCommitType = CommitReason.UserInput;
+        
+        /// <summary>
+        /// 是否为点橡皮擦模式
+        /// </summary>
         private bool IsEraseByPoint => inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
+        
+        /// <summary>
+        /// 替换的笔画集合
+        /// </summary>
         private StrokeCollection ReplacedStroke;
+        
+        /// <summary>
+        /// 添加的笔画集合
+        /// </summary>
         private StrokeCollection AddedStroke;
+        
+        /// <summary>
+        /// 长方体笔画集合
+        /// </summary>
         private StrokeCollection CuboidStrokeCollection;
+        
+        /// <summary>
+        /// 笔画操作历史记录
+        /// </summary>
         private Dictionary<Stroke, Tuple<StylusPointCollection, StylusPointCollection>> StrokeManipulationHistory;
 
+        /// <summary>
+        /// 笔画初始状态历史记录
+        /// </summary>
         private Dictionary<Stroke, StylusPointCollection> StrokeInitialHistory =
             new Dictionary<Stroke, StylusPointCollection>();
 
+        /// <summary>
+        /// 绘制属性历史记录
+        /// </summary>
         private Dictionary<Stroke, Tuple<DrawingAttributes, DrawingAttributes>> DrawingAttributesHistory =
             new Dictionary<Stroke, Tuple<DrawingAttributes, DrawingAttributes>>();
 
+        /// <summary>
+        /// 绘制属性历史记录标志
+        /// </summary>
         private Dictionary<Guid, List<Stroke>> DrawingAttributesHistoryFlag = new Dictionary<Guid, List<Stroke>> {
             { DrawingAttributeIds.Color, new List<Stroke>() },
             { DrawingAttributeIds.DrawingFlags, new List<Stroke>() },
@@ -45,8 +86,25 @@ namespace Ink_Canvas
             { DrawingAttributeIds.StylusWidth, new List<Stroke>() }
         };
 
+        /// <summary>
+        /// 时间机器实例，用于撤销/重做操作
+        /// </summary>
         private TimeMachine timeMachine = new TimeMachine();
 
+        /// <summary>
+        /// 将历史记录应用到画布
+        /// </summary>
+        /// <param name="item">时间机器历史记录项</param>
+        /// <param name="applyCanvas">要应用的画布，默认为null（使用主画布）</param>
+        /// <remarks>
+        /// 根据历史记录类型执行不同的操作：
+        /// 1. UserInput: 处理用户输入的笔画
+        /// 2. ShapeRecognition: 处理形状识别的笔画
+        /// 3. Manipulation: 处理笔画操作
+        /// 4. DrawingAttributes: 处理绘制属性变化
+        /// 5. Clear: 处理清除画布操作
+        /// 6. ElementInsert: 处理元素插入操作
+        /// </remarks>
         private void ApplyHistoryToCanvas(TimeMachineHistory item, InkCanvas applyCanvas = null)
         {
             _currentCommitType = CommitReason.CodeInput;
@@ -226,6 +284,15 @@ namespace Ink_Canvas
             _currentCommitType = CommitReason.UserInput;
         }
 
+        /// <summary>
+        /// 将历史记录应用到新的笔画集合
+        /// </summary>
+        /// <param name="items">时间机器历史记录数组</param>
+        /// <returns>返回应用历史记录后的笔画集合</returns>
+        /// <remarks>
+        /// 创建一个临时画布，应用历史记录，然后返回画布中的笔画集合
+        /// 只处理笔画历史，不处理图片元素历史
+        /// </remarks>
         private StrokeCollection ApplyHistoriesToNewStrokeCollection(TimeMachineHistory[] items)
         {
             InkCanvas fakeInkCanv = new InkCanvas
@@ -251,7 +318,14 @@ namespace Ink_Canvas
             return fakeInkCanv.Strokes;
         }
 
-        // 新增：获取页面的所有图片元素
+        /// <summary>
+        /// 获取页面的所有图片元素
+        /// </summary>
+        /// <param name="items">时间机器历史记录数组</param>
+        /// <returns>返回页面的图片元素列表</returns>
+        /// <remarks>
+        /// 遍历历史记录，收集所有插入的图片元素
+        /// </remarks>
         private List<UIElement> GetPageImageElements(TimeMachineHistory[] items)
         {
             var imageElements = new List<UIElement>();
@@ -272,6 +346,13 @@ namespace Ink_Canvas
             return imageElements;
         }
 
+        /// <summary>
+        /// 处理撤销状态变化事件
+        /// </summary>
+        /// <param name="status">撤销状态</param>
+        /// <remarks>
+        /// 根据撤销状态更新撤销按钮的可见性和启用状态
+        /// </remarks>
         private void TimeMachine_OnUndoStateChanged(bool status)
         {
             var result = status ? Visibility.Visible : Visibility.Collapsed;
@@ -279,6 +360,13 @@ namespace Ink_Canvas
             BtnUndo.IsEnabled = status;
         }
 
+        /// <summary>
+        /// 处理重做状态变化事件
+        /// </summary>
+        /// <param name="status">重做状态</param>
+        /// <remarks>
+        /// 根据重做状态更新重做按钮的可见性和启用状态
+        /// </remarks>
         private void TimeMachine_OnRedoStateChanged(bool status)
         {
             var result = status ? Visibility.Visible : Visibility.Collapsed;
@@ -286,6 +374,18 @@ namespace Ink_Canvas
             BtnRedo.IsEnabled = status;
         }
 
+        /// <summary>
+        /// 处理笔画集合变化事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">笔画集合变化事件参数</param>
+        /// <remarks>
+        /// 当笔画集合发生变化时：
+        /// 1. 书写时自动隐藏二级菜单
+        /// 2. 处理移除的笔画：移除事件处理器，从历史记录中移除
+        /// 3. 处理添加的笔画：添加事件处理器，记录初始状态
+        /// 4. 根据不同的提交类型处理历史记录
+        /// </remarks>
         private void StrokesOnStrokesChanged(object sender, StrokeCollectionChangedEventArgs e)
         {
             if (!isHidingSubPanelsWhenInking)
@@ -347,6 +447,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理笔画绘制属性变化事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">属性数据变化事件参数</param>
+        /// <remarks>
+        /// 当笔画的绘制属性发生变化时，记录变化历史
+        /// </remarks>
         private void Stroke_DrawingAttributesChanged(object sender, PropertyDataChangedEventArgs e)
         {
             var key = sender as Stroke;
@@ -399,11 +507,31 @@ namespace Ink_Canvas
                 new Tuple<DrawingAttributes, DrawingAttributes>(previousValue, currentValue);
         }
 
+        /// <summary>
+        /// 处理笔画触笔点替换事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">触笔点替换事件参数</param>
+        /// <remarks>
+        /// 当笔画的触笔点被替换时，更新初始状态历史
+        /// </remarks>
         private void Stroke_StylusPointsReplaced(object sender, StylusPointsReplacedEventArgs e)
         {
             StrokeInitialHistory[sender as Stroke] = e.NewStylusPoints.Clone();
         }
 
+        /// <summary>
+        /// 处理笔画触笔点变化事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">事件参数</param>
+        /// <remarks>
+        /// 当笔画的触笔点发生变化时：
+        /// 1. 获取选中的笔画数量
+        /// 2. 初始化笔画操作历史记录
+        /// 3. 记录笔画的初始状态和当前状态
+        /// 4. 当所有选中的笔画都已处理时，提交操作历史
+        /// </remarks>
         private void Stroke_StylusPointsChanged(object sender, EventArgs e)
         {
             var selectedStrokes = inkCanvas.GetSelectedStrokes();

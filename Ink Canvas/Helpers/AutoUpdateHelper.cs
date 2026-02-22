@@ -1320,7 +1320,13 @@ namespace Ink_Canvas.Helpers
             return -1;
         }
 
-        // 保存下载状态
+        /// <summary>
+        /// 将下载完成状态写入预定义的状态文件以供后续检查。
+        /// </summary>
+        /// <param name="isSuccess">指示下载是否成功；将以字符串形式写入状态文件（"True" 或 "False"）。</param>
+        /// <remarks>
+        /// 如果状态文件路径为空则不执行任何操作；方法内部捕获异常并记录日志，不会向调用方抛出异常。
+        /// </remarks>
         private static void SaveDownloadStatus(bool isSuccess)
         {
             try
@@ -1341,7 +1347,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 安装新版本应用
+        /// <summary>
+        /// 安装指定版本的更新包并启动新版本进程以完成替换，然后退出当前应用程序。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会临时将 App.IsUpdateInstalling 置为 true、尝试关闭进程保护（并在结束时还原）、在必要时备份当前设置、解压更新 ZIP、启动解压后的新可执行文件（以更新模式传递旧进程 ID、解压路径和目标路径等参数），并在新进程启动后关闭当前进程。方法会记录日志并在遇到错误时安全退出相应步骤，但不会抛出异常给调用方以外的上下文。</remarks>
+        /// <param name="version">要安装的版本号，用于定位更新包文件名（例如 InkCanvasForClass.CE.{version}.zip）。</param>
+        /// <param name="isInSilence">指示是否以静默模式启动新版本（影响传递给新进程的参数和可能的用户提示）。</param>
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
             bool wasProcessProtectionEnabled = false;

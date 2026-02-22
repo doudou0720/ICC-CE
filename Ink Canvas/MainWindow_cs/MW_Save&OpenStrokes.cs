@@ -38,6 +38,18 @@ namespace Ink_Canvas
     }
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 保存墨迹的鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 检查是否是当前按下的对象，且墨迹画布是否可见
+        /// 2. 隐藏工具面板
+        /// 3. 隐藏通知面板
+        /// 4. 调用SaveInkCanvasStrokes方法保存墨迹
+        /// </remarks>
         private void SymbolIconSaveStrokes_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender || inkCanvas.Visibility != Visibility.Visible) return;
@@ -50,6 +62,23 @@ namespace Ink_Canvas
             SaveInkCanvasStrokes(true, true);
         }
 
+        /// <summary>
+        /// 保存墨迹画布的墨迹
+        /// </summary>
+        /// <param name="newNotice">是否显示新的通知</param>
+        /// <param name="saveByUser">是否是用户手动保存</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 根据保存类型和模式确定保存路径
+        /// 2. 创建保存目录
+        /// 3. 根据当前模式生成保存文件名
+        /// 4. 根据设置选择保存模式：
+        ///    - 全页面保存模式：保存为图像或压缩包
+        ///    - XML保存模式：保存为XML文件或压缩包
+        ///    - 常规保存模式：保存为二进制格式或XML格式
+        /// 5. 异步上传保存的文件到Dlass
+        /// 6. 保存元素信息
+        /// </remarks>
         private void SaveInkCanvasStrokes(bool newNotice = true, bool saveByUser = false)
         {
             try
@@ -673,6 +702,22 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 打开墨迹文件的鼠标释放事件处理
+        /// </summary>
+        /// <param name="sender">发送者</param>
+        /// <param name="e">鼠标按钮事件参数</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 检查是否是当前按下的对象
+        /// 2. 隐藏工具面板
+        /// 3. 打开文件选择对话框
+        /// 4. 根据文件扩展名选择不同的打开方式：
+        ///    - .zip：处理ICC压缩包
+        ///    - .xml：处理XML格式墨迹文件
+        ///    - 其他：处理单个墨迹文件（二进制格式）
+        /// 5. 如果墨迹画布不可见，切换到鼠标模式
+        /// </remarks>
         private void SymbolIconOpenStrokes_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -1157,6 +1202,15 @@ namespace Ink_Canvas
         /// <summary>
         /// 打开单个墨迹文件
         /// </summary>
+        /// <param name="filePath">墨迹文件的路径</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 打开墨迹文件并加载墨迹
+        /// 2. 检查文件是否包含墨迹
+        /// 3. 如果包含墨迹，清空当前墨迹并添加新墨迹
+        /// 4. 恢复元素信息
+        /// 5. 如果文件流中没有墨迹，尝试从内存流中加载
+        /// </remarks>
         public void OpenSingleStrokeFile(string filePath)
         {
             var fileStreamHasNoStroke = false;
