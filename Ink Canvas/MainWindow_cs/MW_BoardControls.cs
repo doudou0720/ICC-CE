@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Ink_Canvas
 {
@@ -189,6 +190,18 @@ namespace Ink_Canvas
             });
         }
 
+        private static HashSet<UIElement> CollectRemovedElementsFromHistory(TimeMachineHistory[] history)
+        {
+            var set = new HashSet<UIElement>();
+            if (history == null) return set;
+            foreach (var h in history)
+            {
+                if (h.CommitType == TimeMachineHistoryType.ElementInsert && h.StrokeHasBeenCleared && h.InsertedElement != null)
+                    set.Add(h.InsertedElement);
+            }
+            return set;
+        }
+
         /// <summary>
         /// 恢复指定白板页面的墨迹和元素信息
         /// </summary>
@@ -234,17 +247,40 @@ namespace Ink_Canvas
                 if (isBackupMain)
                 {
                     timeMachine.ImportTimeMachineHistory(TimeMachineHistories[0]);
-                    foreach (var item in TimeMachineHistories[0]) ApplyHistoryToCanvas(item);
-                    // 恢复多指书写模式状态
+                    var removed0 = CollectRemovedElementsFromHistory(TimeMachineHistories[0]);
+                    var elementsToProcess = new List<UIElement>();
+                    foreach (var item in TimeMachineHistories[0])
+                    {
+                        if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
+                            !item.StrokeHasBeenCleared && 
+                            item.InsertedElement != null &&
+                            (removed0 == null || !removed0.Contains(item.InsertedElement)))
+                        {
+                            elementsToProcess.Add(item.InsertedElement);
+                        }
+                        ApplyHistoryToCanvas(item, null, removed0);
+                    }
                     RestoreMultiTouchModeState(0);
+                    ProcessElementsAfterRestore(elementsToProcess);
                 }
                 else
                 {
                     timeMachine.ImportTimeMachineHistory(TimeMachineHistories[CurrentWhiteboardIndex]);
-                    // 通过时间机器历史恢复所有内容（墨迹和图片）
-                    foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex]) ApplyHistoryToCanvas(item);
-                    // 恢复多指书写模式状态
+                    var removed = CollectRemovedElementsFromHistory(TimeMachineHistories[CurrentWhiteboardIndex]);
+                    var elementsToProcess = new List<UIElement>();
+                    foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex])
+                    {
+                        if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
+                            !item.StrokeHasBeenCleared && 
+                            item.InsertedElement != null &&
+                            (removed == null || !removed.Contains(item.InsertedElement)))
+                        {
+                            elementsToProcess.Add(item.InsertedElement);
+                        }
+                        ApplyHistoryToCanvas(item, null, removed);
+                    }
                     RestoreMultiTouchModeState(CurrentWhiteboardIndex);
+                    ProcessElementsAfterRestore(elementsToProcess);
                 }
 
 
@@ -253,6 +289,45 @@ namespace Ink_Canvas
             {
                 // ignored
             }
+        }
+
+        /// <summary>
+        /// 在恢复页面后统一处理所有图片/媒体元素的位置和事件绑定，提升含图片页面的加载性能。
+        /// 先批量添加所有元素到画布，再统一处理位置和事件，减少布局更新次数。
+        /// </summary>
+        private void ProcessElementsAfterRestore(List<UIElement> elements)
+        {
+            if (elements == null || elements.Count == 0) return;
+
+            // 使用低优先级异步处理，让 UI 先响应，图片位置和事件绑定稍后完成
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                foreach (var element in elements)
+                {
+                    if (!inkCanvas.Children.Contains(element)) continue;
+
+                    if (element is Image img)
+                    {
+                        double left = InkCanvas.GetLeft(img);
+                        double top = InkCanvas.GetTop(img);
+                        if (double.IsNaN(left) || double.IsNaN(top))
+                        {
+                            CenterAndScaleElement(img);
+                        }
+                        BindElementEvents(img);
+                    }
+                    else if (element is MediaElement media)
+                    {
+                        double left = InkCanvas.GetLeft(media);
+                        double top = InkCanvas.GetTop(media);
+                        if (double.IsNaN(left) || double.IsNaN(top))
+                        {
+                            CenterAndScaleElement(media);
+                        }
+                        BindElementEvents(media);
+                    }
+                }
+            }));
         }
 
         /// <summary>
@@ -383,9 +458,10 @@ namespace Ink_Canvas
         /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
-
             if (Settings.Automation.IsAutoSaveStrokesAtClear &&
-                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
+                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
+                CaptureAndEnqueueScreenshotSave(isHideNotification: true);
+
             if (CurrentWhiteboardIndex >= WhiteboardTotalCount)
             {
                 // 在最后一页时，点击"新页面"按钮直接新增一页
@@ -430,7 +506,8 @@ namespace Ink_Canvas
         {
             if (WhiteboardTotalCount >= 99) return;
             if (Settings.Automation.IsAutoSaveStrokesAtClear &&
-                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
+                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
+                CaptureAndEnqueueScreenshotSave(isHideNotification: true);
 
             // 隐藏图片选择工具栏
             if (currentSelectedElement != null)
@@ -474,45 +551,68 @@ namespace Ink_Canvas
         /// <summary>
         /// 处理白板页面删除按钮点击事件，删除当前白板页面
         /// </summary>
-        /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
-        /// <remarks>
-        /// - 隐藏图片选择工具栏
-        /// - 清除当前画布内容
-        /// - 重新排列剩余页面的历史记录
-        /// - 更新当前页面索引和页面总数
-        /// - 恢复剩余页面内容
-        /// - 更新页码显示
-        /// - 启用添加按钮（如果页面总数小于99）
-        /// </remarks>
         private void BtnWhiteBoardDelete_Click(object sender, RoutedEventArgs e)
         {
-            // 隐藏图片选择工具栏
+            DeleteWhiteBoardPageByIndex(CurrentWhiteboardIndex);
+        }
+
+        /// <summary>
+        /// 按页码删除指定白板页（用于预览列表等）。仅当总页数大于 1 时有效。
+        /// </summary>
+        /// <param name="pageIndex">要删除的页码（1 到 WhiteboardTotalCount）</param>
+        private void DeleteWhiteBoardPageByIndex(int pageIndex)
+        {
+            if (WhiteboardTotalCount <= 1 || pageIndex < 1 || pageIndex > WhiteboardTotalCount)
+                return;
+
             if (currentSelectedElement != null)
             {
-                // 保存当前编辑模式
                 var previousEditingMode = inkCanvas.EditingMode;
                 UnselectElement(currentSelectedElement);
-                // 恢复编辑模式
                 inkCanvas.EditingMode = previousEditingMode;
                 currentSelectedElement = null;
             }
 
-            ClearStrokes(true);
+            if (pageIndex == CurrentWhiteboardIndex)
+            {
+                ClearStrokes(true);
 
-            if (CurrentWhiteboardIndex != WhiteboardTotalCount)
-                for (var i = CurrentWhiteboardIndex; i <= WhiteboardTotalCount; i++)
-                    TimeMachineHistories[i] = TimeMachineHistories[i + 1];
-            else
+                var oldTotal = WhiteboardTotalCount;
+                if (CurrentWhiteboardIndex != oldTotal)
+                {
+                    for (var i = CurrentWhiteboardIndex; i < oldTotal; i++)
+                        TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
+                }
+                else
+                {
+                    CurrentWhiteboardIndex--;
+                }
+
+                TimeMachineHistories[oldTotal] = null;
+                WhiteboardTotalCount--;
+                RestoreStrokes();
+            }
+            else if (pageIndex < CurrentWhiteboardIndex)
+            {
+                for (var i = pageIndex; i < WhiteboardTotalCount; i++)
+                    TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
+                TimeMachineHistories[WhiteboardTotalCount] = null;
+                WhiteboardTotalCount--;
                 CurrentWhiteboardIndex--;
-
-            WhiteboardTotalCount--;
-
-            RestoreStrokes();
+            }
+            else
+            {
+                for (var i = pageIndex; i < WhiteboardTotalCount; i++)
+                    TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
+                TimeMachineHistories[WhiteboardTotalCount] = null;
+                WhiteboardTotalCount--;
+            }
 
             UpdateIndexInfoDisplay();
-
             if (WhiteboardTotalCount < 99) BtnWhiteBoardAdd.IsEnabled = true;
+            if (BoardBorderLeftPageListView?.Visibility == Visibility.Visible ||
+                BoardBorderRightPageListView?.Visibility == Visibility.Visible)
+                RefreshBlackBoardSidePageListView();
         }
 
         /// <summary>

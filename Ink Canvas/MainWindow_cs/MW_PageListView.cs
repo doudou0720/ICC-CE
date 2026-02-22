@@ -265,5 +265,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 预览列表中某页的“删除”按钮点击：删除该页，并阻止事件继续冒泡（避免触发选中/切页）。
+        /// </summary>
+        private void WhiteBoardPageListItem_DeleteClick(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is FrameworkElement fe && fe.DataContext is PageListViewItem item)
+                DeleteWhiteBoardPageByIndex(item.Index);
+        }
     }
 }

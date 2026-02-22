@@ -7,11 +7,115 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
+using System.Windows.Ink;
+using Ink_Canvas.Helpers;
 
 namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 在切页/加页场景下使用：先捕获当前画面到内存并克隆墨迹，然后立即返回；截图与墨迹保存在后台异步执行，不阻塞切页。
+        /// 调用方应在调用本方法后立即执行 SaveStrokes、ClearStrokes、切页、RestoreStrokes 等逻辑。
+        /// </summary>
+        /// <param name="isHideNotification">是否隐藏保存成功通知</param>
+        /// <param name="fileName">截图文件名（可选）</param>
+        private void CaptureAndEnqueueScreenshotSave(bool isHideNotification, string fileName = null)
+        {
+            var savePath = Settings.Automation.IsSaveScreenshotsInDateFolders
+                ? GetDateFolderPath(fileName)
+                : GetDefaultFolderPath();
+
+            System.Drawing.Bitmap bitmap = null;
+            StrokeCollection strokesToSave = null;
+            int pageIndexForStrokes = 0;
+            string strokeSavePath = null;
+
+            try
+            {
+                bitmap = CaptureScreenshotToBitmap();
+                if (bitmap == null) return;
+
+                if (Settings.Automation.IsAutoSaveStrokesAtScreenshot && inkCanvas.Strokes.Count > 0)
+                {
+                    strokesToSave = inkCanvas.Strokes.Clone();
+                    pageIndexForStrokes = CurrentWhiteboardIndex;
+                    var basePath = Settings.Automation.AutoSavedStrokesLocation
+                        + @"\Auto Saved - BlackBoard Strokes";
+                    if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
+                    strokeSavePath = Path.Combine(basePath,
+                        $"{DateTime.Now:yyyy-MM-dd HH-mm-ss-fff} Page-{pageIndexForStrokes} StrokesCount-{strokesToSave.Count}.icstk");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"CaptureAndEnqueueScreenshotSave 捕获失败: {ex}", LogHelper.LogType.Error);
+                bitmap?.Dispose();
+                return;
+            }
+
+            var bitmapToSave = bitmap;
+            var path = savePath;
+            var hideNotification = isHideNotification;
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    if (bitmapToSave != null)
+                    {
+                        var directory = Path.GetDirectoryName(path);
+                        if (!Directory.Exists(directory))
+                            Directory.CreateDirectory(directory);
+                        bitmapToSave.Save(path, ImageFormat.Png);
+                        bitmapToSave.Dispose();
+                    }
+
+                    if (strokesToSave != null && !string.IsNullOrEmpty(strokeSavePath))
+                    {
+                        using (var fs = new FileStream(strokeSavePath, FileMode.Create))
+                        {
+                            strokesToSave.Save(fs);
+                        }
+                    }
+
+                    if (!hideNotification && !string.IsNullOrEmpty(path))
+                    {
+                        Dispatcher.Invoke(() => ShowNotification($"截图成功保存至 {path}"));
+                    }
+
+                    if (Settings?.Dlass?.AutoUploadDelayMinutes > 0)
+                    {
+                        Task.Delay(TimeSpan.FromMinutes(Settings.Dlass.AutoUploadDelayMinutes)).GetAwaiter().GetResult();
+                        Helpers.DlassNoteUploader.UploadNoteFileAsync(path).GetAwaiter().GetResult();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"后台保存截图/墨迹失败: {ex}", LogHelper.LogType.Error);
+                    bitmapToSave?.Dispose();
+                }
+            });
+        }
+
+        /// <summary>
+        /// 将当前屏幕内容捕获为位图（仅内存，不写文件）。调用方或后台任务负责 Dispose。
+        /// </summary>
+        private System.Drawing.Bitmap CaptureScreenshotToBitmap()
+        {
+            var rc = SystemInformation.VirtualScreen;
+            var bitmap = new System.Drawing.Bitmap(rc.Width, rc.Height, PixelFormat.Format32bppArgb);
+            using (var memoryGraphics = Graphics.FromImage(bitmap))
+            {
+                memoryGraphics.CompositingQuality = CompositingQuality.HighQuality;
+                memoryGraphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                memoryGraphics.SmoothingMode = SmoothingMode.HighQuality;
+                memoryGraphics.CompositingMode = CompositingMode.SourceOver;
+                memoryGraphics.CopyFromScreen(rc.X, rc.Y, 0, 0, rc.Size, CopyPixelOperation.SourceCopy);
+            }
+            return bitmap;
+        }
+
         /// <summary>
         /// 保存截图
         /// </summary>

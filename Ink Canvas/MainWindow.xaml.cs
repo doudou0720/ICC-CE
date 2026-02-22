@@ -200,10 +200,8 @@ namespace Ink_Canvas
             inkCanvas.PreviewMouseDown += inkCanvas_PreviewMouseDown;
             inkCanvas.StylusDown += inkCanvas_StylusDown;
             inkCanvas.MouseRightButtonUp += InkCanvas_MouseRightButtonUp;
-            
-            // 注册橡皮擦操作结束事件（StylusUp 用于自动切换回批注；MouseUp 在 MW_ShapeDrawing.cs 的 inkCanvas_MouseUp 中会调用 HandleEraserOperationEnded）
+            // 注册橡皮擦操作结束事件（StylusUp 用于自动切换回批注；MouseUp 由 XAML 绑定触发，无需再单独注册）
             inkCanvas.StylusUp += inkCanvas_StylusUp;
-            inkCanvas.MouseUp += inkCanvas_MouseUp;
 
             // 初始化第一页Canvas
             var firstCanvas = new System.Windows.Controls.Canvas();
