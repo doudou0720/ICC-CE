@@ -39,19 +39,22 @@ namespace Ink_Canvas.Helpers
                     if (_pptApplication == null) return false;
                     if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                    // 访问 Name 属性验证 COM 是否仍然有效
-                    dynamic app = _pptApplication;
-                    var _ = app.Name;
-                    return true;
-                }
-                catch (COMException comEx)
-                {
-                    var hr = (uint)comEx.HResult;
-                    if (hr == 0x8001010E || hr == 0x80004005 || hr == 0x800706B5)
+                    try
                     {
+                        dynamic app = _pptApplication;
+                        var _ = app.Name;
+                        return true;
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        if (hr == 0x8001010E || hr == 0x80004005)
+                        {
+                            return true;
+                        }
+                        if (hr == 0x800706B5) return false;
                         return false;
                     }
-                    return false;
                 }
                 catch
                 {
@@ -94,7 +97,6 @@ namespace Ink_Canvas.Helpers
                         var hr = (uint)comEx.HResult;
                         if (hr == 0x8001010E || hr == 0x80004005)
                         {
-                            DisconnectFromPPT();
                         }
                         return false;
                     }
@@ -104,9 +106,11 @@ namespace Ink_Canvas.Helpers
                     var hr = (uint)comEx.HResult;
                     if (hr == 0x8001010E || hr == 0x80004005)
                     {
-                        DisconnectFromPPT();
                     }
-                    LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                    else
+                    {
+                        LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                    }
                     return false;
                 }
                 catch (Exception ex)
@@ -343,8 +347,28 @@ namespace Ink_Canvas.Helpers
                 var currentSlideShowState = IsInSlideShow;
                 if (currentSlideShowState != _lastSlideShowState)
                 {
+                    var wasInSlideShow = _lastSlideShowState;
                     _lastSlideShowState = currentSlideShowState;
                     SlideShowStateChanged?.Invoke(currentSlideShowState);
+
+                    if (currentSlideShowState && !wasInSlideShow)
+                    {
+                        try
+                        {
+                            var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                            if (app != null && app.SlideShowWindows.Count >= 1)
+                            {
+                                var wn = app.SlideShowWindows[1];
+                                if (wn != null)
+                                {
+                                    OnSlideShowBeginInternal(wn);
+                                }
+                            }
+                        }
+                        catch (COMException)
+                        {
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -366,7 +390,7 @@ namespace Ink_Canvas.Helpers
             {
                 _pptApplication = appObj;
 
-                // 在 UI 线程上注册事件（使用 Interop 类型做内部绑定，不向外泄露）
+                // 在 UI 线程上注册事件（无打开文档时可能失败，不因此断开连接）
                 Application.Current?.Dispatcher?.Invoke(() =>
                 {
                     try
@@ -379,11 +403,11 @@ namespace Ink_Canvas.Helpers
                         app.SlideShowBegin += OnSlideShowBeginInternal;
                         app.SlideShowNextSlide += OnSlideShowNextSlideInternal;
                         app.SlideShowEnd += OnSlideShowEndInternal;
+                        LogHelper.WriteLogToFile("[ROT] PPT 事件注册成功", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"[ROT] PPT 事件注册失败: {ex}", LogHelper.LogType.Error);
-                        throw;
+                        LogHelper.WriteLogToFile($"[ROT] PPT 事件注册失败（将依赖轮询检测放映状态）: {ex}", LogHelper.LogType.Warning);
                     }
                 }, DispatcherPriority.Normal);
 
@@ -401,7 +425,7 @@ namespace Ink_Canvas.Helpers
                             OnSlideShowBeginInternal(app.SlideShowWindows[1]);
                         }
                     }
-                    catch
+                    catch (COMException)
                     {
                     }
                 }
@@ -1103,11 +1127,10 @@ namespace Ink_Canvas.Helpers
             catch (COMException comEx)
             {
                 var hr = (uint)comEx.HResult;
-                if (hr == 0x8001010E || hr == 0x80004005)
+                if (hr != 0x8001010E && hr != 0x80004005)
                 {
-                    DisconnectFromPPT();
+                    LogHelper.WriteLogToFile($"[ROT] 获取当前演示文稿失败: {comEx.Message}", LogHelper.LogType.Error);
                 }
-                LogHelper.WriteLogToFile($"[ROT] 获取当前演示文稿失败: {comEx.Message}", LogHelper.LogType.Error);
                 return null;
             }
             catch (Exception ex)

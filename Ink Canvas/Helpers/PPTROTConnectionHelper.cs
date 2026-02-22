@@ -71,12 +71,10 @@ namespace Ink_Canvas.Helpers
                     {
                         Type appType = typeof(Microsoft.Office.Interop.PowerPoint.Application);
                         Microsoft.Office.Interop.PowerPoint.Application pptApp = null;
-                        
                         if (appType.IsInstanceOfType(bestApp))
                         {
                             pptApp = (Microsoft.Office.Interop.PowerPoint.Application)bestApp;
                         }
-                        
                         if (pptApp != null)
                         {
                             try
@@ -87,9 +85,8 @@ namespace Ink_Canvas.Helpers
                             }
                             catch (Exception ex)
                             {
-                                LogHelper.WriteLogToFile($"ROT 连接验证失败: {ex.Message}", LogHelper.LogType.Warning);
-                                SafeReleaseComObject(bestApp);
-                                return null;
+                                LogHelper.WriteLogToFile($"ROT 连接验证 Name 不可用（将依赖 SlideShowWindows）: {ex.Message}", LogHelper.LogType.Warning);
+                                return pptApp;
                             }
                         }
                         else
@@ -106,6 +103,45 @@ namespace Ink_Canvas.Helpers
                 else if (bestApp != null)
                 {
                     SafeReleaseComObject(bestApp);
+                }
+
+                try
+                {
+                    var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
+                    if (pptApp != null && Marshal.IsComObject(pptApp))
+                    {
+                        try
+                        {
+                            var _ = pptApp.Name;
+                        }
+                        catch (COMException)
+                        {
+                        }
+                        return pptApp;
+                    }
+                }
+                catch (COMException) { }
+                catch (InvalidCastException) { }
+
+                if (isSupportWPS)
+                {
+                    try
+                    {
+                        var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
+                        if (wpsApp != null && Marshal.IsComObject(wpsApp))
+                        {
+                            try
+                            {
+                                var _ = wpsApp.Name;
+                            }
+                            catch (COMException)
+                            {
+                            }
+                            return wpsApp;
+                        }
+                    }
+                    catch (COMException) { }
+                    catch (InvalidCastException) { }
                 }
 
                 return null;
