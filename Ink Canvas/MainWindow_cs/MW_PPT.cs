@@ -429,10 +429,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 设置PPTManager的PowerPoint应用程序实例
-        /// <summary>
+        /// </summary>
+        /// <remarks>
         /// 将给定的 PowerPoint 应用实例注入到当前的 PPT 管理器中，若管理器为 null 或启用 ROT 链接则不做任何操作。
         /// 尝试使用非公开的 `ConnectToPPT` 方法进行绑定，若不可用则回退到写入公共 `PPTApplication` 属性；操作结果和异常通过日志记录。
-        /// </summary>
+        /// </remarks>
         /// <param name="app">要注入的 PowerPoint 应用实例（Microsoft.Office.Interop.PowerPoint.Application）。</param>
         private void SetPPTManagerApplication(Microsoft.Office.Interop.PowerPoint.Application app)
         {
