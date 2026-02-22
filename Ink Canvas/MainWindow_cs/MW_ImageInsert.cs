@@ -75,6 +75,12 @@ namespace Ink_Canvas
 
                 if (screenshotResult.HasValue)
                 {
+                    if (screenshotResult.Value.AddToWhiteboard)
+                    {
+                        await AddScreenshotToNewWhiteboardPage(screenshotResult.Value);
+                        return;
+                    }
+
                     // 检查是否是摄像头截图
                     if (screenshotResult.Value.CameraBitmapSource != null)
                     {
