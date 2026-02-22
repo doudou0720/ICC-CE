@@ -1130,7 +1130,16 @@ namespace Ink_Canvas
         {
             HideSubPanelsImmediately();
             await Task.Delay(50);
-            SaveScreenShotToDesktop();
+
+            // 白板模式下默认全屏截图到桌面；其余模式默认调用可选区截图
+            if (currentMode == 1)
+            {
+                SaveScreenShotToDesktop();
+            }
+            else
+            {
+                await SaveAreaScreenShotToDesktop();
+            }
         }
 
         /// <summary>
