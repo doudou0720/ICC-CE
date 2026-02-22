@@ -221,18 +221,15 @@ namespace Ink_Canvas.Helpers
 
                 var jsonContent = JsonConvert.SerializeObject(queueData, Formatting.Indented);
 
-                // 使用临时文件写入，然后替换，确保原子性
+                // 使用进程保护的写入门控，避免安全面板中“进程文件保护”占用导致无法写入
                 var tempFilePath = queueFilePath + ".tmp";
-                File.WriteAllText(tempFilePath, jsonContent);
-
-                // 如果原文件存在，先删除
-                if (File.Exists(queueFilePath))
+                ProcessProtectionManager.WithWriteAccess(queueFilePath, () =>
                 {
-                    File.Delete(queueFilePath);
-                }
-
-                // 重命名临时文件
-                File.Move(tempFilePath, queueFilePath);
+                    File.WriteAllText(tempFilePath, jsonContent);
+                    if (File.Exists(queueFilePath))
+                        File.Delete(queueFilePath);
+                    File.Move(tempFilePath, queueFilePath);
+                });
             }
             catch (Exception ex)
             {
@@ -252,10 +249,11 @@ namespace Ink_Canvas.Helpers
             try
             {
                 var queueFilePath = GetQueueFilePath();
-                if (File.Exists(queueFilePath))
+                ProcessProtectionManager.WithWriteAccess(queueFilePath, () =>
                 {
-                    File.WriteAllText(queueFilePath, "[]");
-                }
+                    if (File.Exists(queueFilePath))
+                        File.WriteAllText(queueFilePath, "[]");
+                });
             }
             catch (Exception ex)
             {
