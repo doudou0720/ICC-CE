@@ -544,6 +544,19 @@ namespace Ink_Canvas
             }
         }
 
+        private static bool IsLaunchByFileOrUri(string[] args)
+        {
+            if (args == null || args.Length == 0) return false;
+            foreach (string a in args)
+            {
+                if (string.IsNullOrWhiteSpace(a)) continue;
+                string t = a.Trim();
+                if (t.StartsWith("icc:", StringComparison.OrdinalIgnoreCase)) return true;
+                if (Path.GetExtension(t).Equals(".icstk", StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
+        }
+
         // 记录崩溃日志
         private static void WriteCrashLog(string message)
         {
@@ -683,7 +696,7 @@ namespace Ink_Canvas
             appStartupStartTime = DateTime.Now;
 
             // 根据设置决定是否显示启动画面
-            if (ShouldShowSplashScreen())
+            if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
                 ShowSplashScreen();
                 SetSplashMessage("正在启动 Ink Canvas...");

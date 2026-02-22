@@ -1,74 +1,37 @@
 using Ink_Canvas.Helpers;
 using System;
+using System.IO;
 using System.Windows;
 
 namespace Ink_Canvas
 {
+    /// <summary>
+    /// 处理 icc: URL 协议命令
+    /// 支持：收纳/展开/切换、彻底隐藏、点名/计时器/白板、工具状态切换与查询。
+    /// </summary>
     public partial class MainWindow
     {
-        /// <summary>
-        /// 处理URI命令方法
-        /// </summary>
-        /// <param name="uri">URI命令字符串</param>
-        /// <remarks>
-        /// 处理ICC协议的URI命令，包括以下步骤：
-        /// 1. 检查URI是否为空
-        /// 2. 检查是否启用了外部协议
-        /// 3. 记录处理URI命令的日志
-        /// 4. 解析URI获取命令
-        /// 5. 根据命令执行相应的操作：
-        ///    - fold: 进入收纳模式
-        ///    - unfold/show: 退出收纳模式
-        ///    - toggle: 切换收纳模式
-        ///    - thoroughhideon: 开启收起时彻底隐藏
-        ///    - thoroughhideoff: 关闭收起时彻底隐藏
-        ///    - thoroughhidetoggle: 切换收起时彻底隐藏状态
-        ///    - randone: 随机一个
-        ///    - rand: 随机
-        ///    - timer: 计时器
-        ///    - whiteboard/board: 白板
-        /// 6. 捕获并记录可能出现的异常
-        /// </remarks>
         public void HandleUriCommand(string uri)
         {
             try
             {
                 if (string.IsNullOrEmpty(uri)) return;
 
-                // 检查是否启用了外部协议
                 if (!Settings.Advanced.IsEnableUriScheme)
                 {
-                    LogHelper.WriteLogToFile($"URI协议已禁用，忽略请求: {uri}", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"URI 协议已禁用，忽略请求: {uri}", LogHelper.LogType.Warning);
                     return;
                 }
 
-                LogHelper.WriteLogToFile($"正在处理URI命令: {uri}", LogHelper.LogType.Event);
+                LogHelper.WriteLogToFile($"正在处理 URI 命令: {uri}", LogHelper.LogType.Event);
 
-                // 解析URI
-                // 格式: icc://command?param=value
-                // 如果URI以icc:开头但不是标准URI格式，尝试手动解析
-                string command = "";
+                string command = ParseUriCommand(uri);
+                if (string.IsNullOrEmpty(command)) return;
 
-                if (Uri.TryCreate(uri, UriKind.Absolute, out Uri uriObj))
-                {
-                    command = uriObj.Host.ToLower();
-                    // 处理像 icc:fold 这样 Host 可能为空的情况
-                    if (string.IsNullOrEmpty(command))
-                    {
-                        command = uriObj.AbsolutePath.Trim('/').ToLower();
-                    }
-                }
+                string path = command;
+                string pathLower = path.ToLowerInvariant();
 
-                // 如果解析失败且是 icc: 协议，则手动处理
-                if (string.IsNullOrEmpty(command) && uri.StartsWith("icc:", StringComparison.OrdinalIgnoreCase))
-                {
-                    // 简单的手动解析: icc:fold
-                    string path = uri.Substring(4);
-                    // 移除可能的斜杠
-                    command = path.Trim('/').ToLower();
-                }
-
-                switch (command)
+                switch (pathLower)
                 {
                     case "fold":
                         if (!isFloatingBarFolded)
@@ -76,17 +39,15 @@ namespace Ink_Canvas
                             FoldFloatingBar_MouseUp(new object(), null);
                             ShowNotification("已进入收纳模式");
                         }
-                        break;
-
+                        return;
                     case "unfold":
-                    case "show": // 兼容旧习惯
+                    case "show":
                         if (isFloatingBarFolded)
                         {
                             UnFoldFloatingBar_MouseUp(new object(), null);
                             ShowNotification("已退出收纳模式");
                         }
-                        break;
-                        
+                        return;
                     case "toggle":
                         if (isFloatingBarFolded)
                         {
@@ -98,63 +59,103 @@ namespace Ink_Canvas
                             FoldFloatingBar_MouseUp(new object(), null);
                             ShowNotification("已进入收纳模式");
                         }
-                        break;
-
+                        return;
                     case "thoroughhideon":
                         Settings.Automation.ThoroughlyHideWhenFolded = true;
                         SaveSettingsToFile();
                         ShowNotification("已开启：收起时彻底隐藏");
-                        // 如果当前已经是在收纳模式，立即隐藏
                         if (isFloatingBarFolded)
-                        {
                             this.Visibility = Visibility.Hidden;
-                        }
-                        break;
-
+                        return;
                     case "thoroughhideoff":
                         Settings.Automation.ThoroughlyHideWhenFolded = false;
                         SaveSettingsToFile();
                         ShowNotification("已关闭：收起时彻底隐藏");
-                        // 确保窗口可见
                         this.Visibility = Visibility.Visible;
-                        break;
-
+                        return;
                     case "thoroughhidetoggle":
                         Settings.Automation.ThoroughlyHideWhenFolded = !Settings.Automation.ThoroughlyHideWhenFolded;
                         SaveSettingsToFile();
                         ShowNotification(Settings.Automation.ThoroughlyHideWhenFolded ? "已开启：收起时彻底隐藏" : "已关闭：收起时彻底隐藏");
                         if (isFloatingBarFolded)
-                        {
                             this.Visibility = Settings.Automation.ThoroughlyHideWhenFolded ? Visibility.Hidden : Visibility.Visible;
-                        }
-                        break;
-
+                        return;
                     case "randone":
                         SymbolIconRandOne_MouseUp(null, null);
-                        break;
-
+                        return;
                     case "rand":
                         SymbolIconRand_MouseUp(null, null);
-                        break;
-
+                        return;
                     case "timer":
                         ImageCountdownTimer_MouseUp(null, null);
-                        break;
-
+                        return;
                     case "whiteboard":
                     case "board":
                         ImageBlackboard_MouseUp(null, null);
-                        break;
-
-                    default:
-                        LogHelper.WriteLogToFile($"未知的URI命令: {command}", LogHelper.LogType.Warning);
-                        break;
+                        return;
                 }
+
+                if (pathLower == "tool/state")
+                {
+                    string state = GetCurrentSelectedMode() ?? "cursor";
+                    string stateFile = Path.Combine(Path.GetTempPath(), "InkCanvasToolState.txt");
+                    File.WriteAllText(stateFile, state, System.Text.Encoding.UTF8);
+                    return;
+                }
+
+                if (pathLower.StartsWith("tool/"))
+                {
+                    string tool = pathLower.Length > 5 ? pathLower.Substring(5).TrimEnd('/') : "";
+                    switch (tool)
+                    {
+                        case "pen":
+                        case "color":
+                            PenIcon_Click(null, null);
+                            break;
+                        case "cursor":
+                            CursorIcon_Click(null, null);
+                            break;
+                        case "eraser":
+                            PenIcon_Click(null, null); 
+                            EraserIcon_Click(null, null);
+                            break;
+                        case "eraserbystrokes":
+                        case "eraserstroke":
+                            PenIcon_Click(null, null); 
+                            EraserIconByStrokes_Click(EraserByStrokes_Icon, null);
+                            break;
+                        default:
+                            LogHelper.WriteLogToFile($"未知的 URI 工具: {tool}", LogHelper.LogType.Warning);
+                            break;
+                    }
+                    return;
+                }
+
+                LogHelper.WriteLogToFile($"未知的 URI 命令: {command}", LogHelper.LogType.Warning);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"处理URI命令时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"处理 URI 命令时出错: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private static string ParseUriCommand(string uri)
+        {
+            if (string.IsNullOrWhiteSpace(uri) || !uri.Trim().StartsWith("icc:", StringComparison.OrdinalIgnoreCase))
+                return "";
+
+            if (Uri.TryCreate(uri, UriKind.Absolute, out Uri uriObj))
+            {
+                string host = (uriObj.Host ?? "").Trim().ToLowerInvariant();
+                string path = (uriObj.AbsolutePath ?? "").Trim('/').ToLowerInvariant();
+                if (!string.IsNullOrEmpty(host))
+                    return string.IsNullOrEmpty(path) ? host : host + "/" + path;
+                if (!string.IsNullOrEmpty(path))
+                    return path;
+            }
+
+            string raw = uri.Trim().Substring(4).TrimStart('/').ToLowerInvariant();
+            return raw;
         }
     }
 }
