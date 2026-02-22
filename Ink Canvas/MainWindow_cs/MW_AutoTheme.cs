@@ -23,6 +23,13 @@ namespace Ink_Canvas
         /// 应用并切换到指定的主题（"Light" 或 "Dark"），更新主题资源并刷新相关 UI 元素以反映主题变化。
         /// </summary>
         /// <param name="theme">主题标识，支持 "Light" 或 "Dark"（区分大小写）。</param>
+        /// <summary>
+        /// 根据指定主题（"Light" 或 "Dark"）切换并应用应用程序的 UI 主题与相关资源和视觉状态。
+        /// </summary>
+        /// <remarks>
+        /// 会替换应用资源中的主题字典，异步加载附加的图形/图标资源，更新窗口主题管理器、初始化浮动工具栏前景色，并刷新相关面板、图标与其他窗口的主题显示；可选择自动切换并保存浮动工具栏的图标设置。
+        /// </remarks>
+        /// <param name="theme">要应用的主题名称，支持 "Light" 或 "Dark"。</param>
         /// <param name="autoSwitchIcon">若为 true，则根据主题自动切换并保存浮动工具栏的图标设置。</param>
         private void SetTheme(string theme, bool autoSwitchIcon = false)
         {
@@ -263,7 +270,19 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 刷新浮动工具栏按钮颜色
+        /// <summary>
+        /// 根据当前外观主题和当前工具模式，更新悬浮工具栏各按钮的前景高亮颜色。
         /// </summary>
+        /// <remarks>
+        /// 选择高亮颜色：在暗色主题下使用蓝绿色（102,204,255），在亮色主题下使用深蓝（30,58,138）；非高亮按钮使用 FloatBarForegroundColor。  
+        /// 根据 _currentToolMode 将高亮应用到对应图标：
+        /// - "cursor"：高亮光标图标；
+        /// - "pen" 或 "color"：高亮画笔图标；
+        /// - "eraser"：高亮圆形橡皮图标；
+        /// - "eraserByStrokes"：高亮按笔划橡皮图标；
+        /// - "select"：高亮套索选择图标；
+        /// - 默认：所有图标使用主题前景色（FloatBarForegroundColor）。
+        /// </remarks>
         private void RefreshFloatingBarButtonColors()
         {
             try
@@ -347,6 +366,15 @@ namespace Ink_Canvas
         /// 2. 如果设置为0（浅色主题），则设置为Light主题
         /// 3. 如果设置为1（深色主题），则设置为Dark主题
         /// 4. 如果设置为2（跟随系统主题），则根据系统主题设置应用相应的主题
+        /// <summary>
+        /// 响应系统用户首选项更改并根据应用设置选择并应用主题。
+        /// </summary>
+        /// <param name="sender">触发事件的对象。</param>
+        /// <param name="e">包含首选项更改信息的事件参数。</param>
+        /// <remarks>
+        /// - 当 Settings.Appearance.Theme 为 0 时应用浅色主题。 
+        /// - 为 1 时应用深色主题。 
+        /// - 为 2 时根据系统主题（由 IsSystemThemeLight() 决定）应用浅色或深色主题。
         /// </remarks>
         private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
@@ -375,7 +403,14 @@ namespace Ink_Canvas
         /// 2. 检查"SystemUsesLightTheme"键的值
         /// 3. 如果值为1，则表示系统使用浅色主题
         /// 4. 捕获可能的异常，确保方法不会因异常而崩溃
+        /// <summary>
+        /// 检查当前 Windows 系统主题是否为“浅色”主题。
+        /// </summary>
+        /// <remarks>
+        /// 通过读取当前用户注册表项 "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" 下的
+        /// "SystemUsesLightTheme" 值来确定系统主题。发生任何读取错误时将视为非浅色主题（返回 false）。
         /// </remarks>
+        /// <returns>`true` 表示系统主题为浅色，`false` 表示为深色或在检测失败时返回。/returns>
         private bool IsSystemThemeLight()
         {
             var light = false;

@@ -246,7 +246,10 @@ namespace Ink_Canvas.Helpers
             public int RetryCount;
         }
 
-        // 检测URL延迟
+        /// <summary>
+        /// 测量指定 URL 的响应延迟（以毫秒为单位），用于判断网络线路速度和可用性。
+        /// </summary>
+        /// <returns>`>= 0` 表示从发出 HEAD 请求到收到成功响应的耗时（毫秒），`-1` 表示请求失败或超时。</returns>
         private static async Task<long> GetUrlDelay(string url)
         {
             try
@@ -951,7 +954,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 下载文件的具体实现
+        /// <summary>
+        /// 从指定 URL 下载文件到目标路径，支持多线程分块下载并在失败时自动降级为单线程下载。
+        /// </summary>
+        /// <param name="fileUrl">要下载的文件完整 URL。</param>
+        /// <param name="destinationPath">下载目标文件的本地路径（包括文件名）。若下载中出现错误可能会删除该路径下的部分或临时文件。</param>
+        /// <param name="progressCallback">可选的进度回调，接收两个参数：已完成百分比（0-100）和状态文本，用于报告下载、重试、降级或错误信息。</param>
+        /// <returns>`true` 表示文件成功下载并通过大小及（若为 ZIP）完整性校验；`false` 表示下载或校验失败。</returns>
         public static async Task<bool> DownloadFile(string fileUrl, string destinationPath, Action<double, string> progressCallback = null)
         {
             LogHelper.WriteLogToFile($"AutoUpdate | 正在尝试多线程下载: {fileUrl}");
@@ -1303,7 +1312,10 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        // 获取文件总大小
+        /// <summary>
+        /// 获取远程资源的总字节数（Content-Length）。
+        /// </summary>
+        /// <returns>文件大小（字节），无法获取时返回 -1。</returns>
         private static async Task<long> GetContentLength(string fileUrl)
         {
             try
@@ -1326,6 +1338,11 @@ namespace Ink_Canvas.Helpers
         /// <param name="isSuccess">指示下载是否成功；将以字符串形式写入状态文件（"True" 或 "False"）。</param>
         /// <remarks>
         /// 如果状态文件路径为空则不执行任何操作；方法内部捕获异常并记录日志，不会向调用方抛出异常。
+        /// <summary>
+        /// 将下载结果写入预定义的状态文件，供后续检测使用。
+        /// </summary>
+        /// <remarks>
+        /// 确保状态文件所在目录存在后写入文本 "True" 或 "False" 表示成功与否；在发生异常时记录错误但不会抛出异常或中断流程。
         /// </remarks>
         private static void SaveDownloadStatus(bool isSuccess)
         {
@@ -1353,7 +1370,20 @@ namespace Ink_Canvas.Helpers
         /// <remarks>
         /// 该方法会临时将 App.IsUpdateInstalling 置为 true、尝试关闭进程保护（并在结束时还原）、在必要时备份当前设置、解压更新 ZIP、启动解压后的新可执行文件（以更新模式传递旧进程 ID、解压路径和目标路径等参数），并在新进程启动后关闭当前进程。方法会记录日志并在遇到错误时安全退出相应步骤，但不会抛出异常给调用方以外的上下文。</remarks>
         /// <param name="version">要安装的版本号，用于定位更新包文件名（例如 InkCanvasForClass.CE.{version}.zip）。</param>
+        /// <summary>
+        /// 使用指定版本的安装包解压并启动新版本的应用，然后退出当前进程以完成更新流程。
+        /// </summary>
+        /// <param name="version">要安装的版本号，用于定位更新包和生成备份文件名。</param>
         /// <param name="isInSilence">指示是否以静默模式启动新版本（影响传递给新进程的参数和可能的用户提示）。</param>
+        /// <remarks>
+        /// 此方法会：
+        /// - 将 App.IsUpdateInstalling 标记为 true（方法结束时恢复为 false）；
+        /// - 根据设置可选地备份当前配置到 Backups 目录；
+        /// - 验证并解压位于更新目录下的 ZIP 包，查找新可执行文件；
+        /// - 启动新进程并传入更新模式参数（包含旧进程 ID、解压路径、目标路径和静默标志）；
+        /// - 启动新进程后尝试关闭当前应用。
+        /// 方法内部捕获并记录异常，不会向调用者抛出异常；会在开始时尝试禁用进程保护并在结束时恢复原始状态。
+        /// </remarks>
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
             bool wasProcessProtectionEnabled = false;
@@ -2089,7 +2119,9 @@ namespace Ink_Canvas.Helpers
             return await GetUpdateLogWithLineGroup(group);
         }
 
-        // 删除更新文件夹
+        /// <summary>
+        /// 递归删除更新目录及其所有文件和子目录，并在遇到错误时记录调试信息后继续清理其他项。
+        /// </summary>
         public static void DeleteUpdatesFolder()
         {
             try
@@ -2302,6 +2334,12 @@ namespace Ink_Canvas.Helpers
             endTimeComboBox.ItemsSource = Hours.SelectMany(h => Minutes.Select(m => $"{h}:{m}"));
         }
 
+        /// <summary>
+        /// 判断当前本地时间是否处于指定的静默时段内。
+        /// </summary>
+        /// <param name="startTime">静默时段开始时间，格式为 "HH:mm"（24小时制）。</param>
+        /// <param name="endTime">静默时段结束时间，格式为 "HH:mm"（24小时制）。</param>
+        /// <returns>`true` 表示当前时间在静默时段内，`false` 表示不在静默时段内。</returns>
         public static bool CheckIsInSilencePeriod(string startTime, string endTime)
         {
             if (startTime == endTime) return true;

@@ -52,6 +52,13 @@ namespace Ink_Canvas
         /// - 绑定事件处理器
         /// - 提交到时间机器历史记录
         /// - 插入图片后切换到选择模式并刷新浮动栏高光显示
+        /// <summary>
+        /// 打开图片文件对话框并将选中的图片插入到 InkCanvas，完成压缩、初始化变换、居中缩放、事件绑定和历史记录提交等后续设置。
+        /// </summary>
+        /// <remarks>
+        /// - 处理流程：弹出文件选择对话框 -> 异步创建/压缩图片 -> 将图片添加到画布 -> 在图片加载完成后初始化 TransformGroup、居中并缩放、绑定交互事件 -> 提交插入历史 -> 切换到选择模式并刷新相关浮动面板。 
+        /// - 插入的图片会被设置为可命中测试且不可聚焦，以避免被 InkCanvas 的系统选择行为干扰。
+        /// - 方法为事件处理器，响应按钮点击事件；不显式抛出异常，内部错误通过现有日志机制处理。
         /// </remarks>
         private async void BtnImageInsert_Click(object sender, RoutedEventArgs e)
         {
@@ -115,7 +122,10 @@ namespace Ink_Canvas
         /// - 创建TransformGroup
         /// - 添加ScaleTransform、TranslateTransform和RotateTransform
         /// - 设置元素的RenderTransform
-        /// </remarks>
+        /// <summary>
+        /// 为指定元素设置一个包含缩放、平移和旋转的初始 TransformGroup 作为其 RenderTransform。
+        /// </summary>
+        /// <param name="element">将被初始化变换的 FrameworkElement。</param>
         private void InitializeElementTransform(FrameworkElement element)
         {
             var transformGroup = new TransformGroup();
@@ -135,7 +145,10 @@ namespace Ink_Canvas
         /// - 绑定触摸事件（ManipulationDelta、ManipulationCompleted）
         /// - 设置光标为手形
         /// - 禁用InkCanvas对图片的选择处理
-        /// </remarks>
+        /// <summary>
+        /// 为指定的元素附加常用的鼠标与触摸交互事件并配置交互相关属性以便在画布上进行拖拽、缩放和旋转等操作。
+        /// </summary>
+        /// <param name="element">要绑定交互事件并配置行为的 FrameworkElement 实例。</param>
         private void BindElementEvents(FrameworkElement element)
         {
             // 鼠标事件
@@ -169,7 +182,12 @@ namespace Ink_Canvas
         /// - 开始拖动
         /// - 捕获鼠标
         /// - 设置光标为全尺寸光标
-        /// </remarks>
+        /// <summary>
+        /// 处理元素的鼠标左键按下：在 InkCanvas 处于选择模式时选中被点击元素并开始拖动（捕获鼠标并设置拖拽光标）。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（通常为被点击的 FrameworkElement）。</param>
+        /// <param name="e">包含鼠标位置信息和事件状态的 MouseButtonEventArgs。</param>
+        /// <remarks>如果当前 InkCanvas 不处于选择模式，则不改变选择或开始拖动，事件保持未处理。</remarks>
         private void Element_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement element)
@@ -212,7 +230,11 @@ namespace Ink_Canvas
         /// - 停止拖动
         /// - 释放鼠标捕获
         /// - 恢复光标为手形
-        /// </remarks>
+        /// <summary>
+        /// 结束对元素的鼠标拖拽：停止拖拽、释放鼠标捕获并将光标还原为手型，同时将事件标记为已处理。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（应为 FrameworkElement）。</param>
+        /// <param name="e">鼠标按钮事件参数；方法会将该事件标记为已处理（Handled = true）。</param>
         private void Element_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement element)
@@ -234,7 +256,11 @@ namespace Ink_Canvas
         /// - 停止拖动
         /// - 释放触摸捕获
         /// - 恢复光标为手形
-        /// </remarks>
+        /// <summary>
+        /// 在触控结束时停止对元素的拖拽、释放触摸捕获并恢复手型光标。
+        /// </summary>
+        /// <param name="sender">接收触控事件的 FrameworkElement（被拖拽的元素）。</param>
+        /// <param name="e">触摸事件参数；事件会被标记为已处理。</param>
         private void Element_TouchUp(object sender, TouchEventArgs e)
         {
             if (sender is FrameworkElement element)
@@ -259,6 +285,11 @@ namespace Ink_Canvas
         /// - 如果是图片元素，更新工具栏位置
         /// - 如果是图片元素，更新选择点位置
         /// - 更新拖动起始点
+        /// <summary>
+        /// 处理元素的鼠标移动事件：在拖拽过程中应用平移变换并在元素为图片时同步更新工具栏与调整手柄位置。
+        /// </summary>
+        /// <remarks>
+        /// 当处于拖拽状态且元素已捕获鼠标时，计算当前画布坐标，应用鼠标拖拽变换，若元素为 Image 则更新图片选择工具栏位置和调整手柄位置，最后更新拖拽起点并将事件标记为已处理。
         /// </remarks>
         private void Element_MouseMove(object sender, MouseEventArgs e)
         {
@@ -295,7 +326,11 @@ namespace Ink_Canvas
         /// - 应用滚轮缩放变换
         /// - 如果是图片元素，更新工具栏位置
         /// - 如果是图片元素，更新选择点位置
-        /// </remarks>
+        /// <summary>
+        /// 处理元素上的鼠标滚轮事件：根据滚轮输入对元素执行缩放，并在选中图片时更新图片工具栏与调整句柄位置。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（通常为要进行缩放的 FrameworkElement）。</param>
+        /// <param name="e">包含滚轮增量和事件上下文的 MouseWheelEventArgs 实例。</param>
         private void Element_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             if (sender is FrameworkElement element)
@@ -333,6 +368,13 @@ namespace Ink_Canvas
         /// - 开始拖动
         /// - 捕获触摸
         /// - 设置光标为全尺寸光标
+        /// <summary>
+        — 处理元素的触摸按下事件：在选择模式下选中元素并开始触摸拖动。
+        /// </summary>
+        /// <param name="sender">触发事件的元素，应为要选中并拖动的 FrameworkElement。</param>
+        /// <param name="e">触摸事件参数；在未处于选择模式时不处理并保留原有处理状态，成功开始拖动时将设置为已处理。</param>
+        /// <remarks>
+        /// 如果 InkCanvas 当前不在 Select 编辑模式，事件不被处理。若已有其它选中元素，会先取消其选中状态；随后选中当前元素、记录拖动起点、捕获触摸并将光标设置为拖动样式。
         /// </remarks>
         private void Element_TouchDown(object sender, TouchEventArgs e)
         {
@@ -378,6 +420,16 @@ namespace Ink_Canvas
         /// - 单指手势时，应用触摸拖动变换
         /// - 如果是图片元素，更新工具栏位置
         /// - 如果是图片元素，更新选择点位置
+        /// <summary>
+        /// 处理元素的触摸操作增量，用于单指平移并在必要时更新图片的选择界面。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（通常为 FrameworkElement，例如 Image）。</param>
+        /// <param name="e">包含当前操作增量的事件参数；当检测到两个或更多触点时，方法不会处理该事件以让画布级别处理多指手势。</param>
+        /// <remarks>
+        /// - 对双指及以上手势不处理（将 e.Handled 设为 false 并返回），以便画布同步处理图片与墨迹的多点操作。  
+        /// - 对单指手势调用 ApplyTouchManipulationTransform 执行平移/旋转/缩放变换。  
+        /// - 若元素为 Image 且对应的选择工具或缩放把手可见，则更新工具栏和缩放把手的位置。  
+        /// - 单指处理完成后将 e.Handled 设为 true。
         /// </remarks>
         private void Element_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
@@ -418,7 +470,11 @@ namespace Ink_Canvas
         /// <param name="e">事件参数</param>
         /// <remarks>
         /// - 可以在这里添加操作完成后的处理逻辑
-        /// </remarks>
+        /// <summary>
+        /// 在触摸或操作手势结束时对元素执行后续处理逻辑（当前为空实现，用于扩展点）。
+        /// </summary>
+        /// <param name="sender">事件触发者，通常是被交互的 UI 元素。</param>
+        /// <param name="e">包含本次操控完成信息的事件参数，如最终增量和惯性状态。</param>
         private void Element_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
             // 可以在这里添加操作完成后的处理逻辑
@@ -434,6 +490,14 @@ namespace Ink_Canvas
         /// - 获取元素的TransformGroup
         /// - 查找TranslateTransform
         /// - 应用平移变换
+        /// <summary>
+        /// 对元素的 RenderTransform 中的 TranslateTransform 应用平移偏移量。
+        /// </summary>
+        /// <param name="element">要平移的 UI 元素。</param>
+        /// <param name="deltaX">在 X 方向上应用的平移增量（设备无关像素）。</param>
+        /// <param name="deltaY">在 Y 方向上应用的平移增量（设备无关像素）。</param>
+        /// <remarks>
+        /// 若元素的 RenderTransform 不包含 TransformGroup 或其中不包含 TranslateTransform，本方法不执行任何操作。
         /// </remarks>
         private void ApplyTranslateTransform(FrameworkElement element, double deltaX, double deltaY)
         {
@@ -460,6 +524,14 @@ namespace Ink_Canvas
         /// - 设置缩放中心
         /// - 应用缩放
         /// - 限制缩放范围（0.1到5.0）
+        /// <summary>
+        /// 根据给定中心点和倍数对元素的缩放分量进行累积缩放并限制缩放范围。
+        /// </summary>
+        /// <param name="element">要应用缩放的 FrameworkElement，期望其 RenderTransform 为包含 ScaleTransform 的 TransformGroup。</param>
+        /// <param name="scaleFactor">用于累积应用到当前缩放的缩放因子（例如 1.1 表示放大 10%）。</param>
+        /// <param name="center">缩放中心点，相对于元素的坐标空间。</param>
+        /// <remarks>
+        /// 如果元素的 RenderTransform 不是包含 ScaleTransform 的 TransformGroup，则此方法不执行任何操作。缩放结果在 X/Y 方向上均被约束到 0.1 到 5.0 之间以防止过小或过大缩放。
         /// </remarks>
         private void ApplyScaleTransform(FrameworkElement element, double scaleFactor, Point center)
         {
@@ -492,7 +564,11 @@ namespace Ink_Canvas
         /// - 获取元素的TransformGroup
         /// - 查找RotateTransform
         /// - 应用旋转变换
-        /// </remarks>
+        /// <summary>
+        /// 在元素的现有变换组中对其旋转分量增加指定角度。
+        /// </summary>
+        /// <param name="element">要应用旋转的 UI 元素；如果其 RenderTransform 不是 TransformGroup 或不包含 RotateTransform，则不做任何修改。</param>
+        /// <param name="angle">要增加的旋转角度（以度为单位），将累加到现有 RotateTransform 的 Angle 上。</param>
         private void ApplyRotateTransform(FrameworkElement element, double angle)
         {
             if (element.RenderTransform is TransformGroup transformGroup)
@@ -517,6 +593,12 @@ namespace Ink_Canvas
         /// - 确保选择框不显示，避免蓝色边框
         /// - 禁用InkCanvas的选择功能，去除控制点
         /// - 保持选择模式，这样用户可以直接点击墨迹来选择
+        /// <summary>
+        /// 将指定框架元素设为当前选中项并根据元素类型更新相关的选择 UI 与交互状态。
+        /// </summary>
+        /// <param name="element">要选中的元素；若为 Image 则显示图片专用工具栏与缩放控制点，非 Image 则隐藏这些控件。</param>
+        /// <remarks>
+        /// 该方法会：设置 currentSelectedElement，显示或隐藏图片选择工具栏和缩放把手，隐藏画布的默认蓝色选择覆盖，清空 InkCanvas 的 Stroke 选择并将 InkCanvas 编辑模式保持为 Select，以便用户可以通过点击选择墨迹对象。
         /// </remarks>
         private void SelectElement(FrameworkElement element)
         {
@@ -579,7 +661,10 @@ namespace Ink_Canvas
         /// - 隐藏图片缩放选择点
         /// - 确保选择框隐藏
         /// - 确保InkCanvas处于选择模式，这样用户可以直接点击墨迹来选择
-        /// </remarks>
+        /// <summary>
+        /// 取消指定元素的选中状态并隐藏与元素相关的选择控件和操作句柄。
+        /// </summary>
+        /// <param name="element">要取消选中的 FrameworkElement（例如画布上的 Image 或其他元素）。</param>
         private void UnselectElement(FrameworkElement element)
         {
             // 去除选中效果
@@ -618,6 +703,13 @@ namespace Ink_Canvas
         /// - 获取元素的RenderTransform，如果不存在则创建新的TransformGroup
         /// - 创建MatrixTransform
         /// - 将MatrixTransform添加到TransformGroup
+        /// <summary>
+        /// 将指定的矩阵作为一个 MatrixTransform 附加到目标元素 RenderTransform 的 TransformGroup 中。
+        /// </summary>
+        /// <param name="element">要附加变换的目标 FrameworkElement；仅当其 RenderTransform 为 TransformGroup 时才会生效。</param>
+        /// <param name="matrix">要附加的 2D 变换矩阵。</param>
+        /// <remarks>
+        /// 如果元素的 RenderTransform 不是 TransformGroup，则不会进行任何操作。
         /// </remarks>
         private void ApplyElementMatrixTransform(FrameworkElement element, Matrix matrix)
         {
@@ -643,6 +735,13 @@ namespace Ink_Canvas
         /// - 对选中的图片元素应用矩阵变换
         /// - 对选中的笔画应用 Transform 方法
         /// - 包含异常处理
+        /// <summary>
+        /// 基于鼠标滚轮围绕元素中心对指定元素进行缩放，并将相同变换应用于当前选中的笔画。
+        /// </summary>
+        /// <param name="element">要缩放的目标 FrameworkElement。</param>
+        /// <param name="e">鼠标滚轮事件，向上滚动时放大，向下滚动时缩小。</param>
+        /// <remarks>
+        /// 缩放以元素中心为锚点；放大因子为 1.1，缩小因子为 0.9。方法还会将相同的矩阵变换应用到 inkCanvas 上当前被选中的笔画集合（如果存在）。异常将在内部记录并被吞掉，不会抛出到调用方。
         /// </remarks>
         private void ApplyWheelScaleTransform(FrameworkElement element, MouseWheelEventArgs e)
         {
@@ -689,7 +788,12 @@ namespace Ink_Canvas
         /// - 将新的变换组添加到现有的变换组中
         /// - 如果启用了历史记录，提交变换历史
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将指定的矩阵作为 MatrixTransform 追加到目标元素的 RenderTransform 中，从而对元素应用该矩阵变换。
+        /// </summary>
+        /// <param name="element">要应用变换的目标 FrameworkElement。</param>
+        /// <param name="matrix">表示要应用的变换的 2D 仿射矩阵。</param>
+        /// <param name="saveHistory">若为 true，则在变换前保存元素的初始变换并将本次变换提交到变换历史以便撤销/重做。</param>
         private void ApplyMatrixTransformToElement(FrameworkElement element, Matrix matrix, bool saveHistory = true)
         {
             try
@@ -739,7 +843,12 @@ namespace Ink_Canvas
         /// - 对选中的笔画应用变换
         /// - 更新选择框的位置（如果有选择框）
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将鼠标拖动产生的平移应用到指定元素和当前选中的笔画，并同步更新选择框的位置。
+        /// </summary>
+        /// <param name="element">要应用平移的 FrameworkElement（通常为画布上的图像或媒体元素）。</param>
+        /// <param name="currentPoint">鼠标或触控的当前坐标（相对于 InkCanvas）。</param>
+        /// <param name="startPoint">拖动起始坐标（相对于 InkCanvas）。</param>
         private void ApplyMouseDragTransform(FrameworkElement element, Point currentPoint, Point startPoint)
         {
             try
@@ -780,7 +889,10 @@ namespace Ink_Canvas
         /// - 更新选择框位置的逻辑
         /// - 更新 BorderStrokeSelectionControl 的位置
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将当前选择框的可视位置按照给定位移偏移。
+        /// </summary>
+        /// <param name="delta">要应用的位移向量，X 表示水平方向位移，Y 表示垂直方向位移（设备无关像素）。</param>
         private void UpdateSelectionBorderPosition(Vector delta)
         {
             try
@@ -814,7 +926,12 @@ namespace Ink_Canvas
         /// - 提交变换历史到时间机器的逻辑
         /// - 记录变换前后的状态
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将指定元素在变换前后的状态记录到变换历史（用于撤销/重做）。 
+        /// </summary>
+        /// <param name="element">要记录变换历史的框架元素。</param>
+        /// <param name="initialTransform">变换前的 TransformGroup 快照。</param>
+        /// <param name="finalTransform">变换后的 TransformGroup 快照。</param>
         private void CommitTransformHistory(FrameworkElement element, TransformGroup initialTransform, TransformGroup finalTransform)
         {
             try
@@ -843,6 +960,15 @@ namespace Ink_Canvas
         /// - 应用变换到元素
         /// - 应用变换到选中的笔画
         /// - 包含异常处理
+        /// <summary>
+        /// 根据触摸操作的增量对指定元素及当前选中的笔画应用平移、缩放和旋转变换。
+        /// </summary>
+        /// <param name="element">要应用变换的目标 FrameworkElement。</param>
+        /// <param name="e">提供触摸操作增量、操作者数量与操作中心点的 ManipulationDeltaEventArgs。</param>
+        /// <remarks>
+        /// - 单指操作用于平移；当操作者数量达到两个及以上时，额外支持以 ManipulationOrigin 为中心的缩放与旋转。 
+        /// - 变换同时会应用到 InkCanvas 上当前选中的笔画，以保持元素与笔画的一致位置关系。
+        /// - 方法在内部处理异常并记录错误日志，不会抛出异常给调用者。
         /// </remarks>
         private void ApplyTouchManipulationTransform(FrameworkElement element, ManipulationDeltaEventArgs e)
         {
@@ -913,7 +1039,12 @@ namespace Ink_Canvas
         /// - 如果图片尺寸大于1920x1080且设置了压缩图片，则压缩图片
         /// - 否则使用原始尺寸
         /// - 返回创建的Image对象
-        /// </remarks>
+        /// <summary>
+        /// 创建并准备一个 Image 控件：将源文件复制到依赖目录并在必要时按配置对图片进行压缩或缩放以限制尺寸。
+        /// </summary>
+        /// <param name="filePath">源图片文件的完整路径。</param>
+        /// <returns>已准备好的 Image 控件，包含已加载的图像源、宽度、高度，并将 Stretch 设置为 Fill。</returns>
+        /// <remarks>复制的文件保存在 Settings.Automation.AutoSavedStrokesLocation 下的 "File Dependency" 子目录；当应用已加载且 Settings.Canvas.IsCompressPicturesUploaded 为真且图片超过 1920×1080 时，会按保持纵横比的方式缩放到不超过该尺寸。</remarks>
         private async Task<Image> CreateAndCompressImageAsync(string filePath)
         {
             string savePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "File Dependency");
@@ -982,7 +1113,11 @@ namespace Ink_Canvas
         /// - 设置LoadedBehavior和UnloadedBehavior为Manual
         /// - 媒体加载完成后播放并立即暂停
         /// - 提交到时间机器历史记录
-        /// </remarks>
+        /// <summary>
+        /// 通过文件对话框选择本地媒体文件，创建并初始化一个 MediaElement，将其置于画布上并记录插入历史。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为插入按钮）。</param>
+        /// <param name="e">事件参数。</param>
         private async void BtnMediaInsert_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -1031,7 +1166,11 @@ namespace Ink_Canvas
         /// - 复制文件到依赖目录
         /// - 更新Source为新文件路径
         /// - 返回创建的MediaElement对象
-        /// </remarks>
+        /// <summary>
+        /// 为指定的媒体文件创建并准备一个可用于画布的 MediaElement 实例，且将源文件复制到应用的依赖目录中以供后续使用。
+        /// </summary>
+        /// <param name="filePath">源媒体文件的完整路径。</param>
+        /// <returns>一个已初始化的 <see cref="MediaElement"/>，其 Source 指向复制到依赖目录中的文件，默认设置为手动加载/卸载并具有初始尺寸。</returns>
         private async Task<MediaElement> CreateMediaElementAsync(string filePath)
         {
             string savePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "File Dependency");
@@ -1310,6 +1449,12 @@ namespace Ink_Canvas
         /// - 保持TransformGroup，不清除RenderTransform
         /// - 只有在没有TransformGroup时才创建
         /// - 包含异常处理
+        /// <summary>
+        /// 将指定元素缩放（仅向下缩放以适配）并居中放置到主画布上，同时保留其现有变换以支持后续交互。
+        /// </summary>
+        /// <param name="element">要在 InkCanvas 上居中并按需缩小以适配显示区域的元素。</param>
+        /// <remarks>
+        /// 如果元素尚未完成布局或尺寸不可用，方法会在元素加载完成后重试。缩放以使元素宽高不超过画布可用尺寸的 70%，但不会放大元素；元素的 RenderTransform 将保留或在必要时初始化以维持交互行为（如拖动与缩放）。任何内部错误会被记录但不会抛出异常给调用者。
         /// </remarks>
         private void CenterAndScaleElement(FrameworkElement element)
         {
@@ -1408,6 +1553,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 清除当前选择，避免显示控制点
         /// - 设置编辑模式为非选择模式
+        /// <summary>
+        /// 重置 InkCanvas 的选择状态并禁用其编辑模式。
+        /// </summary>
+        /// <remarks>
+        /// 如果内部的 inkCanvas 非空，则清除当前的笔迹选择以避免显示选择控制点，并将 EditingMode 设为 <c>None</c>，使画布进入非选择/非绘制的空闲状态。
         /// </remarks>
         private void InitializeInkCanvasSelectionSettings()
         {
@@ -1430,7 +1580,10 @@ namespace Ink_Canvas
         /// - 确保工具栏不超出画布边界
         /// - 设置工具栏位置
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将图片选择工具栏定位到指定元素下方并将其限制在画布可见区域内。
+        /// </summary>
+        /// <param name="element">要对齐工具栏的目标元素（通常为当前选中的 Image 或其他 FrameworkElement）。</param>
         private void UpdateImageSelectionToolbarPosition(FrameworkElement element)
         {
             try
@@ -1475,7 +1628,11 @@ namespace Ink_Canvas
         /// - 没有变换时直接使用位置和大小
         /// - 包含异常处理
         /// - 回退到基本计算
-        /// </remarks>
+        /// <summary>
+        /// 计算指定元素在 inkCanvas 坐标系中的实际边界矩形，尽可能考虑元素的 RenderTransform 带来的变换影响。
+        /// </summary>
+        /// <param name="element">位于当前 InkCanvas 上的 FrameworkElement，需计算其边界。</param>
+        /// <returns>表示元素在 InkCanvas 坐标系中位置和大小的 Rect；如果无法应用变换则退回到基于 Left/Top/Width/Height 的边界。 </returns>
         private Rect GetElementActualBounds(FrameworkElement element)
         {
             try
@@ -1537,6 +1694,13 @@ namespace Ink_Canvas
         /// - 绑定事件
         /// - 记录历史
         /// - 包含异常处理
+        /// <summary>
+        /// 在画布上克隆当前选中的 Image，并将克隆项加入画布与历史记录中以便撤销/重做。
+        /// </summary>
+        /// <param name="sender">事件的发送者（通常为克隆按钮的边框控件）。</param>
+        /// <param name="e">鼠标按键事件参数。</param>
+        /// <remarks>
+        /// 若当前选中元素不是 Image 则不进行任何操作。方法内部会初始化克隆图片的变换、绑定交互事件并将操作记录到时间机器；发生错误时仅写入日志，不会向外抛出异常。
         /// </remarks>
         private void BorderImageClone_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -1583,6 +1747,12 @@ namespace Ink_Canvas
         /// - 添加到新页面的画布
         /// - 记录历史
         /// - 包含异常处理
+        /// <summary>
+        /// 在新页面上克隆当前选中的图片并将克隆件添加到新页面的画布。
+        /// </summary>
+        /// <remarks>
+        /// 如果存在被选中的 Image，会创建一个新白板页面、生成该图片的克隆、初始化克隆的变换与事件并添加到新页面的 InkCanvas，同时将插入操作提交到历史记录并记录日志。
+        /// 发生异常时会被捕获并记录日志。
         /// </remarks>
         private void BorderImageCloneToNewBoard_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -1634,7 +1804,9 @@ namespace Ink_Canvas
         /// - 应用旋转变换（向左旋转45度）
         /// - 如果是图片元素，更新工具栏位置
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将当前选中元素向左旋转 45 度；若选中元素为图片且图片选择工具栏可见，则同步更新工具栏位置。
+        /// </summary>
         private void BorderImageRotateLeft_MouseUp(object sender, MouseButtonEventArgs e)
         {
             try
@@ -1668,7 +1840,11 @@ namespace Ink_Canvas
         /// - 应用旋转变换（向右旋转45度）
         /// - 如果是图片元素，更新工具栏位置
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将当前选择的元素顺时针旋转 45 度，并在元素为图像且选择工具栏可见时更新工具栏位置。
+        /// </summary>
+        /// <param name="sender">触发该事件的控件。</param>
+        /// <param name="e">与鼠标按键事件相关的参数。</param>
         private void BorderImageRotateRight_MouseUp(object sender, MouseButtonEventArgs e)
         {
             try
@@ -1703,6 +1879,11 @@ namespace Ink_Canvas
         /// - 应用缩放变换（缩小到0.9倍）
         /// - 如果是图片元素，更新工具栏位置
         /// - 包含异常处理
+        /// <summary>
+        /// 将当前选中的元素以其中心为基准按 0.9 的比例缩小，并在需要时更新图片选择工具栏位置。
+        /// </summary>
+        /// <remarks>
+        /// 仅在存在选中元素时执行缩放操作；操作完成后写入日志，发生异常时记录错误日志。
         /// </remarks>
         private void GridImageScaleDecrease_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -1739,7 +1920,11 @@ namespace Ink_Canvas
         /// - 应用缩放变换（放大到1.1倍）
         /// - 如果是图片元素，更新工具栏位置
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 将当前选中元素按其中心放大 10%（缩放因子 1.1），并在选中元素为图片且图片选择工具栏可见时更新工具栏位置。
+        /// </summary>
+        /// <param name="sender">触发事件的对象（通常为缩放按钮或其容器）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void GridImageScaleIncrease_MouseUp(object sender, MouseButtonEventArgs e)
         {
             try
@@ -1776,6 +1961,11 @@ namespace Ink_Canvas
         /// - 从画布中移除
         /// - 清除选中状态
         /// - 包含异常处理
+        /// <summary>
+        /// 删除当前选中的画布元素并记录删除历史，同时恢复删除前的编辑模式并记录日志。
+        /// </summary>
+        /// <remarks>
+        /// 如果存在选中元素，方法会将其删除：提交到历史记录、从 InkCanvas 移除、清除选择并将 EditingMode 恢复到删除前的状态；操作结果会写入日志，异常会被捕获并记录。
         /// </remarks>
         private void BorderImageDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {

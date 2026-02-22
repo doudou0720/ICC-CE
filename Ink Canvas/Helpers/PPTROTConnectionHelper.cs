@@ -125,7 +125,13 @@ namespace Ink_Canvas.Helpers
         /// <param name="targetApp">可选的目标 PowerPoint COM 对象，用于优先比较；传入 null 表示不指定目标。</param>
         /// <param name="bestPriority">输出参数：返回找到的最佳实例的优先级（0 表示未找到或无活动演示）。</param>
         /// <param name="targetPriority">输出参数：返回与 <paramref name="targetApp"/> 对应实例的优先级（如果未提供或未命中则为 0）。</param>
-        /// <returns>最合适的 PowerPoint 应用对象（通常为 COM Application 实例），若未找到则返回 null。</returns>
+        /// <summary>
+        /// 在运行对象表 (ROT) 中查找并选择最合适的 PowerPoint 应用实例。
+        /// </summary>
+        /// <param name="targetApp">可选的目标 PowerPoint COM 对象，用于偏好匹配；为 null 时不进行目标匹配。</param>
+        /// <param name="bestPriority">输出参数，表示所选应用的优先级（0 表示未找到活动演示）。</param>
+        /// <param name="targetPriority">输出参数，表示与 targetApp 匹配的实例的优先级（若未匹配则为 0）。</param>
+        /// <returns>找到的 PowerPoint 应用对象（通常为 COM Application 实例），若未找到则返回 null。</returns>
         public static object GetAnyActivePowerPoint(object targetApp, out int bestPriority, out int targetPriority)
         {
             IRunningObjectTable rot = null;
@@ -365,6 +371,11 @@ namespace Ink_Canvas.Helpers
             return false;
         }
 
+        /// <summary>
+        /// 判断指定的 SlideShowWindow COM 对象是否为当前活动（前台）的幻灯片放映窗口。
+        /// </summary>
+        /// <param name="sswObj">表示 SlideShowWindow 的 COM 对象（或可从中提取窗口句柄的对象）。</param>
+        /// <returns>`true` 如果该 SlideShowWindow 对象对应的窗口属于当前前台进程或被识别为等效的 PowerPoint/WPS 放映进程，`false` 否则。</returns>
         public static bool IsSlideShowWindowActive(object sswObj)
         {
             try
@@ -414,6 +425,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 从 PowerPoint 的 SlideShowWindow COM 对象中提取窗口句柄 (HWND)。
+        /// </summary>
+        /// <param name="pptSlideShowWindowObj">表示 PowerPoint SlideShowWindow 的 COM 对象（可为 null 或非 SlideShowWindow 对象）。</param>
+        /// <returns>提取到的窗口句柄；输入为 null、无法获取或发生错误时返回 IntPtr.Zero。</returns>
         private static IntPtr GetPptHwndFromSlideShowWindow(object pptSlideShowWindowObj)
         {
             IntPtr hwnd = IntPtr.Zero;
@@ -432,6 +448,10 @@ namespace Ink_Canvas.Helpers
             return hwnd;
         }
 
+        /// <summary>
+        /// 释放传入的 COM 对象的本机引用计数（如果对象为 COM 对象），并吞并释放时的异常。
+        /// </summary>
+        /// <param name="comObj">要释放的对象；如果为 null 或非 COM 对象则不做任何操作。</param>
         public static void SafeReleaseComObject(object comObj)
         {
             if (comObj == null) return;

@@ -1362,7 +1362,10 @@ namespace Ink_Canvas.Windows
 
         /// <summary>
         /// 获取PPT演示文稿的文件夹路径
+        /// <summary>
+        /// 获取当前打开的 PowerPoint 演示文稿在 AutoSave 位置对应的存储文件夹路径。
         /// </summary>
+        /// <returns>演示文稿对应的文件夹完整路径（位于 AutoSaveLocation 的 "Auto Saved - Presentations" 子目录），在无法确定时返回 <c>null</c>（例如未找到主窗口、PPT 管理器、当前演示文稿或 COM 对象不可用或生成演示文稿 ID 失败）。</returns>
         private string GetPresentationFolderPath()
         {
             try
@@ -1919,4 +1922,3 @@ namespace Ink_Canvas.Windows
         #endregion
     }
 }
-

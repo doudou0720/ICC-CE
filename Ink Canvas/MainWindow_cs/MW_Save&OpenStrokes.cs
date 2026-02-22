@@ -49,6 +49,11 @@ namespace Ink_Canvas
         /// 2. 隐藏工具面板
         /// 3. 隐藏通知面板
         /// 4. 调用SaveInkCanvasStrokes方法保存墨迹
+        /// <summary>
+        /// 处理保存笔迹图标的鼠标抬起事件：在确认事件来源为当前激活对象且墨迹画布可见后，隐藏工具面板与通知面板并触发保存笔迹操作。
+        /// </summary>
+        /// <remarks>
+        /// 调用 SaveInkCanvasStrokes 并传入显示新通知与标记为用户触发的标志。
         /// </remarks>
         private void SymbolIconSaveStrokes_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -78,7 +83,18 @@ namespace Ink_Canvas
         ///    - 常规保存模式：保存为二进制格式或XML格式
         /// 5. 异步上传保存的文件到Dlass
         /// 6. 保存元素信息
+        /// <summary>
+        /// 将当前 InkCanvas 的墨迹及嵌入元素保存到磁盘，保存行为随用户设置与当前模式自动调整为单页图片、XML、二进制或多页压缩包等格式。
+        /// </summary>
+        /// <remarks>
+        /// 根据 Settings 配置和当前模式（PPT 放映或白板）选择保存策略：
+        /// - 当启用“全页面保存”时，会检测并收集多页墨迹，若存在多页则将各页保存为压缩包（包含每页墨迹与预览图）；否则将单页墨迹渲染并保存为 PNG（并同时保存原始 .icstk）。  
+        /// - 当配置为以 XML 保存时，按单页或多页分别输出 XML 或含多个 XML 的压缩包。  
+        /// - 常规模式下可将墨迹保存为 XML 或二进制 .icstk 文件；保存后会异步（可延迟）上传到配置的服务，并将画布上嵌入元素的信息序列化为同名 .elements.json 文件以便恢复。  
+        /// 所有文件操作发生在指定的自动保存目录，必要时会创建目录；发生异常时会显示失败通知并记录日志。
         /// </remarks>
+        /// <param name="newNotice">为 true 时在保存完成后显示成功通知；为 false 则抑制新的用户通知。</param>
+        /// <param name="saveByUser">为 true 表示此次保存由用户主动触发（将保存到“User Saved”目录），为 false 表示自动保存。</param>
         private void SaveInkCanvasStrokes(bool newNotice = true, bool saveByUser = false)
         {
             try
@@ -672,7 +688,11 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将指定墨迹集合保存为图像到指定流
+        /// <summary>
+        /// 将指定的墨迹集合渲染为 PNG 图像并写入提供的输出流。
         /// </summary>
+        /// <param name="strokes">要渲染的墨迹集合。</param>
+        /// <param name="outputStream">接收 PNG 数据的目标流；调用方负责流的打开与关闭。</param>
         private void SavePageAsImage(StrokeCollection strokes, Stream outputStream)
         {
             try
@@ -717,6 +737,13 @@ namespace Ink_Canvas
         ///    - .xml：处理XML格式墨迹文件
         ///    - 其他：处理单个墨迹文件（二进制格式）
         /// 5. 如果墨迹画布不可见，切换到鼠标模式
+        /// <summary>
+        /// 处理工具栏“打开墨迹”图标的鼠标抬起事件，弹出文件对话并根据文件类型载入墨迹数据。
+        /// </summary>
+        /// <param name="sender">事件来源对象（通常为工具栏按钮）。</param>
+        /// <param name="e">鼠标事件参数。</param>
+        /// <remarks>
+        /// 隐藏相关工具面板，显示打开文件对话框；根据所选文件扩展名调用相应的打开逻辑（.zip 使用 ICC 压缩包处理，.xml 使用 XML 解析，其他使用二进制墨迹文件处理），在载入后若墨迹画布不可见则切换到光标模式。操作过程中会记录日志；发生异常时显示失败通知并写入错误日志。
         /// </remarks>
         private void SymbolIconOpenStrokes_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -867,7 +894,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 从ZIP文件恢复PPT墨迹
+        /// <summary>
+        /// 从解压的临时目录中恢复 PowerPoint 演示文稿的每页墨迹，并将当前幻灯片的墨迹加载到画布中。
         /// </summary>
+        /// <param name="tempDir">包含已解压页面墨迹文件（如 page_XXXX.icstk 或 page_XXXX.xml）的临时目录路径。</param>
+        /// <param name="metadata">从 ZIP 的 metadata.txt 解析得到的键值字典（可能包含 "PPT文件路径" 用于校验）。</param>
+        /// <exception cref="InvalidOperationException">当当前不处于 PPT 放映模式，或保存的 PPT 文件与当前正在播放的 PPT 文件不匹配时抛出。</exception>
         private void RestorePPTStrokesFromZip(string tempDir, Dictionary<string, string> metadata)
         {
             try
@@ -1210,6 +1242,12 @@ namespace Ink_Canvas
         /// 3. 如果包含墨迹，清空当前墨迹并添加新墨迹
         /// 4. 恢复元素信息
         /// 5. 如果文件流中没有墨迹，尝试从内存流中加载
+        /// <summary>
+        /// 从指定的笔迹文件加载并恢复画布上的笔迹与嵌入元素。
+        /// </summary>
+        /// <param name="filePath">要打开的笔迹文件路径（通常为二进制笔迹文件，如 .icstk）。同目录下若存在同名的 .elements.json 文件，会用于恢复嵌入的图片元素。</param>
+        /// <remarks>
+        /// 清除当前画布的笔迹和时间机器历史后，将文件中的笔迹添加到 inkCanvas 中；若存在 .elements.json，则按记录在画布上重建图片元素并设置其位置、大小与拉伸方式。若从文件流直接读取到的笔迹集合为空，方法会重试通过将文件全部读入内存流来加载笔迹并插入画布（这是对某些空流边界情况的回退处理）。
         /// </remarks>
         public void OpenSingleStrokeFile(string filePath)
         {
@@ -1263,4 +1301,3 @@ namespace Ink_Canvas
         }
     }
 }
-

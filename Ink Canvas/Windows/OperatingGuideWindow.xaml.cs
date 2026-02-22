@@ -76,7 +76,14 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 检查系统主题是否为浅色
+        /// <summary>
+        /// 确定当前 Windows 系统是否使用浅色（Light）主题。
         /// </summary>
+        /// <remarks>
+        /// 通过读取注册表项 HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize 中的 SystemUsesLightTheme 值来判断；
+        /// 注册表键不存在或值不为 1 时视为非浅色主题。若读取过程发生异常，会将异常写入 Debug 输出并返回 false。
+        /// </remarks>
+        /// <returns>`true` 如果系统使用浅色主题（SystemUsesLightTheme == 1），`false` 否则或在发生错误时。</returns>
         private bool IsSystemThemeLight()
         {
             var light = false;

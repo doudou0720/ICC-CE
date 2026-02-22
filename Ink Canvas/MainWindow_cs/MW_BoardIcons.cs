@@ -24,6 +24,14 @@ namespace Ink_Canvas
         /// - 隐藏其他可能显示的面板
         /// - 处理白板/黑板模式切换
         /// - 更新背景颜色和墨迹颜色
+        /// <summary>
+        /// 切换或显示/隐藏画板的背景颜色选项面板；在面板不存在时切换白板/黑板模式并更新相关设置与视觉状态。
+        /// </summary>
+        /// <remarks>
+        /// 行为概要：
+        /// - 若窗口未加载则直接返回。  
+        /// - 确保背景调色板已创建；若存在则以滑动/淡入淡出动画在显示与隐藏之间切换，同时隐藏其它可能显示的面板。  
+        /// - 如果背景调色板仍为 null，则切换 Settings.Canvas.UsingWhiteboard，并根据新的模式调整水印可见性、默认背景色、画布背景、RGB 滑块、自定义背景色存储、墨迹颜色与相关设置的持久化，最后刷新配色主题。  
         /// </remarks>
         private void BoardChangeBackgroundColorBtn_MouseUp(object sender, RoutedEventArgs e)
         {
@@ -148,6 +156,11 @@ namespace Ink_Canvas
         /// - 添加RGB颜色选择器
         /// - 添加颜色预览和应用按钮
         /// - 将面板添加到主网格
+        /// <summary>
+        /// 创建并配置用于选择与应用自定义画布背景色的面板，并将其添加到主窗口布局中。
+        /// </summary>
+        /// <remarks>
+        /// 面板包含白板/黑板模式切换按钮、RGB 滑块、颜色预览与“应用颜色”按钮；初始化时会加载已保存的自定义背景色，面板默认为折叠状态并置于顶层。方法会设置 BackgroundPalette 属性并在主网格（名称为 "Main_Grid"）中添加或替换该面板，若找到名为 "BoardChangeBackgroundColorBtn" 的元素，则将面板相对于该元素定位到主网格内的合适位置。面板上的控件已绑定相应事件处理器以应用和持久化用户选择的颜色，并同步 UI 状态。
         /// </remarks>
         private void CreateBackgroundPalette()
         {
@@ -573,6 +586,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 更新白板和黑板按钮的背景和前景色
         /// - 根据当前使用的模式设置按钮状态
+        /// <summary>
+        /// 根据当前白板/黑板模式刷新背景面板中对应按钮的视觉状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果 BackgroundPalette 存在且包含预期的按钮控件，本方法会将白板和黑板按钮的背景色与文本色切换为选中与未选中样式以反映 Settings.Canvas.UsingWhiteboard 的值。
         /// </remarks>
         private void UpdateBackgroundButtonsState()
         {
@@ -670,7 +688,13 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 从设置中加载自定义背景色
+        /// <summary>
+        /// 从设置加载并恢复自定义画布背景色；若设置无效或不存在则根据当前白板/黑板模式使用默认颜色，并在处于画板模式时应用该颜色并同步 RGB 滑块。
         /// </summary>
+        /// <remarks>
+        /// 期望的设置格式为 `#RRGGBB`；解析失败时会回退到白板或黑板的默认颜色。若当前视图为白板/黑板（currentMode == 1）且解析成功或已回退到默认颜色，
+        /// 会将颜色应用到 GridBackgroundCover 并在背景调色板可见时通过 UpdateRGBSliders 同步滑块。解析异常会写入控制台以便排查。
+        /// </remarks>
         private void LoadCustomBackgroundColor()
         {
             if (!string.IsNullOrEmpty(Settings.Canvas.CustomBackgroundColor))
@@ -746,6 +770,11 @@ namespace Ink_Canvas
         /// - 禁用形状绘制模式
         /// - 设置当前工具模式为选择模式
         /// - 根据编辑模式设置光标
+        /// <summary>
+        /// 切换当前工具到选择（套索）模式并更新光标显示。
+        /// </summary>
+        /// <remarks>
+        /// 同时重置强制橡皮（forceEraser）、点擦除模式（forcePointEraser）和绘图形状模式（drawingShapeMode）的状态，以保证进入选择模式时的工具一致性。
         /// </remarks>
         private void BoardLassoIcon_Click(object sender, RoutedEventArgs e)
         {
@@ -772,6 +801,11 @@ namespace Ink_Canvas
         /// - 触发编辑模式变更事件
         /// - 取消单指拖动模式
         /// - 隐藏子面板
+        /// <summary>
+        /// 切换到按笔划擦除模式并配置相关橡皮擦状态与画笔属性。
+        /// </summary>
+        /// <remarks>
+        /// 禁用高级橡皮擦叠加，启用强制橡皮擦（按笔划），将橡皮擦形状设为 5x5 椭圆，重置绘制相关状态（包括绘图形状模式、笔类型和绘图属性），触发编辑模式变更处理，取消单指拖拽模式，并隐藏与按笔划橡皮擦相关的子面板。
         /// </remarks>
         private void BoardEraserIconByStrokes_Click(object sender, RoutedEventArgs e)
         {
@@ -812,6 +846,14 @@ namespace Ink_Canvas
         /// - 根据设置决定是否清空图片
         /// - 如果设置为清空图片，则清空所有子元素
         /// - 否则，保存非笔画元素并在清空后恢复
+        /// <summary>
+        /// 根据用户设置删除画布内容：可选择仅清除笔画或同时清除非笔画元素（例如图片）。
+        /// </summary>
+        /// <remarks>
+        /// 方法会先切换到画笔工具并触发常规删除流程，然后根据 Settings.Canvas.ClearCanvasAlsoClearImages：
+        /// - 若为 true：清空 inkCanvas 的所有子元素（包括图片等非笔画元素）。
+        /// - 若为 false：保存非笔画元素、清空所有子元素后再恢复这些非笔画元素，保证图片等得以保留。
+        /// 此操作会修改 inkCanvas.Children 的内容以反映删除/恢复结果。
         /// </remarks>
         private void BoardSymbolIconDelete_MouseUp(object sender, RoutedEventArgs e)
         {
@@ -849,6 +891,13 @@ namespace Ink_Canvas
         /// - 根据设置决定是否清空图片
         /// - 如果设置为清空图片，则清空所有子元素
         /// - 否则，保存非笔画元素并在清空后恢复
+        /// <summary>
+        /// 清除画布内容并根据设置同时清除或保留图片并可清理时间轴历史。
+        /// </summary>
+        /// <remarks>
+        /// 调用画笔和删除命令以确保处于删除状态；若设置 `Settings.Canvas.ClearCanvasAndClearTimeMachine` 为 false，则清除时间机的笔画历史。  
+        /// 如果 `Settings.Canvas.ClearCanvasAlsoClearImages` 为 true，则删除 InkCanvas 的所有子元素；否则会先保存非笔画元素（例如图片）、清空画布，再将这些非笔画元素恢复回画布。  
+        /// 此方法会修改 inkCanvas.Children 和（条件性地）timeMachine 的状态以反映清除/恢复操作。
         /// </remarks>
         private void BoardSymbolIconDeleteInkAndHistories_MouseUp(object sender, RoutedEventArgs e)
         {
@@ -884,6 +933,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 调用图片黑板鼠标抬起事件
         /// - 启动希沃视频展台软件
+        /// <summary>
+        /// 切换到图像黑板状态并启动希沃 EasiCamera 应用。
+        /// </summary>
+        /// <remarks>
+        /// 在触发图像黑板相关的 UI 状态变更后，调用系统启动器打开名为“希沃视频展台”的外部相机应用程序。
         /// </remarks>
         private void BoardLaunchEasiCamera_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -900,7 +954,9 @@ namespace Ink_Canvas
         /// - 立即隐藏所有子面板
         /// - 调用图片黑板鼠标抬起事件
         /// - 打开Desmos计算器网页
-        /// </remarks>
+        /// <summary>
+        /// 关闭所有子面板并在默认浏览器中打开带中文界面的 Desmos 在线计算器。
+        /// </summary>
         private void BoardLaunchDesmos_MouseUp(object sender, MouseButtonEventArgs e)
         {
             HideSubPanelsImmediately();

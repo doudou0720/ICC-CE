@@ -28,6 +28,18 @@ namespace Ink_Canvas
         ///    - timer: 计时器
         ///    - whiteboard/board: 白板
         /// 6. 捕获并记录可能出现的异常
+        /// <summary>
+        /// 处理基于 ICC URI 方案的外部命令并对窗口或设置执行相应操作。
+        /// </summary>
+        /// <param name="uri">要处理的 ICC URI（例如 "icc://fold"、"icc:toggle" 或 "icc:thoroughhideon"），大小写不敏感。</param>
+        /// <remarks>
+        /// 支持的命令（不区分大小写）：
+        /// - fold / unfold / show / toggle：控制浮动工具栏的收起与展开并显示对应通知。  
+        /// - thoroughhideon / thoroughhideoff / thoroughhidetoggle：设置并保存“收起时彻底隐藏”选项，必要时更新窗口可见性。  
+        /// - randone / rand：触发符号随机选择相关操作。  
+        /// - timer：触发倒计时相关操作。  
+        /// - whiteboard / board：打开白板相关操作。  
+        /// 如果 URI 或命令不可识别，则记录警告并忽略请求。方法不抛出异常；发生错误时仅记录日志。
         /// </remarks>
         public void HandleUriCommand(string uri)
         {

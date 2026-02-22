@@ -70,7 +70,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 触发属性变化事件
         /// </summary>
-        /// <param name="propertyName">属性名称</param>
+        /// <summary>
+        /// 引发 PropertyChanged 事件，通知绑定的 UI 指定的属性已更改。
+        /// </summary>
+        /// <param name="propertyName">要通知已更改的属性名；如果为 null，则使用调用成员的名称（由 CallerMemberName 提供）。</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -163,7 +166,13 @@ namespace Ink_Canvas
         /// <returns>返回网络时间，如果获取失败则返回本地时间</returns>
         /// <remarks>
         /// 使用NTP协议从国家授时中心服务器获取网络时间
+        /// <summary>
+        /// 获取来自 NTP 服务器的当前时间并转换为本地时区表示。
+        /// </summary>
+        /// <remarks>
+        /// 向 ntp.ntsc.ac.cn 的 NTP 服务请求时间并解析响应；如请求或解析失败则回退到本地系统时间。
         /// </remarks>
+        /// <returns>NTP 服务器返回并转换为本地时区的时间；若获取失败则返回当前本地时间（DateTime.Now）。</returns>
         private async Task<DateTime> GetNetworkTimeAsync()
         {
             try
@@ -206,6 +215,14 @@ namespace Ink_Canvas
         /// 6. timerDisplayDate: 日期显示定时器，每小时执行一次
         /// 7. timerNtpSync: NTP时间同步定时器，每2小时执行一次
         /// 同时初始化定时保存墨迹定时器
+        /// <summary>
+        /// 初始化并启动应用所需的各类定时器和相关时间显示数据绑定。
+        /// </summary>
+        /// <remarks>
+        /// - 配置并启动用于进程终止、主窗口统一任务、显示时间/日期、NTP 同步及自动更新检查的定时器；
+        /// - 将 WaterMarkTime/WaterMarkDate 的 DataContext 绑定到 nowTimeVM，并初始化 nowTimeVM 的日期与时间字符串；
+        /// - 在启动时触发一次立即的 NTP 同步任务；
+        /// - 初始化用于定期自动保存墨迹的 DispatcherTimer。
         /// </remarks>
         private void InitTimers()
         {
@@ -257,7 +274,9 @@ namespace Ink_Canvas
         /// <param name="e">事件参数</param>
         /// <remarks>
         /// 调用timerCheckAutoFold_Elapsed方法处理自动收纳逻辑
-        /// </remarks>
+        /// <summary>
+        /// 处理统一主窗口定时器的到期事件并触发自动折叠检查。
+        /// </summary>
         private void OnUnifiedMainWindowTimerElapsed(object sender, ElapsedEventArgs e)
         {
             timerCheckAutoFold_Elapsed(sender, e);
@@ -269,6 +288,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// 初始化DispatcherTimer实例并绑定AutoSaveStrokesTimer_Tick事件处理方法
         /// 然后调用UpdateAutoSaveStrokesTimer方法根据设置更新定时器状态
+        /// <summary>
+        /// 确保用于自动保存笔迹的计时器已初始化，并根据当前设置配置其间隔与启停状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果计时器尚未创建，会创建一个 DispatcherTimer 并将其与 AutoSaveStrokesTimer_Tick 绑定；随后应用配置以设置间隔并决定是否启动计时器。
         /// </remarks>
         private void InitAutoSaveStrokesTimer()
         {
@@ -289,6 +313,12 @@ namespace Ink_Canvas
         /// 根据Settings.Automation.IsEnableAutoSaveStrokes设置决定是否启用定时器
         /// 如果启用，则根据Settings.Automation.AutoSaveStrokesIntervalMinutes设置定时器间隔
         /// 最小间隔为1分钟
+        /// <summary>
+        /// 根据当前设置启用或禁用用于自动保存笔迹的定时器并应用间隔配置。
+        /// </summary>
+        /// <remarks>
+        /// 如果相关定时器为 null 则不作任何操作；否则先停止定时器，
+        /// 当 Settings.Automation.IsEnableAutoSaveStrokes 为 true 时将间隔设置为 Settings.Automation.AutoSaveStrokesIntervalMinutes（最小为 1 分钟）并启动定时器。
         /// </remarks>
         private void UpdateAutoSaveStrokesTimer()
         {
@@ -313,6 +343,12 @@ namespace Ink_Canvas
         /// <remarks>
         /// 当定时器触发时，检查画布是否可见且有墨迹
         /// 如果满足条件，则调用SaveInkCanvasStrokes方法进行静默保存
+        /// <summary>
+        /// 在画布可见且存在墨迹时静默保存笔迹。
+        /// </summary>
+        /// <remarks>
+        /// 当 InkCanvas 可见并且有笔迹（Strokes.Count > 0）时会调用静默保存方法 SaveInkCanvasStrokes(false, false)。
+        /// 任何在保存过程中发生的异常会被捕获并忽略，不会向上抛出。
         /// </remarks>
         private void AutoSaveStrokesTimer_Tick(object sender, EventArgs e)
         {
@@ -342,6 +378,14 @@ namespace Ink_Canvas
         /// 4. 计算网络时间与本地时间的偏移量
         /// 5. 如果时间差超过3分钟，则使用网络时间
         /// 6. 处理异常情况，确保即使同步失败也能恢复到使用本地时间
+        /// <summary>
+        /// 根据 NTP 服务尝试同步网络时间并更新缓存与使用策略。
+        /// </summary>
+        /// <remarks>
+        /// 尝试向 NTP 服务器获取网络时间（最多等待 10 秒）。方法使用 isNtpSyncing 作为互斥标志防止并发同步。
+        /// 成功时会更新 cachedNetworkTime、lastNtpSyncTime 和 networkTimeOffset；当网络时间与本地时间的差值超过 3 分钟时将启用 useNetworkTime。
+        /// 超时或异常时会将 cachedNetworkTime 与 lastNtpSyncTime 设为本地时间，清零 networkTimeOffset，并将 useNetworkTime 设为 false。
+        /// 方法在完成后会重置 isNtpSyncing 标志，无论成功或失败均不会抛出异常到调用方（异常在内部被处理并记录）。
         /// </remarks>
         private async Task TimerNtpSync_ElapsedAsync()
         {
@@ -409,6 +453,13 @@ namespace Ink_Canvas
         /// 4. 格式化时间字符串
         /// 5. 只有当时间字符串发生变化时才更新UI，避免不必要的UI刷新
         /// 6. 使用BeginInvoke异步更新UI，避免阻塞
+        /// <summary>
+        /// 定期计算并更新要显示的时间文本到 nowTimeVM.nowTime。
+        /// </summary>
+        /// <remarks>
+        /// - 使用本地时间作为基准；当启用网络时间且已计算偏移时，应用 networkTimeOffset 作为显示时间的调整。 
+        /// - 当检测到系统时间与上次记录发生超过 3 分钟的跳变时，会异步触发一次 NTP 同步以纠正时间来源。 
+        /// - 仅在格式化后的时间字符串发生变化时才更新 nowTimeVM.nowTime，以减少不必要的 UI 刷新；更新通过 UI Dispatcher 在主线程上执行。 
         /// </remarks>
         private void TimerDisplayTime_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -468,7 +519,9 @@ namespace Ink_Canvas
         /// <remarks>
         /// 更新nowTimeVM的nowDate属性，设置为当前日期的格式化字符串
         /// 格式为：yyyy年MM月dd日 星期几
-        /// </remarks>
+        /// <summary>
+        /// 异步在 UI 线程上将 nowTimeVM.nowDate 更新为格式化后的当前日期字符串以供显示。
+        /// </summary>
         private void TimerDisplayDate_Elapsed(object sender, ElapsedEventArgs e)
         {
             // 使用BeginInvoke异步更新UI，避免阻塞
@@ -487,7 +540,15 @@ namespace Ink_Canvas
         /// 根据设置终止指定的进程，包括PPTService、EasiNote、HiteAnnotation等
         /// 对于每个终止的进程，会显示相应的通知
         /// 对于HiteAnnotation进程，还会根据设置决定是否自动进入批注状态
+        /// <summary>
+        /// 根据用户设置按进程名强制终止一组第三方/教学应用进程，并在必要时在界面上显示对应的通知或触发相关 UI 操作。
+        /// </summary>
+        /// <remarks>
+        /// 该定时器处理程序会检查配置中的各项自动结束选项，构建并执行 taskkill 命令以终止匹配的进程；在结束特定进程后会通过 Dispatcher 在 UI 上显示通知，
+        /// 并在配置允许时执行与浮动栏或批注模式相关的后续动作（例如展开浮动栏并进入批注）。所有异常会被捕获并写入调试输出。
         /// </remarks>
+        /// <param name="sender">事件源（触发定时器的对象）。</param>
+        /// <param name="e">计时器事件参数。</param>
         private void TimerKillProcess_Elapsed(object sender, ElapsedEventArgs e)
         {
             try
@@ -687,7 +748,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 检查是否存在应当被收纳应用的全屏窗口
         /// </summary>
-        /// <returns>如果存在应当被收纳应用的全屏窗口返回true，否则返回false</returns>
+        /// <summary>
+        /// 根据当前自动收纳设置判断是否存在符合条件的全屏应用窗口。
+        /// </summary>
+        /// <returns>`true` 如果检测到应被收纳的全屏窗口，`false` 否则。</returns>
         private bool HasFullScreenWindowOfAutoFoldApps()
         {
             if (_windowOverviewModel == null) return false;
@@ -821,7 +885,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 使用窗口预览模型检测前台窗口是否符合自动收纳要求（仅用于检测，不执行任何操作）
         /// </summary>
-        /// <returns>如果符合自动收纳要求返回true，否则返回false</returns>
+        /// <summary>
+        /// 根据窗口预览模型判断当前最上层窗口是否满足自动收纳（折叠）浮动工具栏的条件。
+        /// </summary>
+        /// <returns>`true` 如果应当自动收纳浮动工具栏，`false` 否则。</returns>
         private bool CheckShouldAutoFoldByWindowPreview()
         {
             if (_windowOverviewModel == null) return false;
@@ -1008,6 +1075,11 @@ namespace Ink_Canvas
         /// 3. 对于EasiNote应用，根据版本和窗口类型决定是否收纳
         /// 4. 对于其他应用程序，根据设置决定是否收纳
         /// 5. 当没有需要收纳的应用程序时，根据设置决定是否展开浮动栏
+        /// <summary>
+        /// 根据当前前台窗口与全屏状态及用户设置，决定折叠或展开悬浮工具栏。
+        /// </summary>
+        /// <remarks>
+        /// 执行以下决策逻辑：检测是否存在需要自动折叠的全屏或特定应用窗口（包含对 EasiNote 的版本与注释窗口的特殊处理），在未被用户手动展开的情况下折叠悬浮栏；当目标窗口不再存在且未设置“退出后保持收纳”时恢复展开。方法会尊重用户手动折叠/展开标志以避免覆盖用户操作。
         /// </remarks>
         private void timerCheckAutoFold_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -1116,6 +1188,15 @@ namespace Ink_Canvas
         /// 8. 如果可以安全更新，执行更新安装并关闭应用程序
         /// 9. 如果不能安全更新，重新启动计时器，稍后再检查
         /// 10. 处理异常情况，确保计时器能够重新启动
+        /// <summary>
+        /// 在预定的静默更新窗口中检查并在安全条件满足时安装已下载的更新。
+        /// </summary>
+        /// <remarks>
+        /// 执行流程：停止计时器以避免重入；若尚未确定可用版本或静默更新被禁用则退出；
+        /// 若更新安装包未下载则尝试使用可用线路组下载并在成功后重新启动检查计时器；
+        /// 若已下载则验证当前时间是否处于配置的静默更新时间段并在该期间内检查应用是否处于可安全更新的空闲状态；
+        /// 在确认安全后标记为用户主动退出、调用安装器并关闭应用；否则重新启动定时器以便稍后再次检查。
+        /// 该方法会启动后台下载任务、读取/写入下载状态文件、并可能触发应用安装与进程终止（应用关闭）。
         /// </remarks>
         private void timerCheckAutoUpdateWithSilence_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -1286,6 +1367,11 @@ namespace Ink_Canvas
         /// 7. 如果检查成功，重置重试计数并停止重试定时器
         /// 8. 如果检查失败，重新启动定时器，10分钟后再次尝试
         /// 9. 处理异常情况，确保定时器能够重新启动
+        /// <summary>
+        /// 在定时重试触发时检查应用更新并根据结果管理重试逻辑与计数器。
+        /// </summary>
+        /// <remarks>
+        /// 方法会先停止重试定时器以避免重入，若未开启自动更新则直接返回。方法会递增重试计数并在超过最大重试次数时停止重试。调用远程检查更新接口；若找到新版本则重置重试计数并停止重试，否则在允许的重试次数内重新启动定时器以便稍后再次尝试。所有关键步骤会记录日志并在发生异常时根据重试次数决定是否再次启动定时器以延后重试。
         /// </remarks>
         private async void timerCheckAutoUpdateRetry_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -1363,6 +1449,11 @@ namespace Ink_Canvas
         /// 2. 重置重试计数为0
         /// 3. 记录日志
         /// 4. 处理异常情况
+        /// <summary>
+        /// 重置自动更新重试状态：停止重试计时器并将重试计数清零。
+        /// </summary>
+        /// <remarks>
+        /// 会将重置操作写入日志；方法内部会捕获并记录异常，不会抛出到调用方。
         /// </remarks>
         public void ResetUpdateCheckRetry()
         {

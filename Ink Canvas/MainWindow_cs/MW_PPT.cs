@@ -201,6 +201,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 清理并释放现有的 PPT 管理器与 COM/Interop 状态，创建并配置新的 PPT 管理器（ROT 或 COM 实现，取决于设置）、单一的 PPT 墨迹管理器及其自动保存行为，以及 PPT UI 管理器与其显示/按钮位置选项。方法内部会订阅必要的 PPT 事件并记录初始化过程中的错误或警告。同时初始化长按页翻页定时器以支持长按翻页功能。
+        /// <summary>
+        /// 初始化并配置用于 PowerPoint 集成的管理器、墨迹管理器与 UI 管理器，并注册相关事件处理器。
+        /// </summary>
+        /// <remarks>
+        /// 根据用户设置选择 ROT 或 COM 的 PPT 连接实现，应用相关配置到 PPT 管理器与 PPT 墨迹管理器；在初始化前会尝试清理并释放旧的管理器与互操作状态；初始化过程中的错误将被记录但不会抛出到调用者。
         /// </remarks>
         private void InitializePPTManagers()
         {
@@ -285,6 +290,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 只有当Settings.PowerPointSettings.PowerPointSupport为true时才会启动监控，并记录启动事件日志。
+        /// <summary>
+        /// 在启用 PowerPoint 支持时启动 PPT 管理器的监控。
+        /// </summary>
+        /// <remarks>
+        /// 如果 PowerPoint 支持未启用，则不执行任何操作。
         /// </remarks>
         private void StartPPTMonitoring()
         {
@@ -297,6 +307,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 停止 PowerPoint 相关的监控：停止并清除用于延迟退出 PPT 模式的定时器，并停止 PPT 管理器的监控，同时记录事件日志。
+        /// <summary>
+        /// 停止与 PowerPoint 相关的监控，并清理用于在断开后退出 PPT 模式的定时器。
         /// </summary>
         private void StopPPTMonitoring()
         {
@@ -321,6 +333,12 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 仅在 PowerPoint 增强功能已启用且未使用 ROT 链接时生效；方法将创建 PowerPoint 应用（若不存在）并启动用于定期检查应用状态的定时器。
+        /// <summary>
+        /// 启动并维持用于增强功能的 PowerPoint 后台进程监控，确保本应用可以在需要时访问 PowerPoint 实例。
+        /// </summary>
+        /// <remarks>
+        /// 仅在 PowerPoint 增强功能已启用且未使用 ROT 链接时生效。方法会尝试创建隐藏的 PowerPoint 应用实例（如尚未存在），
+        /// 并启动一个定时器定期检查该应用的有效性以便自动重建或清理失败的实例。所有错误会被记录但不会抛出至调用方。
         /// </remarks>
         private void StartPowerPointProcessMonitoring()
         {
@@ -377,6 +395,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 如果配置为使用 ROT 链接或已有有效的 PowerPoint 实例，则不会创建新实例。创建的实例会被设置为不可见并最小化；在实例准备就绪后会通过延迟调用将其设置到 PPT 管理器（SetPPTManagerApplication）。任何创建或注入失败的情况会被记录日志，但不会抛出异常给调用者。
+        /// <summary>
+        /// 创建一个不可见的 PowerPoint 应用实例并在可用时注入到内部 PPT 管理器中。
+        /// </summary>
+        /// <remarks>
+        /// 如果设置为使用 ROT 链接或已存在有效的应用实例，则不会创建新实例。创建后将把应用设置为不可见并最小化，并在短延迟后尝试将该实例赋给内部的 PPT 管理器以建立绑定。任何创建或绑定失败会被记录但不会抛出异常到调用者。
         /// </remarks>
         private void CreatePowerPointApplication()
         {
@@ -434,6 +457,13 @@ namespace Ink_Canvas
         /// 将给定的 PowerPoint 应用实例注入到当前的 PPT 管理器中，若管理器为 null 或启用 ROT 链接则不做任何操作。
         /// 尝试使用非公开的 `ConnectToPPT` 方法进行绑定，若不可用则回退到写入公共 `PPTApplication` 属性；操作结果和异常通过日志记录。
         /// </summary>
+        /// <summary>
+        /// 向内部 PPT 管理器注入或绑定一个 PowerPoint 应用实例。
+        /// </summary>
+        /// <remarks>
+        /// 如果当前未使用 ROT 连接且存在内部 PPT 管理器，本方法先尝试通过反射调用其非公开的 ConnectToPPT 方法注入应用实例；
+        /// 若不可用则尝试写入其公开的 PPTApplication 可写属性；所有结果会记录日志。若使用 ROT 或管理器为空则不执行任何操作。
+        /// </remarks>
         /// <param name="app">要注入的 PowerPoint 应用实例（Microsoft.Office.Interop.PowerPoint.Application）。</param>
         private void SetPPTManagerApplication(Microsoft.Office.Interop.PowerPoint.Application app)
         {
@@ -511,6 +541,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// 关闭当前的 PowerPoint 应用程序及其所有打开的演示文稿，释放相关 COM 资源并清理静态互操作状态。</summary>
         /// 会尝试关闭所有打开的演示文稿、退出 PowerPoint 进程、释放 COM 对象引用，并将内部 PowerPoint 互操作状态重置为初始值；操作结果会被记录到日志，发生异常时会记录错误并仍然尝试清理互操作状态。
+        /// <summary>
+        /// 关闭并释放与 PowerPoint 应用程序相关的 COM 资源并清理静态互操作状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果存在 PowerPoint 应用实例，会关闭所有打开的演示文稿、退出应用并释放其 COM 对象；在发生异常时记录错误日志，并确保静态互操作状态被清理以避免悬挂引用。
         /// </remarks>
         private void ClosePowerPointApplication()
         {
@@ -554,6 +589,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 在释放过程中若发生异常会被捕获并以警告级别记录日志，不会抛出异常到调用者。
+        /// <summary>
+        /// 释放并清除与 PowerPoint COM 互操作相关的静态引用并重置幻灯片计数。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会尝试释放静态字段 `presentation`、`slides` 和 `slide` 所持有的 COM 对象引用（若存在），将它们置为 null，并将 `slidescount` 置为 0；在释放过程中发生的异常会以警告形式记录，但不会向外抛出。
         /// </remarks>
         private void ClearStaticInteropState()
         {
@@ -587,6 +627,12 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 周期性监控嵌入的 PowerPoint 应用实例的可用性，并在检测到失效时尝试重建实例；当增强功能被禁用时停止监控，并在使用 ROT 链接时不进行检查。
+        /// <summary>
+        /// 定期检查 PowerPoint 应用程序状态并在需要时重新创建或停止监控。
+        /// </summary>
+        /// <remarks>
+        /// 当 PowerPoint 增强被禁用时会停止进程监控；若未使用 ROT 链接且当前应用实例不可用，则尝试重新创建应用实例。
+        /// 本方法捕获所有异常并将错误记录到日志，不会向调用者抛出异常。
         /// </remarks>
         private void OnPowerPointApplicationMonitorTick(object sender, EventArgs e)
         {
@@ -618,6 +664,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 操作包括停止并释放 PPT 管理器、墨迹管理器和长按计时器，停止 PowerPoint 进程监控，关闭 PowerPoint 应用并清除静态 COM/互操作状态；所有异常会被捕获并记录为错误日志。
+        /// <summary>
+        /// 释放并停止所有与 PowerPoint 集成相关的管理器、计时器与进程监控，清理互操作资源与静态引用。
+        /// </summary>
+        /// <remarks>
+        /// 执行以下可观察的清理操作：停止并释放 PPT 管理器与墨迹管理器、停止并清除长按计时器、停止 PowerPoint 进程监控、关闭 PowerPoint 应用并清除静态 COM 引用。方法内部捕获所有异常并将错误记录到日志，不会向调用者抛出异常。
         /// </remarks>
         private void DisposePPTManagers()
         {
@@ -704,7 +755,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 处理 PowerPoint 连接状态的变更：更新界面连接/放映状态，并在断开时启动一个短延迟以安全退出 PPT 模式。
         /// </summary>
-        /// <param name="isConnected">指示当前是否已与 PowerPoint 建立连接；`true` 表示已连接，`false` 表示已断开。</param>
+        /// <summary>
+        /// 根据 PowerPoint 连接状态更新 UI 与内部 PPT 状态，并在断开时安排延迟退出 PPT 模式。
+        /// </summary>
+        /// <param name="isConnected">指示当前是否已与 PowerPoint 建立连接：`true` 表示已连接，`false` 表示已断开。</param>
         private void OnPPTConnectionChanged(bool isConnected)
         {
             try
@@ -757,7 +811,15 @@ namespace Ink_Canvas
         /// <remarks>
         /// 操作包括：清理画布墨迹和备份历史记录，初始化墨迹管理器，处理跳转到首页或上次播放页的逻辑，检查隐藏幻灯片和自动播放设置，更新UI连接状态，并记录事件日志。
         /// 所有操作在UI线程异步执行，异常会被捕获并记录为错误日志。
+        /// <summary>
+        /// 在打开新的 PowerPoint 演示文稿时初始化应用内的墨迹管理、导航与相关 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// 本方法在 UI 线程上执行：清除画布上的现有墨迹并重置时间机器历史（防止旧演示文稿污染），
+        /// 使用当前演示文稿初始化单独的 PPT 墨迹管理器，执行打开时的导航策略（如跳转首页或恢复上次播放页），
+        /// 根据设置检查并提示隐藏幻灯片与自动播放配置，更新连接状态并记录事件日志。
         /// </remarks>
+        /// <param name="pres">已打开的 PowerPoint 演示文稿实例。</param>
         private void OnPPTPresentationOpen(Presentation pres)
         {
             try
@@ -801,6 +863,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 构建并返回该演示文稿用于存放自动保存笔迹的本地文件夹路径。
+        /// </summary>
+        /// <param name="presentation">可选的PowerPoint Presentation对象；当其非空且包含完整路径时用于生成基于文件哈希的唯一子目录。</param>
+        /// <param name="presentationName">演示文稿的名称备选项（在presentation为空或未提供FullName时使用）。</param>
+        /// <param name="totalSlides">演示文稿的总幻灯片数（在presentation为空或未提供FullName时与名称一起用于构建路径）。</param>
+        /// <returns>指向用于保存该演示文稿笔迹的目录路径；若提供了有效的Presentation则路径包含演示文稿名、幻灯片数和文件哈希，否则包含提供的名称和总页数。</returns>
         private string GetPresentationStrokeFolderPath(Presentation presentation, string presentationName, int totalSlides)
         {
             string basePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "Auto Saved - Presentations");
@@ -812,6 +881,14 @@ namespace Ink_Canvas
             return Path.Combine(basePath, $"{presentationName ?? ""}_{totalSlides}");
         }
 
+        /// <summary>
+        /// 在演示文稿关闭时清理与该演示文稿相关的内存画笔缓存并在 UI 上更新连接状态。
+        /// </summary>
+        /// <param name="pres">已关闭的 PowerPoint 演示文稿对象（用于语义标识，方法不会直接依赖其内容）。</param>
+        /// <remarks>
+        /// 在 UI 线程上释放并清空内部的每页 MemoryStream 缓存，然后将 PPT 连接状态设置为“断开”。
+        /// 对于因 COM 对象无效而引发的 COMException 会被静默处理，不会向上抛出异常或显示错误提示。
+        /// </remarks>
         private void OnPPTPresentationClose(Presentation pres)
         {
             try
@@ -848,7 +925,10 @@ namespace Ink_Canvas
         /// <remarks>
         /// 操作包括：在UI线程异步通知UI管理器放映状态变化，检查并更新主窗口的可见性（用于仅PPT模式）。
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
+        /// <summary>
+        /// 响应 PowerPoint 放映状态变化：通知 PPT UI 管理器并检查主窗口可见性。
+        /// </summary>
+        /// <param name="isInSlideShow">指示当前是否处于放映模式。`true` 表示进入放映，`false` 表示退出放映。</param>
         private void OnPPTSlideShowStateChanged(bool isInSlideShow)
         {
             try
@@ -896,7 +976,10 @@ namespace Ink_Canvas
         /// 16. 调整浮动栏边距动画
         /// 
         /// 所有UI操作在UI线程异步执行，异常会被捕获并记录为错误日志。
-        /// </remarks>
+        /// <summary>
+        /// 处理 PowerPoint 幻灯片放映开始事件，初始化墨迹缓存、绘图管理器与相关 UI 状态并根据设置恢复或进入批注/导航模式。
+        /// </summary>
+        /// <param name="wn">触发的 SlideShowWindow 实例；若为 null 则回退使用 PPT 管理器获取当前演示文稿与幻灯片信息。</param>
         private async void OnPPTSlideShowBegin(SlideShowWindow wn)
         {
             try
@@ -1129,7 +1212,10 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 如果收到与当前记录相同的页码或已有切换正在处理，则忽略该事件。 
         /// - 在切换过程中会保存前一页的墨迹（如存在）、清空画布与历史、加载新页的墨迹、锁定新页墨迹并刷新当前页显示序号，同时更新内部的当前播放位置状态。
-        /// </remarks>
+        /// <summary>
+        /// 在幻灯片放映切换到下一页时，保存当前页的墨迹到内存并异步加载目标页的墨迹，同时更新内部播放位置、锁定该页的墨迹并刷新 UI 显示的页码。
+        /// </summary>
+        /// <param name="wn">触发事件的 PowerPoint 放映窗口（SlideShowWindow），包含当前放映视图和演示文稿信息。</param>
         private void OnPPTSlideShowNextSlide(SlideShowWindow wn)
         {
             try
@@ -1204,7 +1290,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 处理 PowerPoint 幻灯片放映结束时的清理与界面恢复，包括保存当前幻灯片墨迹、重置墨迹管理器状态、恢复主题与工具栏显示，并根据配置折叠或展示浮动工具栏等 UI 调整。
         /// </summary>
-        /// <param name="pres">触发结束事件的 PowerPoint 演示文稿（Presentation）实例，用于保存墨迹并尝试读取放映时的当前页码。</param>
+        /// <summary>
+        /// 处理 PowerPoint 幻灯片放映结束时的清理、墨迹保存与 UI 恢复。
+        /// </summary>
+        /// <param name="pres">触发结束事件的 PowerPoint 演示文稿实例；用于确定当前播放页码并在需要时作为保存墨迹的参考。</param>
         private async void OnPPTSlideShowEnd(Presentation pres)
         {
             try
@@ -1423,6 +1512,13 @@ namespace Ink_Canvas
         /// 1. 如果设置了总是跳转到首页，则尝试导航到第1页
         /// 2. 否则，如果设置了显示上次播放页通知，则显示上次播放页通知
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// <summary>
+        /// 根据用户设置在打开演示文稿时执行导航：要么跳转到第一页，要么提示恢复上次播放页码。
+        /// </summary>
+        /// <param name="pres">已打开的 PowerPoint 演示文稿（Presentation 实例）。</param>
+        /// <remarks>
+        /// 如果设置为始终进入第一页，则尝试导航到第一页并根据配置决定是否跳过动画后激活窗口；
+        /// 如果设置为提示上次页面，则显示恢复上次播放页码的提示窗口。方法内部捕获并记录所有异常，不会向调用方抛出异常。
         /// </remarks>
         private void HandlePresentationOpenNavigation(Presentation pres)
         {
@@ -1457,7 +1553,10 @@ namespace Ink_Canvas
         /// 5. 尝试解析位置文件中的页码
         /// 6. 如果解析成功且页码大于0，则保存上次播放页码并显示跳转提示窗口
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
+        /// <summary>
+        /// 在打开演示文稿时提示用户是否跳转到上次播放的位置。
+        /// </summary>
+        /// <param name="pres">要检查并可能跳转的 PowerPoint 演示文稿；若为 null 或未找到记录文件则不执行任何操作。</param>
         private void ShowPreviousPageNotification(Presentation pres)
         {
             try
@@ -1515,6 +1614,12 @@ namespace Ink_Canvas
         /// 4. 如果用户确认，则取消所有幻灯片的隐藏状态
         /// 5. 无论用户选择如何，都会重置IsShowingRestoreHiddenSlidesWindow标志
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// <summary>
+        /// 检查指定演示文稿中是否存在被隐藏的幻灯片；若存在且尚未显示提示窗口，则弹出确认对话框，用户确认后取消这些幻灯片的隐藏状态。
+        /// </summary>
+        /// <param name="pres">要检查的 PowerPoint 演示文稿（可能为 null）。</param>
+        /// <remarks>
+        /// 在提示窗口显示期间会设置 <c>IsShowingRestoreHiddenSlidesWindow</c> 以避免重复弹窗；用户选择“是”时会尝试将所有被隐藏的幻灯片的隐藏标志清除。方法内部会捕获并记录异常，不会向调用者抛出异常。
         /// </remarks>
         private void CheckAndNotifyHiddenSlides(Presentation pres)
         {
@@ -1582,7 +1687,15 @@ namespace Ink_Canvas
         /// 5. 如果用户确认，则将演示文稿的放映设置设置为手动播放模式
         /// 6. 无论用户选择如何，都会重置IsShowingAutoplaySlidesWindow标志
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
+        /// <summary>
+        /// 检查指定演示文稿中是否启用了幻灯片计时自动播放，并在检测到时提示用户是否切换为手动播放模式。
+        /// </summary>
+        /// <remarks>
+        /// 如果检测到任意幻灯片的 SlideShowTransition 设置为按时间自动推进且尚未显示相同提示窗口，则弹出确认对话框；
+        /// 在用户确认时将把该演示文稿的 SlideShowSettings.AdvanceMode 设置为手动进页（ppSlideShowManualAdvance）。
+        /// 方法内部会避免重复弹窗并记录错误，但不会抛出异常给调用方。
         /// </remarks>
+        /// <param name="pres">要检查并可能修改的 PowerPoint 演示文稿（Microsoft.Office.Interop.PowerPoint.Presentation）。</param>
         private void CheckAndNotifyAutoPlaySettings(Presentation pres)
         {
             try
@@ -1646,7 +1759,11 @@ namespace Ink_Canvas
         /// 3. 从墨迹管理器加载指定幻灯片的墨迹
         /// 4. 如果加载到墨迹且墨迹集合不为空，则将墨迹添加到画布
         /// 异常会被捕获并记录为错误日志，确保方法执行不会中断。
-        /// </remarks>
+        /// <summary>
+        /// 从内存缓存加载并应用指定幻灯片的墨迹到画布。
+        /// </summary>
+        /// <param name="slideIndex">要加载墨迹的幻灯片索引（通常为当前播放的页码）。</param>
+        /// <remarks>在加载前会清除当前画布的笔迹和笔迹历史；如果未找到缓存或加载失败则保持画布为空并记录日志。</remarks>
         private void LoadCurrentSlideInk(int slideIndex)
         {
             try
@@ -1713,6 +1830,11 @@ namespace Ink_Canvas
         /// - 使用线程安全的方式重置滑动切换处理状态
         /// - 成功时记录追踪日志
         /// - 发生异常时记录错误日志并继续执行
+        /// <summary>
+        /// 将与 PowerPoint 放映和画笔存储相关的运行时状态重置为初始值。
+        /// </summary>
+        /// <remarks>
+        /// 将重置放映结束事件标志、播放位置跟踪、黑边标记以及与每张幻灯片关联的内存流（并释放其资源）；操作完成或失败都会记录日志。
         /// </remarks>
         public void ResetPPTStateVariables()
         {
@@ -1755,6 +1877,12 @@ namespace Ink_Canvas
         /// 如果尚未初始化 PPT 管理器则先进行初始化，然后重载连接并启动监控；
         /// 延迟约 800 毫秒后在 UI 线程上检查连接状态：若已连接仅记录事件日志，若未连接则弹出提示并记录警告；
         /// 若过程中抛出异常则记录错误日志、将 UI 连接状态置为断开并提示用户未找到幻灯片。
+        /// <summary>
+        /// 触发对 PowerPoint 连接的手动检查并启动或重载 PPT 管理器的监控流程，检测结果会记录日志并在未连接时提示用户。
+        /// </summary>
+        /// <remarks>
+        /// 如果尚未初始化 PPT 管理器则会尝试初始化；在约 800 毫秒后根据连接状态写入事件或警告日志并在未找到幻灯片时显示提示框。
+        /// 发生异常时会记录错误并将 UI 的连接状态更新为未连接。
         /// </remarks>
         private void BtnCheckPPT_Click(object sender, RoutedEventArgs e)
         {
@@ -1806,6 +1934,13 @@ namespace Ink_Canvas
         /// 当PowerPoint增强功能被禁用时：
         /// 1. 停止PowerPoint进程守护
         /// 无论开关状态如何变化，都会保存设置到文件
+        /// <summary>
+        /// 处理 PowerPoint 增强功能开关的切换并更新相关设置与进程守护状态。
+        /// </summary>
+        /// <remarks>
+        /// 根据开关状态将值写入 Settings.PowerPointSettings.EnablePowerPointEnhancement；
+        /// 当启用时会同时禁用 WPS 支持（Settings.PowerPointSettings.IsSupportWPS 及 UI 开关），并同步更新 _pptManager.IsSupportWPS（若存在）；
+        /// 持久化设置后根据启用状态启动或停止 PowerPoint 进程监控（StartPowerPointProcessMonitoring / StopPowerPointProcessMonitoring）。
         /// </remarks>
         private void ToggleSwitchPowerPointEnhancement_Toggled(object sender, RoutedEventArgs e)
         {
@@ -1851,6 +1986,13 @@ namespace Ink_Canvas
         /// 无论开关状态如何变化，都会：
         /// 1. 更新PPT管理器的WPS支持设置
         /// 2. 保存设置到文件
+        /// <summary>
+        /// 切换是否启用对 WPS 的支持并相应调整 PowerPoint 相关设置与运行时状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果窗口尚未完全加载则不执行任何操作。方法将 Settings.PowerPointSettings.IsSupportWPS 更新为控件当前状态；当开启 WPS 支持时，
+        /// 会确保同时启用 PowerPoint 支持并启动 PPT 监控（必要时初始化 PPT 管理器），并在启用 WPS 时关闭 PowerPoint 增强及其进程监控（若已开启）。
+        /// 最后将当前 WPS 支持和跳过动画导航的设置同步到已存在的 PPT 管理器并将设置持久化到文件。
         /// </remarks>
         private void ToggleSwitchSupportWPS_Toggled(object sender, RoutedEventArgs e)
         {
@@ -1891,6 +2033,9 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 根据切换开关更新“切换到下一张时跳过动画”设置并将修改同步到 PowerPoint 管理器与持久化配置文件。
+        /// </summary>
         private void ToggleSwitchSkipAnimationsWhenGoNext_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1925,6 +2070,9 @@ namespace Ink_Canvas
         /// 处理“上一页”按钮的点击操作：在满足自动保存条件时保存当前幻灯片截图并尝试切换到上一张幻灯片；在切换失败或发生异常时记录日志并更新连接状态。
         /// </summary>
         /// <param name="sender">事件的来源对象（通常是触发按钮）。</param>
+        /// <summary>
+        /// 处理“上一页”按钮点击：在满足自动保存条件时保存当前幻灯片的截图，然后尝试切换到上一张幻灯片；若切换失败或发生异常，会记录日志并将连接状态置为断开。
+        /// </summary>
         /// <param name="e">路由事件参数。</param>
         private void BtnPPTSlidesUp_Click(object sender, RoutedEventArgs e)
         {
@@ -1968,6 +2116,13 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 如果切换操作失败或发生异常，会写入日志并将 PPT 连接状态更新为断开。
+        /// <summary>
+        /// 将当前 PowerPoint 演示切换到下一张幻灯片，并在满足条件时保存当前画布的截图及更新连接状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为 UI 控件）。</param>
+        /// <param name="e">事件参数。</param>
+        /// <remarks>
+        /// 如果画布笔迹数量达到自动保存阈值且已启用在 PowerPoint 中保存截图，则会保存当前幻灯片对应的截图。尝试导航到下一页时会在失败时记录警告并将 UI 的连接状态标记为断开。若启用了“翻页时跳过PPT动画”，在成功翻页后会尝试将应用窗口激活以避免 PowerPoint 抢占焦点。所有异常会被记录并导致 UI 连接状态更新为断开。
         /// </remarks>
         private void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e)
         {
@@ -2022,7 +2177,11 @@ namespace Ink_Canvas
         /// 1. 记录按下的按钮对象
         /// 2. 检查是否启用了PPT按钮页码点击功能
         /// 3. 根据按下的按钮设置相应的反馈边框透明度
-        /// </remarks>
+        /// <summary>
+        /// 处理导航按钮的鼠标按下事件：记录被按下的控件并在启用“按钮可点击翻页”时对相应按钮显示按下反馈。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（导航按钮）。</param>
+        /// <param name="e">鼠标事件数据。</param>
         private void PPTNavigationBtn_MouseDown(object sender, MouseButtonEventArgs e)
         {
             lastBorderMouseDownObject = sender;
@@ -2054,7 +2213,11 @@ namespace Ink_Canvas
         /// 该方法在用户鼠标离开PPT导航按钮时执行以下操作：
         /// 1. 重置按下的按钮对象为null
         /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
-        /// </remarks>
+        /// <summary>
+        /// 处理 PPT 导航按钮的鼠标离开事件，清除记录的按下对象并将对应按钮的反馈边框不透明度重置为 0。
+        /// </summary>
+        /// <param name="sender">触发事件的控件，预期为 PPTLSPageButton、PPTRSPageButton、PPTLBPageButton 或 PPTRBPageButton 之一。</param>
+        /// <param name="e">鼠标事件参数。</param>
         private void PPTNavigationBtn_MouseLeave(object sender, MouseEventArgs e)
         {
             lastBorderMouseDownObject = null;
@@ -2092,7 +2255,17 @@ namespace Ink_Canvas
         /// 7. 尝试显示PPT幻灯片导航
         /// 8. 如果浮动栏未折叠，则调整其位置
         /// 9. 捕获并记录可能的异常
+        /// <summary>
+        /// 处理 PPT 翻页控件的鼠标抬起事件：清除按下反馈、在满足条件时显示幻灯片导航并调整浮动栏位置与焦点。
+        /// </summary>
+        /// <remarks>
+        /// - 仅在按下对象与抬起对象匹配时继续处理。 
+        /// - 如果未启用“PPT 按钮可点击”或 PPT 未连接/未处于放映状态则记录警告并返回。 
+        /// - 成功显示导航后，根据设置可将应用窗口激活以跳过动画；若浮动栏未折叠，则短延迟后居中浮动栏。 
+        /// - 所有操作的失败情况会记录到日志，但不会抛出异常给上层调用者。
         /// </remarks>
+        /// <param name="sender">触发事件的控件，一般为 PPT 翻页按钮之一。</param>
+        /// <param name="e">鼠标事件参数。</param>
         private async void PPTNavigationBtn_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -2167,6 +2340,11 @@ namespace Ink_Canvas
         /// 1. 在新线程中尝试启动PPT幻灯片放映
         /// 2. 如果启动失败，记录警告日志
         /// 3. 捕获并记录可能的异常
+        /// <summary>
+        /// 启动 PowerPoint 幻灯片放映。
+        /// </summary>
+        /// <remarks>
+        /// 使用已配置的 PPT 管理器尝试开始放映；在启动失败或发生异常时会记录警告或错误日志。
         /// </remarks>
         private void BtnPPTSlideShow_Click(object sender, RoutedEventArgs e)
         {
@@ -2186,6 +2364,14 @@ namespace Ink_Canvas
             }).Start();
         }
 
+        /// <summary>
+        /// 结束当前 PowerPoint 放映并在需要时保存当前幻灯片的墨迹，更新相关 UI 状态并触发折叠及注释模式的后续处理。
+        /// </summary>
+        /// <remarks>
+        /// 如果通过 PPT 管理器成功结束放映，方法将依赖 OnPPTSlideShowEnd 事件完成状态恢复；
+        /// 若尝试结束放映失败或发生异常，方法会手动恢复播放状态、更新侧栏按钮并执行自动收纳/注释模式的补偿流程（包括折叠栏的动画调整）。
+        /// 本方法还会在结束前将当前幻灯片的墨迹保存到内存流以便后续恢复，并清空笔迹历史记录。
+        /// </remarks>
         private async void BtnPPTSlideShowEnd_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -2278,7 +2464,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 手动处理PPT放映结束时的自动收纳
+        /// <summary>
+        /// 在手动结束幻灯片放映后，根据用户设置自动折叠悬浮工具栏（如果启用且尚未折叠）。
         /// </summary>
+        /// <remarks>
+        /// 若设置允许且当前悬浮工具栏未折叠，则触发折叠操作；操作中发生的异常会被捕获并记录日志。
+        /// </remarks>
         private async Task HandleManualSlideShowEnd()
         {
             try
@@ -2304,7 +2495,11 @@ namespace Ink_Canvas
         /// 1. 记录按下的按钮对象
         /// 2. 根据按下的按钮设置相应的反馈边框透明度
         /// 3. 如果启用了PPT按钮长按翻页功能，则启动长按检测
-        /// </remarks>
+        /// <summary>
+        /// 处理“上一页”控件的按下事件：记录按下的控件并显示按下反馈，同时在启用时启动长按翻页检测。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（表示哪个上一页按钮边框被按下）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void GridPPTControlPrevious_MouseDown(object sender, MouseButtonEventArgs e)
         {
             lastBorderMouseDownObject = sender;
@@ -2341,7 +2536,11 @@ namespace Ink_Canvas
         /// 1. 重置按下的按钮对象为null
         /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
         /// 3. 停止长按检测
-        /// </remarks>
+        /// <summary>
+        /// 在鼠标移出“上一页”控制区域时，清除记录的按下对象、重置对应按钮的按下反馈并停止长按检测。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（某个“上一页”按钮的 Border）。</param>
+        /// <param name="e">鼠标事件参数。</param>
         private void GridPPTControlPrevious_MouseLeave(object sender, MouseEventArgs e)
         {
             lastBorderMouseDownObject = null;
@@ -2376,7 +2575,11 @@ namespace Ink_Canvas
         /// 2. 根据释放的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
         /// 3. 停止长按检测
         /// 4. 调用上一页按钮的点击事件处理方法，实现切换到上一页的功能
-        /// </remarks>
+        /// <summary>
+        /// 处理“上一页”控制项的鼠标抬起事件：清除按下反馈、停止长按检测并触发上一页操作。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（鼠标抬起的目标）。</param>
+        /// <param name="e">鼠标事件参数。</param>
         private void GridPPTControlPrevious_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -2414,7 +2617,11 @@ namespace Ink_Canvas
         /// 1. 记录按下的按钮对象
         /// 2. 根据按下的按钮设置相应的反馈边框透明度
         /// 3. 如果启用了PPT按钮长按翻页功能，则启动长按检测
-        /// </remarks>
+        /// <summary>
+        /// 处理下一页控件的鼠标按下事件：记录按下的控件，设置按压反馈并在开启时启动长按翻页检测。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（下一页按钮的边框元素）。</param>
+        /// <param name="e">鼠标按键事件参数。</param>
         private void GridPPTControlNext_MouseDown(object sender, MouseButtonEventArgs e)
         {
             lastBorderMouseDownObject = sender;
@@ -2451,6 +2658,11 @@ namespace Ink_Canvas
         /// 1. 重置按下的按钮对象为null
         /// 2. 根据离开的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
         /// 3. 停止长按检测
+        /// <summary>
+        /// 清除下一页控件的按压视觉反馈并停止长按检测。
+        /// </summary>
+        /// <remarks>
+        /// 如果触发者为特定的边框控件，会将对应的反馈边框不透明度重置为 0；随后重置记录的按下对象并调用停止长按的逻辑。
         /// </remarks>
         private void GridPPTControlNext_MouseLeave(object sender, MouseEventArgs e)
         {
@@ -2486,7 +2698,11 @@ namespace Ink_Canvas
         /// 2. 根据释放的按钮设置相应的反馈边框透明度为0（隐藏反馈效果）
         /// 3. 停止长按检测
         /// 4. 调用下一页按钮的点击事件处理方法，实现切换到下一页的功能
-        /// </remarks>
+        /// <summary>
+        /// 处理“下一页”控件的鼠标释放事件：停止长按检测并触发向下翻页操作，同时清除按下时的视觉反馈。
+        /// </summary>
+        /// <param name="sender">事件源，通常为下一页按钮对应的 Border 控件。</param>
+        /// <param name="e">鼠标按键事件参数。</param>
         private void GridPPTControlNext_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (lastBorderMouseDownObject != sender) return;
@@ -2520,7 +2736,9 @@ namespace Ink_Canvas
         /// <param name="e">鼠标按钮事件参数</param>
         /// <remarks>
         /// 该方法在用户释放PPT结束控制按钮时调用BtnPPTSlideShowEnd_Click方法，实现结束幻灯片放映的功能
-        /// </remarks>
+        /// <summary>
+        /// 在结束控件上释放鼠标时触发，执行结束幻灯片放映的操作。
+        /// </summary>
         private void ImagePPTControlEnd_MouseUp(object sender, MouseButtonEventArgs e)
         {
             BtnPPTSlideShowEnd_Click(BtnPPTSlideShowEnd, null);

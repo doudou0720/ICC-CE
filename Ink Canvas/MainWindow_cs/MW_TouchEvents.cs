@@ -49,7 +49,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 保存画布上的非笔画元素（如图片、媒体元素等）
         /// </summary>
-        /// <returns>返回保存的非笔画元素列表</returns>
+        /// <summary>
+        /// 为切换模式或清空画布时创建并返回画布上所有非笔画 UI 元素的深拷贝列表。
+        /// </summary>
+        /// <returns>包含被复制的非笔画 UI 元素（例如 Image、MediaElement，以及不命名为 "EraserOverlayCanvas" 的 Border）的列表。</returns>
         private List<UIElement> PreserveNonStrokeElements()
         {
             var preservedElements = new List<UIElement>();
@@ -167,7 +170,10 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 恢复之前保存的非笔画元素到画布
+        /// <summary>
+        /// 将先前保存的非笔画 UI 元素重新添加回 inkCanvas。
         /// </summary>
+        /// <param name="preservedElements">要恢复并添加到画布的 UI 元素列表；为 null 时不作任何操作。恢复过程中单个元素添加失败会记录错误并继续处理其余元素。</param>
         private void RestoreNonStrokeElements(List<UIElement> preservedElements)
         {
             if (preservedElements == null) return;
@@ -206,6 +212,14 @@ namespace Ink_Canvas
         ///    - 设置InkCanvas编辑模式为None（如果当前不是橡皮擦模式）
         ///    - 保存并恢复非笔画元素
         ///    - 设置isInMultiTouchMode为true
+        /// <summary>
+        /// 切换画布的多点触控模式：在开启与关闭多点触控之间切换，并相应调整输入处理与画布状态。
+        /// </summary>
+        /// <param name="sender">触发事件的对象（通常为模式切换控件）。</param>
+        /// <param name="e">鼠标事件参数。</param>
+        /// <remarks>
+        /// 切换时会：附加或移除对笔和触摸的事件处理器，依据当前橡皮模式设置合适的 InkCanvas.EditingMode，
+        /// 在切换过程中保存并恢复非笔画元素（例如图片和媒体元素），并更新 isInMultiTouchMode 状态标志。
         /// </remarks>
         private void BorderMultiTouchMode_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -268,7 +282,17 @@ namespace Ink_Canvas
         ///    - 直接返回
         /// 4. 否则，设置触摸按下点的编辑模式为None
         /// 5. 如果当前不是橡皮擦模式，则设置InkCanvas编辑模式为None
+        /// <summary>
+        /// 处理主窗口的触摸按下事件，管理绘制模式、面板可见性和触摸起始点的初始化。
+        /// </summary>
+        /// <remarks>
+        /// - 若当前处于橡皮擦或选择模式，则不做任何处理并直接返回。  
+        /// - 若未在书写时隐藏二级菜单，则隐藏它们以进入书写状态。  
+        /// - 当处于形状绘制模式（drawingShapeMode != 0）时，将编辑模式设为 None，标记触摸按下状态，禁用浮动工具栏与回放网格的命中测试，并在需要时记录起始点 iniP。  
+        /// - 在非形状绘制情形下，将当前触点在 TouchDownPointsList 中记录为 None，并在非橡皮擦模式时将 inkCanvas.EditingMode 设为 None 以禁止默认绘制行为。
         /// </remarks>
+        /// <param name="sender">事件源（通常为窗口或其子元素）。</param>
+        /// <param name="e">触摸事件参数，用于获取触点位置及设备 ID。</param>
         private void MainWindow_TouchDown(object sender, TouchEventArgs e)
         {
 
@@ -324,6 +348,19 @@ namespace Ink_Canvas
         /// 5. 根据编辑模式设置光标
         /// 6. 如果当前处于橡皮擦模式或选择模式，则直接返回
         /// 7. 设置触摸按下点的编辑模式为None
+        /// <summary>
+        /// 处理手写笔按下事件：根据按下位置与笔尖/笔尾状态切换画笔或橡皮擦，并为后续绘制初始化必要状态。
+        /// </summary>
+        /// <param name="sender">事件源对象（通常为窗口或相关控件）。</param>
+        /// <param name="e">包含手写笔位置信息和设备标识的事件参数，用于确定是否在浮动栏区域、笔是否倒置以及记录起始点。</param>
+        /// <remarks>
+        /// 主要行为：
+        /// - 若按下位置在浮动栏区域则允许事件继续传播并返回，不会更改画布状态；
+        /// - 若笔为倒置（笔尾）则将画布编辑模式设置为按点橡皮擦；
+        /// - 若处于绘图形状模式（drawingShapeMode != 0），将进入非绘制编辑模式、记录起始点（如需）并禁用浮动栏与回放网格的命中测试；
+        /// - 否则在非按笔擦除模式下切换到墨迹绘制模式；
+        /// - 捕获手写笔、禁用浮动栏与回放网格的命中测试、根据当前编辑模式设置光标；
+        /// - 若当前为橡皮擦或选择模式则结束处理；否则在设备 ID 映射表中记录该手写笔的触摸初始编辑状态为 None。
         /// </remarks>
         private void MainWindow_StylusDown(object sender, StylusDownEventArgs e)
         {
@@ -405,6 +442,12 @@ namespace Ink_Canvas
         /// 4. 释放手写笔捕获
         /// 5. 启用浮动栏和黑板UI网格的命中测试
         /// 6. 根据编辑模式设置光标
+        /// <summary>
+        /// 处理手写笔抬起事件：在单步或多步绘制模式下完成图形绘制；否则将正在绘制的笔迹提交到画布并清理与该设备关联的临时可视项和状态。
+        /// </summary>
+        /// <param name="e">触发事件的 StylusEventArgs，使用其 StylusDevice.Id 来识别并完成对应设备的笔迹与清理操作。</param>
+        /// <remarks>
+        /// 在多步绘制（如 drawingShapeMode 为 24 或 25）时会推进绘制步骤或触发鼠标抬起以完成绘制；在常规绘制时将 Stroke 添加到 inkCanvas.Strokes、移除对应的可视画布并触发 StrokeCollected 事件；随后移除并在必要时清空与该手写笔设备关联的 StrokeVisual、VisualCanvas 和 TouchDownPoints 列表项，释放触笔捕获并根据当前编辑模式更新光标。函数在发生异常时会记录日志并将错误信息显示到界面。
         /// </remarks>
         private async void MainWindow_StylusUp(object sender, StylusEventArgs e)
         {
@@ -516,7 +559,15 @@ namespace Ink_Canvas
         /// 3. 尝试检查手写笔按钮状态，如果第二个按钮被按下，则直接返回
         /// 4. 否则，获取笔画视觉对象，添加手写笔点，并重新绘制
         /// 5. 捕获并忽略所有异常
+        /// <summary>
+        /// 处理笔（Stylus）移动事件，向对应设备的临时 StrokeVisual 添加笔触点并重绘画布。
+        /// </summary>
+        /// <remarks>
+        /// 当处于形状绘制模式时，会在触控按下的情况下将移动位置转发到形状绘制处理；
+        /// 当该设备的触摸按下编辑模式不是 None 或次要笔钮按下时，不会添加笔触点。
         /// </remarks>
+        /// <param name="sender">事件发送者（通常为窗口或控件）。</param>
+        /// <param name="e">包含当前笔位置和按钮状态的 Stylus 事件参数。</param>
         private void MainWindow_StylusMove(object sender, StylusEventArgs e)
         {
             try
@@ -561,7 +612,11 @@ namespace Ink_Canvas
         /// 4. 创建新的VisualCanvas实例，将其设置为笔画视觉对象的视觉画布
         /// 5. 将新的视觉画布添加到VisualCanvasList和InkCanvas的子元素中
         /// 6. 返回笔画视觉对象
-        /// </remarks>
+        /// <summary>
+        /// 获取与指定设备标识符关联的 StrokeVisual；若不存在则创建新的 StrokeVisual 和对应的 VisualCanvas，并将其添加到画布中。
+        /// </summary>
+        /// <param name="id">触摸或笔设备的标识符。</param>
+        /// <returns>与该设备关联的 <see cref="StrokeVisual"/> 实例。</returns>
         private StrokeVisual GetStrokeVisual(int id)
         {
             if (StrokeVisualList.TryGetValue(id, out var visual)) return visual;
@@ -583,7 +638,11 @@ namespace Ink_Canvas
         /// <returns>返回视觉画布对象，如果不存在则返回null</returns>
         /// <remarks>
         /// 根据设备ID从VisualCanvasList中获取视觉画布对象
-        /// </remarks>
+        /// <summary>
+        /// 获取指定设备 ID 对应的 VisualCanvas（若存在）。
+        /// </summary>
+        /// <param name="id">触摸或笔设备的标识符。</param>
+        /// <returns>对应的 VisualCanvas 实例；如果不存在则为 null。</returns>
         private VisualCanvas GetVisualCanvas(int id)
         {
             return VisualCanvasList.TryGetValue(id, out var visualCanvas) ? visualCanvas : null;
@@ -596,7 +655,11 @@ namespace Ink_Canvas
         /// <returns>返回触摸按下点的编辑模式，如果不存在则返回InkCanvas的当前编辑模式</returns>
         /// <remarks>
         /// 根据设备ID从TouchDownPointsList中获取触摸按下点的编辑模式
-        /// </remarks>
+        /// <summary>
+        /// 获取指定触摸设备在按下时记录的编辑模式。
+        /// </summary>
+        /// <param name="id">触摸设备的标识符（device Id）。</param>
+        /// <returns>该设备对应的 <see cref="InkCanvasEditingMode"/>，若不存在则返回当前画布的编辑模式。</returns>
         private InkCanvasEditingMode GetTouchDownPointsList(int id)
         {
             return TouchDownPointsList.TryGetValue(id, out var inkCanvasEditingMode) ? inkCanvasEditingMode : inkCanvas.EditingMode;
@@ -643,6 +706,15 @@ namespace Ink_Canvas
         ///    - 直接返回
         /// 6. 如果当前处于选择模式、墨水模式或线擦模式，则直接返回
         /// 7. 如果当前不是橡皮擦模式，则设置编辑模式为Ink
+        /// <summary>
+        /// 处理主网格上的触摸按下事件并根据当前编辑模式初始化画布的触摸绘制或拖拽状态。
+        /// </summary>
+        /// <param name="sender">事件源（触发触摸事件的对象）。</param>
+        /// <param name="e">触摸事件参数；用于获取触摸位置并捕获触摸设备。</param>
+        /// <remarks>
+        /// - 如果触摸位于浮动栏区域，事件允许传播以便浮动栏接收触摸。  
+        /// - 在非擦除模式下会捕获触摸并在需要时将编辑模式切换为绘制（Ink）。  
+        /// - 在图形绘制模式（drawingShapeMode != 0）下会进入触摸按下状态（设置 isTouchDown）、禁用浮动栏和重放网格的命中测试，并在必要时记录起始点 iniP。  
         /// </remarks>
         private void Main_Grid_TouchDown(object sender, TouchEventArgs e)
         {
@@ -710,7 +782,11 @@ namespace Ink_Canvas
         /// 3. 如果是四边红外屏幕，使用边界宽度和高度的平方根
         /// 4. 如果是特殊屏幕，乘以触摸倍数
         /// 5. 返回计算得到的触摸边界宽度
-        /// </remarks>
+        /// <summary>
+        /// 计算触控点的边界宽度，考虑四边红外模式和特殊屏幕的缩放因子。
+        /// </summary>
+        /// <param name="e">触摸事件参数，用于获取触控点的边界信息。</param>
+        /// <returns>触控点的边界宽度。若启用四边红外，则使用 sqrt(width * height)；若为特殊屏幕，则在上述结果上乘以 TouchMultiplier。</returns>
         public double GetTouchBoundWidth(TouchEventArgs e)
         {
             var args = e.GetTouchPoint(null).Bounds;
@@ -739,6 +815,18 @@ namespace Ink_Canvas
         ///    - 如果当前编辑模式为None或Select，则直接返回
         ///    - 记录当前的编辑模式
         ///    - 设置编辑模式为None，关闭画笔功能
+        /// <summary>
+        /// 处理 InkCanvas 的预触摸按下事件：捕获触摸、记录第一根手指的位置与当前笔画快照，并在检测到多点触控时禁用绘画输入。
+        /// </summary>
+        /// <param name="sender">事件源，通常为承载 InkCanvas 的控件。</param>
+        /// <param name="e">触摸事件数据，包含触摸设备与触摸位置。</param>
+        /// <remarks>
+        /// 副作用：
+        /// - 捕获触摸设备（CaptureTouch）。
+        /// - 将浮动工具栏和回放网格设为不可命中（IsHitTestVisible = false）。
+        /// - 将触摸设备 ID 添加到活动触摸列表（dec）。
+        /// - 当这是首个触摸点时，记录中心点（centerPoint）并克隆当前的 StrokeCollection 到 lastTouchDownStrokeCollection。
+        /// - 当检测到两个或以上触摸点、处于单指拖拽模式或双指手势被禁用时，若当前不是多点触控模式且编辑模式既非 None 也非 Select，则保存并将 inkCanvas.EditingMode 设为 None，以禁用绘画。
         /// </remarks>
         private void InkCanvas_PreviewTouchDown(object sender, TouchEventArgs e)
         {
@@ -774,7 +862,11 @@ namespace Ink_Canvas
         /// <param name="e">触摸事件参数</param>
         /// <remarks>
         /// 空方法，预留用于处理InkCanvas的预览触摸移动事件
-        /// </remarks>
+        /// <summary>
+        /// 在 InkCanvas 的预处理触摸移动事件触发时调用；当前为占位方法，保留作为将来在触摸移动发生时进行预处理或拦截的扩展点。
+        /// </summary>
+        /// <param name="sender">事件源，通常为触发事件的 InkCanvas。</param>
+        /// <param name="e">触摸事件参数，包含触点信息和状态。</param>
         private void InkCanvas_PreviewTouchMove(object sender, TouchEventArgs e)
         {
         }
@@ -800,6 +892,18 @@ namespace Ink_Canvas
         ///    - 对于其他单步绘制的图形，直接完成绘制
         /// 7. 设置InkCanvas的透明度为1
         /// 8. 当没有触摸设备且笔画数量发生变化，且不是绘制长方体的第一次触摸时，保存笔画集合
+        /// <summary>
+        /// 处理 InkCanvas 的预览触摸抬起事件：释放触摸捕获、恢复 UI 可命中性、管理多点触控状态并在需要时结束或推进形状绘制流程。
+        /// </summary>
+        /// <param name="sender">事件源（通常为 inkCanvas）。</param>
+        /// <param name="e">触摸事件数据；用于移除对应触摸设备的记录。</param>
+        /// <remarks>
+        /// 具体行为包括：
+        /// - 调用 ReleaseAllTouchCaptures 并恢复浮动工具栏及回放面板的可命中性；
+        /// - 从活动触摸设备集合中移除当前触摸，并在没有剩余触摸时重置单指拖拽及等待标志；
+        /// - 在适当情况下将 inkCanvas.EditingMode 恢复为上次保存的编辑模式；
+        /// - 若处于绘制形状模式，则根据是否为多步形状推进步骤或模拟鼠标抬起以完成绘制；
+        /// - 恢复画布不透明度，并在触摸结束且笔迹集合发生变化时更新当前白板的笔迹集合快照。
         /// </remarks>
         private void InkCanvas_PreviewTouchUp(object sender, TouchEventArgs e)
         {
@@ -884,7 +988,10 @@ namespace Ink_Canvas
         /// <param name="e">操作开始事件参数</param>
         /// <remarks>
         /// 设置操作模式为所有模式
-        /// </remarks>
+        /// <summary>
+        /// 在操作（Manipulation）开始时将交互模式设置为允许所有变换（平移、缩放、旋转等）。
+        /// </summary>
+        /// <param name="e">ManipulationStartingEventArgs 实例；方法将其 Mode 设置为允许所有操控模式。</param>
         private void InkCanvas_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
             e.Mode = ManipulationModes.All;
@@ -897,7 +1004,12 @@ namespace Ink_Canvas
         /// <param name="e">操作惯性开始事件参数</param>
         /// <remarks>
         /// 空方法，预留用于处理InkCanvas的操作惯性开始事件
-        /// </remarks>
+        /// <summary>
+/// 处理 InkCanvas 的 ManipulationInertiaStarting 事件，在惯性交互开始时可用于初始化或调整惯性参数。
+/// </summary>
+/// <remarks>
+/// 当前为空实现；保留该处理程序以便将来根据需要在惯性阶段设置或修改惯性行为（例如调整速度衰减、边界约束等）。
+/// </remarks>
         private void InkCanvas_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e) { }
 
         /// <summary>
@@ -911,7 +1023,11 @@ namespace Ink_Canvas
         ///    - 清除dec列表
         ///    - 重置单指拖动模式标志
         ///    - 如果当前不是图形绘制模式且编辑模式不是橡皮擦或选择模式，则设置编辑模式为Ink
-        /// </remarks>
+        /// <summary>
+        /// 处理主网格操控完成事件：当没有活动操控器时，清理触摸设备列表、重置单指拖拽标志，并在非绘形态且不在擦除或选择模式时将画布编辑模式恢复为绘制墨迹。
+        /// </summary>
+        /// <param name="sender">事件源（主网格）。</param>
+        /// <param name="e">操控完成事件参数，包含当前操控器集合和变换信息。</param>
         private void Main_Grid_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
             if (e.Manipulators.Count() == 0)
@@ -959,6 +1075,16 @@ namespace Ink_Canvas
         ///       - 如果启用了双指缩放，更新笔画的宽度和高度
         ///       - 同时变换画布上的图片元素
         ///       - 对所有圆形笔画更新半径和中心点
+        /// <summary>
+        /// 在多点操作过程中处理平移/旋转/缩放手势并将相应变换应用于画布上的笔画及图像元素。
+        /// </summary>
+        /// <param name="sender">事件源（通常为包含 InkCanvas 的容器）。</param>
+        /// <param name="e">包含增量变换信息的 ManipulationDeltaEventArgs。</param>
+        /// <remarks>
+        /// - 当处于“多点触控模式”或全局已禁用双指手势时不执行任何操作。 
+        /// - 根据配置分别启用或禁用平移、旋转与缩放，并以元素中心为变换基准点。 
+        /// - 若存在被选中的笔画，仅对选中笔画应用变换并更新与之关联的圆形覆盖（centroid 与半径）；在启用缩放时还会调整笔画的 DrawingAttributes 宽高。 
+        /// - 若没有选中笔画，则对画布上所有笔画应用变换，并同步变换图像/媒体元素；同样在启用缩放时调整笔画的 DrawingAttributes。 
         /// </remarks>
         private void Main_Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
@@ -1149,4 +1275,3 @@ namespace Ink_Canvas
         }
     }
 }
-

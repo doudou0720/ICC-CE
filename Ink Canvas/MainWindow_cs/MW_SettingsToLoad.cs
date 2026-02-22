@@ -25,7 +25,11 @@ namespace Ink_Canvas
         /// 从配置文件加载用户设置并将其应用到主窗口和相关控件的状态（包括启动、外观、画布、手势、PPT、自动化等各项配置）。
         /// </summary>
         /// <param name="isStartup">指示当前为应用启动阶段；为 true 时按启动流程应用启动相关设置（例如触发启动专用动作和启动时的行为）。</param>
-        /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时不会在加载设置后执行自动更新检测。</param>
+        /// <summary>
+        /// 从配置文件加载用户设置并将其应用到主窗口和各控件，包含备份恢复、过期配置清理以及在启动阶段执行的特定操作。
+        /// </summary>
+        /// <param name="isStartup">指示调用是否发生在应用启动阶段；为 true 时会执行启动专属行为（例如触发光标、执行折叠、删除陈旧保存文件等）。</param>
+        /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时在加载设置后不会触发自动更新检测。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -1253,6 +1257,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 会将 Settings.Canvas 中的 BrushAutoRestore 配置同步到对应的切换开关、时间文本框、颜色下拉框、宽度和透明度滑块；当颜色缺失时会使用默认值 `#FFFF0000`，当宽度无效时使用默认值 `5`。若功能被启用，会初始化并启动定时器以执行自动恢复任务。方法执行过程中会记录加载结果或错误信息到日志。
+        /// <summary>
+        /// 从 Settings.Canvas 将画笔自动恢复相关配置应用到 UI 控件并根据设置初始化计时器。
+        /// </summary>
+        /// <remarks>
+        /// 将 EnableBrushAutoRestore、BrushAutoRestoreTimes、BrushAutoRestoreColor、BrushAutoRestoreWidth 和 BrushAutoRestoreAlpha 同步到对应的开关、文本框、下拉框和滑块；在颜色缺失或下拉项不匹配时使用默认颜色 "#FFFF0000"；在宽度无效时使用默认值 5；若启用该功能则调用初始化并启动定时器方法（InitBrushAutoRestoreTimer / ScheduleBrushAutoRestore）。方法内部捕获并记录异常，不会向上传播异常。
         /// </remarks>
         private void LoadBrushAutoRestoreSettings()
         {
@@ -1343,7 +1352,15 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 加载墨迹渐隐设置
+        /// <summary>
+        /// 将 Canvas 相关的墨迹渐隐设置应用到界面控件和墨迹渐隐管理器中。
         /// </summary>
+        /// <remarks>
+        /// - 同步多个面板中的启用开关和渐隐时间滑块为 Settings.Canvas 中的值。 
+        /// - 将设置应用到内部的 _inkFadeManager（启用状态与渐隐时长）。 
+        /// - 同步在笔工具菜单中隐藏控制开关的状态并刷新控件可见性。 
+        /// - 方法在完成时记录加载事件；发生异常时捕获并记录错误信息。
+        /// </remarks>
         private void LoadInkFadeSettings()
         {
             try
@@ -1409,6 +1426,13 @@ namespace Ink_Canvas
         /// 3. 递归比较并删除用户配置中多余的键
         /// 4. 如果有清理操作，重新反序列化并保存
         /// 5. 记录清理结果到日志
+        /// <summary>
+        /// 从用户配置 JSON 中移除已废弃的配置键并在需要时保存清理后的配置。
+        /// </summary>
+        /// <param name="userConfigJson">用户配置的 JSON 文本（将与默认 Settings 对象对比以检测废弃键）。</param>
+        /// <remarks>
+        /// 解析并与默认 Settings 的结构进行递归比较，删除用户配置中不存在于默认配置中的属性；
+        /// 若发生变更，则反序列化为 Settings、写回配置文件并记录事件日志。方法内部捕获并记录所有异常，不会向外抛出异常。
         /// </remarks>
         private void CleanupObsoleteSettings(string userConfigJson)
         {
@@ -1458,6 +1482,16 @@ namespace Ink_Canvas
         /// 6. 处理数组中的对象（如自定义图标列表等）
         /// 7. 删除标记的键
         /// 8. 设置变更标志
+        /// <summary>
+        /// 从用户配置的 JObject 中递归移除在默认配置中不存在的属性，以清理已废弃或多余的键。
+        /// </summary>
+        /// <param name="userObj">要清理的用户配置 JObject（将被修改以移除多余键）。</param>
+        /// <param name="defaultObj">作为参考的默认配置 JObject；仅保留在此对象中存在的属性。</param>
+        /// <param name="hasChanges">引用布尔值，若发生任何移除操作则设为 true，表示配置已被修改。</param>
+        /// <remarks>
+        /// - 支持递归比较嵌套的对象属性，并对数组内的对象元素按对象结构进行逐项比较和清理（例如自定义图标列表）。 
+        /// - 不会修改在默认配置中存在的属性；仅删除那些默认配置中不存在的顶层或嵌套键。 
+        /// - 方法在参数为 null 时直接返回且不抛出异常。
         /// </remarks>
         private void RemoveObsoleteProperties(JObject userObj, JObject defaultObj, ref bool hasChanges)
         {

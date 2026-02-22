@@ -54,7 +54,10 @@ namespace Ink_Canvas
         /// <remarks>
         /// 尝试从程序集资源中查找privacy.txt文件
         /// 如果找到则返回true，否则返回false
-        /// </remarks>
+        /// <summary>
+        /// 检查当前执行的程序集是否包含名为 "Ink_Canvas.privacy.txt" 的嵌入资源。
+        /// </summary>
+        /// <returns>`true` 如果嵌入资源存在，`false` 如果不存在或在检查过程中发生错误。</returns>
         private static bool PrivacyFileExists()
         {
             try
@@ -82,7 +85,13 @@ namespace Ink_Canvas
         /// 2. 程序集所在目录
         /// 3. 程序集所在目录的上一级目录
         /// 如果文件系统中未找到，则回退到嵌入资源
+        /// <summary>
+        /// 在预定义的若干位置查找隐私说明文件并返回其位置标识。
+        /// </summary>
+        /// <remarks>
+        /// 按顺序在应用根目录、程序集所在目录及其上一级目录查找名为 "privacy.txt" 或 "privacy" 的文件；若未找到则尝试查找作为程序集嵌入资源的 privacy.txt。
         /// </remarks>
+        /// <returns>找到的文件系统完整路径；若隐私说明作为程序集嵌入资源存在则返回字符串 "embedded"；找不到则返回 null。</returns>
         private static string FindPrivacyFile()
         {
             // 先尝试从文件系统读取
@@ -141,6 +150,14 @@ namespace Ink_Canvas
             return null;
         }
 
+        /// <summary>
+        /// 确保在预览（Preview）或测试（Beta）更新通道下，隐私同意与遥测上传级别符合通道要求。
+        /// </summary>
+        /// <remarks>
+        /// - 如果当前为预览/测试通道但尚未接受隐私协议，提示用户同意；用户同意时记录接受并将遥测设为基础（Basic），更新 UI 并保存设置；用户拒绝或隐私文件缺失时将通道切回正式（Release）、更新并保存设置。 
+        /// - 如果当前为预览/测试通道但遥测被关闭（None），提示用户启用基础遥测；用户拒绝时将通道切回正式（Release）并保存设置。 
+        /// - 方法会更新设备使用通道标识、持久化设置、在必要时通过 Dispatcher 调整相关 UI 状态，并记录操作日志。
+        /// </remarks>
         private void CheckUpdateChannelAndTelemetryConsistency()
         {
             var currentChannel = Settings.Startup.UpdateChannel;
@@ -343,6 +360,14 @@ namespace Ink_Canvas
         /// 1. 如果选择关闭遥测且当前不是正式通道，提示用户并切换到正式通道
         /// 2. 如果选择开启遥测但未同意隐私说明，提示用户需要先同意隐私说明
         /// 3. 保存设置并显示通知
+        /// <summary>
+        /// 处理遥测上传级别的下拉选择更改并将更改持久化到设置中。
+        /// </summary>
+        /// <remarks>
+        /// - 当用户将遥测设置从非“无”切换为“无”且当前更新通道不是 Release 时，会提示确认并在确认后将更新通道切换为 Release。 
+        /// - 在启用遥测（Basic/Extended）但尚未接受隐私说明时，会提示用户先同意隐私说明并回退选择。 
+        /// - 成功应用设置后会保存到配置文件并显示保存成功的通知。 
+        /// 不会抛出异常；用户取消操作时会恢复原有选择。
         /// </remarks>
         private void ComboBoxTelemetryUploadLevel_SelectionChanged(object sender, RoutedEventArgs e)
         {
@@ -469,6 +494,13 @@ namespace Ink_Canvas
         /// 当用户勾选或取消勾选隐私同意复选框时执行：
         /// 1. 勾选时：显示隐私协议窗口，用户同意后保存设置
         /// 2. 取消勾选时：提示用户会关闭遥测并切回正式通道，用户确认后执行相应操作
+        /// <summary>
+        /// 处理用户勾选或取消“隐私同意”复选框，显示必要的确认/隐私窗口并同步更新相关设置与界面状态。
+        /// </summary>
+        /// <remarks>
+        /// - 勾选时：验证是否存在隐私说明文件，若缺失则阻止勾选并通知用户；若存在则展示隐私协议窗口，用户同意则记录接受并保存设置，用户拒绝则撤销勾选并保存状态。 
+        /// - 取消勾选时：提示确认；若用户取消确认则恢复勾选；若确认则关闭遥测上传（将 TelemetryUploadLevel 设为 None 并更新对应下拉选择）、在非 Release 通道时切回 Release（更新设置、设备上报通道并同步单选按钮），最后清除已接受隐私标记并保存设置。
+        /// - 方法会通过界面控件的程序化修改避免触发重复处理并保持 UI 与 Settings 的一致性。
         /// </remarks>
         private void CheckBoxTelemetryPrivacyAccepted_Checked(object sender, RoutedEventArgs e)
         {
@@ -611,7 +643,17 @@ namespace Ink_Canvas
         /// 2. 自动更新关闭时隐藏静默更新选项
         /// 3. 如果关闭了自动更新，同时也关闭静默更新
         /// 4. 根据静默更新设置显示或隐藏静默更新时间区域
+        /// <summary>
+        /// 处理自动更新开关的切换，更新相关设置和界面可见性并保存配置。
+        /// </summary>
+        /// <remarks>
+        /// 在窗口已加载后同步 ToggleSwitchIsAutoUpdate 的状态到 Settings.Startup.IsAutoUpdate；
+        /// 当自动更新关闭时隐藏并关闭“静默更新”选项；
+        /// 根据自动更新和静默更新的组合状态切换静默更新时间区域的可见性；
+        /// 最后将设置写入配置文件。
         /// </remarks>
+        /// <param name="sender">触发事件的对象（通常为自动更新开关控件）。</param>
+        /// <param name="e">事件参数。</param>
         private void ToggleSwitchIsAutoUpdate_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -645,6 +687,11 @@ namespace Ink_Canvas
         /// 当静默自动更新开关状态更改时：
         /// 1. 保存静默自动更新设置
         /// 2. 根据静默更新设置显示或隐藏静默更新时间区域
+        /// <summary>
+        /// 切换“静默更新”选项并保存更改。
+        /// </summary>
+        /// <remarks>
+        /// 根据切换结果更新 Settings.Startup.IsAutoUpdateWithSilence 的值，显示或隐藏静默更新的时间设置区域（AutoUpdateTimePeriodBlock），并将配置持久化到配置文件。
         /// </remarks>
         private void ToggleSwitchIsAutoUpdateWithSilence_Toggled(object sender, RoutedEventArgs e)
         {
@@ -665,7 +712,9 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当选择静默自动更新开始时间时，保存设置到文件
-        /// </remarks>
+        /// <summary>
+        /// 将选择的“静默更新开始时间”保存到设置并持久化到配置文件。
+        /// </summary>
         private void AutoUpdateWithSilenceStartTimeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -681,6 +730,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当选择静默自动更新结束时间时，保存设置到文件
+        /// <summary>
+        /// 在自动更新静默时段结束时间的下拉框选择变更时，将选中的时间保存到设置并持久化。
+        /// </summary>
+        /// <remarks>
+        /// 方法仅在窗口已完成加载（isLoaded 为 true）时生效；当选择更改时会把 ComboBox 的选中项赋值到 Settings.Startup.AutoUpdateWithSilenceEndTime 并调用保存逻辑。
         /// </remarks>
         private void AutoUpdateWithSilenceEndTimeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
@@ -698,7 +752,11 @@ namespace Ink_Canvas
         /// 当开机启动开关状态更改时：
         /// 1. 如果开启，删除旧的启动项并创建新的启动项
         /// 2. 如果关闭，删除所有启动项
-        /// </remarks>
+        /// <summary>
+        /// 在用户切换“开机启动”开关时，添加或移除应用的开机启动项。
+        /// </summary>
+        /// <param name="sender">触发事件的控件。</param>
+        /// <param name="e">路由事件参数，包含事件相关数据。</param>
         private void ToggleSwitchRunAtStartup_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -721,7 +779,9 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当启动时折叠开关状态更改时，保存设置到文件
-        /// </remarks>
+        /// <summary>
+        /// 在窗口已加载时处理“启动时折叠”开关的切换，将当前开关状态保存到启动设置并写入配置文件。
+        /// </summary>
         private void ToggleSwitchFoldAtStartup_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -740,6 +800,13 @@ namespace Ink_Canvas
         /// 2. 如果关闭PowerPoint支持，同时也关闭WPS支持
         /// 3. 如果开启PowerPoint支持，初始化PPT管理器并开始监控
         /// 4. 如果关闭PowerPoint支持，停止监控
+        /// <summary>
+        /// 切换是否启用 PowerPoint 支持并根据新状态初始化或停止相关监控与管理器。
+        /// </summary>
+        /// <remarks>
+        /// 更新 Settings.PowerPointSettings.PowerPointSupport 并将更改持久化到设置文件；
+        /// 当被禁用时若此前启用了 WPS 支持则一并禁用并同步到内部 PPT 管理器；
+        /// 当被启用时确保已初始化 PPT 管理器并启动 PPT 监控，禁用时停止监控。
         /// </remarks>
         private void ToggleSwitchSupportPowerPoint_Toggled(object sender, RoutedEventArgs e)
         {
@@ -791,6 +858,11 @@ namespace Ink_Canvas
         /// 4. 初始化PPT管理器
         /// 5. 如果启用了PowerPoint支持，开始PPT监控
         /// 6. 记录切换PPT联动架构的日志
+        /// <summary>
+        /// 切换并应用 PowerPoint 联动架构（ROT/COM）的设置。
+        /// </summary>
+        /// <remarks>
+        /// 按新的开关值持久化设置，必要时禁用 PowerPoint 增强模式，重新初始化 PPT 管理器并根据当前支持状态启动或停止 PPT 监控；所有关键操作会记录日志并捕获异常以防止抛出到调用者。
         /// </remarks>
         private void ToggleSwitchUseRotPptLink_Toggled(object sender, RoutedEventArgs e)
         {
@@ -839,6 +911,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当新幻灯片放映时显示画布开关状态更改时，保存设置到文件
+        /// <summary>
+        /// 根据切换开关保存是否在新幻灯片放映时显示画布的设置。
+        /// </summary>
+        /// <remarks>
+        /// 将开关的当前状态写入 Settings.PowerPointSettings.IsShowCanvasAtNewSlideShow 并持久化到配置文件。
         /// </remarks>
         private void ToggleSwitchShowCanvasAtNewSlideShow_Toggled(object sender, RoutedEventArgs e)
         {
@@ -862,6 +939,11 @@ namespace Ink_Canvas
         /// 1. 同步更新两个笔尖模式开关的状态
         /// 2. 保存笔尖模式设置
         /// 3. 根据笔尖模式设置更新边界宽度
+        /// <summary>
+        /// 切换启用笔尖（Nib）模式并将该状态同步到相关 UI 控件、更新边界宽度并持久化设置。
+        /// </summary>
+        /// <remarks>
+        /// 如果窗口尚未加载则不执行任何操作。根据启用状态将 BoundsWidth 设置为 Nib 或 Finger 模式的预配置宽度，更新 Settings.Startup.IsEnableNibMode 并调用设置保存。
         /// </remarks>
         private void ToggleSwitchEnableNibMode_Toggled(object sender, RoutedEventArgs e)
         {
@@ -892,7 +974,9 @@ namespace Ink_Canvas
         /// 当显示笔尖模式切换开关状态更改时：
         /// 1. 保存显示笔尖模式切换设置
         /// 2. 根据设置显示或隐藏笔尖模式切换面板
-        /// </remarks>
+        /// <summary>
+        /// 在用户切换“显示笔尖模式”开关时保存设置并根据开关状态显示或隐藏相关面板。
+        /// </summary>
         private void ToggleSwitchEnableDisPlayNibModeToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -923,6 +1007,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当快速面板开关状态更改时，保存设置到文件
+        /// <summary>
+        /// 切换并保存“显示快捷面板”的设置状态。
+        /// </summary>
+        /// <remarks>
+        /// 在窗口完成加载后，将 Settings.Appearance.IsShowQuickPanel 同步为 ToggleSwitchEnableQuickPanel 的当前状态并将配置写入磁盘。
         /// </remarks>
         private void ToggleSwitchEnableQuickPanel_Toggled(object sender, RoutedEventArgs e)
         {
@@ -938,6 +1027,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当启动屏幕开关状态更改时，保存设置到文件
+        /// <summary>
+        /// 切换应用启动时是否显示启动屏幕的设置。
+        /// </summary>
+        /// <remarks>
+        /// 将新的启用/禁用状态保存到设置并写入配置文件。
         /// </remarks>
         private void ToggleSwitchEnableSplashScreen_Toggled(object sender, RoutedEventArgs e)
         {
@@ -953,6 +1047,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当选择启动屏幕样式时，保存设置到文件
+        /// <summary>
+        /// 将下拉菜单的当前选择保存为启动画面样式并持久化设置。
+        /// </summary>
+        /// <remarks>
+        /// 仅在窗口已加载后生效；方法会将 ComboBoxSplashScreenStyle 的 SelectedIndex 写入 Settings.Appearance.SplashScreenStyle 并调用保存方法持久化变更。
         /// </remarks>
         private void ComboBoxSplashScreenStyle_SelectionChanged(object sender, RoutedEventArgs e)
         {
@@ -972,6 +1071,11 @@ namespace Ink_Canvas
         /// 2. 应用缩放值到浮动栏（限制在0.5-1.25范围内）
         /// 3. 等待UI更新后重新计算浮动栏位置，确保居中计算准确
         /// 4. 只在屏幕模式下重新计算浮动栏位置
+        /// <summary>
+        /// 根据滑块值更新浮动栏缩放值并持久化设置，同时在渲染后重算布局并在屏幕模式下重新对齐浮动栏位置。
+        /// </summary>
+        /// <remarks>
+        /// 将滑块值保存到 Settings.Appearance.ViewboxFloatingBarScaleTransformValue，并将缩放因子限制在 0.5 到 1.25 之间后应用到 ScaleX/ScaleY。随后通过 Dispatcher 在渲染优先级下延迟执行强制布局更新、测量与排列（包含短暂的 Task.Delay），以确保 ActualWidth/DesiredSize 准确，然后在仅处于屏幕模式（currentMode == 0）时触发浮动栏边距对齐动画（根据 PPT 按钮可见性选择不同参数）。
         /// </remarks>
         private void ViewboxFloatingBarScaleTransformValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
@@ -1021,7 +1125,9 @@ namespace Ink_Canvas
         /// 当浮动栏透明度值滑块值更改时：
         /// 1. 保存浮动栏透明度设置
         /// 2. 应用透明度值到浮动栏
-        /// </remarks>
+        /// <summary>
+        /// 当窗口已加载时，将浮动工具栏的不透明度设置为当前滑块值、持久化到设置并应用到 ViewboxFloatingBar。
+        /// </summary>
         private void ViewboxFloatingBarOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1037,6 +1143,11 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当PPT中浮动栏透明度值滑块值更改时，保存设置到文件
+        /// <summary>
+        /// 将 PPT 模式下浮动栏不透明度滑块的当前值写入设置并持久化保存。
+        /// </summary>
+        /// <remarks>
+        /// 仅在窗口完成加载后才会更新设置；该处理程序将滑块的 Value 赋给 Settings.Appearance.ViewboxFloatingBarOpacityInPPTValue 并调用保存方法持久化变更。
         /// </remarks>
         private void ViewboxFloatingBarOpacityInPPTValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
@@ -1055,6 +1166,11 @@ namespace Ink_Canvas
         /// 1. 保存托盘图标设置
         /// 2. 根据设置显示或隐藏托盘图标示例图像
         /// 3. 根据设置显示或隐藏系统托盘图标
+        /// <summary>
+        /// 切换是否在系统托盘显示应用图标并持久化该设置。
+        /// </summary>
+        /// <remarks>
+        /// 在窗口完成加载之前不执行任何操作。切换时同时更新示例图像和任务栏图标的可见性，并将更改保存到设置文件。
         /// </remarks>
         private void ToggleSwitchEnableTrayIcon_Toggled(object sender, RoutedEventArgs e)
         {
@@ -1076,6 +1192,11 @@ namespace Ink_Canvas
         /// 1. 保存展开按钮图像类型设置
         /// 2. 根据选择的图像类型更新左右展开按钮的图标
         /// 3. 为不同的图像类型设置不同的大小和旋转角度
+        /// <summary>
+        /// 更新展开按钮的图标样式并将选择保存到设置。
+        /// </summary>
+        /// <remarks>
+        /// 根据 ComboBoxUnFoldBtnImg 的选中索引切换图标资源：索引 0 使用折叠箭头图标（右侧旋转 180°，左侧不旋转）；索引 1 使用白色画笔图标。仅在窗口已加载后生效，并会持久化到 Settings.Appearance.UnFoldButtonImageType 后调用 SaveSettingsToFile 保存更改。
         /// </remarks>
         private void ComboBoxUnFoldBtnImg_SelectionChanged(object sender, RoutedEventArgs e)
         {
@@ -1121,7 +1242,13 @@ namespace Ink_Canvas
         /// 1. 设置超时时间为5秒
         /// 2. 尝试设置User-Agent头
         /// 3. 捕获并记录创建过程中的异常
+        /// <summary>
+        /// 创建并返回一个用于访问 Hitokoto API 的 <see cref="HttpClient"/> 实例。
+        /// </summary>
+        /// <remarks>
+        /// 返回的客户端设置了 5 秒超时并尝试添加自定义 User-Agent 头；若创建失败则记录警告并返回 <c>null</c>。
         /// </remarks>
+        /// <returns>配置好的 <see cref="HttpClient"/> 实例；若创建失败则返回 <c>null</c>。</returns>
         private static object CreateHitokotoClient()
         {
             try
@@ -1158,6 +1285,15 @@ namespace Ink_Canvas
         /// <remarks>
         /// 当配置为内置来源时（0：OSUPlayer、1：名言警句、2：高考俗语）从对应数组中随机选择一条并设置为水印文本；
         /// 当配置为一言（3）时会异步请求 Hitokoto API 并在请求中显示占位提示，成功时将返回文本设为水印，失败时记录警告日志并设置可读的失败提示文本。此方法会修改 BlackBoardWaterMark.Text，并在发生异常时记录日志且设置合适的回退文本。
+        /// <summary>
+        /// 根据当前外观设置更新白板水印文本（名言/鸡汤/一言）。
+        /// </summary>
+        /// <remarks>
+        /// - 当白板模式的显示开关关闭时不做任何修改。  
+        /// - 根据 Settings.Appearance.ChickenSoupSource 从内置文本集合中随机选择一条并赋值给 BlackBoardWaterMark.Text。  
+        /// - 当选择“一言”（Hitokoto）源时，会使用配置的分类向 Hitokoto API 发起请求并将返回文本设置为水印；若未配置任何分类则默认使用所有分类。  
+        /// - 在无法获取或解析远程内容时，会将水印设置为指示性错误/占位文本并记录日志。  
+        /// - 本方法在内部处理异常，不会向调用方抛出异常。  
         /// </remarks>
         private async Task UpdateChickenSoupTextAsync()
         {
@@ -1261,6 +1397,11 @@ namespace Ink_Canvas
         /// 当选择名言来源时：
         /// 1. 保存名言来源设置
         /// 2. 异步更新白板水印的名言文本
+        /// <summary>
+        /// 处理“鸡汤来源”下拉框的选择变更，保存选择并刷新显示的鸡汤文本。
+        /// </summary>
+        /// <remarks>
+        /// 当选择为 Hitokoto（索引 3）时会显示自定义分类按钮，否则隐藏该按钮；然后将设置写入配置并异步更新鸡汤文本显示。
         /// </remarks>
         private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
@@ -1278,6 +1419,12 @@ namespace Ink_Canvas
             await UpdateChickenSoupTextAsync();
         }
 
+        /// <summary>
+        /// 显示用于自定义 Hitokoto（一言）分类的对话框并保存用户的选择。
+        /// </summary>
+        /// <remarks>
+        /// 对话框允许逐项选择或“一键全选”；在用户确认时将所选分类写入 Settings.Appearance.HitokotoCategories 并调用 SaveSettingsToFile() 进行持久化。若用户没有选择任何项，则默认保存为全部分类。若当前数据源为 Hitokoto API（Settings.Appearance.ChickenSoupSource == 3）且在白板模式下启用了显示（EnableChickenSoupInWhiteboardMode），则确认后会触发 UpdateChickenSoupTextAsync() 以立即刷新名言文本。取消对话框不会修改设置。
+        /// </remarks>
         private async void BtnHitokotoCustomize_Click(object sender, RoutedEventArgs e)
         {
             var categories = new Dictionary<string, string>
@@ -1430,6 +1577,9 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 切换是否启用 Viewbox 在黑板模式下的缩放变换，并将更改持久化后重新加载设置。
+        /// </summary>
         private void ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1449,6 +1599,13 @@ namespace Ink_Canvas
         /// 1. 保存浮动栏图标设置
         /// 2. 更新浮动栏图标
         /// 3. 保存设置到文件
+        /// <summary>
+        /// 将浮动工具栏图标设置为当前下拉框选中项，更新工具栏图标并持久化保存设置。
+        /// </summary>
+        /// <param name="sender">触发事件的源控件（通常为浮动工具栏图标的 ComboBox）。</param>
+        /// <param name="e">事件参数。</param>
+        /// <remarks>
+        /// 如果窗口尚未完成加载（isLoaded 为 false），方法不会执行任何操作。
         /// </remarks>
         public void ComboBoxFloatingBarImg_SelectionChanged(object sender, RoutedEventArgs e)
         {
@@ -1467,6 +1624,11 @@ namespace Ink_Canvas
         /// 2. 为不同的图标设置不同的边距
         /// 3. 支持自定义图标
         /// 4. 自定义图标加载失败时使用默认图标
+        /// <summary>
+        /// 根据当前设置更新浮动栏头部图标及对应的边距。
+        /// </summary>
+        /// <remarks>
+        /// 从 Settings.Appearance.FloatingBarImg 读取索引以选择内置图标或自定义图标列表中的项，并将结果应用到 FloatingbarHeadIconImg 的 Source 和 Margin。若加载自定义图标失败，则回退到内置默认图标。
         /// </remarks>
         public void UpdateFloatingBarIcon()
         {
@@ -1572,6 +1734,11 @@ namespace Ink_Canvas
         /// 2. 移除所有现有的自定义图标选项
         /// 3. 添加新的自定义图标选项
         /// 4. 为自定义图标选项设置字体
+        /// <summary>
+        /// 在浮动工具栏的图标下拉框中保留前 12 个内置图标并追加用户配置的自定义图标项。
+        /// </summary>
+        /// <remarks>
+        /// 移除下拉框中多余的内置图标选项（仅保留前 12 项），然后从 Settings.Appearance.CustomFloatingBarImgs 中逐一创建 ComboBoxItem 并追加到 ComboBoxFloatingBarImg，附带将字体设置为 "Microsoft YaHei UI" 以确保自定义项的显示一致性。
         /// </remarks>
         public void UpdateCustomIconsInComboBox()
         {
@@ -1600,7 +1767,9 @@ namespace Ink_Canvas
         /// 当点击添加自定义图标按钮时：
         /// 1. 显示添加自定义图标窗口
         /// 2. 如果添加成功，自动选中新添加的图标
-        /// </remarks>
+        /// <summary>
+        /// 打开“添加自定义图标”对话框；在用户成功添加图标后将该图标设为浮动栏图标选择框的当前项。
+        /// </summary>
         private void ButtonAddCustomIcon_Click(object sender, RoutedEventArgs e)
         {
             AddCustomIconWindow dialog = new AddCustomIconWindow(this);
@@ -1621,7 +1790,9 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         /// <remarks>
         /// 当点击管理自定义图标按钮时，显示自定义图标管理窗口
-        /// </remarks>
+        /// <summary>
+        /// 打开“自定义图标”管理窗口并以本窗口为其所有者模态显示。
+        /// </summary>
         private void ButtonManageCustomIcons_Click(object sender, RoutedEventArgs e)
         {
             CustomIconWindow dialog = new CustomIconWindow(this);
@@ -1640,6 +1811,11 @@ namespace Ink_Canvas
         /// 2. 如果当前是白板模式，根据设置显示或隐藏时间和日期水印
         /// 3. 保存设置到文件
         /// 4. 重新加载设置以应用更改
+        /// <summary>
+        /// 切换在白板模式下是否显示时间与日期水印。
+        /// </summary>
+        /// <remarks>
+        /// 当窗口已完成加载时，更新设置并在当前为白板模式时立即显示或隐藏时间与日期水印；随后保存并重新加载设置以使更改生效。
         /// </remarks>
         private void ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled(object sender, RoutedEventArgs e)
         {
@@ -1674,6 +1850,11 @@ namespace Ink_Canvas
         /// 2. 如果当前是白板模式，根据时间显示设置显示或隐藏名言水印
         /// 3. 保存设置到文件
         /// 4. 重新加载设置以应用更改
+        /// <summary>
+        /// 在白板模式中启用或禁用显示鸡汤（名言）并保存该设置。
+        /// </summary>
+        /// <remarks>
+        /// 将 ToggleSwitch 的当前状态写入设置；如果当前处于白板模式且同时启用了时间显示，则根据设置显示或隐藏白板水印；最后持久化并重新加载设置。
         /// </remarks>
         private void ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled(object sender, RoutedEventArgs e)
         {
@@ -2833,6 +3014,11 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 在高光笔宽度滑块值变化时更新绘图属性和持久化设置。
+        /// </summary>
+        /// <param name="sender">触发事件的 Slider 控件（高光笔宽度滑块）。</param>
+        /// <param name="e">包含变化后滑块值的事件数据。</param>
         private void HighlighterWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2849,7 +3035,9 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 使用滑块的当前值作为 alpha 通道更新 drawingAttributes.Color，同时将该值写入 Settings.Canvas.InkAlpha 并持久化配置文件。
-        /// </remarks>
+        /// <summary>
+        /// 当墨迹透明度滑块的值更改时，更新当前绘图属性的 alpha 通道并将该透明度保存到设置中。
+        /// </summary>
         private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2866,7 +3054,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 根据组合框的当前选择更新双曲线渐近线选项（Settings.Canvas.HyperbolaAsymptoteOption），并将更改保存到设置文件。
+        /// <summary>
+        /// 根据组合框的当前选择更新画布的双曲线渐近线选项并将更改保存到设置文件。
         /// </summary>
+        /// <remarks>
+        /// 如果窗口尚未完成加载（isLoaded 为 false），此处理程序不会执行任何操作。
+        /// </remarks>
         private void ComboBoxHyperbolaAsymptoteOption_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3701,6 +3894,13 @@ namespace Ink_Canvas
         /// <remarks>
         /// 该方法会重新创建全局 Settings 实例并应用推荐值，覆盖大部分子模块配置（如外观、画布、自动化、PPT、手势、高级选项等）。
         /// 在重置过程中会保留并恢复当前 Settings.Automation 中的 AutoDelSavedFiles 与 AutoDelSavedFilesDaysThreshold 两项值以避免意外删除策略变化。
+        /// <summary>
+        /// 将应用配置重置为推荐的默认设置（覆盖当前 Settings 对象）。
+        /// </summary>
+        /// <remarks>
+        /// 此方法会用一组预定义的推荐值替换整个 Settings 实例，但在重置前会保留并恢复以下两个自动删除相关的值：
+        /// - Settings.Automation.AutoDelSavedFiles
+        /// - Settings.Automation.AutoDelSavedFilesDaysThreshold
         /// </remarks>
         public static void SetSettingsToRecommendation()
         {
@@ -3854,6 +4054,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 如果配置重置受安全密码保护，则会提示用户输入密码；在验证失败时中止重置。方法会暂时停止加载标志以避免触发事件、将“开机启动”切换置为关闭，并在完成后显示一条通知。任何内部异常将被吞噬以保证流程不中断。
+        /// <summary>
+        /// 将应用设置重置为推荐的默认配置，保存并重新加载设置，然后通知用户。
+        /// </summary>
+        /// <remarks>
+        /// 在需要时会弹出安全密码验证对话框；验证通过后应用推荐配置、持久化到配置文件并重新加载（跳过自动更新检查），同时将“开机启动”开关设为关闭并显示完成通知。
         /// </remarks>
         public async void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
@@ -3884,6 +4089,9 @@ namespace Ink_Canvas
             ShowNotification("设置已重置为默认推荐设置~");
         }
 
+        /// <summary>
+        /// 延迟一秒后将应用配置重置为推荐值，设置并启用自动删除保存文件（阈值为15天），将自动保存笔迹位置切换到磁盘 D，随后保存并重新加载设置。
+        /// </summary>
         private async void SpecialVersionResetToSuggestion_Click()
         {
             await Task.Delay(1000);
@@ -4949,6 +5157,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 在写入前会确保目标目录/文件具有写入权限（使用 ProcessProtectionManager）。任何写入失败或异常都会被吞掉，调用方不会收到异常抛出。
+        /// <summary>
+        /// 将当前 Settings 对象序列化并保存到应用程序的配置文件中。
+        /// </summary>
+        /// <remarks>
+        /// 确保配置目录存在并在写入时临时授予写入权限，然后将格式化的 JSON 写入到应用根目录下的设置文件。任何写入或文件系统错误都会被捕获并写入调试输出，不会抛出异常至调用者。
         /// </remarks>
         public static void SaveSettingsToFile()
         {
@@ -4967,6 +5180,10 @@ namespace Ink_Canvas
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
+        /// <summary>
+        /// 屏蔽操控边界反馈事件，阻止默认的边界反馈行为。
+        /// </summary>
+        /// <param name="e">事件参数；将其标记为已处理以抑制框架的边界反馈。</param>
         private void SCManipulationBoundaryFeedback(object sender, ManipulationBoundaryFeedbackEventArgs e)
         {
             e.Handled = true;

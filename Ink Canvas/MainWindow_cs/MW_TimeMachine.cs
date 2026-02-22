@@ -104,6 +104,15 @@ namespace Ink_Canvas
         /// 4. DrawingAttributes: 处理绘制属性变化
         /// 5. Clear: 处理清除画布操作
         /// 6. ElementInsert: 处理元素插入操作
+        /// <summary>
+        /// 将单个历史项应用到指定或默认的 InkCanvas 上以恢复或回退绘制、属性和元素的状态。
+        /// </summary>
+        /// <param name="item">要应用的历史记录项，包含要添加/移除的笔画、被替换的笔画、样式和插入的元素等信息。</param>
+        /// <param name="applyCanvas">目标 InkCanvas；若为 null 则使用类的主 inkCanvas。</param>
+        /// <remarks>
+        /// 支持的历史类型包括 UserInput、ShapeRecognition、Manipulation、DrawingAttributes、Clear 和 ElementInsert。
+        /// 方法在应用期间将内部提交类型设置为 CodeInput，以避免将恢复操作记录为用户输入，完成后恢复为 UserInput。
+        /// 对 ElementInsert 类型，若目标为主画布并且元素缺乏位置信息，会对元素进行居中/缩放并重新绑定交互事件。
         /// </remarks>
         private void ApplyHistoryToCanvas(TimeMachineHistory item, InkCanvas applyCanvas = null)
         {
@@ -292,7 +301,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// 创建一个临时画布，应用历史记录，然后返回画布中的笔画集合
         /// 只处理笔画历史，不处理图片元素历史
-        /// </remarks>
+        /// <summary>
+        /// 在临时画布上应用给定历史项（仅笔画相关的历史），并返回合成的笔画集合。
+        /// </summary>
+        /// <param name="items">要应用的历史项数组；类型为 ElementInsert 的历史项会被忽略。</param>
+        /// <returns>应用这些历史后临时画布上的 StrokeCollection。</returns>
         private StrokeCollection ApplyHistoriesToNewStrokeCollection(TimeMachineHistory[] items)
         {
             InkCanvas fakeInkCanv = new InkCanvas
@@ -325,7 +338,11 @@ namespace Ink_Canvas
         /// <returns>返回页面的图片元素列表</returns>
         /// <remarks>
         /// 遍历历史记录，收集所有插入的图片元素
-        /// </remarks>
+        /// <summary>
+        /// 从给定的历史项数组中收集所有已插入且未被清除的 UI 元素，并以列表形式返回。
+        /// </summary>
+        /// <param name="items">要检查的时间机器历史项数组。</param>
+        /// <returns>包含所有符合条件的插入元素（CommitType 为 ElementInsert，InsertedElement 非空，且 StrokeHasBeenCleared 为 false）；若无符合项则返回空列表。</returns>
         private List<UIElement> GetPageImageElements(TimeMachineHistory[] items)
         {
             var imageElements = new List<UIElement>();
@@ -352,7 +369,10 @@ namespace Ink_Canvas
         /// <param name="status">撤销状态</param>
         /// <remarks>
         /// 根据撤销状态更新撤销按钮的可见性和启用状态
-        /// </remarks>
+        /// <summary>
+        /// 根据撤销操作的可用性更新撤销按钮的可见性和启用状态。
+        /// </summary>
+        /// <param name="status">表示撤销操作是否可用；`true` 表示可撤销，`false` 表示不可撤销。</param>
         private void TimeMachine_OnUndoStateChanged(bool status)
         {
             var result = status ? Visibility.Visible : Visibility.Collapsed;
@@ -366,7 +386,10 @@ namespace Ink_Canvas
         /// <param name="status">重做状态</param>
         /// <remarks>
         /// 根据重做状态更新重做按钮的可见性和启用状态
-        /// </remarks>
+        /// <summary>
+        /// 根据重做可用状态更新界面中重做按钮的可见性和可用性。
+        /// </summary>
+        /// <param name="status">指示重做操作当前是否可用；`true` 表示可用，`false` 表示不可用。</param>
         private void TimeMachine_OnRedoStateChanged(bool status)
         {
             var result = status ? Visibility.Visible : Visibility.Collapsed;
@@ -385,7 +408,18 @@ namespace Ink_Canvas
         /// 2. 处理移除的笔画：移除事件处理器，从历史记录中移除
         /// 3. 处理添加的笔画：添加事件处理器，记录初始状态
         /// 4. 根据不同的提交类型处理历史记录
+        /// <summary>
+        /// 处理画布中笔迹集合变化：更新事件绑定与初始点历史，并根据当前提交类型记录或合并相应的历史操作以支持撤销/重做。
+        /// </summary>
+        /// <remarks>
+        /// - 在用户开始书写时隐藏二级面板。 
+        /// - 对移除的笔迹撤销事件绑定并从初始点历史中移除对应条目；对新增的笔迹绑定必要事件并记录其初始 StylusPoints。 
+        /// - 在处于代码输入或形状绘制的提交类型时不产生历史记录。 
+        /// - 当处于按点擦除模式时，将新增与被替换的笔迹收集到临时集合以供后续合并提交。 
+        /// - 根据当前提交类型，将新增或移除的笔迹提交为形状识别、用户输入或擦除（或清空画布）类型的历史项到 TimeMachine。
         /// </remarks>
+        /// <param name="sender">事件的发送者（通常为 InkCanvas）。</param>
+        /// <param name="e">包含已添加和已移除笔迹集合的事件参数。</param>
         private void StrokesOnStrokesChanged(object sender, StrokeCollectionChangedEventArgs e)
         {
             if (!isHidingSubPanelsWhenInking)
@@ -454,7 +488,11 @@ namespace Ink_Canvas
         /// <param name="e">属性数据变化事件参数</param>
         /// <remarks>
         /// 当笔画的绘制属性发生变化时，记录变化历史
-        /// </remarks>
+        /// <summary>
+        /// 处理单条 Stroke 的绘制属性变更并为该笔划记录变更前后的 DrawingAttributes。
+        /// </summary>
+        /// <param name="sender">发生属性变化的 Stroke 实例。</param>
+        /// <param name="e">包含已更改属性标识与先前值的事件数据；仅使用其 PropertyGuid 和 PreviousValue 来确定并记录先前属性值。</param>
         private void Stroke_DrawingAttributesChanged(object sender, PropertyDataChangedEventArgs e)
         {
             var key = sender as Stroke;
@@ -514,7 +552,11 @@ namespace Ink_Canvas
         /// <param name="e">触笔点替换事件参数</param>
         /// <remarks>
         /// 当笔画的触笔点被替换时，更新初始状态历史
-        /// </remarks>
+        /// <summary>
+        /// 将替换后的 StylusPoints 的副本记录为指定 Stroke 的初始点集合。
+        /// </summary>
+        /// <param name="sender">触发事件的 Stroke 对象。</param>
+        /// <param name="e">包含新的 StylusPoints 的事件参数。</param>
         private void Stroke_StylusPointsReplaced(object sender, StylusPointsReplacedEventArgs e)
         {
             StrokeInitialHistory[sender as Stroke] = e.NewStylusPoints.Clone();
@@ -531,6 +573,15 @@ namespace Ink_Canvas
         /// 2. 初始化笔画操作历史记录
         /// 3. 记录笔画的初始状态和当前状态
         /// 4. 当所有选中的笔画都已处理时，提交操作历史
+        /// <summary>
+        /// 在笔划的笔迹点发生更改时记录并在完成时提交笔划的操作历史，用于撤销/重做。
+        /// </summary>
+        /// <param name="sender">发生更改的 Stroke；如果为 null 则视为完成条件的一部分。</param>
+        /// <param name="e">事件参数（未使用）。</param>
+        /// <remarks>
+        /// - 采集受影响笔划的初始和当前 StylusPointCollection 并存入 StrokeManipulationHistory。 
+        /// - 当已记录的笔划数等于当前选中笔划数（若无选中则为画布上所有笔划），且 dec.Count 为 0 时，将该历史提交到 timeMachine，更新 StrokeInitialHistory 为最新点集，并清除临时历史记录。 
+        /// - 若未显式选择笔划，则使用 inkCanvas.Strokes 作为目标集合。
         /// </remarks>
         private void Stroke_StylusPointsChanged(object sender, EventArgs e)
         {

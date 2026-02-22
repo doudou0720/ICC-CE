@@ -31,6 +31,15 @@ namespace Ink_Canvas
         /// - 设置工具模式为墨水模式
         /// - 取消单指拖动模式
         /// - 检查颜色主题
+        /// <summary>
+        /// 将当前选定的颜色应用到选中的笔划并根据上下文更新画布与相关 UI 状态。
+        /// </summary>
+        /// <param name="hidePanels">如为 true，则先隐藏颜色子面板；否则保留面板可见。</param>
+        /// <remarks>
+        /// - 当画布背景为透明且处于板书模式（currentMode == 1）时，会切换到桌面模式并隐藏板书相关的手势与面板 UI。  
+        /// - 会把 inkCanvas 的默认绘制属性颜色应用到当前选中的笔划。  
+        /// - 如果存在绘制属性历史（DrawingAttributesHistory），则提交该历史；否则恢复为可操作的墨迹工具模式并调用主题检查。  
+        /// - 最后会清除长按选择状态标志。  
         /// </remarks>
         private void ColorSwitchCheck(bool hidePanels = true)
         {
@@ -125,7 +134,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 根据当前模式、画笔类型与主题设置，应用并同步画布颜色、笔触颜色与界面配色指示器。
         /// </summary>
-        /// <param name="changeColorTheme">为 true 时（且非桌面模式）根据白板/黑板设置刷新背景色、水印色和亮/暗主题标志；为 false 则仅同步颜色相关状态。</param>
+        /// <summary>
+        /// 根据当前模式与画笔类型更新画布的背景/水印主题色、UI 主题色样以及默认绘制颜色（包括普通笔与荧光笔）。
+        /// </summary>
+        /// <param name="changeColorTheme">若为 true 且当前非桌面模式，则根据白板/黑板设置刷新背景色、水印色和亮/暗主题标志；若为 false，则仅同步颜色相关状态（如选中颜色、画笔颜色等）。</param>
         private void CheckColorTheme(bool changeColorTheme = false)
         {
             if (changeColorTheme)
@@ -491,7 +503,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 如果是荧光笔，更新荧光笔颜色
         /// - 否则，根据当前模式更新相应的最后使用颜色
-        /// </remarks>
+        /// <summary>
+        /// 更新记录最后选择的墨水或高亮笔颜色索引。
+        /// </summary>
+        /// <param name="inkColor">颜色索引（对应调色板或高亮色代码）。</param>
+        /// <param name="isHighlighter">若为 `true` 则更新高亮笔的最后颜色；否则根据当前模式（desktop/board）更新相应的最后使用颜色。</param>
         private void CheckLastColor(int inkColor, bool isHighlighter = false)
         {
             if (isHighlighter)
@@ -514,6 +530,11 @@ namespace Ink_Canvas
         /// - 更新标签按钮的样式和状态
         /// - 执行面板动画
         /// - 处理签字笔和荧光笔的不同UI状态
+        /// <summary>
+        /// 根据当前 penType 更新笔/荧光笔相关的 UI 可见性、样式和面板位置。
+        /// </summary>
+        /// <remarks>
+        /// 切换并同步默认笔与荧光笔的面板、选项卡高亮状态及对应画板（Board）中的等效控件，同时通过短动画调整 PenPalette 与 BoardPenPaletteGrid 的外边距以反映界面布局变化。
         /// </remarks>
         private async void CheckPenTypeUIState()
         {
@@ -664,7 +685,14 @@ namespace Ink_Canvas
         /// - 更新笔类型UI状态
         /// - 检查颜色主题
         /// - 设置画笔属性（宽度、高度、笔尖形状、是否为荧光笔）
+        /// <summary>
+        /// 切换为默认（签名）画笔并同步相关 UI 与绘图属性。
+        /// </summary>
+        /// <remarks>
+        /// 将内部 penType 设置为签名笔，刷新笔型相关的界面状态与颜色主题，并将当前绘图属性恢复为默认圆形笔触和设置中的笔宽度（非荧光笔）。
         /// </remarks>
+        /// <param name="sender">触发事件的对象（通常为 UI 元素）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void SwitchToDefaultPen(object sender, MouseButtonEventArgs e)
         {
             penType = 0;
@@ -687,6 +715,11 @@ namespace Ink_Canvas
         /// - 检查颜色主题
         /// - 设置画笔属性（宽度、高度、笔尖形状、是否为荧光笔）
         /// - 确保荧光笔模式切换后正确更新颜色和快捷调色板指示器
+        /// <summary>
+        /// 切换到荧光笔工具并同步更新绘图属性和界面状态。
+        /// </summary>
+        /// <remarks>
+        /// 设置为荧光笔模式后会更新笔宽、高度、笔尖形状及高亮标记，并刷新工具面板和当前颜色（不隐藏面板）。
         /// </remarks>
         private void SwitchToHighlighterPen(object sender, MouseButtonEventArgs e)
         {
@@ -706,7 +739,11 @@ namespace Ink_Canvas
         /// 处理黑色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色设置为黑色并应用/刷新颜色相关的 UI 和状态。
+        /// </summary>
+        /// <param name="sender">触发此事件的控件。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnColorBlack_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(0);
@@ -717,7 +754,11 @@ namespace Ink_Canvas
         /// 处理红色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色设置为红色（索引 1）并应用颜色切换及界面刷新逻辑。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnColorRed_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(1);
@@ -728,7 +769,11 @@ namespace Ink_Canvas
         /// 处理绿色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色切换为绿色并应用到画布 UI 和绘图状态。
+        /// </summary>
+        /// <param name="sender">触发该事件的控件。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnColorGreen_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(2);
@@ -739,7 +784,9 @@ namespace Ink_Canvas
         /// 处理蓝色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色设置为蓝色并刷新颜色相关的界面与内部状态。
+        /// </summary>
         private void BtnColorBlue_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(3);
@@ -750,7 +797,11 @@ namespace Ink_Canvas
         /// 处理黄色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色设置为黄色并应用颜色切换以刷新画布与相关 UI 状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象，通常为黄色颜色按钮。</param>
+        /// <param name="e">路由事件参数，表示该点击事件的相关信息。</param>
         private void BtnColorYellow_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(4);
@@ -761,7 +812,11 @@ namespace Ink_Canvas
         /// 处理白色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色切换为白色并刷新相关颜色/工具状态。
+        /// </summary>
+        /// <param name="sender">触发此事件的控件。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnColorWhite_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(5);
@@ -772,7 +827,9 @@ namespace Ink_Canvas
         /// 处理粉色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水颜色切换为粉色，并刷新颜色相关的 UI 与状态。
+        /// </summary>
         private void BtnColorPink_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(6);
@@ -783,7 +840,11 @@ namespace Ink_Canvas
         /// 处理橙色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 处理橙色墨水按钮的点击事件：将最近颜色设置为橙色并刷新颜色/工具状态。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnColorOrange_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(8);
@@ -794,7 +855,11 @@ namespace Ink_Canvas
         /// 处理青色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前墨水色切换为青绿色并刷新颜色选择和相关画笔状态。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（通常为颜色按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnColorTeal_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(7);
@@ -805,7 +870,11 @@ namespace Ink_Canvas
         /// 处理荧光笔黑色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将当前工具切换为黑色高亮笔，并更新相关的笔类型 UI 状态与颜色选择状态。
+        /// </summary>
+        /// <param name="sender">事件的发送者。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorBlack_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(100, true);
@@ -818,7 +887,11 @@ namespace Ink_Canvas
         /// 处理荧光笔白色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将笔模式切换为高亮笔并选择白色高亮颜色，更新相关 UI 状态并应用新的颜色设置。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorWhite_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(101, true);
@@ -831,7 +904,9 @@ namespace Ink_Canvas
         /// 处理荧光笔红色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将高亮笔颜色设置为红色，切换到高亮笔并刷新相关 UI 与颜色状态。
+        /// </summary>
         private void BtnHighlighterColorRed_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(102, true);
@@ -844,7 +919,11 @@ namespace Ink_Canvas
         /// 处理荧光笔黄色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将高亮笔颜色设置为黄色，切换到高亮笔并更新相关 UI 状态与颜色选择面板。
+        /// </summary>
+        /// <param name="sender">事件触发源（通常为黄色高亮按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorYellow_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(103, true);
@@ -857,7 +936,11 @@ namespace Ink_Canvas
         /// 处理荧光笔绿色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 切换到高亮笔、将高亮颜色设置为绿色（代码 104），并刷新笔型与颜色相关的 UI 状态。
+        /// </summary>
+        /// <param name="sender">事件的触发源。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorGreen_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(104, true);
@@ -870,7 +953,11 @@ namespace Ink_Canvas
         /// 处理荧光笔锌色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将高亮颜色设置为“锌色”(code 105)，切换到高亮笔并更新相关 UI 状态。
+        /// </summary>
+        /// <param name="sender">触发事件的控件。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorZinc_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(105, true);
@@ -883,7 +970,10 @@ namespace Ink_Canvas
         /// 处理荧光笔蓝色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将高亮颜色设置为蓝色（代码值 106），切换为高亮笔并刷新相关 UI 状态。
+        /// </summary>
+        /// <param name="e">事件参数。</param>
         private void BtnHighlighterColorBlue_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(106, true);
@@ -896,7 +986,11 @@ namespace Ink_Canvas
         /// 处理荧光笔紫色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将高亮颜色设置为紫色（代码 107），切换到高亮笔模式，并更新相关的画笔 UI 与颜色状态。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorPurple_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(107, true);
@@ -909,7 +1003,11 @@ namespace Ink_Canvas
         /// 处理荧光笔青色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 将高亮笔颜色设置为青绿色（Teal），切换到高亮笔并更新界面与画笔颜色状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorTeal_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(108, true);
@@ -922,7 +1020,11 @@ namespace Ink_Canvas
         /// 处理荧光笔橙色按钮点击事件
         /// </summary>
         /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
+        /// <summary>
+        /// 选择橙色高亮笔作为当前笔色并刷新相关工具与界面状态。
+        /// </summary>
+        /// <param name="sender">事件发送者。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnHighlighterColorOrange_Click(object sender, RoutedEventArgs e)
         {
             CheckLastColor(109, true);
@@ -939,7 +1041,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 解析颜色字符串为ARGB值
         /// - 转换为Color对象返回
-        /// </remarks>
+        /// <summary>
+        /// 将形如 "#AARRGGBB" 的十六进制颜色字符串解析为 Color 对象。
+        /// </summary>
+        /// <param name="colorStr">格式为 "#AARRGGBB" 的十六进制颜色字符串（两位十六进制表示每个通道，大小写均可）。</param>
+        /// <returns>对应的 Color 对象，按 ARGB 顺序解析字符串中的字节。</returns>
         private Color StringToColor(string colorStr)
         {
             var argb = new byte[4];
@@ -962,7 +1068,11 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 将十六进制字符转换为对应的字节值
         /// - 支持0-9和A-F字符
-        /// </remarks>
+        /// <summary>
+        /// 将单个十六进制字符转换为其数值（0 至 15）。
+        /// </summary>
+        /// <param name="c">表示单个十六进制数字的字符（'0'–'9'、'A'–'F'）。</param>
+        /// <returns>如果输入为大写十六进制字符，返回对应的数值 0 到 15；如果字符不在 "0123456789ABCDEF" 中，返回 255。</returns>
         private static byte toByte(char c)
         {
             var b = (byte)"0123456789ABCDEF".IndexOf(c);

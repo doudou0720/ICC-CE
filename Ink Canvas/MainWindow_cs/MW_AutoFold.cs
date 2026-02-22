@@ -37,6 +37,11 @@ namespace Ink_Canvas
         /// 7. 设置退出按钮前景色为白色
         /// 8. 设置应用主题为深色
         /// 9. 200毫秒后重置显示/隐藏黑板的标志为false
+        /// <summary>
+        /// 立即退出白板模式并将界面恢复到标注/普通显示状态。
+        /// </summary>
+        /// <remarks>
+        /// 隐藏所有子面板、去除水印并切换回标注/普通模式；如果配置了自动切换两指手势，则禁用两指平移。方法使用内部标志防止并发切换，并在短延时后重置该标志以允许后续操作。
         /// </remarks>
         private void CloseWhiteboardImmediately()
         {
@@ -64,6 +69,10 @@ namespace Ink_Canvas
         /// 处理折叠浮动栏的鼠标点击事件。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
+        /// <summary>
+        /// 处理折叠浮动栏的鼠标弹起事件并触发折叠操作。
+        /// </summary>
+        /// <param name="sender">事件源。</param>
         /// <param name="e">鼠标按钮事件参数。</param>
         public async void FoldFloatingBar_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -88,7 +97,12 @@ namespace Ink_Canvas
         /// 8. 隐藏PPT导航面板和浮动栏拖动网格
         /// 9. 执行浮动栏和侧边栏的动画
         /// 10. 如果开启了彻底隐藏，则隐藏主窗口
-        /// </remarks>
+        /// <summary>
+        /// 将浮动工具栏收纳到侧边栏并同步更新相关 UI 状态与动画。
+        /// </summary>
+        /// <param name="sender">触发折叠操作的来源控件（通常为折叠图标）；传入 null 表示由代码或自动逻辑触发。</param>
+        /// <param name="isAutoFoldCommand">为 true 表示由自动折叠命令触发；为 false 表示用户发起的折叠。</param>
+        /// <returns>表示折叠操作完成的任务。</returns>
         public async Task FoldFloatingBar(object sender, bool isAutoFoldCommand = false)
         {
             var isShouldRejectAction = false;
@@ -178,7 +192,11 @@ namespace Ink_Canvas
         /// 1. 检查是否显示快捷面板
         /// 2. 如果显示快捷面板，则隐藏右侧快捷面板，显示左侧快捷面板并执行动画
         /// 3. 否则，调用展开浮动栏的方法
-        /// </remarks>
+        /// <summary>
+        /// 在左侧“展开”按钮上松开鼠标时处理点击：当快速面板可见时显示左侧快速面板并隐藏右侧快速面板（带入场边距动画），否则触发折叠栏的展开逻辑。
+        /// </summary>
+        /// <param name="sender">事件源。</param>
+        /// <param name="e">与鼠标按键相关的事件数据。</param>
         private async void LeftUnFoldButtonDisplayQuickPanel_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (Settings.Appearance.IsShowQuickPanel)
@@ -219,6 +237,12 @@ namespace Ink_Canvas
         /// 1. 检查是否显示快捷面板
         /// 2. 如果显示快捷面板，则隐藏左侧快捷面板，显示右侧快捷面板并执行动画
         /// 3. 否则，调用展开浮动栏的方法
+        /// <summary>
+        /// 处理右侧“展开并显示快速面板”按钮的鼠标释放事件：当启用快速面板时以滑入动画显示右侧快速面板，否则触发展开浮动栏的逻辑。
+        /// </summary>
+        /// <remarks>
+        /// 如果 Settings.Appearance.IsShowQuickPanel 为 true，则隐藏左侧快速面板、显示右侧快速面板并执行短时的边距（滑入）动画；
+        /// 否则调用 UnFoldFloatingBar_MouseUp 以展开浮动工具栏。
         /// </remarks>
         private async void RightUnFoldButtonDisplayQuickPanel_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -258,6 +282,11 @@ namespace Ink_Canvas
         /// 1. 检查左侧快捷面板是否可见，如果不可见则直接返回
         /// 2. 执行左侧快捷面板的隐藏动画
         /// 3. 等待动画完成后，设置左侧快捷面板的边距并将其折叠
+        /// <summary>
+        /// 以动画方式隐藏左侧快速面板（仅在面板当前可见时执行）。
+        /// </summary>
+        /// <remarks>
+        /// 完成滑出动画后将面板的 Margin 调整为折叠位置并将 Visibility 设置为 Collapsed。
         /// </remarks>
         private async void HideLeftQuickPanel()
         {
@@ -292,6 +321,11 @@ namespace Ink_Canvas
         /// 1. 检查右侧快捷面板是否可见，如果不可见则直接返回
         /// 2. 执行右侧快捷面板的隐藏动画
         /// 3. 等待动画完成后，设置右侧快捷面板的边距并将其折叠
+        /// <summary>
+        /// 隐藏右侧快速面板（如果当前可见），通过短动画将其移出视图并在动画完成后将其折叠。
+        /// </summary>
+        /// <remarks>
+        /// 当 RightUnFoldButtonQuickPanel 的 Visibility 为 Visible 时，执行约 100 毫秒的边距动画将控件向右移出，并在动画结束后将其 Margin 设置为目标值并将 Visibility 设为 Collapsed。
         /// </remarks>
         private async void HideRightQuickPanel()
         {
@@ -327,7 +361,9 @@ namespace Ink_Canvas
         /// 操作包括：
         /// 1. 隐藏左侧快捷面板
         /// 2. 隐藏右侧快捷面板
-        /// </remarks>
+        /// <summary>
+        /// 在鼠标抬起时隐藏左侧和右侧的快速面板。
+        /// </summary>
         private void HideQuickPanel_MouseUp(object sender, MouseButtonEventArgs e)
         {
             HideLeftQuickPanel();
@@ -338,7 +374,11 @@ namespace Ink_Canvas
         /// 处理展开浮动栏的鼠标点击事件。
         /// </summary>
         /// <param name="sender">事件发送者。</param>
-        /// <param name="e">鼠标按钮事件参数。</param>
+        /// <summary>
+        /// 在鼠标左键/右键松开时触发，展开已折叠的悬浮工具栏并恢复相关面板显示状态。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（通常为折叠/展开按钮）。</param>
+        /// <param name="e">鼠标按钮事件参数，包含有关按键和位置的信息。</param>
         public async void UnFoldFloatingBar_MouseUp(object sender, MouseButtonEventArgs e)
         {
             await UnFoldFloatingBar(sender);
@@ -361,6 +401,13 @@ namespace Ink_Canvas
         /// 8. 在屏幕模式下显示浮动栏并执行动画
         /// 9. 执行侧边栏动画
         /// 10. 等待UI完全更新后，重新设置当前选中模式的按钮高亮状态
+        /// <summary>
+        /// 将折叠的浮动栏还原为展开状态并更新相关 UI 可见性、边距动画和高亮位置。
+        /// </summary>
+        /// <param name="sender">触发展开的来源；为 null 表示非用户直接触发（例如自动展开或程序调用）。</param>
+        /// <returns>表示展开操作及其 UI 更新完成的任务。</returns>
+        /// <remarks>
+        /// 会根据应用设置自动切换到批注模式（如启用）、恢复被彻底隐藏的窗体、显示或隐藏 PPT 导航控件、执行浮动栏与侧边面板的边距/显示动画，并在动画结束后尝试重置浮动栏按钮的高亮状态。该方法会在正在进行折叠/展开变更时立即返回以避免并发冲突。
         /// </remarks>
         public async Task UnFoldFloatingBar(object sender)
         {
@@ -489,7 +536,11 @@ namespace Ink_Canvas
         /// 5. 直接设置侧边栏的最终边距值
         /// 6. 如果边距值为-50（完全折叠），则隐藏左侧边栏
         /// 7. 重置浮动栏正在改变隐藏模式的标志为false
-        /// </remarks>
+        /// <summary>
+        /// 对左右侧边面板执行边距动画以折叠或展开浮动工具栏。
+        /// </summary>
+        /// <param name="MarginFromEdge">目标边距值（例如 -50 表示完全折叠，-10 表示展开到可见位置）。</param>
+        /// <param name="isNoAnimation">为 true 时立即应用最终边距而不执行过渡动画。</param>
         private async void SidePannelMarginAnimation(int MarginFromEdge, bool isNoAnimation = false) // Possible value: -50, -10
         {
             await Dispatcher.InvokeAsync(() =>

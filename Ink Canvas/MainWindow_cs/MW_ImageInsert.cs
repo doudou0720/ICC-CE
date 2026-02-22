@@ -52,6 +52,11 @@ namespace Ink_Canvas
         /// 3. 恢复窗口显示
         /// 4. 处理截图结果并插入到画布
         /// 5. 支持摄像头截图和区域截图
+        /// <summary>
+        /// 隐藏主窗口、启动截图选择器并将选择的图像插入到画布中。
+        /// </summary>
+        /// <remarks>
+        /// 根据用户操作将不同来源的图像插入到 InkCanvas：优先使用来自摄像头的 BitmapSource，其次使用来自摄像头的 System.Drawing.Bitmap，否则根据所选屏幕区域捕获位图并（可选）应用多边形遮罩后插入。若用户取消选择则显示取消通知；发生异常时显示失败通知并尽量恢复窗口可见性。
         /// </remarks>
         private async Task CaptureScreenshotAndInsert()
         {
@@ -140,6 +145,12 @@ namespace Ink_Canvas
         /// 3. 截取全屏
         /// 4. 将截图转换为WPF Image并插入到画布
         /// 5. 恢复窗口显示
+        /// <summary>
+        /// 捕获整个虚拟屏幕并将生成的截图插入到画布中。
+        /// </summary>
+        /// <remarks>
+        /// 方法在截屏前会临时隐藏主窗口以避免将自身包含在截图内；若截取到位图则调用 InsertScreenshotToCanvas 插入到画布，若截取失败则显示失败通知。
+        /// 在发生异常时会显示错误通知并确保窗口恢复可见性。
         /// </remarks>
         private async Task CaptureFullScreenAndInsert()
         {
@@ -189,7 +200,12 @@ namespace Ink_Canvas
         /// 1. 显示截图选择器窗口
         /// 2. 获取用户选择的区域或摄像头截图
         /// 3. 返回截图结果
-        /// </remarks>
+        /// <summary>
+        /// 显示截图选择器窗口并返回用户的选择结果。
+        /// </summary>
+        /// <returns>
+        /// 返回一个包含用户选择内容的 <c>ScreenshotResult</c>：当用户使用摄像头捕获时包含 <c>CameraBitmapSource</c> 或 <c>CameraImage</c>，当用户选择屏幕区域时包含对应的 <c>SelectedArea</c> 与 <c>SelectedPath</c>；如果用户取消或发生错误则返回 <c>null</c>。
+        /// </returns>
         private async Task<ScreenshotResult?> ShowScreenshotSelector()
         {
             ScreenshotResult? result = null;
@@ -249,7 +265,11 @@ namespace Ink_Canvas
         /// 3. 创建支持透明度的位图
         /// 4. 设置高质量渲染
         /// 5. 截取屏幕区域
-        /// </remarks>
+        /// <summary>
+        /// 在屏幕上捕获指定矩形区域并返回对应的 32bpp ARGB 位图。
+        /// </summary>
+        /// <param name="area">要捕获的区域，使用屏幕像素坐标；函数会将其裁剪到虚拟屏幕范围内并确保宽高至少为 1 像素。</param>
+        /// <returns>包含截取内容的 <see cref="Bitmap"/>（像素格式为 32bpp ARGB），发生错误时返回 <c>null</c>。</returns>
         private Bitmap CaptureScreenArea(Rectangle area)
         {
             try
@@ -307,6 +327,12 @@ namespace Ink_Canvas
         /// 9. 添加到画布
         /// 10. 提交历史记录
         /// 11. 插入图片后切换到选择模式并刷新浮动栏高光显示
+        /// <summary>
+        /// 将指定的 System.Drawing.Bitmap 作为一个可交互的图片插入到编辑画布（InkCanvas）中，并为其初始化变换、居中缩放、事件绑定和撤销历史记录。
+        /// </summary>
+        /// <param name="bitmap">要插入的位图；方法在完成后会释放此 Bitmap 的资源。</param>
+        /// <remarks>
+        /// 如果传入的位图为空或尺寸无效，或位图无法转换为 WPF BitmapSource，则会显示通知并取消插入。方法在 UI 线程上执行界面更新，发生异常时会显示错误通知并将详情记录到日志文件中。插入成功后会切换到选择工具模式并提交插入历史以支持撤销/重做操作。
         /// </remarks>
         private async Task InsertScreenshotToCanvas(Bitmap bitmap)
         {
@@ -402,7 +428,11 @@ namespace Ink_Canvas
         /// 7. 添加到画布
         /// 8. 提交历史记录
         /// 9. 插入图片后切换到选择模式并刷新浮动栏高光显示
-        /// </remarks>
+        /// <summary>
+        /// 将提供的 BitmapSource 作为可交互图像插入到主画布并进行初始化与居中显示。
+        /// </summary>
+        /// <param name="bitmapSource">要插入的 WPF 图像源（BitmapSource）。</param>
+        /// <remarks>方法会在画布上创建 Image 控件、初始化变换与选择设置、在加载后居中并绑定交互事件，提交插入历史、切换到选择工具并显示通知。方法在内部捕获并记录异常并在失败时显示错误通知。</remarks>
         private async Task InsertBitmapSourceToCanvas(BitmapSource bitmapSource)
         {
             try
@@ -467,7 +497,10 @@ namespace Ink_Canvas
         /// <param name="image">要初始化的Image控件</param>
         /// <remarks>
         /// 该方法会为截图创建一个包含缩放、平移和旋转变换的TransformGroup。
-        /// </remarks>
+        /// <summary>
+        /// 在指定的 Image 上初始化用于缩放、平移和旋转的变换组，保证图像具有默认的可变换状态以便后续操作。
+        /// </summary>
+        /// <param name="image">要初始化变换的目标 Image 控件。</param>
         private void InitializeScreenshotTransform(Image image)
         {
             var transformGroup = new TransformGroup();
@@ -487,7 +520,10 @@ namespace Ink_Canvas
         /// 2. 触摸事件（按下、释放、操作）
         /// 3. 设置光标为手形
         /// 4. 禁用InkCanvas对截图的选择处理
-        /// </remarks>
+        /// <summary>
+        /// 为指定的 Image 控件绑定用于拖动、缩放和其它交互的鼠标与触摸事件，并配置相关的光标与可交互属性。
+        /// </summary>
+        /// <param name="image">要绑定事件和交互设置的 WPF Image 控件。</param>
         private void BindScreenshotEvents(Image image)
         {
             // 鼠标事件
@@ -531,7 +567,11 @@ namespace Ink_Canvas
         /// 12. 确保位置不为负数
         /// 13. 设置位置
         /// 14. 保持滚轮缩放和拖动功能
-        /// </remarks>
+        /// <summary>
+        /// 将指定的 Image 在 inkCanvas 中等比缩放（最多到画布的 80%）并居中显示；不会放大超过原始尺寸，并确保图片拥有初始的变换组以支持缩放/拖动交互。
+        /// </summary>
+        /// <param name="image">要居中并缩放的 WPF Image 控件，其 Source 必须已加载并具有有效像素尺寸。</param>
+        /// <remarks>如果 inkCanvas 或窗口尺寸不可用，会退回到主屏幕尺寸作为布局参考。方法内部会捕获异常；发生错误时会记录日志并调用 CenterAndScaleElement 作为回退布局。</remarks>
         private void CenterAndScaleScreenshot(Image image)
         {
             try
@@ -635,7 +675,13 @@ namespace Ink_Canvas
         /// 9. 设置裁剪区域为路径内部
         /// 10. 在裁剪区域内绘制原始图像
         /// 11. 重置裁剪区域，确保后续操作不受影响
-        /// </remarks>
+        /// <summary>
+        — 对给定位图应用多边形遮罩，只保留路径内的像素并将其它区域设为透明。
+        /// </summary>
+        /// <param name="bitmap">源位图（用于从中裁切遮罩后的像素）。</param>
+        /// <param name="path">以 WPF 坐标系表示的多边形顶点列表，用于定义保留区域。</param>
+        /// <param name="area">截图在屏幕坐标系中的矩形，用于将 WPF 点转换为位图像素坐标。</param>
+        /// <returns>返回一个新的 Bitmap，包含仅保留路径内部像素的结果；若路径无效则返回一个全透明的位图；在发生内部异常时返回原始输入 bitmap。</returns>
         private Bitmap ApplyShapeMask(Bitmap bitmap, List<Point> path, Rectangle area)
         {
             try
@@ -735,7 +781,12 @@ namespace Ink_Canvas
         /// 5. 创建BitmapSource
         /// 6. 冻结BitmapSource以提高性能
         /// 7. 如果转换失败，尝试使用备用方法
-        /// </remarks>
+        /// <summary>
+        /// 将 System.Drawing.Bitmap 转换为可在 WPF 中使用的 BitmapSource。
+        /// </summary>
+        /// <param name="bitmap">要转换的位图；如果为 null 或尺寸无效（宽或高小于等于 0）将返回 null。</param>
+        /// <returns>转换得到的已冻结（Frozen）BitmapSource；输入无效时返回 null。</returns>
+        /// <exception cref="Exception">当所有转换策略（直接锁定位图、内存流回退、临时文件回退）均失败时重新抛出最后的异常。</exception>
         private BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap)
         {
             try
@@ -832,7 +883,12 @@ namespace Ink_Canvas
         /// 3. 在内存流中保存为PNG格式
         /// 4. 创建BitmapImage并加载内存流中的数据
         /// 5. 冻结BitmapImage以提高性能
-        /// </remarks>
+        /// <summary>
+        /// 使用内存流将 System.Drawing.Bitmap 转换为 WPF 的 BitmapSource（备用实现）。
+        /// </summary>
+        /// <param name="bitmap">要转换的位图；若为 null 或宽高小于等于 0 则视为无效并返回 null。</param>
+        /// <returns>转换并 Freeze 后的 BitmapSource；输入无效时返回 <c>null</c>。</returns>
+        /// <exception cref="Exception">当转换过程中发生错误时，会记录错误并重新抛出原始异常。</exception>
         private BitmapSource ConvertBitmapToBitmapSourceFallback(Bitmap bitmap)
         {
             try
@@ -886,7 +942,14 @@ namespace Ink_Canvas
         /// 5. 创建BitmapImage并加载临时文件
         /// 6. 冻结BitmapImage以提高性能
         /// 7. 清理临时文件
+        /// <summary>
+        /// 将 System.Drawing.Bitmap 转换为可在 WPF 中使用的 BitmapSource，使用将位图保存为临时 PNG 文件然后从该文件加载的简单备选方法。
+        /// </summary>
+        /// <remarks>
+        /// 如果输入为 null，则返回 null。方法会在磁盘上创建一个临时 PNG 文件并在加载后尝试删除该文件；删除失败会写入日志但不会阻止返回结果或掩盖原始异常。
         /// </remarks>
+        /// <returns>转换得到的 BitmapSource；当输入为 null 时返回 null。</returns>
+        /// <exception cref="Exception">在保存、加载或文件 I/O 操作发生错误时抛出原始异常。</exception>
         private BitmapSource ConvertBitmapToBitmapSourceSimple(Bitmap bitmap)
         {
             try
@@ -940,7 +1003,10 @@ namespace Ink_Canvas
         /// <remarks>
         /// 该方法会从当前窗口的PresentationSource获取DPI缩放比例。
         /// 如果无法获取，则返回默认值1.0。
-        /// </remarks>
+        /// <summary>
+        /// 获取当前窗口的水平 DPI 缩放因子。
+        /// </summary>
+        /// <returns>当前窗口的水平 DPI 缩放因子（例如 1.0 表示 100%）；在无法获取 PresentationSource 时返回 1.0。</returns>
         private double GetDpiScale()
         {
             var source = PresentationSource.FromVisual(this);

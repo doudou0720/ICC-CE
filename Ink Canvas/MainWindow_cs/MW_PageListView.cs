@@ -24,6 +24,12 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 为每页生成或更新对应的 PageListViewItem（通过应用时间线历史并裁剪到画布边界），用当前画布的笔迹替换当前页的条目，并将两个侧边 ListView 的 SelectedIndex 设置为当前白板索引 - 1。
+        /// <summary>
+        /// 刷新左右侧缩略页列表以匹配当前白板页数与时间线历史，并同步侧边选中页索引。
+        /// </summary>
+        /// <remarks>
+        /// 更新或重建用于侧边列表的 PageListViewItem 集合，使其包含每一页应用对应历史后的 Stroke 副本（均裁剪到 inkCanvas 的当前可视边界）。
+        /// 无论集合是就地替换项还是清空后重建，都会用当前画布的实时 Stroke 克隆覆盖当前页对应的项，并将左右侧 ListView 的 SelectedIndex 同步为当前白板索引减一以保持显示一致性。
         /// </remarks>
         private void RefreshBlackBoardSidePageListView()
         {
@@ -79,7 +85,15 @@ namespace Ink_Canvas
         /// <remarks>
         /// - 如果命中到 ListViewItem，会隐藏左右侧页面边框、在必要时保存/清空/恢复画笔笔迹并更新 CurrentWhiteboardIndex 与显示信息；还会将左右两侧 ListView 的 SelectedIndex 同步为命中项索引。 
         /// - 在查找命中或切换过程中发生的异常将被捕获并忽略，不会向上抛出。
+        /// <summary>
+        /// 根据位于侧边缩略图区域（由 scrollViewer 提供坐标）的触摸/按压点，定位对应的缩略项并切换到该白板页（如有变化）。
+        /// </summary>
+        /// <remarks>
+        /// 如果定位到有效缩略项且目标页与当前页不同，方法会隐藏左右侧边页边框、保存并清空当前画布笔迹、切换当前页索引、恢复目标页笔迹并更新索引显示；同时同步左右缩略列表的选中项。方法内部对命中测试或切换过程中的异常进行捕获并忽略，不会抛出异常。
         /// </remarks>
+        /// <param name="listView">承载白板缩略图项的 ListView 控件。</param>
+        /// <param name="scrollViewer">包含触摸点坐标的 ScrollViewer（坐标系与 pointInScrollViewer 一致）。</param>
+        /// <param name="pointInScrollViewer">相对于 scrollViewer 的触摸/按压点坐标。</param>
         private void TrySwitchWhiteboardPageByTouchPoint(ListView listView, ScrollViewer scrollViewer, Point pointInScrollViewer)
         {
             if (listView == null || scrollViewer == null) return;
@@ -127,6 +141,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <typeparam name="T">要查找的祖先类型，必须继承自 <see cref="DependencyObject"/>。</typeparam>
         /// <param name="current">起始节点；从此节点开始向上遍历视觉树。</param>
+        /// <summary>
+        /// 在视觉树中从指定元素向上查找并返回第一个匹配的祖先元素。
+        /// </summary>
+        /// <typeparam name="T">要查找的祖先类型，必须继承自 <see cref="DependencyObject"/>。</typeparam>
+        /// <param name="current">查找起点；从此元素开始向上遍历视觉树的父元素。</param>
         /// <returns>找到的第一个类型为 <typeparamref name="T"/> 的祖先元素，未找到时返回 <c>null</c>。</returns>
         private static T FindAncestorOfType<T>(DependencyObject current) where T : DependencyObject
         {
@@ -142,7 +161,11 @@ namespace Ink_Canvas
         /// 将指定元素在给定 ScrollViewer 中滚动，使该元素与可视区域的顶部对齐。
         /// </summary>
         /// <param name="element">要对齐到顶部的元素。</param>
-        /// <param name="scrollViewer">包含该元素的目标 ScrollViewer。</param>
+        /// <summary>
+        /// 将指定元素滚动到其所在的 ScrollViewer 可视区域顶部。
+        /// </summary>
+        /// <param name="element">要对齐到 ScrollViewer 顶部的元素。</param>
+        /// <param name="scrollViewer">承载该元素的目标 ScrollViewer。</param>
         public static void ScrollViewToVerticalTop(FrameworkElement element, ScrollViewer scrollViewer)
         {
             if (element == null || scrollViewer == null)
@@ -180,6 +203,11 @@ namespace Ink_Canvas
         /// 8. 恢复新页面的笔画
         /// 9. 更新索引信息显示
         /// 10. 更新选择索引
+        /// <summary>
+        /// 处理左侧缩略页列表的鼠标抬起事件；隐藏左右侧页边框，并在所选页面与当前页面不同时切换到该页面，保存/清除/恢复画笔数据并更新索引显示。
+        /// </summary>
+        /// <remarks>
+        /// 若存在正在编辑的元素，会先取消选择该元素并恢复画布的编辑模式。无论是否切换页面，都会将左侧列表的选中索引与当前选择保持一致。
         /// </remarks>
         private void BlackBoardLeftSidePageListView_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -231,7 +259,11 @@ namespace Ink_Canvas
         /// 8. 恢复新页面的笔画
         /// 9. 更新索引信息显示
         /// 10. 更新选择索引
-        /// </remarks>
+        /// <summary>
+        /// 处理右侧缩略图列表的鼠标弹起事件；在需要时隐藏边框并切换到所选的白板页面，同时保存/恢复笔迹和编辑选择状态，并同步列表选择索引。
+        /// </summary>
+        /// <param name="sender">事件源（通常为右侧的 ListView）。</param>
+        /// <param name="e">鼠标事件参数。</param>
         private void BlackBoardRightSidePageListView_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             AnimationsHelper.HideWithSlideAndFade(BoardBorderLeftPageListView);

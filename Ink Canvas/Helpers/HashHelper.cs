@@ -13,7 +13,11 @@ namespace Ink_Canvas.Helpers
         /// 对给定路径字符串计算 MD5 哈希，返回前 8 位十六进制字符串。
         /// </summary>
         /// <param name="filePath">文件路径或任意字符串</param>
-        /// <returns>8 位十六进制字符串；异常或空输入时返回 "error" 或 "unknown"</returns>
+        /// <summary>
+        /// 计算输入字符串的 MD5 并返回前 8 个十六进制字符的哈希前缀，用于短路径或标识符的简短表示。
+        /// </summary>
+        /// <param name="filePath">要计算哈希的输入字符串（例如文件路径或标识符）。</param>
+        /// <returns>8 个十六进制字符的哈希前缀；当 <paramref name="filePath"/> 为 null 或空字符串时返回 "unknown"，发生异常时返回 "error"。</returns>
         public static string GetFileHash(string filePath)
         {
             try

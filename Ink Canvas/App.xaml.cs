@@ -372,7 +372,11 @@ namespace Ink_Canvas
             e.Cancel = true; // 取消默认处理
         }
 
-        // 处理非UI线程的未处理异常
+        /// <summary>
+        /// 处理应用程序域中非 UI 线程抛出的未捕获异常并将关键信息记录到崩溃日志中。
+        /// </summary>
+        /// <param name="sender">事件发送者（通常为 AppDomain）。</param>
+        /// <param name="e">包含异常对象及终止指示的事件参数；当异常与渲染线程访问冲突相关时，该处理器将作为警告记录并忽略。</param>
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             try
@@ -544,7 +548,10 @@ namespace Ink_Canvas
             }
         }
 
-        // 记录崩溃日志
+        /// <summary>
+        /// 将崩溃或错误相关信息追加写入按应用启动时间命名的崩溃日志文件，并在主日志中记录相同信息。
+        /// </summary>
+        /// <param name="message">要记录的崩溃或错误信息文本（会与时间戳、进程 ID 及当前内存/CPU/运行时信息一并写入）。</param>
         private static void WriteCrashLog(string message)
         {
             try
@@ -582,6 +589,12 @@ namespace Ink_Canvas
         // 增加字段保存崩溃后操作设置
         public static CrashActionType CrashAction = CrashActionType.SilentRestart;
 
+        /// <summary>
+        /// 从配置中同步应用程序的崩溃处理策略（CrashAction）到静态字段 `CrashAction`。
+        /// </summary>
+        /// <remarks>
+        /// 优先读取程序目录下 Configs/Settings.json 中的 startup.crashAction；如果不存在该文件且主窗口的 Settings 可用，则从主窗口设置中读取并应用。遇到读取或解析错误时会记录调试信息但不会抛出异常。
+        /// </remarks>
         public static void SyncCrashActionFromSettings()
         {
             try
@@ -605,6 +618,11 @@ namespace Ink_Canvas
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
+        /// <summary>
+        /// 处理应用程序调度器未捕获的异常：对已知的 DynamicRenderer UI 线程访问异常进行静默忽略并记录，其他异常则记录崩溃信息、同步崩溃处理策略并根据配置可能触发静默重启或退出应用程序。
+        /// </summary>
+        /// <param name="sender">事件的发送者（通常为 Dispatcher）。</param>
+        /// <param name="e">包含未处理异常信息及可将异常标记为已处理的事件参数。</param>
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             // 检查是否是DynamicRenderer线程访问UI对象的已知问题
@@ -676,7 +694,11 @@ namespace Ink_Canvas
         /// - "--show"：退出收纳模式并恢复浮动栏
         /// - "--skip-mutex-check"：跳过单实例互斥检查
         /// - "-m"：允许多实例启动
-        /// 另外也可能包含以 "icc:" 开头的 URI 参数或 .icstk 文件路径用于启动时的 IPC 交互。</param>
+        /// <summary>
+        /// 启动应用并完成初始化流程：可选显示启动画面、处理更新模式、单实例与 IPC、组件初始化、创建主窗口并注册文件关联与 IPC 监听器。
+        /// </summary>
+        /// <param name="sender">触发启动事件的对象（通常为 Application 实例）。</param>
+        /// <param name="e">启动事件参数；其 Args 可能包含启动模式标志（例如 --final-app、--update-mode、--board、--show、--skip-mutex-check、-m）、以 "icc:" 开头的 URI、或 .icstk 文件路径，用于后续的单实例 IPC 交互。</param>
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
@@ -1137,6 +1159,11 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 将鼠标滚轮事件转换为 ScrollViewerEx 的垂直滚动。
+        /// </summary>
+        /// <param name="sender">触发事件的控件，预期为 ScrollViewerEx 的实例。</param>
+        /// <param name="e">鼠标滚轮事件参数；当事件被用于滚动时会将 <see cref="System.Windows.Input.MouseWheelEventArgs.Handled"/> 设为 true，若系统设置指示不处理滚动（MouseWheelScrollLines 为 -1）则保持不变。</param>
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             try
@@ -1181,6 +1208,15 @@ namespace Ink_Canvas
         /// - 对连续重启次数有保护：若重启计数达到或超过5次，会弹出提示并停止自动重启（重置重启计数并退出进程）。  
         /// - 在 OOBE（首次引导）展示期间不执行守护检查。  
         /// - 该方法会产生外部可观察的副作用：可能启动新进程并调用 Environment.Exit 终止当前进程，或显示消息框。
+        /// <summary>
+        /// 启动并监控应用心跳与守护定时器以检测假死并在必要时触发自动重启或终止程序。
+        /// </summary>
+        /// <remarks>
+        /// - 创建并启动一个每秒更新内部心跳时间的调度定时器。  
+        /// - 创建并启动一个每3秒运行的守护定时器：当启动尚未完成且从启动或启动画面开始超过2分钟未收到完成心跳时，或在启动完成后主线程超过10秒未更新心跳时，依据设置执行重启策略。  
+        /// - 在 OOBE（首次运行/引导界面）显示期间跳过守护检查。  
+        /// - 若重启策略为静默重启（SilentRestart），会尝试启动新的进程实例并退出当前进程；连续重启计数达到5次时会显示错误对话框、重置计数并终止进程以停止自动重启。  
+        /// - 此方法会修改类的定时器和心跳相关字段，并可能导致进程启动、显示消息框或调用 Environment.Exit。
         /// </remarks>
         private void StartHeartbeatMonitor()
         {
@@ -1253,7 +1289,12 @@ namespace Ink_Canvas
             }, null, 0, 3000);
         }
 
-        // 看门狗进程
+        /// <summary>
+        /// 在非看门狗进程中启动一个独立的看门狗子进程用于监控当前进程的存活性。
+        /// </summary>
+        /// <remarks>
+        /// 如果当前进程已以 `--watchdog` 参数启动则不会再次启动看门狗。该方法将以当前可执行文件启动一个新进程，传入当前进程 ID 和退出信号文件路径作为参数，并将子进程句柄保存在静态字段 `watchdogProcess` 中。
+        /// </remarks>
         public static void StartWatchdogIfNeeded()
         {
             // 避免递归启动
@@ -1280,6 +1321,15 @@ namespace Ink_Canvas
         /// - 当主进程退出时，会同步崩溃处理设置（SyncCrashActionFromSettings）。若启用了 UIA 顶层访问（IsUIAccessTopMostEnabled），守护进程直接退出。  
         /// - 若崩溃动作为 SilentRestart，则增加启动计数并：当连续重启计数达到 5 次及以上时弹出错误对话框、重置计数并以代码 1 退出；否则启动新的主进程实例。  
         /// 方法对内部异常静默处理，并在完成后确保进程退出。
+        /// <summary>
+        /// 当进程以 watchdog 模式启动时，监视指定主进程并在其意外退出后根据设置执行重启或终止操作。
+        /// </summary>
+        /// <remarks>
+        /// 该方法仅在命令行参数包含 "--watchdog <pid> <exitSignalFile>" 时生效：
+        /// - 在目标进程存活期间，定期检查退出信号文件；若发现该文件则删除并正常退出 watchdog。  
+        /// - 若目标进程退出，则从设置同步崩溃动作（CrashAction），并在 UIAccessTopMost 启用时直接退出。  
+        /// - 若崩溃动作为 SilentRestart，则递增启动计数并尝试重新启动当前可执行文件；若连续重启计数达到 5 次，则显示错误提示、重置计数并停止自动重启。  
+        /// 所有内部异常会被捕获并写入调试输出，最终 watchdog 在处理完成后退出当前进程。
         /// </remarks>
         public static void RunWatchdogIfNeeded()
         {
@@ -1395,6 +1445,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理应用程序退出时的清理与记录工作。</summary>
+        /// <remarks>
+        /// 在退出时记录退出类型与退出代码并写入崩溃/运行日志；尝试保存设备退出信息和运行时长。
+        /// 如果退出由用户主动触发，则重置启动计数、向看门狗写入退出信号文件并终止看门狗进程（如存在且未退出）。
+        /// 方法在内部捕获并记录可能发生的异常，不会向调用方抛出异常。
+        /// </remarks>
         private void App_Exit(object sender, ExitEventArgs e)
         {
             // 仅在软件内主动退出时关闭看门狗，并写入退出信号

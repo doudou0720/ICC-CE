@@ -208,7 +208,11 @@ namespace Ink_Canvas
         /// 浮动工具栏移动事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标事件参数</param>
+        /// <summary>
+        /// 在拖拽浮动工具栏时，根据当前鼠标位置移动该工具栏并更新最后记录的位置（桌面或 PPT 模式）。
+        /// </summary>
+        /// <param name="sender">事件源（通常为浮动工具栏相关元素）。</param>
+        /// <param name="e">包含当前鼠标位置的鼠标事件参数，用于计算并应用新的工具栏位置。</param>
         private void SymbolIconEmoji_MouseMove(object sender, MouseEventArgs e)
         {
             if (isDragDropInEffect)
@@ -229,7 +233,11 @@ namespace Ink_Canvas
         /// 浮动工具栏鼠标按下事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 为浮动工具栏的拖拽操作做初始化：取消正在进行的边距动画、记录起始鼠标位置并显示拖拽指示器。
+        /// </summary>
+        /// <param name="sender">触发事件的对象，通常是浮动工具栏上的表情/图标控件。</param>
+        /// <param name="e">鼠标按钮事件参数，用于获取当前鼠标位置。</param>
         private void SymbolIconEmoji_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (isViewboxFloatingBarMarginAnimationRunning)
@@ -248,7 +256,10 @@ namespace Ink_Canvas
         /// 浮动工具栏鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 处理表情图标的鼠标抬起事件：结束拖拽状态、隐藏拖拽提示并在点击（非拖动）时切换主浮动工具栏的可见性，同时根据可见性更新双指手势按钮显示规则。
+        /// </summary>
+        /// <param name="e">鼠标按钮事件参数，用于判断是否为点击（与按下位置距离≤10像素）以决定是否切换浮动工具栏；可为 null。</param>
         internal void SymbolIconEmoji_MouseUp(object sender, MouseButtonEventArgs e)
         {
             isDragDropInEffect = false;
@@ -277,6 +288,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 隐藏形状绘制面板
+        /// <summary>
+        /// 隐藏并以滑动与淡出动画折叠绘制形状相关的边框面板。
         /// </summary>
         private void CollapseBorderDrawShape()
         {
@@ -286,6 +299,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// HideSubPanels的简化版，立即隐藏所有子面板，无动画效果
+        /// <summary>
+        /// 立即隐藏并折叠所有次级面板，使工具面板、调色板、设置面板、页面列表、图像选项、双指手势面板及绘图形状子面板等全部不可见。
         /// </summary>
         private void HideSubPanelsImmediately()
         {
@@ -624,7 +639,14 @@ namespace Ink_Canvas
         /// 撤销按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在浮动工具栏的撤销图标上释放鼠标时触发撤销操作并收起所有子面板。
+        /// </summary>
+        /// <remarks>
+        /// 仅当撤销按钮处于可用状态且事件源为撤销图标时才会执行撤销操作；该方法还会清除图标的背景高亮并隐藏子面板。
+        /// </remarks>
+        /// <param name="sender">触发事件的源对象（通常为撤销图标元素）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         internal void SymbolIconUndo_MouseUp(object sender, MouseButtonEventArgs e)
         {
             //if (lastBorderMouseDownObject != sender) return;
@@ -642,7 +664,11 @@ namespace Ink_Canvas
         /// 重做按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在用户松开重做图标时触发重做操作并收起相关子面板；在需要时还会重置图标的背景状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为重做图标或者其容器）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         internal void SymbolIconRedo_MouseUp(object sender, MouseButtonEventArgs e)
         {
             //if (lastBorderMouseDownObject != sender) return;
@@ -669,7 +695,12 @@ namespace Ink_Canvas
         /// 白板按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在鼠标释放时在白板与屏幕(PPT/桌面)模式之间切换并同步相关 UI 状态与设置。
+        /// </summary>
+        /// <remarks>
+        /// 当触发白板切换时，会隐藏或显示与工具面板、PPT 导航、时间/水印、手势设置和浮动工具栏相关的面板与指示，可能触发截图保存（按配置）并更新名言/水印文本。完成切换后会根据当前 InkCanvas 编辑模式更新工具模式与浮动工具栏高亮，并将应用主题设为深色。方法通过内部标志避免重复触发并在异步任务完成后重置该标志。
+        /// </remarks>
         internal void ImageBlackboard_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -922,7 +953,11 @@ namespace Ink_Canvas
         /// 光标图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换到光标工具：如果当前不在屏幕模式则退出白板模式，否则隐藏注释画布并在幻灯片放映结束时稍后调整浮动工具栏位置。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为光标图标按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private async void SymbolIconCursor_Click(object sender, RoutedEventArgs e)
         {
             if (currentMode != 0)
@@ -947,7 +982,12 @@ namespace Ink_Canvas
         /// 清空画布按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 处理删除图标的鼠标抬起事件：删除已选笔迹，或在无选中笔迹时根据设置保存截图后清空所有笔迹。
+        /// </summary>
+        /// <remarks>
+        /// 如果存在选中的笔迹，则移除这些笔迹并隐藏选区覆盖层；如果没有选中笔迹但画布上有笔迹且启用了自动保存且笔迹数量达到阈值，则先保存截图（在 PPT 演示模式下会包含幻灯片索引与演示名），随后清空画布的所有笔迹。
+        /// </remarks>
         internal void SymbolIconDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -998,7 +1038,11 @@ namespace Ink_Canvas
         /// 浮动工具栏的"套索选"按钮事件，重定向到旧UI的BtnSelect_Click方法
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 处理选择图标的鼠标释放事件：切换到选择工具并更新相关状态与界面（隐藏子面板、更新工具模式缓存）。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为选择图标）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         internal void SymbolIconSelect_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -1021,7 +1065,11 @@ namespace Ink_Canvas
         /// 浮动工具栏按钮鼠标按下反馈效果处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 为浮动工具栏上的按钮或调色板项提供按下时的视觉反馈并记录按下的对象。
+        /// </summary>
+        /// <param name="sender">触发事件的元素，通常为 Panel 或 Border。方法会根据元素类型和名称修改其 Background 并将其保存到 lastBorderMouseDownObject。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void FloatingBarToolBtnMouseDownFeedback_Panel(object sender, MouseButtonEventArgs e)
         {
             if (sender is Panel panel)
@@ -1053,7 +1101,11 @@ namespace Ink_Canvas
         /// 浮动工具栏按钮鼠标离开反馈效果处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标事件参数</param>
+        /// <summary>
+        /// 在鼠标离开浮动工具栏按钮时重置对应面板或边框的悬停视觉状态。
+        /// </summary>
+        /// <param name="sender">触发事件的元素，通常为 Panel 或 Border；对快捷调色板颜色球（Name 以 "QuickColor" 开头）会恢复其原始背景色。</param>
+        /// <param name="e">鼠标事件参数。</param>
         private void FloatingBarToolBtnMouseLeaveFeedback_Panel(object sender, MouseEventArgs e)
         {
             if (sender is Panel panel)
@@ -1113,7 +1165,9 @@ namespace Ink_Canvas
         /// 设置图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 隐藏所有子面板并触发设置面板的打开或切换；在设置面板正在显示或隐藏过程中不执行任何操作。
+        /// </summary>
         private void SymbolIconSettings_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
@@ -1125,7 +1179,12 @@ namespace Ink_Canvas
         /// 截图图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 隐藏子面板后延迟并将当前屏幕截图保存到桌面。
+        /// </summary>
+        /// <remarks>
+        /// 立即折叠或隐藏所有子面板，等待短暂延迟（用于让 UI 状态稳定），然后执行截图保存操作到用户桌面目录。
+        /// </remarks>
         private async void SymbolIconScreenshot_MouseUp(object sender, MouseButtonEventArgs e)
         {
             HideSubPanelsImmediately();
@@ -1137,6 +1196,12 @@ namespace Ink_Canvas
         /// 倒计时计时器图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
+        /// <summary>
+        /// 显示或打开计时器窗口并根据当前 UI 风格与模式初始化计时器状态。
+        /// </summary>
+        /// <remarks>
+        /// 隐藏相关工具面板；当使用新样式 UI 时重置并显示内嵌计时器容器并调整其尺寸，订阅其关闭事件以隐藏容器；否则创建并显示独立的倒计时窗口，并在特定模式下设置窗口置顶状态。
+        /// </remarks>
         /// <param name="e">鼠标按钮事件参数</param>
         private void ImageCountdownTimer_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -1191,7 +1256,11 @@ namespace Ink_Canvas
         /// 操作指南窗口图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 打开操作指南窗口并隐藏工具栏、面板和图片选项面板。
+        /// </summary>
+        /// <param name="sender">触发该事件的源对象。</param>
+        /// <param name="e">鼠标按钮事件参数，表示触发点击的鼠标按键信息。</param>
         private void OperatingGuideWindowIcon_MouseUp(object sender, MouseButtonEventArgs e)
         {
             AnimationsHelper.HideWithSlideAndFade(BorderTools);
@@ -1205,7 +1274,11 @@ namespace Ink_Canvas
         /// 随机点名图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在浮动工具栏可见时触发随机点名界面，先收起子面板再打开对应的点名窗口并尝试将其置顶。
+        /// </summary>
+        /// <param name="sender">事件源。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void SymbolIconRand_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // 如果控件被隐藏，不处理事件
@@ -1273,6 +1346,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 检查并更新橡皮擦类型标签的状态
+        /// <summary>
+        /// 根据当前设置的橡皮形状（Circle / Rectangle）更新橡皮选项卡在桌面与白板两处的视觉状态与样式。
         /// </summary>
         public void CheckEraserTypeTab()
         {
@@ -1338,7 +1413,16 @@ namespace Ink_Canvas
         /// 单次点名图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 处理“随机点名”按钮的鼠标抬起事件：收起相关面板并根据设置调用外部点名协议或弹出内部点名窗口（单次抽模式）。
+        /// </summary>
+        /// <param name="sender">事件源对象。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
+        /// <remarks>
+        /// - 优先根据 Settings.RandSettings.DirectCallCiRand 通过指定的协议发起外部点名；调用失败时回退到内部点名窗口。 
+        /// - 当不使用外部调用时，依据 Settings.RandSettings.UseNewRollCallUI 选择新样式或默认的内部点名窗口，并以模态方式显示（单次抽模式）。 
+        /// - 调用前会收起与点名无关的工具面板（快捷面板、工具边栏、图片选项等）。
+        /// </remarks>
         private void SymbolIconRandOne_MouseUp(object sender, MouseButtonEventArgs e)
         {
             // 如果控件被隐藏，不处理事件
@@ -1414,7 +1498,13 @@ namespace Ink_Canvas
         /// 墨迹重播按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 开始对当前画布（或已选笔画）进行墨迹重播，并在重播期间显示重播工具箱与控制状态。
+        /// </summary>
+        /// <remarks>
+        /// 方法会准备专用的重播画布、隐藏/禁用部分交互元素，按笔画中的采样点逐步重建并显示笔迹，从而呈现书写过程的回放；支持暂停、停止与重启控制，重播结束后会恢复原有 UI 与交互状态。不会抛出异常到调用者（内部异常仅记录或忽略）。
+        /// </remarks>
+        /// <param name="e">触发重播的鼠标按钮事件参数。</param>
         private void GridInkReplayButton_MouseUp(object sender, MouseButtonEventArgs e)
         {
             //if (lastBorderMouseDownObject != sender) return;
@@ -1585,7 +1675,14 @@ namespace Ink_Canvas
         /// 墨迹重播画布鼠标按下事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在回放画笔轨迹时响应画布的鼠标按下事件：双击时退出回放并恢复编辑交互与相关 UI 可见性。
+        /// </summary>
+        /// <param name="e">鼠标按钮事件参数，方法在双击（ClickCount == 2）时触发主要行为。</param>
+        /// <remarks>
+        /// 触发行为包括：隐藏回放用 InkCanvas、显示回放界面网格与回放工具栏、停止回放（isStopInkReplay = true），
+        /// 并将主 inkCanvas 恢复为可交互状态（可命中测试、启用 Manipulation、必要时切换到 Ink 编辑模式），同时重置触摸相关状态。
+        /// </remarks>
         private void InkCanvasForInkReplay_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
@@ -1615,7 +1712,10 @@ namespace Ink_Canvas
         /// 墨迹重播播放/暂停按钮鼠标按下事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 处理回放播放/暂停控件的鼠标按下事件并设置按下时的背景样式。
+        /// </summary>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void InkReplayPlayPauseBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplayPlayPauseBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
@@ -1625,7 +1725,11 @@ namespace Ink_Canvas
         /// 墨迹重播播放/暂停按钮鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 切换墨迹重播的暂停/播放状态并更新面板上的状态文本与播放/暂停图标可见性。
+        /// </summary>
+        /// <param name="sender">事件发送者，通常为触发该事件的控件（如 InkReplayPlayPauseBorder）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void InkReplayPlayPauseBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplayPlayPauseBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1639,7 +1743,11 @@ namespace Ink_Canvas
         /// 墨迹重播停止按钮鼠标按下事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 处理回放停止按钮的鼠标按下事件，并将按钮背景设为按下状态的颜色。
+        /// </summary>
+        /// <param name="sender">事件源，触发按下事件的元素。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void InkReplayStopButtonBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplayStopButtonBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
@@ -1649,7 +1757,13 @@ namespace Ink_Canvas
         /// 墨迹重播停止按钮鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 停止墨迹回放并恢复回放相关的 UI 到可交互状态。
+        /// </summary>
+        /// <remarks>
+        /// 隐藏回放用的 InkCanvas，显示并启用回放用的网格、浮动工具栏和黑板 UI，触发回放工具箱的淡出隐藏动画，并将内部标志标记为已停止回放（isStopInkReplay = true）。
+        /// </remarks>
+        /// <param name="e">鼠标按钮事件参数（作为事件触发来源，方法体内未使用）。</param>
         private void InkReplayStopButtonBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplayStopButtonBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1668,7 +1782,11 @@ namespace Ink_Canvas
         /// 墨迹重播重新开始按钮鼠标按下事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在按下回放按钮时将其背景置为按下态颜色。
+        /// </summary>
+        /// <param name="sender">触发事件的回放按钮边框元素。</param>
+        /// <param name="e">鼠标按下事件参数。</param>
         private void InkReplayReplayButtonBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplayReplayButtonBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
@@ -1678,7 +1796,12 @@ namespace Ink_Canvas
         /// 墨迹重播重新开始按钮鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 开始或重启墨迹重放，并将界面切换为“正在重播”状态。
+        /// </summary>
+        /// <remarks>
+        /// 将重放状态设置为重启并解除暂停，同时更新状态文本和播放/暂停图标以反映正在重播的 UI 状态。
+        /// </remarks>
         private void InkReplayReplayButtonBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplayReplayButtonBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1693,7 +1816,10 @@ namespace Ink_Canvas
         /// 墨迹重播速度按钮鼠标按下事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在用户按下回放速度按钮时应用按下状态的背景色以提供视觉反馈。
+        /// </summary>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void InkReplaySpeedButtonBorder_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             InkReplaySpeedButtonBorder.Background = new SolidColorBrush(Color.FromArgb(34, 9, 9, 11));
@@ -1703,7 +1829,11 @@ namespace Ink_Canvas
         /// 墨迹重播速度按钮鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在点击速度按钮时循环切换回放速度（0.5、1、2、4、8 倍）并更新显示文本为当前速度（例如 "2x"）。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（速度按钮的边框）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void InkReplaySpeedButtonBorder_OnMouseUp(object sender, MouseButtonEventArgs e)
         {
             InkReplaySpeedButtonBorder.Background = new SolidColorBrush(Colors.Transparent);
@@ -1718,7 +1848,11 @@ namespace Ink_Canvas
         /// 工具图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 切换工具面板（BorderTools 与 BoardBorderTools）的可见性；在显示时隐藏其他子面板并以滑动淡入动画展示，在隐藏时以滑动淡出动画隐藏；同时处理触发按钮的背景与内部状态重置。
+        /// </summary>
+        /// <param name="sender">触发事件的元素（可能为浮动工具栏按钮或面板内按钮）。</param>
+        /// <param name="e">鼠标按钮事件参数。</param>
         private void SymbolIconTools_MouseUp(object sender, MouseButtonEventArgs e)
         {
 
@@ -1753,7 +1887,14 @@ namespace Ink_Canvas
         /// 浮动工具栏边距动画处理
         /// </summary>
         /// <param name="MarginFromEdge">边缘边距</param>
-        /// <param name="PosXCaculatedWithTaskbarHeight">是否考虑任务栏高度计算位置</param>
+        /// <summary>
+        /// 计算并以动画方式更新浮动工具栏(ViewboxFloatingBar)的屏幕边距以重新定位工具栏。
+        /// </summary>
+        /// <param name="MarginFromEdge">与屏幕底部边缘的目标间距（像素）。特殊值 -60 用于隐藏/脱离显示处理。</param>
+        /// <param name="PosXCaculatedWithTaskbarHeight">是否在垂直位置计算中考虑任务栏高度；为 true 则将任务栏高度计入 Y 坐标计算。</param>
+        /// <remarks>
+        /// 在白板模式（currentMode == 1）下不会执行任何定位或动画。方法会根据显示缩放、浮动栏实际/渲染宽度、快捷调色盘显示状态及上次记录的位置计算最终坐标，并通过动画更新浮动栏的 Margin 与可见性。该方法在 UI 线程上执行相关更新并包含短时延迟以完成动画流程。
+        /// </remarks>
         public async void ViewboxFloatingBarMarginAnimation(int MarginFromEdge,
             bool PosXCaculatedWithTaskbarHeight = false)
         {
@@ -1903,7 +2044,10 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 桌面模式下的浮动工具栏边距动画处理
+        /// <summary>
+        /// 在桌面模式下以动画将浮动工具栏居中并靠近任务栏显示，同时根据屏幕 DPI、任务栏高度、快捷调色盘显示与缩放调整目标位置。
         /// </summary>
+        /// <remarks>如果当前处于白板模式则不执行任何操作；该方法在 UI 线程上使浮动工具栏可见、启动边距动画并更新内部位置状态（例如 pointDesktop 和 isViewboxFloatingBarMarginAnimationRunning）。</remarks>
         public async void PureViewboxFloatingBarMarginAnimationInDesktopMode()
         {
             // 在白板模式下不执行浮动栏动画
@@ -2011,7 +2155,13 @@ namespace Ink_Canvas
         /// <summary>
         /// PPT模式下的浮动工具栏边距动画处理
         /// </summary>
-        /// <param name="isRetry">是否为重试操作</param>
+        /// <summary>
+        /// 在非白板模式下将浮动工具栏在 PPT 环境中居中并执行边距位移动画以显示工具栏。
+        /// </summary>
+        /// <remarks>
+        /// 方法会根据屏幕 DPI、任务栏高度和快捷调色盘的可见性计算浮动栏位置与宽度，触发位移动画并在必要时根据配置进行重试以确保在仅 PPT 模式下可见性。该方法会设置 ViewboxFloatingBar 的可见性和 Margin，并可能递归重试一次以修正未显示的情况。
+        /// </remarks>
+        /// <param name="isRetry">指示此次调用是否为重试（用于防止在仅 PPT 模式下反复触发多次重试）。</param>
         public async void PureViewboxFloatingBarMarginAnimationInPPTMode(bool isRetry = false)
         {
             // 新增：在白板模式下不执行浮动栏动画
@@ -2133,7 +2283,11 @@ namespace Ink_Canvas
         /// 光标图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换到光标（鼠标）工具：禁用橡皮擦叠加、更新当前工具模式并调整画布、浮动工具栏及相关面板的可见性与状态；在切换前根据条件保存截图与笔迹并恢复全屏等退出批注模式的必要状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为光标图标控件）。</param>
+        /// <param name="e">路由事件参数。</param>
         internal async void CursorIcon_Click(object sender, RoutedEventArgs e)
         {
             if (lastBorderMouseDownObject is Panel panel)
@@ -2249,7 +2403,11 @@ namespace Ink_Canvas
         /// 画笔图标点击事件处理，用于切换到批注模式或显示画笔调色盘
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换到批注（画笔）模式或在已处于批注模式时显示/隐藏画笔面板，并同步更新工具状态、绘图属性与相关 UI 元素（如快捷调色板、全屏辅助、手势按钮、画布可见性等）。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象。</param>
+        /// <param name="e">路由事件参数。</param>
         internal void PenIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2480,6 +2638,9 @@ namespace Ink_Canvas
         /// 颜色主题切换鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
+        /// <summary>
+        /// 切换浅色/深色主题设置（在桌面模式下同步保存桌面主题），并应用新的配色方案。
+        /// </summary>
         /// <param name="e">路由事件参数</param>
         private void ColorThemeSwitch_MouseUp(object sender, RoutedEventArgs e)
         {
@@ -2492,7 +2653,11 @@ namespace Ink_Canvas
         /// 橡皮擦图标点击事件处理，用于切换到橡皮擦模式或显示橡皮擦尺寸面板
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换到点状橡皮擦工具；在必要时保存当前笔迹、启用高级橡皮擦覆盖层、更新工具模式，并根据当前状态显示或隐藏橡皮擦尺寸面板。
+        /// </summary>
+        /// <param name="sender">触发该事件的源对象。</param>
+        /// <param name="e">路由事件参数。</param>
         internal void EraserIcon_Click(object sender, RoutedEventArgs e)
         {
             bool isAlreadyEraser = inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
@@ -2548,7 +2713,15 @@ namespace Ink_Canvas
         /// 白板模式下的橡皮擦图标点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换到点擦除工具（板端），启用高级橡皮擦覆盖层并更新当前工具状态；在已为橡皮擦状态时切换板上橡皮尺寸面板的显示/隐藏。
+        /// </summary>
+        /// <remarks>
+        /// - 启用并应用高级橡皮擦形状、设置光标并隐藏其他子面板的高亮。  
+        /// - 若当前已是点擦除模式，再次点击会在 BoardEraserSizePanel 与 EraserSizePanel 之间执行显示或隐藏切换。
+        /// </remarks>
+        /// <param name="sender">触发事件的源对象（通常为板端橡皮擦图标按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BoardEraserIcon_Click(object sender, RoutedEventArgs e)
         {
             bool isAlreadyEraser = inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
@@ -2591,7 +2764,13 @@ namespace Ink_Canvas
         /// 墨迹擦除图标点击事件处理，用于切换到按笔画擦除模式
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换到按笔划擦除工具并更新相关 UI 与内部状态。
+        /// </summary>
+        /// <remarks>
+        /// 禁用高级橡皮擦覆盖，设置点擦/笔划擦的强制标志和橡皮擦形状，更新当前工具模式缓存、编辑模式及绘图形状状态；同时取消单指拖拽模式并隐藏相关子面板以反映模式切换的 UI 变化。
+        /// </remarks>
+        /// <param name="e">路由事件参数。</param>
         private void EraserIconByStrokes_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2628,7 +2807,11 @@ namespace Ink_Canvas
         /// 光标删除图标点击事件处理，用于删除选中内容并切换到光标模式
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 在触发删除操作后切换到光标工具。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象，通常为浮动工具栏或其按钮。</param>
+        /// <param name="e">路由事件参数。</param>
         private void CursorWithDelIcon_Click(object sender, RoutedEventArgs e)
         {
 
@@ -2642,6 +2825,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将当前绘笔颜色设置为白色并安排在短时间后自动恢复到之前的笔刷。
+        /// <summary>
+        /// 将快速颜色设置为白色，并安排自动恢复到先前的画笔设置。
         /// </summary>
         private void QuickColorWhite_Click(object sender, RoutedEventArgs e)
         {
@@ -2651,6 +2836,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将快速颜色设置为橙色，并安排稍后自动恢复到先前的画笔颜色。
+        /// <summary>
+        /// 将快速颜色设置为橙色，并安排画笔在短时间后自动恢复原先设置。
         /// </summary>
         private void QuickColorOrange_Click(object sender, RoutedEventArgs e)
         {
@@ -2660,6 +2847,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将画笔颜色切换为黄色并安排自动恢复为先前的画笔设置。
+        /// <summary>
+        /// 将快速颜色切换为黄色，并安排在短时间后自动恢复先前的画笔设置。
         /// </summary>
         private void QuickColorYellow_Click(object sender, RoutedEventArgs e)
         {
@@ -2669,6 +2858,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将快速颜色设置为黑色并安排在稍后自动恢复为先前的画笔颜色。
+        /// <summary>
+        /// 将当前快速颜色切换为黑色并安排在短时间后自动恢复到先前的笔刷设置。
         /// </summary>
         private void QuickColorBlack_Click(object sender, RoutedEventArgs e)
         {
@@ -2678,6 +2869,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将当前画笔颜色设置为蓝色并安排在一段时间后自动恢复到之前的画笔颜色。
+        /// <summary>
+        /// 将预设的蓝色应用为当前笔刷并安排在一段时间后自动恢复先前的笔刷设置。
         /// </summary>
         private void QuickColorBlue_Click(object sender, RoutedEventArgs e)
         {
@@ -2687,6 +2880,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将快速颜色切换为红色，并安排稍后自动恢复为先前的画笔颜色。
+        /// <summary>
+        /// 将快速颜色切换为红色，并安排在短时间后自动恢复到之前的画笔设置。
         /// </summary>
         private void QuickColorRed_Click(object sender, RoutedEventArgs e)
         {
@@ -2696,6 +2891,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将快速颜色切换为绿色并安排在一段时间后自动恢复先前画笔颜色。
+        /// <summary>
+        /// 将快速颜色切换为绿色（RGB 22,163,74）并安排在短时间后自动恢复先前的画笔设置。
         /// </summary>
         private void QuickColorGreen_Click(object sender, RoutedEventArgs e)
         {
@@ -2705,6 +2902,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将当前画笔颜色切换为紫色快捷色并安排自动恢复先前画笔设置。
+        /// <summary>
+        /// 将快速颜色设置为紫色（RGB 147,51,234）并安排在短时间后自动恢复为先前画笔设置。
         /// </summary>
         private void QuickColorPurple_Click(object sender, RoutedEventArgs e)
         {
@@ -2723,7 +2922,12 @@ namespace Ink_Canvas
         /// - 在荧光笔模式下更新荧光笔的内部颜色索引与绘图属性（宽度、笔尖形状、IsHighlighter 等）；
         /// - 根据当前模式（桌面或白板）记录最近使用的颜色索引；
         /// - 更新快速调色盘的选中指示器并刷新颜色显示状态。
-        /// </remarks>
+        /// <summary>
+        /// 将指定颜色应用为当前画笔/荧光笔颜色并更新相关快捷色盘与状态。
+        /// </summary>
+        /// <param name="color">要设置的画笔颜色。</param>
+        /// <remarks>
+        /// 如果当前不在批注（Ink）模式，会切换到画笔模式；当处于荧光笔类型时同时更新荧光笔属性与内部荧光笔颜色索引。方法还会更新桌面/白板模式下的最近使用颜色索引、刷新快捷调色盘的选中指示器，并触发颜色切换检查以同步界面与绘制属性。</remarks>
         private void SetQuickColor(Color color)
         {
             // 确保当前处于批注模式
@@ -2836,7 +3040,10 @@ namespace Ink_Canvas
         /// <summary>
         /// 更新快速调色盘的选中指示器，根据当前选中的颜色显示对应的勾选图标
         /// </summary>
-        /// <param name="selectedColor">当前选中的颜色</param>
+        /// <summary>
+        /// 根据所选颜色在快速颜色面板（单行/双行两种展示）中显示相应的勾选指示器。
+        /// </summary>
+        /// <param name="selectedColor">用于匹配面板中预设颜色并显示对应勾选标记的颜色；在荧光笔模式下匹配容差更大。</param>
         private void UpdateQuickColorPaletteIndicator(Color selectedColor)
         {
             // 隐藏所有check图标（双行显示）
@@ -2915,7 +3122,13 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 检查两个颜色是否相似（允许一定的误差范围）
+        /// <summary>
+        /// 判断两个颜色在指定的通道差容差内是否被视为相似。
         /// </summary>
+        /// <param name="color1">第一个颜色。</param>
+        /// <param name="color2">第二个颜色。</param>
+        /// <param name="tolerance">每个 RGB 通道允许的最大差值（含），默认 15。</param>
+        /// <returns>`true` 如果 R、G、B 三个通道的绝对差均小于或等于 <paramref name="tolerance"/>，否则 `false`。</returns>
         private bool IsColorSimilar(Color color1, Color color2, int tolerance = 15)
         {
             int rDiff = Math.Abs(color1.R - color2.R);
@@ -2929,7 +3142,11 @@ namespace Ink_Canvas
         /// 选择工具图标鼠标释放事件处理，用于切换到选择模式或选择所有墨迹
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换或激活“选择”工具；如果已处于选择模式，则选中画布上所有非空笔划，否则切换到选择模式。
+        /// </summary>
+        /// <param name="sender">事件源。</param>
+        /// <param name="e">路由事件参数。</param>
         private void SelectIcon_MouseUp(object sender, RoutedEventArgs e)
         {
             // 禁用高级橡皮擦系统
@@ -2955,7 +3172,12 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 从图形绘制模式切换到画笔模式的提示处理
+        /// <summary>
+        /// 根据当前形状绘制与长按状态隐藏相关子面板并在必要时切换到笔或光标模式。
         /// </summary>
+        /// <remarks>
+        /// 若处于长按选中状态，仅隐藏形状相关子面板；否则当画布控制面板可见时隐藏子面板并切换到笔模式，若画布控制面板不可见则切换到光标模式。
+        /// </remarks>
         private void DrawShapePromptToPen()
         {
             if (isLongPressSelected)
@@ -2976,7 +3198,9 @@ namespace Ink_Canvas
         /// 关闭工具面板鼠标释放事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在鼠标松开时关闭工具栏并隐藏所有子面板。
+        /// </summary>
         private void CloseBordertools_MouseUp(object sender, MouseButtonEventArgs e)
         {
             HideSubPanels();
@@ -2988,7 +3212,11 @@ namespace Ink_Canvas
         /// 手指拖动模式切换按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换单指与多指拖动模式并同步更新按钮上的文本显示。
+        /// </summary>
+        /// <param name="sender">触发事件的控件（通常为按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnFingerDragMode_Click(object sender, RoutedEventArgs e)
         {
             if (isSingleFingerDragMode)
@@ -3007,7 +3235,9 @@ namespace Ink_Canvas
         /// 撤销按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 撤销上一次历史操作并将其应用到画布上；如果存在选中的笔迹，先清除选区。
+        /// </summary>
         private void BtnUndo_Click(object sender, RoutedEventArgs e)
         {
             if (inkCanvas.GetSelectedStrokes().Count != 0)
@@ -3024,7 +3254,10 @@ namespace Ink_Canvas
         /// 重做按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 执行重做操作：若存在选中笔画则先取消选择，然后从时间机获取重做项并将该历史项应用到画布。
+        /// </summary>
+        /// <param name="e">路由事件参数。</param>
         private void BtnRedo_Click(object sender, RoutedEventArgs e)
         {
             if (inkCanvas.GetSelectedStrokes().Count != 0)
@@ -3041,7 +3274,11 @@ namespace Ink_Canvas
         /// 按钮启用状态变更事件处理，用于更新按钮内容的透明度
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">依赖属性变更事件参数</param>
+        /// <summary>
+        /// 根据按钮的 IsEnabled 状态调整其 Content 的不透明度以提供启用/禁用的视觉反馈。
+        /// </summary>
+        /// <param name="sender">触发事件的 Button。</param>
+        /// <param name="e">依赖属性变更事件参数，表示 IsEnabled 的变化。</param>
         private void Btn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3065,7 +3302,11 @@ namespace Ink_Canvas
         /// 退出按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 处理“退出”按钮的点击：在必要时保存设置并恢复临时的无焦点模式，然后发起应用程序退出流程。
+        /// </summary>
+        /// <param name="sender">事件的发送者（通常为退出按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         public void BtnExit_Click(object sender, RoutedEventArgs e)
         {
             // 如果当前在设置面板中，需要先恢复无焦点模式状态
@@ -3088,7 +3329,12 @@ namespace Ink_Canvas
         /// 重启按钮点击事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 启动当前可执行文件并传入参数 "-m" 以触发重启流程，然后标记为用户退出并关闭窗口；
+        /// 如果设置面板处于可见状态，会保存设置并在临时恢复的无焦点模式下恢复该模式。
+        /// </summary>
+        /// <param name="sender">事件触发源。</param>
+        /// <param name="e">路由事件参数。</param>
         public void BtnRestart_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
@@ -3111,7 +3357,11 @@ namespace Ink_Canvas
         /// 设置覆盖层点击事件处理，用于点击设置面板外部时关闭设置面板
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">鼠标按钮事件参数</param>
+        /// <summary>
+        /// 在设置面板外部点击时关闭设置面板（仅在面板不处于打开或隐藏过渡中生效）。
+        /// </summary>
+        /// <param name="sender">事件源（可为空，方法未使用该参数）。</param>
+        /// <param name="e">鼠标按钮事件参数，包含点击位置用于判断是否在设置面板内部。</param>
         private void SettingsOverlayClick(object sender, MouseButtonEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
@@ -3142,7 +3392,11 @@ namespace Ink_Canvas
         /// 切换并打开设置面板；在需要时先进行安全密码校验，然后显示设置面板并启动打开动画，同时根据设置暂时调整无焦点模式与遮罩交互状态。
         /// </summary>
         /// <param name="sender">发送者</param>
-        /// <param name="e">路由事件参数</param>
+        /// <summary>
+        /// 切换设置面板的可见性；在打开面板前可进行密码验证，并以滑入动画展示面板，同时设置蒙版与无焦点临时状态。
+        /// </summary>
+        /// <param name="sender">事件源，通常为触发此操作的按钮。</param>
+        /// <param name="e">路由事件参数。</param>
         private async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
@@ -3293,7 +3547,13 @@ namespace Ink_Canvas
 
         private int currentMode;
 
-        // 退出批注模式时的全屏还原处理
+        /// <summary>
+        /// 在退出批注模式后根据配置和当前状态恢复到正常的全屏/工作区行为。
+        /// </summary>
+        /// <remarks>
+        /// 当启用了“避免全屏辅助”且此前应用了全屏限制，并且当前不处于白板模式且不在 PPT 放映状态时，
+        /// 本方法会取消画板模式并将主窗口恢复到屏幕的工作区大小，同时重置对应的全屏应用标记。
+        /// </remarks>
         private void RestoreFullScreenOnExitAnnotationMode()
         {
             if (Settings.Advanced.IsEnableAvoidFullScreenHelper &&
@@ -3322,6 +3582,11 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 切换过程中会保存/清理/恢复画笔轨迹，显示或隐藏白板/黑板面板、手势面板与 PPT 控件，调整主题与悬浮工具栏可见性，处理全屏/工作区尺寸恢复或进入全屏，以及在进入白板时检查剪贴板并显示粘贴提示。该方法还会触发隐藏/显示墨迹画布的逻辑（通过调用 BtnHideInkCanvas_Click）。
+        /// <summary>
+        /// 在屏幕、白板（或黑板）与PPT 模式之间切换并同步相关的 UI 状态与画布数据。
+        /// </summary>
+        /// <remarks>
+        /// 切换时会保存/清理/恢复笔迹、显示或隐藏画板侧边栏与手势面板、调整浮动工具栏可见性、根据主题更新退出按钮颜色并在必要时切换全屏行为；还会在进入白板/黑板模式或从白板退出时根据设置处理自动收纳浮动栏与 PPT 按钮的可见性，并在进入画板时检查剪贴板以提示粘贴图像。该方法是窗口的事件处理器，用于响应界面上用于模式切换的按钮点击事件。
         /// </remarks>
         private void BtnSwitch_Click(object sender, RoutedEventArgs e)
         {

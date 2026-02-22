@@ -465,7 +465,17 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 处理IPC文件
+        /// <summary>
+        /// 扫描临时目录中的 IPC 文件并根据文件内容在主应用实例上执行相应操作（打开墨迹文件、切换白板模式、展开浮动栏、处理 URI 命令）。 
         /// </summary>
+        /// <remarks>
+        /// 支持的 IPC 文件类型及其行为：
+        /// - 文件路径（前缀 IpcFilePrefix）：读取路径并在主窗口中打开对应的 .icstk 文件并显示通知；
+        /// - 白板模式（前缀 IpcBoardModePrefix，内容 "BOARD_MODE"）：切换到白板模式并显示通知；
+        /// - 展开浮动栏（前缀 IpcShowModePrefix，内容 "SHOW_MODE"）：在收纳状态下展开浮动栏并显示通知；
+        /// - URI 命令（前缀 IpcUriCommandPrefix）：将读取到的 URI 转发给主窗口处理。 
+        /// 处理完成后会尝试删除对应的 IPC 临时文件；遇到单个文件处理或删除错误时会记录警告并尝试清理该文件，整体异常会记录为错误。
+        /// </remarks>
         private static void ProcessIpcFiles()
         {
             try

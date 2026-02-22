@@ -119,6 +119,10 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 检查当前 Windows 系统的主题设置并判断是否为浅色主题。
+        /// </summary>
+        /// <returns>`true` 如果系统使用浅色主题，`false` 否则；在无法读取注册表或发生错误时返回 `false`。</returns>
         private bool IsSystemThemeLight()
         {
             var light = false;

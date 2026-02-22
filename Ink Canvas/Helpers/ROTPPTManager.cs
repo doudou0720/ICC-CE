@@ -186,6 +186,9 @@ namespace Ink_Canvas.Helpers
             _unifiedRotTimer.AutoReset = true;
         }
 
+        /// <summary>
+        /// 计时器触发的回调：递增内部轮询计数并执行连接检查；每隔一次（即每两次调用）执行幻灯片放映状态检查。
+        /// </summary>
         private void OnUnifiedRotTimerElapsed(object sender, ElapsedEventArgs e)
         {
             var tick = Interlocked.Increment(ref _rotTickCount);
@@ -201,6 +204,11 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <remarks>
         /// 如果实例已被释放（Dispose 已调用）或计时器未初始化，则此方法不会执行任何操作。
+        /// <summary>
+        /// 启动内部 ROT/PPT 监控计时器，恢复对 PowerPoint 连接与幻灯片状态的周期性检查。
+        /// </summary>
+        /// <remarks>
+        /// 如果实例已被释放则不执行任何操作；如果计时器已在运行则调用无副作用。
         /// </remarks>
         public void StartMonitoring()
         {
@@ -211,6 +219,8 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 停止内部的 ROT 监视计时器并断开与当前 PowerPoint 实例的连接。
+        /// <summary>
+        /// 停止内部 ROT/PPT 监控计时器并断开与 PowerPoint 的连接，断开后不会自动重启监控。
         /// </summary>
         public void StopMonitoring()
         {
@@ -220,7 +230,12 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 强制断开当前与 PowerPoint 的 ROT 连接并触发后续的重连流程。
+        /// <summary>
+        /// 触发一次热重载：强制断开当前 PPT 连接并通过监控流程尝试重新建立连接。
         /// </summary>
+        /// <remarks>
+        /// 若管理器已被释放（已调用 Dispose），该方法为无操作。
+        /// </remarks>
         public void ReloadConnection()
         {
             if (_disposed) return;
@@ -235,6 +250,11 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <remarks>
         /// 如果在检查或连接过程中发生异常，异常信息会记录到日志并被吞掉，不会向上抛出。
+        /// <summary>
+        /// 定期检查并在必要时通过 ROT 尝试连接到 PowerPoint 应用程序。
+        /// </summary>
+        /// <remarks>
+        /// 如果对象已释放或模块正在卸载则不执行任何操作；发生的异常会被记录并吞掉以防止定时器线程崩溃。
         /// </remarks>
         private void OnConnectionCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
@@ -255,6 +275,11 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <remarks>
         /// 当实例未被释放、模块未在卸载过程中且与 PowerPoint 仍保持连接时会调用内部的放映状态检查逻辑。若检查过程中发生异常，会将错误写入日志并吞并异常以保证定时器循环继续运行。
+        /// <summary>
+        /// 在计时器触发时检查当前 PowerPoint 的放映（幻灯片播放）状态，并在发生异常时记录错误。
+        /// </summary>
+        /// <remarks>
+        /// 如果已释放、模块正在卸载或未连接到 PowerPoint，则不会执行检查。
         /// </remarks>
         private void OnSlideShowStateCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
@@ -279,6 +304,16 @@ namespace Ink_Canvas.Helpers
         /// - 若当前无可用实例则断开现有连接；
         /// - 若检测到已连接的实例发生变化则先断开再重新连接。
         /// 遇到异常时会记录错误日志，并在存在活动连接时尝试断开以保证状态一致性。
+        /// <summary>
+        /// 检查 ROT 并在必要时建立、断开或切换与 PowerPoint 的连接。
+        /// </summary>
+        /// <remarks>
+        /// 在函数开始时会提前返回以响应已释放或模块正在卸载的状态。该方法通过 ROT 查找当前最佳的 PowerPoint 应用实例：
+        /// - 如果找到实例且当前未绑定，则建立连接；
+        /// - 如果未找到实例且当前已绑定，则断开连接；
+        /// - 如果找到的实例与当前绑定的不同，则先断开再重新连接；
+        /// - 若找到的实例与当前相同，则释放临时引用并保持现有绑定不变。
+        /// 发生异常时会记录错误日志并尝试断开现有连接以保持一致性。
         /// </remarks>
         private void CheckAndConnectToPPTViaRot()
         {
@@ -334,6 +369,9 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 检查当前是否处于幻灯片放映状态，并在状态发生变化时更新缓存并触发 SlideShowStateChanged 事件。
+        /// </summary>
         private void CheckSlideShowState()
         {
             try
@@ -359,6 +397,12 @@ namespace Ink_Canvas.Helpers
         /// <param name="appObj">要绑定的 PowerPoint COM 应用对象（通常来自 ROT）。</param>
         /// <remarks>
         /// 如果事件注册或后续处理失败，会记录错误并在异常路径上清除内部引用（将内部应用对象置空）。方法会触发 <c>PPTConnectionChanged(true)</c> 并记录连接成功的事件日志；若检测到当前正处于幻灯片放映，则尝试调用一次放映开始的内部处理以同步状态。异常信息会写入日志，但方法不会向外抛出未捕获的异常（内部会捕获并记录错误后清理状态）。
+        /// <summary>
+        /// 将指定的 PowerPoint COM 对象绑定为当前连接并在 UI 线程上注册内部事件处理器。
+        /// </summary>
+        /// <param name="appObj">预期为可转换为 Microsoft.Office.Interop.PowerPoint.Application 的 COM 实例；当可转换时会进行绑定并注册事件。</param>
+        /// <remarks>
+        /// 绑定成功后会触发 PPTConnectionChanged（true）。若当前已处于放映状态，会尝试触发一次内部的 SlideShowBegin 处理以同步状态。发生绑定或事件注册错误时会记录日志并在失败情况下清除绑定的应用对象。
         /// </remarks>
         private void ConnectToPPT(object appObj)
         {
@@ -413,6 +457,10 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 断开与 PowerPoint 的当前 COM 连接，注销事件并释放相关 COM 资源，恢复或停止内部监控定时器以反映断连状态。
+        /// </summary>
+        /// <param name="restartMonitoring">指示在完成断开与资源释放后是否重新启动内部的 ROT/PPT 监控计时器；为 true 则尝试恢复监控，为 false 则保持停止。</param>
         private void DisconnectFromPPT(bool restartMonitoring = true)
         {
             object appToRelease = null;
@@ -716,6 +764,12 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 将当前放映跳转到指定的幻灯片编号。
+        /// </summary>
+        /// <param name="slideNumber">目标幻灯片的编号（从 1 开始）。</param>
+        /// <returns>`true` 表示跳转成功，`false` 表示跳转失败或未在放映状态。</returns>
+        /// <remarks>在遇到某些 COM 错误时会断开与 PowerPoint 的连接并返回 `false`。该方法在失败时会释放内部使用的 COM 资源。</remarks>
         public bool TryNavigateToSlide(int slideNumber)
         {
             object slideShowWindows = null;
@@ -771,6 +825,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 在当前已连接且处于放映状态的演示文稿中将播放进度移动到下一张幻灯片（若可用）。
+        /// </summary>
+        /// <remarks>
+        /// 导航时会尊重 SkipAnimationsWhenNavigating 的设置；在发生特定 COM 错误时可能会断开与 PowerPoint 的连接以保持状态一致性。
+        /// </remarks>
+        /// <returns>`true` 如果成功切换到下一张幻灯片，`false` 否则。</returns>
         public bool TryNavigateNext()
         {
             object slideShowWindows = null;
@@ -826,6 +887,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 在当前放映中切换到上一张幻灯片（如果存在）。操作会在活动放映窗口上调用“Previous”视图命令，并可根据 SkipAnimationsWhenNavigating 决定是否先激活窗口以触发动画。
+        /// </summary>
+        /// <returns>`true` 表示成功切换到上一张幻灯片，`false` 表示操作未执行或失败。</returns>
+        /// <remarks>在遇到特定的 COM 错误（例如不可用的 COM 对象）时，方法可能会断开当前的 PPT 连接以保持管理器状态一致。</remarks>
         public bool TryNavigatePrevious()
         {
             object slideShowWindows = null;

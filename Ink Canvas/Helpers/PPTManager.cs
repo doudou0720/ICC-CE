@@ -388,6 +388,11 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 断开与 PowerPoint/WPS 的 COM 连接并清理相关状态与资源。
+        /// </summary>
+        /// <remarks>
+        /// 该方法：释放并注销与当前 PPT 应用、演示文稿、幻灯片相关的 COM 对象；清空对应的引用与幻灯片计数；触发连接状态变更事件（PPTConnectionChanged(false)）；停止监控计时器并将模块置为卸载状态；强制进行垃圾回收以帮助释放 COM 资源；并在后台线程中在延迟后尝试恢复并重启监控计时器以重新加载模块。方法在清理过程中会记录错误与异常，但不会向调用者抛出异常以保证稳定性。</remarks>
         private void DisconnectFromPPT()
         {
             try
@@ -509,7 +514,10 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 安全释放COM对象
+        /// <summary>
+        /// 释放传入的 COM 对象引用（仅在对象为 COM 对象且非 null 时执行释放）。
         /// </summary>
+        /// <param name="comObject">要释放的对象；如果为 null 或非 COM 对象则不会执行任何操作。</param>
         private void SafeReleaseComObject(object comObject)
         {
             try
@@ -522,6 +530,11 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
+        /// <summary>
+        /// 安全释放指定的 COM 对象；在释放失败时捕获异常并记录日志以避免抛出异常影响调用方。
+        /// </summary>
+        /// <param name="comObject">要释放的 COM 对象实例（可为 null）。</param>
+        /// <param name="objectName">用于日志记录的对象名称或描述，以便在发生异常时识别目标对象。</param>
         private void SafeReleaseComObject(object comObject, string objectName)
         {
             try
@@ -867,6 +880,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 导航到当前正在播放的幻灯放映的下一张幻灯片。
+        /// </summary>
+        /// <remarks>
+        /// 如果属性 <c>SkipAnimationsWhenNavigating</c> 为 <c>false</c>，方法会激活幻灯放映窗口以确保视图更新；在检测到特定 COM 错误时会断开与 PowerPoint 的连接并返回 <c>false</c>。
+        /// </remarks>
+        /// <returns>`true` 如果成功导航到下一张幻灯片，`false` 否则（例如未连接、未处于放映状态或发生错误）。</returns>
         public bool TryNavigateNext()
         {
             object slideShowWindows = null;
@@ -921,6 +941,13 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 在当前放映中切换到上一张幻灯片（若存在），并根据设置决定是否激活动画效果。
+        /// </summary>
+        /// <remarks>
+        /// 如果检测到与 COM 交互的严重错误（特定 HRESULT），方法会触发与 PowerPoint 的断开连接操作。方法会在完成后释放用于交互的 COM 对象资源。
+        /// </remarks>
+        /// <returns>`true` 如果成功切换到上一张幻灯片，`false` 否则。</returns>
         public bool TryNavigatePrevious()
         {
             object slideShowWindows = null;
@@ -1543,7 +1570,13 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 检查任务栏中是否有WPS窗口
+        /// <summary>
+        /// 检查系统任务栏上是否存在可见且被识别为 WPS 的顶级窗口。
         /// </summary>
+        /// <remarks>
+        /// 在枚举窗口时会筛选可见窗口并用 IsWpsWindow 判定是否为 WPS 窗口；遇到异常时会记录错误并保守地返回 `true`（认为仍有窗口存在）。
+        /// </remarks>
+        /// <returns>`true` 表示检测到至少一个符合条件的 WPS 窗口或发生错误时的保守判断；`false` 表示未检测到任何符合条件的窗口。</returns>
         private bool HasWpsWindowInTaskbar()
         {
             try
@@ -1578,7 +1611,13 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 安全地结束WPS进程 - 通过释放PPTCOM对象
+        /// <summary>
+        /// 安全地终止与 WPS 关联的进程并清理相关的 PowerPoint COM 对象和内部状态。
         /// </summary>
+        /// <remarks>
+        /// 当检测到追踪的 WPS 进程仍然存在时，先尝试通过释放 PPT 相关的 COM 对象并触发垃圾回收来让进程正常退出；
+        /// 若进程仍然存在，则尝试调用 CloseMainWindow 并等待短时退出；最后在必要时强制 Kill 进程。方法会停止 WPS 监控计时器、释放和清空内部的 COM 对象引用、重置演示相关状态，并触发 PPTConnectionChanged(false) 通知连接已断开。所有异常在内部记录并被吞并以保证清理继续执行。
+        /// </remarks>
         private void SafeTerminateWpsProcess()
         {
             try
@@ -1826,6 +1865,11 @@ namespace Ink_Canvas.Helpers
             return null;
         }
 
+        /// <summary>
+        /// 构建并返回指定窗口句柄的 WpsWindowInfo（包含可见性、最小化/最大化状态、标题、类名、位置、进程 ID 与进程名）。
+        /// </summary>
+        /// <param name="hWnd">目标窗口的原生句柄（HWND）。</param>
+        /// <returns>包含该窗口元信息的 WpsWindowInfo 实例；字段可能为空字符串或默认值以表示无法获取对应信息。</returns>
         private WpsWindowInfo GetWindowInfo(IntPtr hWnd)
         {
             var windowInfo = new WpsWindowInfo

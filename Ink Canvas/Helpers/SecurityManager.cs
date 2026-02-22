@@ -20,6 +20,10 @@ namespace Ink_Canvas.Helpers
         /// 检查设置中是否启用了密码安全功能。
         /// </summary>
         /// <param name="settings">应用程序设置对象（可能为 null）。</param>
+        /// <summary>
+        /// 检查应用设置中是否启用了密码功能。
+        /// </summary>
+        /// <param name="settings">配置对象；可为 null。</param>
         /// <returns>`true` 当 settings 非 null 且其 Security 部分存在且已启用密码功能；`false` 否则。</returns>
         public static bool IsPasswordFeatureEnabled(Settings settings)
         => settings?.Security != null && settings.Security.PasswordEnabled;
@@ -28,7 +32,11 @@ namespace Ink_Canvas.Helpers
         /// 确定给定设置中是否已配置密码（存在非空的密码盐和密码哈希）。
         /// </summary>
         /// <param name="settings">应用的设置；为 null 或未包含 Security 部分时视为未配置密码。</param>
-        /// <returns>`true` 如果设置包含非空的 PasswordSalt 和 PasswordHash，否则 `false`。</returns>
+        /// <summary>
+                /// 判断应用设置中是否已配置密码（即存在非空的密码盐和密码哈希）。
+                /// </summary>
+                /// <param name="settings">应用设置对象；当为 null 或其 Security 为 null 时视为未配置密码。</param>
+                /// <returns>`true` 如果设置包含非空的 PasswordSalt 和 PasswordHash，`false` 否则。</returns>
         public static bool HasPasswordConfigured(Settings settings)
             => settings?.Security != null
                 && !string.IsNullOrWhiteSpace(settings.Security.PasswordSalt)
@@ -38,7 +46,10 @@ namespace Ink_Canvas.Helpers
         /// 确定在退出应用时是否需要输入密码。
         /// </summary>
         /// <param name="settings">应用配置；如果为 null，则视为未启用或未配置密码。</param>
-        /// <returns>`true` 当密码功能已启用、已配置密码且设置要求在退出时需要密码，`false` 否则。</returns>
+        /// <summary>
+            /// 确定在应用退出时是否需要验证密码。
+            /// </summary>
+            /// <returns>`true` 当密码功能已启用、已配置密码且设置要求在退出时需要密码；`false` 否则。</returns>
         public static bool IsPasswordRequiredForExit(Settings settings)
             => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnExit;
 
@@ -46,7 +57,11 @@ namespace Ink_Canvas.Helpers
         /// 确定在进入设置界面时是否需要输入密码。
         /// </summary>
         /// <param name="settings">应用配置；为 null 或未启用密码功能时视为未配置密码。</param>
-        /// <returns>`true` 如果已启用密码功能、已配置密码且已设置为在进入设置时要求密码，`false` 否则。</returns>
+        /// <summary>
+            /// 确定在进入应用设置界面时是否需要验证密码。
+            /// </summary>
+            /// <param name="settings">应用配置；如果为 null 或未配置安全设置，则视为未启用密码要求。</param>
+            /// <returns>`true` 如果已启用密码功能、已配置密码且设置为在进入设置时要求密码，`false` 否则。</returns>
         public static bool IsPasswordRequiredForEnterSettings(Settings settings)
             => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnEnterSettings;
 
@@ -54,7 +69,11 @@ namespace Ink_Canvas.Helpers
         /// 指示在重置配置时是否需要输入密码。
         /// </summary>
         /// <param name="settings">应用设置对象；如果为 null 或未启用密码功能，则视为不需要密码。</param>
-        /// <returns>`true` 如果已启用密码功能、已有配置的密码且设置要求在重置配置时进行密码验证；`false` 否则。</returns>
+        /// <summary>
+            /// 确定在重置配置时是否需要进行密码验证。
+            /// </summary>
+            /// <param name="settings">应用程序设置，用于检查是否启用了密码功能并读取相关安全选项（可能为 null）。</param>
+            /// <returns>`true` 如果已启用密码功能、已有配置的密码且设置要求在重置配置时进行密码验证；`false` 否则。</returns>
         public static bool IsPasswordRequiredForResetConfig(Settings settings)
             => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnResetConfig;
 
@@ -63,7 +82,12 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <param name="settings">包含存储的密码盐和哈希的设置对象（使用 Base64 编码的 PasswordSalt 和 PasswordHash）。</param>
         /// <param name="password">要验证的明文密码。</param>
-        /// <returns>`true` 如果密码与存储的哈希匹配，`false` 否则（包括未配置密码、password 为 null 或在解析/派生过程中发生错误）。</returns>
+        /// <summary>
+        /// 验证给定密码是否与设置中存储的密码哈希匹配。
+        /// </summary>
+        /// <param name="settings">包含安全配置的 Settings 实例；函数会读取 Security.PasswordSalt 和 Security.PasswordHash（Base64 编码）。</param>
+        /// <param name="password">要验证的明文密码。</param>
+        /// <returns>`true` 如果密码与存储的哈希匹配，`false` 否则。</returns>
         public static bool VerifyPassword(Settings settings, string password)
         {
             if (!HasPasswordConfigured(settings)) return false;
@@ -85,6 +109,9 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 如果已配置密码，显示一个对话框提示用户输入密码并验证；如果未配置密码则直接允许通过。
+        /// </summary>
+        /// <summary>
+        /// 提示用户输入密码并验证；如果未配置密码则直接通过验证。
         /// </summary>
         /// <returns>`true` 如果未配置密码或用户确认并输入了正确的密码，`false` 如果用户取消或验证失败。</returns>
         public static async Task<bool> PromptAndVerifyAsync(Settings settings, Window owner, string title, string message)
@@ -129,7 +156,11 @@ namespace Ink_Canvas.Helpers
         /// 显示一个对话框让用户输入并确认新密码，成功时返回该密码。
         /// </summary>
         /// <param name="owner">对话框的所属窗口（用于指定父窗口）。</param>
-        /// <returns>用户输入的新密码；如果用户取消或输入无效（长度不足或两次不匹配），则返回 <c>null</c>。</returns>
+        /// <summary>
+        /// 显示一个对话框，提示用户输入并确认一个新的密码。
+        /// </summary>
+        /// <param name="owner">对话框所属的窗口；可为 <c>null</c>。</param>
+        /// <returns>用户输入的新密码；如果用户取消或输入无效（长度小于 4 或两次输入不一致），则返回 <c>null</c>。</returns>
         public static async Task<string> PromptSetNewPasswordAsync(Window owner)
         {
             var dialog = new ContentDialog
@@ -186,7 +217,12 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <param name="settings">应用配置对象，包含当前存储的密码信息。</param>
         /// <param name="owner">对话框的父窗口（用于定位/所有权）。</param>
-        /// <returns>用户成功更改后返回新的密码字符串；当用户取消、验证失败或校验不通过时返回 <c>null</c>。</returns>
+        /// <summary>
+        /// 显示一个对话框，要求用户输入当前密码并设置新密码；如果未配置现有密码则转为设置新密码的对话流程。
+        /// </summary>
+        /// <param name="settings">应用配置对象，包含当前的安全/密码信息。</param>
+        /// <param name="owner">对话框的父窗口，用于定位模态窗口。</param>
+        /// <returns>新密码字符串；如果用户取消、当前密码验证失败或新密码校验（长度或确认）不通过，则返回 <c>null</c>。</returns>
         public static async Task<string> PromptChangePasswordAsync(Settings settings, Window owner)
         {
             if (!HasPasswordConfigured(settings))
@@ -257,7 +293,11 @@ namespace Ink_Canvas.Helpers
         /// 为指定 Settings 生成并存储新的密码盐与哈希到 settings.Security 中。
         /// </summary>
         /// <param name="settings">要更新的设置对象；如果为 null 或其 Security 为 null 则不执行任何操作。</param>
-        /// <param name="password">用于派生哈希的原始密码字符串。</param>
+        /// <summary>
+        /// 为指定设置配置新的密码：生成随机盐、从密码派生密钥并将盐与哈希以 Base64 字符串形式保存到 settings.Security 中。
+        /// </summary>
+        /// <param name="settings">要更新的应用配置对象；如果为 null 或其 Security 为 null，则不执行任何操作。</param>
+        /// <param name="password">用于派生并存储的原始密码字符串。</param>
         public static void SetPassword(Settings settings, string password)
         {
             if (settings?.Security == null) return;
@@ -276,7 +316,10 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 清除设置中存储的密码信息。
         /// </summary>
-        /// <param name="settings">要更新的设置对象；将把其 Security.PasswordSalt 和 Security.PasswordHash 设为空字符串。若 <paramref name="settings"/> 为 null 或其 Security 为 null 则不执行任何操作。</param>
+        /// <summary>
+        /// 清除指定设置中的密码凭据，将其密码盐和密码哈希重置为空字符串。
+        /// </summary>
+        /// <param name="settings">要更新的设置对象；若为 null 或其 Security 为 null 则不执行任何操作；否则将把 Security.PasswordSalt 和 Security.PasswordHash 设为空字符串。</param>
         public static void ClearPassword(Settings settings)
         {
             if (settings?.Security == null) return;
@@ -290,7 +333,13 @@ namespace Ink_Canvas.Helpers
         /// <param name="password">用于派生的密码字符串。</param>
         /// <param name="salt">用于派生的盐字节数组（不可为 null）。</param>
         /// <param name="keyBytes">要返回的密钥字节长度（以字节为单位）。</param>
-        /// <returns>派生出的密钥字节数组，长度等于 <paramref name="keyBytes"/>。</returns>
+        /// <summary>
+        /// 使用 PBKDF2 从指定密码和盐派生一个固定长度的密钥，用于存储或比较目的。
+        /// </summary>
+        /// <param name="password">用于派生的明文密码。</param>
+        /// <param name="salt">派生时使用的盐字节数组。</param>
+        /// <param name="keyBytes">要生成的密钥长度（以字节为单位）。</param>
+        /// <returns>派生得到的密钥字节数组，长度等于 <paramref name="keyBytes"/>。</returns>
         private static byte[] DeriveKey(string password, byte[] salt, int keyBytes)
         {
             // 注意：Rfc2898DeriveBytes 在 net472 默认 HMACSHA1
@@ -305,6 +354,9 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <param name="a">要比较的第一个字节数组。</param>
         /// <param name="b">要比较的第二个字节数组。</param>
+        /// <summary>
+        /// 以固定时间比较两个字节数组的内容以抵抗基于时间的侧信道攻击。
+        /// </summary>
         /// <returns>`true` 如果两个数组长度相同且所有字节相等，`false` 否则。</returns>
         private static bool FixedTimeEquals(byte[] a, byte[] b)
         {

@@ -138,7 +138,11 @@ namespace Ink_Canvas.Helpers.Plugins.BuiltIn.SuperLauncher
 
         /// <summary>
         /// 应用按钮点击事件
+        /// <summary>
+        /// 处理启动栏内应用按钮的点击：在非固定模式下标记窗口为正在关闭、尝试关闭窗口并在后台启动对应的应用程序；在启动失败时显示错误提示并记录日志。
         /// </summary>
+        /// <param name="sender">触发事件的按钮，期望为对应的应用条目按钮。</param>
+        /// <param name="e">路由事件参数，提供与点击事件相关的上下文。</param>
         private void AppButton_Click(object sender, RoutedEventArgs e)
         {
             try

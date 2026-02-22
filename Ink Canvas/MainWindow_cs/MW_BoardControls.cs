@@ -56,7 +56,13 @@ namespace Ink_Canvas
         /// - 导出后把结果存入 TimeMachineHistories 的相应索引，并保存当前多指书写模式到 savedMultiTouchModeStates；  
         /// - 导出后会清除时间机器的临时墨迹历史以释放内存。  
         /// - 此方法有副作用：修改 TimeMachineHistories、savedMultiTouchModeStates，并通过 timeMachine 的提交方法改变其内部历史状态。
+        /// <summary>
+        /// 将当前画布上的所有可序列化元素（图片/媒体）和未记录的墨迹提交到时间机器历史，并将导出的历史保存到指定的页面备份槽位中。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会导出并合并当前的时间机器历史，确保画布上的元素与墨迹都被包含，然后将导出的历史存入 TimeMachineHistories 的目标索引，同时保存当前的多指书写模式状态并清除临时的墨迹历史以便后续重建/切换页面使用。
         /// </remarks>
+        /// <param name="isBackupMain">为 true 时将历史保存到主备份槽（索引 0）；为 false 时保存到当前白板页（CurrentWhiteboardIndex）。</param>
         private void SaveStrokes(bool isBackupMain = false)
         {
             // 确保画布上的所有UI元素都被保存到时间机器历史记录中
@@ -164,6 +170,12 @@ namespace Ink_Canvas
         /// - 清除画布上的所有墨迹
         /// - 执行轻量级内存清理
         /// - 恢复当前提交类型为用户输入
+        /// <summary>
+        /// 清除画布上的所有笔迹并触发轻量级内存回收。
+        /// </summary>
+        /// <param name="isErasedByCode">若为 true，则将当前提交类型标记为由代码触发的擦除；否则标记为清除画布（用户输入之后会重置为用户输入）。</param>
+        /// <remarks>
+        /// 方法会在清除笔迹前设置提交原因（用于区分擦除来源），调用 PerformLightweightMemoryCleanup 进行内存回收，然后将提交原因重置为用户输入。
         /// </remarks>
         private void ClearStrokes(bool isErasedByCode)
         {
@@ -180,6 +192,8 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 执行内存清理
+        /// <summary>
+        /// 在后台触发一次垃圾回收以进行轻量级内存清理。
         /// </summary>
         private void PerformLightweightMemoryCleanup()
         {
@@ -199,7 +213,10 @@ namespace Ink_Canvas
         /// - 从时间机器历史记录中恢复页面内容
         /// - 恢复多指书写模式状态
         /// - 包含异常处理
-        /// </remarks>
+        /// <summary>
+        /// 从存储的时间线历史恢复画布内容并恢复对应页面的多指书写状态。
+        /// </summary>
+        /// <param name="isBackupMain">为 true 时从主备份（索引 0）恢复，否则从当前白板页（CurrentWhiteboardIndex）恢复。</param>
         private void RestoreStrokes(bool isBackupMain = false)
         {
             try
@@ -257,7 +274,10 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 恢复多指书写模式状态
+        /// <summary>
+        /// 根据指定页索引恢复并应用该页保存的多指书写模式到 UI 切换控件。
         /// </summary>
+        /// <param name="pageIndex">要恢复多指模式的白板页索引，用于从 savedMultiTouchModeStates 读取状态。</param>
         private void RestoreMultiTouchModeState(int pageIndex)
         {
             try
@@ -297,7 +317,11 @@ namespace Ink_Canvas
         /// - 处理左侧页面列表按钮点击：显示或隐藏左侧页面列表
         /// - 处理右侧页面列表按钮点击：显示或隐藏右侧页面列表
         /// - 显示页面列表时会刷新列表内容并滚动到当前页面
-        /// </remarks>
+        /// <summary>
+        /// 切换左侧或右侧的白板页面列表视图的显示状态；在显示时刷新对应侧列表并滚动到当前页面项。
+        /// </summary>
+        /// <param name="sender">触发事件的按钮，预期为 <c>BtnLeftPageListWB</c> 或 <c>BtnRightPageListWB</c>。</param>
+        /// <param name="e">事件参数（未使用）。</param>
         private async void BtnWhiteBoardPageIndex_Click(object sender, EventArgs e)
         {
             if (sender == BtnLeftPageListWB)
@@ -348,7 +372,9 @@ namespace Ink_Canvas
         /// </summary>
         /// <remarks>
         /// 该方法在切换前会取消当前选中元素（同时保留并恢复编辑模式）、调用视频呈现器的离开页前钩子、保存当前页的笔迹与元素、清空画布；切换到前一页后恢复该页内容、调用视频呈现器的页已更改钩子并刷新页面索引显示。
-        /// </remarks>
+        /// <summary>
+        /// 切换到白板的上一页，同时保存当前页的笔迹并恢复上一页的笔迹和相关界面状态。
+        /// </summary>
         private void BtnWhiteBoardSwitchPrevious_Click(object sender, EventArgs e)
         {
             if (CurrentWhiteboardIndex <= 1) return;
@@ -378,6 +404,10 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 切换到白板的下一页；在到达最后一页时会新增一页。方法在切页前保存当前页面的笔迹/多媒体状态，在切页后恢复目标页面的内容并更新界面状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为按钮）。</param>
+        /// <summary>
+        /// 切换到下一白板页；若当前已是最后一页则新增一页。切换过程中会保存并清理当前页的状态，然后恢复目标页并更新 UI 显示。
         /// </summary>
         /// <param name="sender">触发事件的源对象（通常为按钮）。</param>
         /// <param name="e">事件参数。</param>
@@ -426,6 +456,18 @@ namespace Ink_Canvas
         /// - 若有选中元素，会取消选中并恢复编辑模式。  
         /// - 将当前页面的历史保存到时间轴并清空画布，然后在白板集合中插入一个空白页面（其历史为 null），随后恢复该页面并触发页面变更回调。  
         /// - 更新页码显示并在达到上限时禁用添加按钮；若侧边页列表可见，则刷新该列表。  
+        /// <summary>
+        /// 添加一个新的白板页面并切换到该页面。
+        /// </summary>
+        /// <remarks>
+        /// - 如果已达到最大页面数（99）则不执行任何操作。  
+        /// - 在需要时按设置触发自动保存截屏。  
+        /// - 隐藏并取消选中当前选中元素，同时恢复画笔的编辑模式。  
+        /// - 在离开当前页前通知视频呈现器（VideoPresenter_BeforePageLeave），保存当前页的笔迹/元素到时间线并清空画布。  
+        /// - 增加总页数和当前页索引；若需要将后续页面的历史向后移动以腾出位置。  
+        /// - 将新页面的历史设为空并恢复该页面（因此画布为空），随后触发页面已更改通知（VideoPresenter_OnPageChanged）。  
+        /// - 更新页码显示与按钮状态；若已达最大页数则禁用添加按钮。  
+        /// - 若左侧页列表可见则刷新侧页列表视图。
         /// </remarks>
         private void BtnWhiteBoardAdd_Click(object sender, EventArgs e)
         {
@@ -485,7 +527,16 @@ namespace Ink_Canvas
         /// - 恢复剩余页面内容
         /// - 更新页码显示
         /// - 启用添加按钮（如果页面总数小于99）
+        /// <summary>
+        /// 删除当前白板页面并更新画布、历史和页面索引显示。
+        /// </summary>
+        /// <remarks>
+        /// 如果有选中的可编辑元素，会先取消选中并恢复之前的编辑模式；随后清空当前画布的笔迹（标记为代码擦除），
+        /// 从 TimeMachineHistories 中移除当前页并向前填补后续页的数据或在末页时将当前索引回退，更新白板总数，
+        /// 重新还原当前索引对应页面的内容，刷新页面索引显示并在总页数低于上限时恢复“添加页”按钮的可用性。
         /// </remarks>
+        /// <param name="sender">触发事件的源对象（通常为删除按钮）。</param>
+        /// <param name="e">路由事件参数。</param>
         private void BtnWhiteBoardDelete_Click(object sender, RoutedEventArgs e)
         {
             // 隐藏图片选择工具栏
@@ -526,6 +577,11 @@ namespace Ink_Canvas
         /// - 设置按钮颜色和透明度
         /// - 启用或禁用上一页按钮（根据是否为第一页）
         /// - 设置删除按钮状态（根据页面总数）
+        /// <summary>
+        /// 更新白板页码显示并根据当前页与总页数调整翻页相关的标签、按钮状态与视觉样式。
+        /// </summary>
+        /// <remarks>
+        /// 此方法会：更新页码文本；将“下一页/新页面”标签、下一页按钮的可用性和颜色设置为主题前景色；根据是否为第一页调整“上一页”按钮的可用性、颜色和标签透明度；并根据页面总数启用或禁用删除按钮。
         /// </remarks>
         private void UpdateIndexInfoDisplay()
         {

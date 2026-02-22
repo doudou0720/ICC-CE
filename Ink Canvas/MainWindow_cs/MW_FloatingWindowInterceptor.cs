@@ -297,7 +297,11 @@ namespace Ink_Canvas
         /// 设置拦截规则
         /// </summary>
         /// <param name="type">拦截类型</param>
-        /// <param name="enabled">是否启用拦截</param>
+        /// <summary>
+        /// 设置指定悬浮窗拦截规则的启用状态，并同步更新相关设置、父子规则、界面显示及保存到设置文件。
+        /// </summary>
+        /// <param name="type">要设置的拦截规则类型。</param>
+        /// <param name="enabled">是否启用该规则；变更会同步应用到相关的子规则或根据父规则状态更新父规则，并刷新界面与保存设置。</param>
         private void SetInterceptRule(FloatingWindowInterceptor.InterceptType type, bool enabled)
         {
             try

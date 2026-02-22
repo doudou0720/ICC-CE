@@ -23,7 +23,11 @@ namespace Ink_Canvas
         /// 6. 设置快捷方式描述
         /// 7. 保存快捷方式
         /// 8. 捕获可能的异常，确保方法不会因异常而崩溃
-        /// </remarks>
+        /// <summary>
+        /// 在当前用户的启动文件夹中创建或覆盖一个指向当前可执行文件的启动快捷方式，名称为 "{exeName}.lnk"。
+        /// </summary>
+        /// <param name="exeName">用于生成快捷方式文件名的基名（不含扩展名）。</param>
+        /// <returns>`true` 如果快捷方式创建成功，`false` 否则（例如发生异常时）。</returns>
         public static bool StartAutomaticallyCreate(string exeName)
         {
             try
@@ -59,7 +63,11 @@ namespace Ink_Canvas
         /// 操作包括：
         /// 1. 在启动文件夹中删除指定名称的快捷方式
         /// 2. 捕获可能的异常，确保方法不会因异常而崩溃
-        /// </remarks>
+        /// <summary>
+        /// 删除位于当前用户“启动”文件夹中与指定可执行名对应的快捷方式。
+        /// </summary>
+        /// <param name="exeName">不含扩展名的可执行文件名，构造的目标文件为 `<exeName>.lnk`。</param>
+        /// <returns>`true` 表示快捷方式已成功删除，`false` 表示删除失败或发生错误。</returns>
         public static bool StartAutomaticallyDel(string exeName)
         {
             try

@@ -55,12 +55,16 @@ namespace Ink_Canvas.Helpers
         #region 生命周期管理
         /// <summary>
         /// 开始监控本地 PowerPoint 的连接与运行状态，并在状态变化时触发相应事件。
-        /// </summary>
+        /// <summary>
+/// 开始监控 PPT 连接与演示文稿状态，并在状态变化时触发相应的公开事件。
+/// </summary>
         public void StartMonitoring() => _inner.StartMonitoring();
 
         /// <summary>
         /// 停止对 PowerPoint 的监控，断开当前连接并停止触发相关事件。
-        /// </summary>
+        /// <summary>
+/// 停止监控 PPT 连接及演示文稿相关事件，终止当前的监控流程。
+/// </summary>
         public void StopMonitoring() => _inner.StopMonitoring();
 
         /// <summary>
@@ -68,6 +72,11 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <remarks>
         /// 会向日志记录一条事件信息并调用内部管理器停止监控；该方法不会重新启动监控或重新初始化内部管理器实例。
+        /// <summary>
+        /// 执行 PPT COM 连接的热重载：强制断开当前监控并记录事件。
+        /// </summary>
+        /// <remarks>
+        /// 写入一条事件日志并停止内部 PPT 管理器的监控。此方法不会重建或重新启动内部管理器，也不会自动重新连接。
         /// </remarks>
         public void ReloadConnection()
         {

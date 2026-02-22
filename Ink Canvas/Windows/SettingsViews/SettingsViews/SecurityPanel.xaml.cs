@@ -10,6 +10,8 @@ namespace Ink_Canvas.Windows.SettingsViews
     {
         /// <summary>
         /// 初始化 SecurityPanel 实例并构建其界面组件。
+        /// <summary>
+        /// 初始化 SecurityPanel 并构建其界面元素。
         /// </summary>
         public SecurityPanel()
         {
@@ -21,6 +23,11 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// </summary>
         /// <remarks>
         /// 确保 MainWindow.Settings.Security 存在（若为 null 则创建），在加载期间暂时禁用变更处理以避免触发回调，设置各个开关的状态并更新与密码相关的 UI 状态；任何加载期间的异常会被捕获并静默忽略。
+        /// <summary>
+        /// 将 MainWindow.Settings 的安全配置加载到面板并更新相应的开关控件状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果 Settings 或其 Security 部分不存在会在内存中创建 Security 实例。方法会将安全配置的各项值映射到面板上的开关控件并刷新与密码相关的 UI 状态。加载过程中发生的异常会被吞掉（不会抛出）。
         /// </remarks>
         public override void LoadSettings()
         {
@@ -53,6 +60,12 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// 当全局安全设置的 PasswordEnabled 为 true 时，启用 BtnSetOrChangePassword 以及以下用途开关：
         /// ToggleSwitchRequirePasswordOnExit、ToggleSwitchRequirePasswordOnEnterSettings、ToggleSwitchRequirePasswordOnResetConfig；
         /// 否则禁用它们以阻止操作。
+        /// <summary>
+        /// 根据当前安全设置启用或禁用与密码相关的 UI 控件。
+        /// </summary>
+        /// <remarks>
+        /// 启用或禁用“设置/更改密码”按钮以及三个依赖密码的用途开关（退出、进入设置、重置配置）。
+        /// 控件仅在存在 Security 配置且 PasswordEnabled 为 true 时可操作；否则禁用这些控件。
         /// </remarks>
         private void UpdatePasswordUiState()
         {
@@ -78,6 +91,10 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// 对于启用或禁用主密码会在必要时弹出密码设置或验证对话框；对进程保护的修改会同时应用到 ProcessProtectionManager。方法会在成功变更后持久化设置并更新相关 UI 状态，若用户在交互中取消，则会恢复切换控件到原始状态。
         /// </remarks>
         /// <param name="tag">切换项的标识字符串，支持的值：`"PasswordEnabled"`、`"RequirePasswordOnExit"`、`"RequirePasswordOnEnterSettings"`、`"RequirePasswordOnResetConfig"`、`"EnableProcessProtection"`。</param>
+        /// <summary>
+        /// 根据切换开关的标识更新安全相关设置并持久化更改，同时在启用/禁用密码时处理设置或验证密码的交互。
+        /// </summary>
+        /// <param name="tag">标识被切换的选项（例如 "PasswordEnabled", "RequirePasswordOnExit", "RequirePasswordOnEnterSettings", "RequirePasswordOnResetConfig", "EnableProcessProtection"）。</param>
         /// <param name="newState">切换的新布尔状态：`true` 表示启用，`false` 表示禁用。</param>
         protected override async void HandleToggleSwitchChange(string tag, bool newState)
         {
@@ -156,6 +173,10 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// 处理选项按钮组的选择更改。此面板不包含选项按钮组，因此不会执行任何操作。
         /// </summary>
         /// <param name="group">选项组的标识（未使用）。</param>
+        /// <summary>
+        /// 处理选项组的更改；此面板不使用选项按钮组，因此不执行任何操作。
+        /// </summary>
+        /// <param name="group">选项组的标识（未使用）。</param>
         /// <param name="value">被选中的值（未使用）。</param>
         protected override void HandleOptionChange(string group, string value)
         {
@@ -164,6 +185,8 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         /// <summary>
         /// 处理切换开关的点击事件。
+        /// <summary>
+        /// 处理切换开关的点击事件并将处理委托给基类。
         /// </summary>
         protected override void ToggleSwitch_Click(object sender, RoutedEventArgs e)
         {
@@ -172,6 +195,8 @@ namespace Ink_Canvas.Windows.SettingsViews
 
         /// <summary>
         /// 向用户弹出设置或更改密码的对话框；当用户输入非空新密码时，将该密码保存到设置中、启用密码功能、持久化设置并更新密码相关的 UI 状态。
+        /// <summary>
+        /// 提示用户设置或更改安全密码；若用户提供非空密码，则保存该密码、启用密码保护并持久化设置，同时更新相关 UI 状态。
         /// </summary>
         private async void BtnSetOrChangePassword_Click(object sender, RoutedEventArgs e)
         {
@@ -197,7 +222,11 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// 根据 ScrollViewer 的垂直滚动偏移触发顶部栏阴影显示或隐藏事件。
         /// </summary>
         /// <param name="sender">触发事件的 ScrollViewer 控件。</param>
-        /// <param name="e">滚动更改的事件参数（未被方法使用）。</param>
+        /// <summary>
+        /// 根据滚动容器的垂直偏移触发顶部栏需要添加或移除阴影的事件。
+        /// </summary>
+        /// <param name="sender">引发事件的 ScrollViewer 控件。</param>
+        /// <param name="e">滚动更改的事件参数（方法中未使用）。</param>
         private void ScrollViewerEx_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             var scrollViewer = (ScrollViewer)sender;
@@ -210,6 +239,11 @@ namespace Ink_Canvas.Windows.SettingsViews
         /// </summary>
         /// <remarks>
         /// 在应用主题或重载设置时抛出的异常会被捕获并忽略，不会向上抛出。
+        /// <summary>
+        /// 将当前控件应用主题并重新加载面板的设置。
+        /// </summary>
+        /// <remarks>
+        /// 在内部捕获所有异常并将异常信息写入调试输出，不会向调用方抛出异常。
         /// </remarks>
         public void ApplyTheme()
         {

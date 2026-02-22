@@ -113,7 +113,10 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 生成当前设备的硬件指纹字符串（用于生成和校验设备ID）
+        /// <summary>
+        /// 生成用于设备标识的硬件指纹字符串。
         /// </summary>
+        /// <returns>包含收集到的硬件标识信息的字符串；如果采集到的信息长度不足（小于 10 字符），则会附加机器名、用户名和操作系统信息作为后备。</returns>
         private static string GenerateHardwareFingerprint()
         {
             // 收集硬件信息
@@ -364,7 +367,14 @@ namespace Ink_Canvas.Helpers
         /// 将设备标识信息以格式化的 JSON 写入指定文件，并确保目标目录存在；在失败时记录错误但不抛出异常。
         /// </remarks>
         /// <param name="filePath">目标文件的完整路径，用于保存设备标识信息。</param>
-        /// <param name="info">要保存的设备标识信息对象（包含 DeviceId 和 可选的硬件指纹）。</param>
+        /// <summary>
+        /// 将设备标识信息以格式化 JSON 写入指定文件路径，并确保目标目录存在。
+        /// </summary>
+        /// <param name="filePath">目标文件的完整路径，函数会在需要时创建其父目录。</param>
+        /// <param name="info">要保存的设备标识信息对象，包含 DeviceId 及可选的硬件指纹。</param>
+        /// <remarks>
+        /// 写入时使用 ProcessProtectionManager.WithWriteAccess 以确保有写入权限；操作失败时会记录错误但不会抛出异常。
+        /// </remarks>
         private static void SaveDeviceIdToFile(string filePath, DeviceIdInfo info)
         {
             try
@@ -995,7 +1005,11 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 保存使用统计到文件
+        /// <summary>
+        /// 将给定的使用统计序列化并以设备关联的加密格式安全写入指定文件路径（会确保目录存在并在失败时记录错误）。 
         /// </summary>
+        /// <param name="filePath">目标文件的完整路径，用于存储加密后的使用统计数据。</param>
+        /// <param name="stats">要持久化的使用统计对象。</param>
         private static void SaveUsageStatsToFile(string filePath, UsageStats stats)
         {
             try
@@ -1580,7 +1594,12 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 关机时保存使用时间数据
+        /// <summary>
+        /// 在应用程序关闭时汇总当前会话并保存使用统计数据。
         /// </summary>
+        /// <remarks>
+        /// 计算从应用启动到当前的会话时长（基于 App.appStartTime），将时长限制为最多 24 小时；如果不存在现有统计则创建新的记录；更新总使用秒数、启动次数、平均会话时长和最后启动时间，并将结果持久化到使用统计存储。任何写入或处理错误将被捕获并记录日志，但不会向调用方抛出异常。
+        /// </remarks>
         public static void SaveUsageStatsOnShutdown()
         {
             try

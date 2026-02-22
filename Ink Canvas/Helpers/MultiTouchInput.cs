@@ -160,7 +160,14 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 重新画出笔迹
+        /// <summary>
+        /// 根据当前 Stroke 的点增量在关联的 VisualCanvas 上绘制未渲染的笔迹段落。
         /// </summary>
+        /// <remarks>
+        /// - 仅在存在 Stroke 且关联的 VisualCanvas 时执行；若点数为零则不绘制。 
+        /// - 在首次绘制或新增点数达到阈值（INCREMENTAL_DRAW_THRESHOLD）时进行绘制，并在绘制完成后更新内部已绘制点计数（_lastDrawnPointCount）。 
+        /// - 绘制过程中发生的异常不会向上传播，会被捕获并写入 System.Diagnostics.Debug 输出。 
+        /// </remarks>
         public void Redraw()
         {
             if (Stroke == null || _visualCanvas == null) return;

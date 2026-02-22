@@ -25,6 +25,12 @@ namespace Ink_Canvas.Windows.SettingsViews
     /// </summary>
     public partial class AboutPanel : UserControl
     {
+        /// <summary>
+        /// 初始化 AboutPanel 控件并填充关于页面的各项显示内容与检测状态。
+        /// </summary>
+        /// <remarks>
+        /// 执行组件初始化后，会尝试设置页面横幅、应用版本、设备 ID、版权信息、构建时间、系统版本及触摸设备信息，并更新检查更新的显示状态。
+        /// </remarks>
         public AboutPanel()
         {
             InitializeComponent();
@@ -155,6 +161,13 @@ namespace Ink_Canvas.Windows.SettingsViews
             CheckUpdateStatus();
         }
 
+        /// <summary>
+        /// 根据主窗口的内部可用版本信息更新关于面板的“有更新”图标显示状态。
+        /// </summary>
+        /// <remarks>
+        /// 尝试读取 MainWindow 类型中名为 "AvailableLatestVersion" 的非公共实例字段；
+        /// 若该字段存在且为非空字符串，则将 UpdateAvailableIcon 设置为可见。方法在发生异常时会将异常写入调试输出但不会抛出。
+        /// </remarks>
         private void CheckUpdateStatus()
         {
             try

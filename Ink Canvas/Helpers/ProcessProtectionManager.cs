@@ -31,7 +31,13 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 从应用设置读取 EnableProcessProtection 并相应地启用或禁用进程保护。
+        /// <summary>
+        /// 从应用设置读取是否启用进程保护并应用该设置。
         /// </summary>
+        /// <remarks>
+        /// 会读取 MainWindow.Settings.Security.EnableProcessProtection 并调用 SetEnabled 以启用或禁用保护；
+        /// 如果发生异常，则将异常信息记录为警告并吞掉，不会向上抛出。
+        /// </remarks>
         public static void ApplyFromSettings()
         {
             try
@@ -48,6 +54,9 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 切换进程保护的启用状态；在状态发生变化时触发相应的启用或禁用操作并保证线程安全。
+        /// </summary>
+        /// <summary>
+        /// 设置进程保护的启用状态，并在后台启动相应的启用或禁用操作以应用该设置。
         /// </summary>
         /// <param name="enabled">为 `true` 时启用进程保护，为 `false` 时禁用进程保护。</param>
         public static void SetEnabled(bool enabled)
@@ -84,6 +93,13 @@ namespace Ink_Canvas.Helpers
         /// <remarks>
         /// 如果 ProcessProtectionManager.Enabled 为 false，会直接执行 <paramref name="action"/>；
         /// 若在有限时间内无法获取写入门闩，会记录警告并降级为直接执行 <paramref name="action"/>。方法在内部处理异常，不会抛出异常给调用者。
+        /// <summary>
+        /// 在受保护模式下，为指定路径执行写入操作；在需要时临时释放对目标路径及其到应用根的锁以允许写入，操作完成后尝试恢复锁定状态。
+        /// </summary>
+        /// <param name="targetPath">目标路径（可为文件或目录）；用于确定需要临时释放并随后恢复锁定的范围。</param>
+        /// <param name="action">要执行的写入操作，不能为空。</param>
+        /// <remarks>
+        /// 如果保护未启用则直接执行操作；如果在尝试进入写入门闩时超时，方法会降级释放相关锁并执行操作，然后在可能的情况下重新建立锁定。方法对内部异常进行捕获处理，不会向调用者抛出异常，并尽力在操作后恢复保护状态。
         /// </remarks>
         public static void WithWriteAccess(string targetPath, Action action)
         {
@@ -234,6 +250,10 @@ namespace Ink_Canvas.Helpers
         /// 尝试在指定的毫秒数内获取写入门控（write gate）。
         /// </summary>
         /// <param name="timeoutMs">等待超时时间（毫秒）。小于或等于 0 时视为 1 毫秒。</param>
+        /// <summary>
+        /// 尝试在给定的超时时间内获取写入门控以进行独占写操作。
+        /// </summary>
+        /// <param name="timeoutMs">等待的超时时间，单位为毫秒；如果小于或等于 0 则视为 1 毫秒。</param>
         /// <returns>`true` 如果在指定时间内成功获取到写入门控，`false` 否则。</returns>
         private static bool TryEnterWriteGate(int timeoutMs)
         {
@@ -253,6 +273,8 @@ namespace Ink_Canvas.Helpers
 
         /// <summary>
         /// 启用进程保护并对应用根路径进行完整重扫描以锁定需要保护的目录和文件。
+        /// <summary>
+        /// 启用进程保护并对应用程序根路径执行完整重扫描以重新应用文件与目录的锁定。
         /// </summary>
         private static void Enable()
         {
@@ -263,7 +285,12 @@ namespace Ink_Canvas.Helpers
         /// 在应用根目录或提供的路径集合上建立目录句柄和文件读取锁以启用进程保护。
         /// </summary>
         /// <param name="rescanRoot">为 true 时对 App.RootPath 进行递归扫描并锁定其下的目录与文件；为 false 时仅处理 <paramref name="rescanDirs"/> 指定的路径（若为 null 则不处理）。</param>
+        /// <summary>
+        /// 为应用根路径或指定路径建立或刷新进程保护所需的文件与目录锁，确保受保护路径被占用以防修改。
+        /// </summary>
+        /// <param name="rescanRoot">为 true 时对 App.RootPath 下的所有目录和匹配文件进行完整重扫描并上锁；为 false 时仅处理 <paramref name="rescanDirs"/> 提供的路径。</param>
         /// <param name="rescanDirs">当 <paramref name="rescanRoot"/> 为 false 时，按项对存在的目录建立目录锁，对存在的文件建立文件锁；可为 null。</param>
+        /// <remarks>方法内部会吞掉任何异常以确保调用方不抛出错误。</remarks>
         private static void Enable(bool rescanRoot, IEnumerable<string> rescanDirs)
         {
             try
@@ -317,6 +344,11 @@ namespace Ink_Canvas.Helpers
         /// <remarks>
         /// 在内部同步锁定下逐一 Dispose 已记录的 FileStream 和 SafeFileHandle，并清空对应的缓存字典；
         /// 释放过程中发生的异常会被忽略（吞掉）。
+        /// <summary>
+        /// 释放并清除当前持有的所有文件和目录锁，停止对这些路径的保护。
+        /// </summary>
+        /// <remarks>
+        /// 在内部取得线程锁以保证并发安全；对单个释放操作发生的异常进行捕获并吞并（仅在调试输出中记录），不会向调用方抛出异常。
         /// </remarks>
         private static void Disable()
         {
@@ -340,7 +372,11 @@ namespace Ink_Canvas.Helpers
         /// 递归地尝试为指定目录及其所有子目录建立并保持目录句柄锁定，跳过配置的排除目录。
         /// </summary>
         /// <param name="root">起始目录的路径；从此路径开始遍历并对符合条件的子目录尝试建立锁定。</param>
-        /// <remarks>遇到的异常会被捕获并忽略，不会向调用方抛出。</remarks>
+        /// <summary>
+        /// 在指定的根路径及其所有子目录上获取并保留目录句柄以锁定这些目录（会跳过被标记为排除的子目录）。
+        /// </summary>
+        /// <param name="root">要扫描并锁定的根目录路径。</param>
+        /// <remarks>会跳过由 <c>IsExcludedPath</c> 判定为排除的目录。遇到的异常会被捕获并忽略，不会向调用方抛出。</remarks>
         private static void LockDirectoryRecursive(string root)
         {
             try
@@ -367,7 +403,11 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <param name="root">要开始扫描的根目录路径。</param>
         /// <remarks>
-        /// 仅处理扩展名为 `.exe`, `.dll`, `.config`, `.manifest`, `.dat`, `.enc` 的文件；会跳过被 IsExcludedPath 判定为排除的路径。遇到任何 I/O 或访问错误时会静默忽略，不会抛出异常。</remarks>
+        /// <summary>
+        /// 递归锁定指定根目录下匹配扩展名的文件以防止被修改。
+        /// </summary>
+        /// <param name="root">要扫描并锁定其下文件的根目录路径。</param>
+        /// <remarks>仅锁定扩展名为 <c>.exe</c>, <c>.dll</c>, <c>.config</c>, <c>.manifest</c>, <c>.dat</c>, <c>.enc</c> 的文件；会跳过被 <see cref="IsExcludedPath(string)"/> 判定为排除的路径。遇到任何 I/O 或访问错误时会静默忽略，不会抛出异常。</remarks>
         private static void LockFilesRecursive(string root)
         {
             try
@@ -397,6 +437,9 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 以只读方式打开并保留指定文件的句柄，将其加入内部锁定缓存以减少该文件被外部修改或删除的可能性。
         /// </summary>
+        /// <summary>
+        /// 尝试对指定文件建立读锁并将锁句柄保存在内部映射中以防止该文件被修改或删除。
+        /// </summary>
         /// <param name="filePath">要锁定的文件的路径（会被规范化为完整路径）。</param>
         private static void LockFile(string filePath)
         {
@@ -418,7 +461,10 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 尝试为指定目录获取一个用于保持目录打开的句柄并将其保存为内部锁定记录；若目录已被记录则不作任何操作，发生错误时静默忽略。
         /// </summary>
-        /// <param name="dirPath">要锁定的目录路径；调用时会对路径进行规范化（转换为完整路径并移除多余分隔符）。</param>
+        /// <summary>
+        /// 为指定目录获取并保留一个只读目录句柄以防止该目录被修改或删除；若目录已被锁定则不做任何操作，发生错误时静默失败而不抛出异常。
+        /// </summary>
+        /// <param name="dirPath">要锁定的目录路径；方法会先对路径进行规范化（转换为完整路径并移除多余分隔符）。</param>
         private static void LockDirectory(string dirPath)
         {
             dirPath = NormalizePath(dirPath);
@@ -443,6 +489,10 @@ namespace Ink_Canvas.Helpers
         /// 将路径标准化为不含末尾路径分隔符的绝对路径。
         /// </summary>
         /// <param name="p">要规范化的路径；如果为 null、空或仅空白，则返回原值。</param>
+        /// <summary>
+        /// 将给定路径标准化为不含末尾目录分隔符的绝对路径；解析失败时返回原始输入。
+        /// </summary>
+        /// <param name="p">要规范化的路径字符串，可能为相对路径或绝对路径。</param>
         /// <returns>规范化后的路径：在解析成功时返回去除末尾分隔符的绝对路径；在解析失败时返回原始输入。</returns>
         private static string NormalizePath(string p)
         {
@@ -461,7 +511,11 @@ namespace Ink_Canvas.Helpers
         /// 构建从指定路径向上直到应用根目录（App.RootPath）的目录链，并按从下到上的顺序返回已规范化的目录路径。
         /// </summary>
         /// <param name="path">起始路径，既可为文件路径也可为目录路径；若为文件则使用其所在目录作为起点。</param>
-        /// <returns>包含起始目录及其各级父目录直到并包含应用根目录的列表；当根路径无效或未能匹配到根目录时返回空列表。</returns>
+        /// <summary>
+        /// 构造从指定路径到应用根目录（含根目录）的目录链，按从起始目录到根目录的顺序返回。
+        /// </summary>
+        /// <param name="path">起始路径，可为文件或目录；若为文件则使用其所在目录作为起始点。</param>
+        /// <returns>按自下而上顺序包含起始目录及其各级父目录直到并包含应用根目录的列表；当应用根路径无效或指定路径不在根路径下时返回空列表。</returns>
         private static List<string> GetDirChainToRoot(string path)
         {
             var list = new List<string>();
@@ -489,6 +543,10 @@ namespace Ink_Canvas.Helpers
         /// 检查给定路径是否位于应用根目录下的受排除子目录之一。
         /// </summary>
         /// <param name="path">要检查的文件或目录路径。</param>
+        /// <summary>
+        /// 判断给定路径是否位于配置为排除的子目录之一下。
+        /// </summary>
+        /// <param name="path">要检测的文件或目录路径（可为文件或目录的路径，支持相对或绝对形式）。</param>
         /// <returns>`true` 如果路径位于任何配置为排除的子目录下，`false` 否则。</returns>
         private static bool IsExcludedPath(string path)
         {
@@ -516,7 +574,11 @@ namespace Ink_Canvas.Helpers
         /// 为指定目录打开一个文件句柄，便于对该目录进行锁定或访问其元数据。
         /// </summary>
         /// <param name="dirPath">目标目录的完整路径。</param>
-        /// <returns>表示已打开目录的 <see cref="SafeFileHandle"/>；若无法打开则返回无效的句柄，调用方应检查句柄有效性。</returns>
+        /// <summary>
+        /// 为指定目录创建并返回一个表示已打开目录的底层文件句柄。
+        /// </summary>
+        /// <param name="dirPath">要打开的目录路径。</param>
+        /// <returns>表示已打开目录的 <see cref="SafeFileHandle"/>；若无法打开则返回无效的句柄，调用方应检查句柄的有效性。</returns>
         private static SafeFileHandle CreateDirectoryHandle(string dirPath)
         {
             const uint GENERIC_READ = 0x80000000;
@@ -544,7 +606,17 @@ namespace Ink_Canvas.Helpers
         /// <param name="dwCreationDisposition">指定如何处理已存在或不存在的文件（例如打开、创建或截断）。</param>
         /// <param name="dwFlagsAndAttributes">文件属性和标志位，用于控制文件或目录的特殊行为（例如备份语义）。</param>
         /// <param name="hTemplateFile">用于创建新文件时的模板句柄，通常为 <see cref="IntPtr.Zero"/>。</param>
-        /// <returns>表示文件或目录句柄的 <see cref="Microsoft.Win32.SafeHandles.SafeFileHandle"/>；调用失败时返回无效的句柄（可通过检查句柄或调用 <see cref="System.Runtime.InteropServices.Marshal.GetLastWin32Error"/> 获取错误码）。</returns>
+        /// <summary>
+            /// 使用 Win32 CreateFile 打开指定路径的文件或目录并返回相应的句柄。
+            /// </summary>
+            /// <param name="lpFileName">要打开的文件或目录的完整路径。</param>
+            /// <param name="dwDesiredAccess">请求的访问权限标志（例如 GENERIC_READ、GENERIC_WRITE）。</param>
+            /// <param name="dwShareMode">共享模式标志（例如 FILE_SHARE_READ、FILE_SHARE_WRITE）。</param>
+            /// <param name="lpSecurityAttributes">指向安全属性的指针；通常为 <c>IntPtr.Zero</c> 表示默认安全描述符。</param>
+            /// <param name="dwCreationDisposition">指定如何创建或打开文件的标志（例如 OPEN_EXISTING、CREATE_ALWAYS）。</param>
+            /// <param name="dwFlagsAndAttributes">文件属性或标志（对打开目录应使用 FILE_FLAG_BACKUP_SEMANTICS）。</param>
+            /// <param name="hTemplateFile">用于复制属性的模板文件句柄；通常为 <c>IntPtr.Zero</c>。</param>
+            /// <returns>表示文件或目录句柄的 <see cref="Microsoft.Win32.SafeHandles.SafeFileHandle"/>；调用失败时返回无效的句柄，可通过检查句柄或调用 <see cref="System.Runtime.InteropServices.Marshal.GetLastWin32Error"/> 获取错误码。</returns>
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern SafeFileHandle CreateFile(
             string lpFileName,
