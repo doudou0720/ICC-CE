@@ -123,7 +123,6 @@ namespace Ink_Canvas
         /// NTP时间同步定时器
         /// </summary>
         private Timer timerNtpSync = new Timer();
-
         /// <summary>
         /// 时间视图模型实例
         /// </summary>
@@ -156,7 +155,10 @@ namespace Ink_Canvas
         /// 防止重复NTP同步的标志
         /// </summary>
         private bool isNtpSyncing = false;
-
+        /// <summary>
+        /// 橡皮擦自动切换回批注模式的计时器
+        /// </summary>
+        private DispatcherTimer _eraserAutoSwitchBackTimer;
         /// <summary>
         /// 异步获取网络时间
         /// </summary>
@@ -248,6 +250,9 @@ namespace Ink_Canvas
 
             // 初始化定时保存墨迹定时器
             InitAutoSaveStrokesTimer();
+
+            // 初始化橡皮擦自动切换回批注模式计时器
+            InitEraserAutoSwitchBackTimer();
         }
 
         /// <summary>
@@ -1379,6 +1384,102 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"AutoUpdate | Error resetting retry state: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 初始化橡皮擦自动切换回批注模式计时器
+        /// </summary>
+        private void InitEraserAutoSwitchBackTimer()
+        {
+            if (_eraserAutoSwitchBackTimer == null)
+            {
+                _eraserAutoSwitchBackTimer = new DispatcherTimer();
+                _eraserAutoSwitchBackTimer.Tick += EraserAutoSwitchBackTimer_Tick;
+            }
+        }
+
+        /// <summary>
+        /// 启动橡皮擦自动切换回批注模式计时器
+        /// </summary>
+        public void StartEraserAutoSwitchBackTimer()
+        {
+            try
+            {
+                if (!Settings.Canvas.EnableEraserAutoSwitchBack) return;
+                if (_eraserAutoSwitchBackTimer == null) InitEraserAutoSwitchBackTimer();
+
+                // 停止之前的计时器
+                _eraserAutoSwitchBackTimer.Stop();
+
+                // 设置计时器间隔
+                int delaySeconds = Settings.Canvas.EraserAutoSwitchBackDelaySeconds;
+                if (delaySeconds < 1) delaySeconds = 10; // 最小1秒
+                _eraserAutoSwitchBackTimer.Interval = TimeSpan.FromSeconds(delaySeconds);
+
+                // 启动计时器
+                _eraserAutoSwitchBackTimer.Start();
+
+                LogHelper.WriteLogToFile($"橡皮擦自动切换计时器已启动，延迟 {delaySeconds} 秒", LogHelper.LogType.Trace);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"启动橡皮擦自动切换计时器失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 停止橡皮擦自动切换回批注模式计时器
+        /// </summary>
+        public void StopEraserAutoSwitchBackTimer()
+        {
+            try
+            {
+                if (_eraserAutoSwitchBackTimer != null)
+                {
+                    _eraserAutoSwitchBackTimer.Stop();
+                    LogHelper.WriteLogToFile("橡皮擦自动切换计时器已停止", LogHelper.LogType.Trace);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"停止橡皮擦自动切换计时器失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 橡皮擦自动切换回批注模式计时器事件处理
+        /// </summary>
+        private void EraserAutoSwitchBackTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                // 检查是否仍然在橡皮擦模式
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint && 
+                    inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke)
+                {
+                    StopEraserAutoSwitchBackTimer();
+                    return;
+                }
+
+                // 检查设置是否仍然启用
+                if (!Settings.Canvas.EnableEraserAutoSwitchBack)
+                {
+                    StopEraserAutoSwitchBackTimer();
+                    return;
+                }
+
+                // 切换到批注模式
+                Dispatcher.Invoke(() =>
+                {
+                    PenIcon_Click(null, null);
+                    StopEraserAutoSwitchBackTimer();
+                    LogHelper.WriteLogToFile("橡皮擦自动切换回批注模式", LogHelper.LogType.Event);
+                });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"橡皮擦自动切换计时器事件处理失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
     }

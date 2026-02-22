@@ -140,6 +140,10 @@ namespace Ink_Canvas
         public double BrushAutoRestoreWidth { get; set; } =5;
         [JsonProperty("brushAutoRestoreAlpha")]
         public int BrushAutoRestoreAlpha { get; set; } = 255;
+        [JsonProperty("enableEraserAutoSwitchBack")]
+        public bool EnableEraserAutoSwitchBack { get; set; } = false;
+        [JsonProperty("eraserAutoSwitchBackDelaySeconds")]
+        public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
 
     }
 
