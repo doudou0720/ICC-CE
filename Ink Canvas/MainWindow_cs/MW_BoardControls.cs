@@ -476,45 +476,60 @@ namespace Ink_Canvas
         /// <summary>
         /// 处理白板页面删除按钮点击事件，删除当前白板页面
         /// </summary>
-        /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
-        /// <remarks>
-        /// - 隐藏图片选择工具栏
-        /// - 清除当前画布内容
-        /// - 重新排列剩余页面的历史记录
-        /// - 更新当前页面索引和页面总数
-        /// - 恢复剩余页面内容
-        /// - 更新页码显示
-        /// - 启用添加按钮（如果页面总数小于99）
-        /// </remarks>
         private void BtnWhiteBoardDelete_Click(object sender, RoutedEventArgs e)
         {
-            // 隐藏图片选择工具栏
+            DeleteWhiteBoardPageByIndex(CurrentWhiteboardIndex);
+        }
+
+        /// <summary>
+        /// 按页码删除指定白板页（用于预览列表等）。仅当总页数大于 1 时有效。
+        /// </summary>
+        /// <param name="pageIndex">要删除的页码（1 到 WhiteboardTotalCount）</param>
+        private void DeleteWhiteBoardPageByIndex(int pageIndex)
+        {
+            if (WhiteboardTotalCount <= 1 || pageIndex < 1 || pageIndex > WhiteboardTotalCount)
+                return;
+
             if (currentSelectedElement != null)
             {
-                // 保存当前编辑模式
                 var previousEditingMode = inkCanvas.EditingMode;
                 UnselectElement(currentSelectedElement);
-                // 恢复编辑模式
                 inkCanvas.EditingMode = previousEditingMode;
                 currentSelectedElement = null;
             }
 
-            ClearStrokes(true);
-
-            if (CurrentWhiteboardIndex != WhiteboardTotalCount)
-                for (var i = CurrentWhiteboardIndex; i <= WhiteboardTotalCount; i++)
+            if (pageIndex == CurrentWhiteboardIndex)
+            {
+                ClearStrokes(true);
+                if (CurrentWhiteboardIndex != WhiteboardTotalCount)
+                    for (var i = CurrentWhiteboardIndex; i <= WhiteboardTotalCount; i++)
+                        TimeMachineHistories[i] = TimeMachineHistories[i + 1];
+                else
+                    CurrentWhiteboardIndex--;
+                WhiteboardTotalCount--;
+                RestoreStrokes();
+            }
+            else if (pageIndex < CurrentWhiteboardIndex)
+            {
+                for (var i = pageIndex; i < WhiteboardTotalCount; i++)
                     TimeMachineHistories[i] = TimeMachineHistories[i + 1];
-            else
+                TimeMachineHistories[WhiteboardTotalCount] = null;
+                WhiteboardTotalCount--;
                 CurrentWhiteboardIndex--;
-
-            WhiteboardTotalCount--;
-
-            RestoreStrokes();
+            }
+            else
+            {
+                for (var i = pageIndex; i < WhiteboardTotalCount; i++)
+                    TimeMachineHistories[i] = TimeMachineHistories[i + 1];
+                TimeMachineHistories[WhiteboardTotalCount] = null;
+                WhiteboardTotalCount--;
+            }
 
             UpdateIndexInfoDisplay();
-
             if (WhiteboardTotalCount < 99) BtnWhiteBoardAdd.IsEnabled = true;
+            if (BoardBorderLeftPageListView?.Visibility == Visibility.Visible ||
+                BoardBorderRightPageListView?.Visibility == Visibility.Visible)
+                RefreshBlackBoardSidePageListView();
         }
 
         /// <summary>

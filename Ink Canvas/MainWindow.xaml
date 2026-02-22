@@ -4963,6 +4963,13 @@
                                                                                 Text="{Binding Index}">
                                                                             </TextBlock>
                                                                         </Border>
+                                                                        <Button Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4"
+                                                                                ToolTip="删除此页"
+                                                                                Click="WhiteBoardPageListItem_DeleteClick"
+                                                                                Background="#CC000000" Foreground="White"
+                                                                                BorderThickness="0" Padding="0" Cursor="Hand">
+                                                                            <ui:SymbolIcon Symbol="Delete" />
+                                                                        </Button>
                                                                     </Grid>
                                                                 </Border>
                                                             </ui:SimpleStackPanel>
@@ -7124,6 +7131,13 @@
                                                                                 Text="{Binding Index}">
                                                                             </TextBlock>
                                                                         </Border>
+                                                                        <Button Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4"
+                                                                                ToolTip="删除此页"
+                                                                                Click="WhiteBoardPageListItem_DeleteClick"
+                                                                                Background="#CC000000" Foreground="White"
+                                                                                BorderThickness="0" Padding="0" Cursor="Hand">
+                                                                            <ui:SymbolIcon Symbol="Delete" />
+                                                                        </Button>
                                                                     </Grid>
                                                                 </Border>
                                                             </ui:SimpleStackPanel>
