@@ -383,9 +383,10 @@ namespace Ink_Canvas
         /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
-
             if (Settings.Automation.IsAutoSaveStrokesAtClear &&
-                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
+                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
+                CaptureAndEnqueueScreenshotSave(isHideNotification: true);
+
             if (CurrentWhiteboardIndex >= WhiteboardTotalCount)
             {
                 // 在最后一页时，点击"新页面"按钮直接新增一页
@@ -430,7 +431,8 @@ namespace Ink_Canvas
         {
             if (WhiteboardTotalCount >= 99) return;
             if (Settings.Automation.IsAutoSaveStrokesAtClear &&
-                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
+                inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
+                CaptureAndEnqueueScreenshotSave(isHideNotification: true);
 
             // 隐藏图片选择工具栏
             if (currentSelectedElement != null)
