@@ -331,10 +331,16 @@ namespace Ink_Canvas
             var list = new List<TimeMachineHistory>();
             if (fakeInkCanv.Strokes.Count > 0)
                 list.Add(new TimeMachineHistory(fakeInkCanv.Strokes.Clone(), TimeMachineHistoryType.UserInput, false));
-            foreach (UIElement child in fakeInkCanv.Children)
+            var childrenSnapshot = new List<UIElement>();
+            foreach (UIElement c in fakeInkCanv.Children)
+                childrenSnapshot.Add(c);
+            foreach (UIElement child in childrenSnapshot)
             {
                 if (child is Image || child is MediaElement)
+                {
                     list.Add(new TimeMachineHistory(child, TimeMachineHistoryType.ElementInsert));
+                    fakeInkCanv.Children.Remove(child);
+                }
             }
             return list.Count == 0 ? null : list.ToArray();
         }
