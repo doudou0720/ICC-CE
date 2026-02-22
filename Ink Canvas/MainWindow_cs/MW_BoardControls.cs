@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Ink_Canvas
 {
@@ -247,15 +248,39 @@ namespace Ink_Canvas
                 {
                     timeMachine.ImportTimeMachineHistory(TimeMachineHistories[0]);
                     var removed0 = CollectRemovedElementsFromHistory(TimeMachineHistories[0]);
-                    foreach (var item in TimeMachineHistories[0]) ApplyHistoryToCanvas(item, null, removed0);
+                    var elementsToProcess = new List<UIElement>();
+                    foreach (var item in TimeMachineHistories[0])
+                    {
+                        if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
+                            !item.StrokeHasBeenCleared && 
+                            item.InsertedElement != null &&
+                            (removed0 == null || !removed0.Contains(item.InsertedElement)))
+                        {
+                            elementsToProcess.Add(item.InsertedElement);
+                        }
+                        ApplyHistoryToCanvas(item, null, removed0);
+                    }
                     RestoreMultiTouchModeState(0);
+                    ProcessElementsAfterRestore(elementsToProcess);
                 }
                 else
                 {
                     timeMachine.ImportTimeMachineHistory(TimeMachineHistories[CurrentWhiteboardIndex]);
                     var removed = CollectRemovedElementsFromHistory(TimeMachineHistories[CurrentWhiteboardIndex]);
-                    foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex]) ApplyHistoryToCanvas(item, null, removed);
+                    var elementsToProcess = new List<UIElement>();
+                    foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex])
+                    {
+                        if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
+                            !item.StrokeHasBeenCleared && 
+                            item.InsertedElement != null &&
+                            (removed == null || !removed.Contains(item.InsertedElement)))
+                        {
+                            elementsToProcess.Add(item.InsertedElement);
+                        }
+                        ApplyHistoryToCanvas(item, null, removed);
+                    }
                     RestoreMultiTouchModeState(CurrentWhiteboardIndex);
+                    ProcessElementsAfterRestore(elementsToProcess);
                 }
 
 
@@ -264,6 +289,45 @@ namespace Ink_Canvas
             {
                 // ignored
             }
+        }
+
+        /// <summary>
+        /// 在恢复页面后统一处理所有图片/媒体元素的位置和事件绑定，提升含图片页面的加载性能。
+        /// 先批量添加所有元素到画布，再统一处理位置和事件，减少布局更新次数。
+        /// </summary>
+        private void ProcessElementsAfterRestore(List<UIElement> elements)
+        {
+            if (elements == null || elements.Count == 0) return;
+
+            // 使用低优先级异步处理，让 UI 先响应，图片位置和事件绑定稍后完成
+            Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(() =>
+            {
+                foreach (var element in elements)
+                {
+                    if (!inkCanvas.Children.Contains(element)) continue;
+
+                    if (element is Image img)
+                    {
+                        double left = InkCanvas.GetLeft(img);
+                        double top = InkCanvas.GetTop(img);
+                        if (double.IsNaN(left) || double.IsNaN(top))
+                        {
+                            CenterAndScaleElement(img);
+                        }
+                        BindElementEvents(img);
+                    }
+                    else if (element is MediaElement media)
+                    {
+                        double left = InkCanvas.GetLeft(media);
+                        double top = InkCanvas.GetTop(media);
+                        if (double.IsNaN(left) || double.IsNaN(top))
+                        {
+                            CenterAndScaleElement(media);
+                        }
+                        BindElementEvents(media);
+                    }
+                }
+            }));
         }
 
         /// <summary>
