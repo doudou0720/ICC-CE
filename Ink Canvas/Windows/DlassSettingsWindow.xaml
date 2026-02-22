@@ -55,8 +55,7 @@
                         Height="50" 
                         Background="{StaticResource WindowBackground}" 
                         CornerRadius="15,15,0,0"
-                        Margin="0,0,46,0"
-                        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                        Margin="0,0,46,0">
                     <Grid x:Name="TitleBar" VerticalAlignment="Stretch">
                         <StackPanel Orientation="Horizontal" 
                                     HorizontalAlignment="Left" 
