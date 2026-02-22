@@ -279,7 +279,7 @@
                 Margin="0,0,0,140"
                 Panel.ZIndex="1000">
             <TextBlock Name="HintText"
-                       Text="拖拽鼠标选择矩形区域，或使用自由绘制模式"
+                       Text="拖拽选择区域，双击空白处可全选屏幕；自由绘制松开后需点击确认"
                        Foreground="White"
                        FontSize="14"
                        FontWeight="Medium" />

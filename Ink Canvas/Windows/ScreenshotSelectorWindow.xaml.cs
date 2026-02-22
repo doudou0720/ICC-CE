@@ -35,6 +35,11 @@ namespace Ink_Canvas
         private ControlPointType _activeControlPoint = ControlPointType.None;
         private CameraService _cameraService;
         private Bitmap _capturedCameraImage = null;
+        private DateTime _lastBlankClickTime = DateTime.MinValue;
+        private WpfPoint _lastBlankClickPosition;
+
+        private const int DoubleClickTimeThresholdMs = 300; // 双击判定时间阈值（常见范围 200~500ms）
+        private const double DoubleClickDistanceThresholdPx = 12; // 双击判定位置阈值（像素）
 
         // 控制点类型枚举
         private enum ControlPointType
@@ -378,7 +383,7 @@ namespace Ink_Canvas
             FreehandModeButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235)); // 蓝色
             RectangleModeButton.Background = new SolidColorBrush(Color.FromRgb(107, 114, 128)); // 灰色
             FullScreenButton.Background = new SolidColorBrush(Color.FromRgb(107, 114, 128)); // 灰色
-            HintText.Text = "按住鼠标左键绘制任意形状，松开直接截图";
+            HintText.Text = "按住鼠标左键自由绘制，松开后可继续调整或重新绘制，确认后再截图";
             HintTextBorder.Visibility = Visibility.Visible;
         }
 
@@ -487,9 +492,10 @@ namespace Ink_Canvas
         {
             ShouldAddToWhiteboard = false;
 
-            // 在自由绘制模式下，确认按钮不执行任何操作
+            // 在自由绘制模式下，按当前自由选区执行确认
             if (_isFreehandMode)
             {
+                ConfirmFreehandSelection();
                 return;
             }
 
@@ -507,9 +513,10 @@ namespace Ink_Canvas
         {
             ShouldAddToWhiteboard = true;
 
-            // 在自由绘制模式下，按钮同样不执行确认逻辑
+            // 在自由绘制模式下，按当前自由选区执行确认
             if (_isFreehandMode)
             {
+                ConfirmFreehandSelection();
                 return;
             }
 
@@ -586,6 +593,25 @@ namespace Ink_Canvas
             // 如果正在调整，忽略新的选择
             if (_isAdjusting) return;
 
+            // 空白区域双击可快速全选（时间阈值 300ms，位置阈值 12px）
+            if (!_isCameraMode)
+            {
+                var clickPoint = e.GetPosition(this);
+                var now = DateTime.Now;
+                if ((now - _lastBlankClickTime).TotalMilliseconds <= DoubleClickTimeThresholdMs &&
+                    Math.Abs(clickPoint.X - _lastBlankClickPosition.X) <= DoubleClickDistanceThresholdPx &&
+                    Math.Abs(clickPoint.Y - _lastBlankClickPosition.Y) <= DoubleClickDistanceThresholdPx)
+                {
+                    SelectFullScreenArea();
+                    _lastBlankClickTime = DateTime.MinValue;
+                    e.Handled = true;
+                    return;
+                }
+
+                _lastBlankClickTime = now;
+                _lastBlankClickPosition = clickPoint;
+            }
+
             // 如果正在选择，先重置状态
             if (_isSelecting)
             {
@@ -606,6 +632,8 @@ namespace Ink_Canvas
                 // 自由绘制模式：开始绘制
                 _freehandPoints.Clear();
                 _freehandPolyline.Points.Clear();
+                SelectedArea = null;
+                SelectedPath = null;
                 _freehandPoints.Add(_startPoint);
                 _freehandPolyline.Points.Add(_startPoint);
 
@@ -672,50 +700,45 @@ namespace Ink_Canvas
 
                 if (_isFreehandMode)
                 {
-                    // 自由绘制模式：一笔完成，直接截图
-                    if (_freehandPoints.Count > 1) // 只要有点就可以截图
+                    // 自由绘制模式：松开后先保留选区，等待用户点击“确认截图/添加到白板”
+                    if (_freehandPoints.Count > 1)
                     {
-                        // 创建路径的副本，避免修改原始列表
+                        // 创建路径副本并闭合
                         var pathPoints = new List<WpfPoint>(_freehandPoints);
-
-                        // 简化路径处理，不强制闭合
-                        // 如果路径没有闭合，自动添加起始点
                         if (pathPoints.Count > 0)
                         {
                             pathPoints.Add(_startPoint);
                         }
 
-                        // 优化路径：移除重复点和过于接近的点，提高路径质量
                         var optimizedPath = OptimizePath(pathPoints);
-
-                        // 保存选择的路径
-                        SelectedPath = optimizedPath;
-
-                        // 计算边界矩形用于截图
                         var bounds = CalculatePathBounds(optimizedPath);
 
-                        // 确保边界矩形有效
-                        if (bounds.Width >= 0 && bounds.Height >= 0)
+                        if (bounds.Width > 5 && bounds.Height > 5)
                         {
+                            SelectedPath = optimizedPath;
+
                             var dpiScale = GetDpiScale();
                             var virtualScreen = SystemInformation.VirtualScreen;
-
                             int screenX = (int)((bounds.X * dpiScale) + virtualScreen.Left);
                             int screenY = (int)((bounds.Y * dpiScale) + virtualScreen.Top);
                             int screenWidth = (int)(bounds.Width * dpiScale);
                             int screenHeight = (int)(bounds.Height * dpiScale);
 
                             SelectedArea = new DrawingRectangle(screenX, screenY, screenWidth, screenHeight);
-                            DialogResult = true;
-                            Close();
+                            HintText.Text = "自由选区已完成，可点击确认截图/添加到白板；重新拖动可重画";
+                            HintTextBorder.Visibility = Visibility.Visible;
                             return;
                         }
                     }
 
-                    // 如果自由绘制失败，清除路径并继续
+                    // 自由绘制无效则清理本次路径，允许继续重绘
                     _freehandPoints.Clear();
                     _freehandPolyline.Points.Clear();
                     _freehandPolyline.Visibility = Visibility.Collapsed;
+                    SelectedArea = null;
+                    SelectedPath = null;
+                    HintText.Text = "自由选区过小，请重新绘制";
+                    HintTextBorder.Visibility = Visibility.Visible;
                     return;
                 }
                 else
@@ -994,9 +1017,10 @@ namespace Ink_Canvas
 
         private void ConfirmSelection()
         {
-            // 在自由绘制模式下，不执行确认操作
+            // 在自由绘制模式下，走自由选区确认
             if (_isFreehandMode)
             {
+                ConfirmFreehandSelection();
                 return;
             }
 
@@ -1016,6 +1040,44 @@ namespace Ink_Canvas
                 DialogResult = true;
             }
             Close();
+        }
+
+        private void ConfirmFreehandSelection()
+        {
+            if (!SelectedArea.HasValue || SelectedPath == null || SelectedPath.Count < 3)
+            {
+                HintText.Text = "请先拖动鼠标绘制自由选区";
+                HintTextBorder.Visibility = Visibility.Visible;
+                return;
+            }
+
+            DialogResult = true;
+            Close();
+        }
+
+        private void SelectFullScreenArea()
+        {
+            var virtualScreen = SystemInformation.VirtualScreen;
+            _currentSelection = new Rect(0, 0, ActualWidth, ActualHeight);
+
+            SelectionRectangle.Visibility = Visibility.Visible;
+            SelectionRectangle.IsHitTestVisible = false;
+            ControlPointsCanvas.Visibility = Visibility.Collapsed;
+            SizeInfoBorder.Visibility = Visibility.Visible;
+
+            _isAdjusting = false;
+            _isSelecting = false;
+            _isFreehandMode = false;
+            RectangleModeButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+            FreehandModeButton.Background = new SolidColorBrush(Color.FromRgb(107, 114, 128));
+            FullScreenButton.Background = new SolidColorBrush(Color.FromRgb(107, 114, 128));
+
+            UpdateSelectionDisplay();
+            SelectedPath = null;
+            SelectedArea = new DrawingRectangle(virtualScreen.X, virtualScreen.Y, virtualScreen.Width, virtualScreen.Height);
+
+            HintText.Text = "已全选屏幕，点击确认截图或添加到白板";
+            HintTextBorder.Visibility = Visibility.Visible;
         }
 
         private void CancelSelection()
