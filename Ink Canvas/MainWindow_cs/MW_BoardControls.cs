@@ -517,7 +517,7 @@ namespace Ink_Canvas
                 if (CurrentWhiteboardIndex != oldTotal)
                 {
                     for (var i = CurrentWhiteboardIndex; i < oldTotal; i++)
-                        TimeMachineHistories[i] = TimeMachineHistories[i + 1];
+                        TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
                 }
                 else
                 {
@@ -531,7 +531,7 @@ namespace Ink_Canvas
             else if (pageIndex < CurrentWhiteboardIndex)
             {
                 for (var i = pageIndex; i < WhiteboardTotalCount; i++)
-                    TimeMachineHistories[i] = TimeMachineHistories[i + 1];
+                    TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
                 TimeMachineHistories[WhiteboardTotalCount] = null;
                 WhiteboardTotalCount--;
                 CurrentWhiteboardIndex--;
@@ -539,7 +539,7 @@ namespace Ink_Canvas
             else
             {
                 for (var i = pageIndex; i < WhiteboardTotalCount; i++)
-                    TimeMachineHistories[i] = TimeMachineHistories[i + 1];
+                    TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
                 TimeMachineHistories[WhiteboardTotalCount] = null;
                 WhiteboardTotalCount--;
             }

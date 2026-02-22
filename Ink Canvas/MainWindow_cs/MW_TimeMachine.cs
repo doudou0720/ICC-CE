@@ -321,6 +321,38 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 将一页的完整历史扁平化为“仅最终状态”：在临时画布上重放该页历史，再导出为最少条目的新历史（一笔画集合 + 若干元素插入）。
+        /// 用于删除页面前移后，避免移入槽位保留冗长历史导致翻到该页码时卡顿。
+        /// </summary>
+        /// <param name="history">该页的 TimeMachineHistory 数组，可为 null 或空</param>
+        /// <returns>扁平化后的新历史数组；若输入为 null 或空则返回 null</returns>
+        private TimeMachineHistory[] FlattenPageHistory(TimeMachineHistory[] history)
+        {
+            if (history == null || history.Length == 0) return null;
+
+            var removed = CollectRemovedElementsFromHistory(history);
+            var fakeInkCanv = new InkCanvas
+            {
+                Width = inkCanvas.ActualWidth > 0 ? inkCanvas.ActualWidth : 1920,
+                Height = inkCanvas.ActualHeight > 0 ? inkCanvas.ActualHeight : 1080,
+                EditingMode = InkCanvasEditingMode.None,
+            };
+
+            foreach (var item in history)
+                ApplyHistoryToCanvas(item, fakeInkCanv, removed);
+
+            var list = new List<TimeMachineHistory>();
+            if (fakeInkCanv.Strokes.Count > 0)
+                list.Add(new TimeMachineHistory(fakeInkCanv.Strokes.Clone(), TimeMachineHistoryType.UserInput, false));
+            foreach (UIElement child in fakeInkCanv.Children)
+            {
+                if (child is Image || child is MediaElement)
+                    list.Add(new TimeMachineHistory(child, TimeMachineHistoryType.ElementInsert));
+            }
+            return list.Count == 0 ? null : list.ToArray();
+        }
+
+        /// <summary>
         /// 获取页面的所有图片元素
         /// </summary>
         /// <param name="items">时间机器历史记录数组</param>
