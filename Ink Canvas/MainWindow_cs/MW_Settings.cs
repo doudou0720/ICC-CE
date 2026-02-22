@@ -3,8 +3,10 @@ using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using OSVersionExtension;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -32,10 +34,27 @@ namespace Ink_Canvas
     {
         #region Behavior
 
+        /// <summary>
+        /// 内部标记：是否正在内部更改更新通道
+        /// </summary>
         private bool _isChangingUpdateChannelInternally;
+        /// <summary>
+        /// 内部标记：是否正在内部更改遥测设置
+        /// </summary>
         private bool _isChangingTelemetryInternally;
+        /// <summary>
+        /// 内部标记：是否正在内部更改遥测隐私设置
+        /// </summary>
         private bool _isChangingTelemetryPrivacyInternally;
 
+        /// <summary>
+        /// 检查隐私文件是否存在
+        /// </summary>
+        /// <returns>如果隐私文件存在则返回true，否则返回false</returns>
+        /// <remarks>
+        /// 尝试从程序集资源中查找privacy.txt文件
+        /// 如果找到则返回true，否则返回false
+        /// </remarks>
         private static bool PrivacyFileExists()
         {
             try
@@ -53,6 +72,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 查找隐私文件
+        /// </summary>
+        /// <returns>隐私文件路径，如果是嵌入资源则返回"embedded"，如果未找到则返回null</returns>
+        /// <remarks>
+        /// 先尝试从文件系统读取，搜索路径包括：
+        /// 1. App.RootPath
+        /// 2. 程序集所在目录
+        /// 3. 程序集所在目录的上一级目录
+        /// 如果文件系统中未找到，则回退到嵌入资源
+        /// </remarks>
         private static string FindPrivacyFile()
         {
             // 先尝试从文件系统读取
@@ -303,6 +333,17 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理遥测上传级别选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 根据选择的遥测级别执行相应操作：
+        /// 1. 如果选择关闭遥测且当前不是正式通道，提示用户并切换到正式通道
+        /// 2. 如果选择开启遥测但未同意隐私说明，提示用户需要先同意隐私说明
+        /// 3. 保存设置并显示通知
+        /// </remarks>
         private void ComboBoxTelemetryUploadLevel_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -419,6 +460,16 @@ namespace Ink_Canvas
             ShowNotification("匿名使用数据上传设置已保存");
         }
 
+        /// <summary>
+        /// 处理遥测隐私同意复选框状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当用户勾选或取消勾选隐私同意复选框时执行：
+        /// 1. 勾选时：显示隐私协议窗口，用户同意后保存设置
+        /// 2. 取消勾选时：提示用户会关闭遥测并切回正式通道，用户确认后执行相应操作
+        /// </remarks>
         private void CheckBoxTelemetryPrivacyAccepted_Checked(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -549,6 +600,18 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理自动更新开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当自动更新开关状态更改时：
+        /// 1. 保存自动更新设置
+        /// 2. 自动更新关闭时隐藏静默更新选项
+        /// 3. 如果关闭了自动更新，同时也关闭静默更新
+        /// 4. 根据静默更新设置显示或隐藏静默更新时间区域
+        /// </remarks>
         private void ToggleSwitchIsAutoUpdate_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -573,6 +636,16 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理静默自动更新开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当静默自动更新开关状态更改时：
+        /// 1. 保存静默自动更新设置
+        /// 2. 根据静默更新设置显示或隐藏静默更新时间区域
+        /// </remarks>
         private void ToggleSwitchIsAutoUpdateWithSilence_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -585,6 +658,14 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理静默自动更新开始时间选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当选择静默自动更新开始时间时，保存设置到文件
+        /// </remarks>
         private void AutoUpdateWithSilenceStartTimeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -593,6 +674,14 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理静默自动更新结束时间选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当选择静默自动更新结束时间时，保存设置到文件
+        /// </remarks>
         private void AutoUpdateWithSilenceEndTimeComboBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -600,6 +689,16 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理开机启动开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当开机启动开关状态更改时：
+        /// 1. 如果开启，删除旧的启动项并创建新的启动项
+        /// 2. 如果关闭，删除所有启动项
+        /// </remarks>
         private void ToggleSwitchRunAtStartup_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -615,6 +714,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理启动时折叠开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当启动时折叠开关状态更改时，保存设置到文件
+        /// </remarks>
         private void ToggleSwitchFoldAtStartup_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -622,6 +729,18 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理PowerPoint支持开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当PowerPoint支持开关状态更改时：
+        /// 1. 保存PowerPoint支持设置
+        /// 2. 如果关闭PowerPoint支持，同时也关闭WPS支持
+        /// 3. 如果开启PowerPoint支持，初始化PPT管理器并开始监控
+        /// 4. 如果关闭PowerPoint支持，停止监控
+        /// </remarks>
         private void ToggleSwitchSupportPowerPoint_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -659,6 +778,20 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理使用ROT PPT链接开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当使用ROT PPT链接开关状态更改时：
+        /// 1. 保存ROT PPT链接设置
+        /// 2. 停止PPT监控
+        /// 3. 如果开启ROT PPT链接且启用了PowerPoint增强，关闭PowerPoint增强
+        /// 4. 初始化PPT管理器
+        /// 5. 如果启用了PowerPoint支持，开始PPT监控
+        /// 6. 记录切换PPT联动架构的日志
+        /// </remarks>
         private void ToggleSwitchUseRotPptLink_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -699,6 +832,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理新幻灯片放映时显示画布开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当新幻灯片放映时显示画布开关状态更改时，保存设置到文件
+        /// </remarks>
         private void ToggleSwitchShowCanvasAtNewSlideShow_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -711,6 +852,17 @@ namespace Ink_Canvas
 
         #region Startup
 
+        /// <summary>
+        /// 处理笔尖模式开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当笔尖模式开关状态更改时：
+        /// 1. 同步更新两个笔尖模式开关的状态
+        /// 2. 保存笔尖模式设置
+        /// 3. 根据笔尖模式设置更新边界宽度
+        /// </remarks>
         private void ToggleSwitchEnableNibMode_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -731,6 +883,16 @@ namespace Ink_Canvas
 
         #region Appearance
 
+        /// <summary>
+        /// 处理显示笔尖模式切换开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当显示笔尖模式切换开关状态更改时：
+        /// 1. 保存显示笔尖模式切换设置
+        /// 2. 根据设置显示或隐藏笔尖模式切换面板
+        /// </remarks>
         private void ToggleSwitchEnableDisPlayNibModeToggle_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -754,6 +916,14 @@ namespace Ink_Canvas
         //    SaveSettingsToFile();
         //}
 
+        /// <summary>
+        /// 处理快速面板开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当快速面板开关状态更改时，保存设置到文件
+        /// </remarks>
         private void ToggleSwitchEnableQuickPanel_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -761,6 +931,14 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理启动屏幕开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当启动屏幕开关状态更改时，保存设置到文件
+        /// </remarks>
         private void ToggleSwitchEnableSplashScreen_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -768,6 +946,14 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理启动屏幕样式选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当选择启动屏幕样式时，保存设置到文件
+        /// </remarks>
         private void ComboBoxSplashScreenStyle_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -775,6 +961,18 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理浮动栏缩放值滑块值更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当浮动栏缩放值滑块值更改时：
+        /// 1. 保存浮动栏缩放设置
+        /// 2. 应用缩放值到浮动栏（限制在0.5-1.25范围内）
+        /// 3. 等待UI更新后重新计算浮动栏位置，确保居中计算准确
+        /// 4. 只在屏幕模式下重新计算浮动栏位置
+        /// </remarks>
         private void ViewboxFloatingBarScaleTransformValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -814,6 +1012,16 @@ namespace Ink_Canvas
             }), DispatcherPriority.Render);
         }
 
+        /// <summary>
+        /// 处理浮动栏透明度值滑块值更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当浮动栏透明度值滑块值更改时：
+        /// 1. 保存浮动栏透明度设置
+        /// 2. 应用透明度值到浮动栏
+        /// </remarks>
         private void ViewboxFloatingBarOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -822,6 +1030,14 @@ namespace Ink_Canvas
             ViewboxFloatingBar.Opacity = Settings.Appearance.ViewboxFloatingBarOpacityValue;
         }
 
+        /// <summary>
+        /// 处理PPT中浮动栏透明度值滑块值更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当PPT中浮动栏透明度值滑块值更改时，保存设置到文件
+        /// </remarks>
         private void ViewboxFloatingBarOpacityInPPTValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -829,6 +1045,17 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理托盘图标开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当托盘图标开关状态更改时：
+        /// 1. 保存托盘图标设置
+        /// 2. 根据设置显示或隐藏托盘图标示例图像
+        /// 3. 根据设置显示或隐藏系统托盘图标
+        /// </remarks>
         private void ToggleSwitchEnableTrayIcon_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -839,6 +1066,17 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 处理展开按钮图像选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当选择展开按钮图像类型时：
+        /// 1. 保存展开按钮图像类型设置
+        /// 2. 根据选择的图像类型更新左右展开按钮的图标
+        /// 3. 为不同的图像类型设置不同的大小和旋转角度
+        /// </remarks>
         private void ComboBoxUnFoldBtnImg_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -874,6 +1112,16 @@ namespace Ink_Canvas
 
         private static readonly Lazy<object> HitokotoHttpClient = new Lazy<object>(CreateHitokotoClient, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
+        /// <summary>
+        /// 创建用于获取一言（Hitokoto）数据的HttpClient
+        /// </summary>
+        /// <returns>创建的HttpClient实例，如果创建失败则返回null</returns>
+        /// <remarks>
+        /// 创建HttpClient时：
+        /// 1. 设置超时时间为5秒
+        /// 2. 尝试设置User-Agent头
+        /// 3. 捕获并记录创建过程中的异常
+        /// </remarks>
         private static object CreateHitokotoClient()
         {
             try
@@ -904,6 +1152,13 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 根据当前外观设置更新白板水印的名言文本。
+        /// </summary>
+        /// <remarks>
+        /// 当配置为内置来源时（0：OSUPlayer、1：名言警句、2：高考俗语）从对应数组中随机选择一条并设置为水印文本；
+        /// 当配置为一言（3）时会异步请求 Hitokoto API 并在请求中显示占位提示，成功时将返回文本设为水印，失败时记录警告日志并设置可读的失败提示文本。此方法会修改 BlackBoardWaterMark.Text，并在发生异常时记录日志且设置合适的回退文本。
+        /// </remarks>
         private async Task UpdateChickenSoupTextAsync()
         {
             try
@@ -952,7 +1207,22 @@ namespace Ink_Canvas
                             return;
                         }
 
-                        var response = await client.GetAsync("https://v1.hitokoto.cn/?encode=text").ConfigureAwait(true);
+                        // 构建API URL，包含选中的分类参数
+                        var categories = Settings.Appearance.HitokotoCategories;
+                        if (categories == null || categories.Count == 0)
+                        {
+                            // 如果没有选中任何分类，默认全选
+                            categories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
+                            Settings.Appearance.HitokotoCategories = categories;
+                        }
+
+                        var urlBuilder = new StringBuilder("https://v1.hitokoto.cn/?encode=text");
+                        foreach (var category in categories)
+                        {
+                            urlBuilder.Append($"&c={category}");
+                        }
+
+                        var response = await client.GetAsync(urlBuilder.ToString()).ConfigureAwait(true);
                         response.EnsureSuccessStatusCode();
 
                         var text = await response.Content.ReadAsStringAsync().ConfigureAwait(true);
@@ -977,17 +1247,187 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile($"更新白板名言时出错: {ex.Message}", LogHelper.LogType.Warning);
                 if (Settings.Appearance.ChickenSoupSource == 3 && BlackBoardWaterMark != null)
                 {
-                    try { BlackBoardWaterMark.Text = "一言功能不可用"; } catch { }
+                    try { BlackBoardWaterMark.Text = "一言功能不可用"; } catch (Exception innerEx) { System.Diagnostics.Debug.WriteLine(innerEx); }
                 }
             }
         }
 
+        /// <summary>
+        /// 处理名言来源选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当选择名言来源时：
+        /// 1. 保存名言来源设置
+        /// 2. 异步更新白板水印的名言文本
+        /// </remarks>
         private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
             Settings.Appearance.ChickenSoupSource = ComboBoxChickenSoupSource.SelectedIndex;
+            
+            if (BtnHitokotoCustomize != null)
+            {
+                BtnHitokotoCustomize.Visibility = ComboBoxChickenSoupSource.SelectedIndex == 3 
+                    ? Visibility.Visible 
+                    : Visibility.Collapsed;
+            }
+            
             SaveSettingsToFile();
             await UpdateChickenSoupTextAsync();
+        }
+
+        private async void BtnHitokotoCustomize_Click(object sender, RoutedEventArgs e)
+        {
+            var categories = new Dictionary<string, string>
+            {
+                { "a", "动画" },
+                { "b", "漫画" },
+                { "c", "游戏" },
+                { "d", "文学" },
+                { "e", "原创" },
+                { "f", "来自网络" },
+                { "g", "其他" },
+                { "h", "影视" },
+                { "i", "诗词" },
+                { "j", "网易云" },
+                { "k", "哲学" },
+                { "l", "抖机灵" }
+            };
+
+            // 创建弹窗内容
+            var contentPanel = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Orientation = System.Windows.Controls.Orientation.Vertical
+            };
+
+            // 全选复选框
+            var selectAllCheckBox = new CheckBox
+            {
+                Content = "全选",
+                FontSize = 14,
+                FontFamily = new FontFamily("Microsoft YaHei UI"),
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+
+            // 存储各个分类的复选框
+            var categoryCheckBoxes = new Dictionary<string, CheckBox>();
+
+            // 创建分类复选框
+            foreach (var category in categories)
+            {
+                var checkBox = new CheckBox
+                {
+                    Content = category.Value,
+                    Tag = category.Key,
+                    FontSize = 13,
+                    FontFamily = new FontFamily("Microsoft YaHei UI"),
+                    IsChecked = Settings.Appearance.HitokotoCategories.Contains(category.Key),
+                    Margin = new Thickness(0, 0, 0, 8)
+                };
+                categoryCheckBoxes[category.Key] = checkBox;
+                contentPanel.Children.Add(checkBox);
+            }
+
+            // 全选复选框逻辑
+            bool isUpdatingSelectAll = false;
+            selectAllCheckBox.IsChecked = Settings.Appearance.HitokotoCategories.Count == categories.Count;
+            
+            selectAllCheckBox.Checked += (s, args) =>
+            {
+                if (isUpdatingSelectAll) return;
+                isUpdatingSelectAll = true;
+                foreach (var checkBox in categoryCheckBoxes.Values)
+                {
+                    checkBox.IsChecked = true;
+                }
+                isUpdatingSelectAll = false;
+            };
+
+            selectAllCheckBox.Unchecked += (s, args) =>
+            {
+                if (isUpdatingSelectAll) return;
+                isUpdatingSelectAll = true;
+                foreach (var checkBox in categoryCheckBoxes.Values)
+                {
+                    checkBox.IsChecked = false;
+                }
+                isUpdatingSelectAll = false;
+            };
+
+            // 监听各个复选框的变化，更新全选状态
+            foreach (var checkBox in categoryCheckBoxes.Values)
+            {
+                checkBox.Checked += (s, args) =>
+                {
+                    if (isUpdatingSelectAll) return;
+                    isUpdatingSelectAll = true;
+                    selectAllCheckBox.IsChecked = categoryCheckBoxes.Values.All(cb => cb.IsChecked == true);
+                    isUpdatingSelectAll = false;
+                };
+                checkBox.Unchecked += (s, args) =>
+                {
+                    if (isUpdatingSelectAll) return;
+                    isUpdatingSelectAll = true;
+                    selectAllCheckBox.IsChecked = false;
+                    isUpdatingSelectAll = false;
+                };
+            }
+
+            // 将全选复选框添加到顶部
+            var mainPanel = new StackPanel
+            {
+                Margin = new Thickness(0),
+                Orientation = System.Windows.Controls.Orientation.Vertical
+            };
+            mainPanel.Children.Add(selectAllCheckBox);
+            mainPanel.Children.Add(new Separator { Margin = new Thickness(0, 8, 0, 8) });
+            mainPanel.Children.Add(contentPanel);
+
+            var scrollViewer = new ScrollViewer
+            {
+                Content = mainPanel,
+                MaxHeight = 400,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+            };
+
+            // 创建ContentDialog显示自定义内容
+            var contentDialog = new iNKORE.UI.WPF.Modern.Controls.ContentDialog
+            {
+                Title = "自定义一言分类",
+                Content = scrollViewer,
+                PrimaryButtonText = "确定",
+                SecondaryButtonText = "取消",
+                DefaultButton = iNKORE.UI.WPF.Modern.Controls.ContentDialogButton.Primary,
+                Owner = this
+            };
+
+            var dialogResult = await contentDialog.ShowAsync();
+
+            if (dialogResult == iNKORE.UI.WPF.Modern.Controls.ContentDialogResult.Primary)
+            {
+                // 保存选中的分类
+                Settings.Appearance.HitokotoCategories = categoryCheckBoxes
+                    .Where(kvp => kvp.Value.IsChecked == true)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                // 如果没有任何选中，默认全选
+                if (Settings.Appearance.HitokotoCategories.Count == 0)
+                {
+                    Settings.Appearance.HitokotoCategories = categories.Keys.ToList();
+                }
+
+                SaveSettingsToFile();
+                
+                // 如果当前正在使用API，更新名言
+                if (Settings.Appearance.ChickenSoupSource == 3 && Settings.Appearance.EnableChickenSoupInWhiteboardMode)
+                {
+                    _ = UpdateChickenSoupTextAsync();
+                }
+            }
         }
 
         private void ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled(object sender, RoutedEventArgs e)
@@ -999,6 +1439,17 @@ namespace Ink_Canvas
             LoadSettings();
         }
 
+        /// <summary>
+        /// 处理浮动栏图标选择更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当选择浮动栏图标时：
+        /// 1. 保存浮动栏图标设置
+        /// 2. 更新浮动栏图标
+        /// 3. 保存设置到文件
+        /// </remarks>
         public void ComboBoxFloatingBarImg_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1007,6 +1458,16 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 根据设置更新浮动栏图标
+        /// </summary>
+        /// <remarks>
+        /// 根据设置的浮动栏图标索引更新图标：
+        /// 1. 为不同的图标索引设置不同的图标源
+        /// 2. 为不同的图标设置不同的边距
+        /// 3. 支持自定义图标
+        /// 4. 自定义图标加载失败时使用默认图标
+        /// </remarks>
         public void UpdateFloatingBarIcon()
         {
             int index = Settings.Appearance.FloatingBarImg;
@@ -1102,6 +1563,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 更新组合框中的自定义图标选项
+        /// </summary>
+        /// <remarks>
+        /// 更新自定义图标选项时：
+        /// 1. 保留前12个内置图标选项
+        /// 2. 移除所有现有的自定义图标选项
+        /// 3. 添加新的自定义图标选项
+        /// 4. 为自定义图标选项设置字体
+        /// </remarks>
         public void UpdateCustomIconsInComboBox()
         {
             // 保留前12个内置图标选项
@@ -1120,6 +1591,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理添加自定义图标按钮点击事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当点击添加自定义图标按钮时：
+        /// 1. 显示添加自定义图标窗口
+        /// 2. 如果添加成功，自动选中新添加的图标
+        /// </remarks>
         private void ButtonAddCustomIcon_Click(object sender, RoutedEventArgs e)
         {
             AddCustomIconWindow dialog = new AddCustomIconWindow(this);
@@ -1133,6 +1614,14 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理管理自定义图标按钮点击事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当点击管理自定义图标按钮时，显示自定义图标管理窗口
+        /// </remarks>
         private void ButtonManageCustomIcons_Click(object sender, RoutedEventArgs e)
         {
             CustomIconWindow dialog = new CustomIconWindow(this);
@@ -1140,6 +1629,18 @@ namespace Ink_Canvas
             dialog.ShowDialog();
         }
 
+        /// <summary>
+        /// 处理白板模式下时间显示开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当白板模式下时间显示开关状态更改时：
+        /// 1. 保存时间显示设置
+        /// 2. 如果当前是白板模式，根据设置显示或隐藏时间和日期水印
+        /// 3. 保存设置到文件
+        /// 4. 重新加载设置以应用更改
+        /// </remarks>
         private void ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -1162,6 +1663,18 @@ namespace Ink_Canvas
             LoadSettings();
         }
 
+        /// <summary>
+        /// 处理白板模式下名言显示开关状态更改事件
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">路由事件参数</param>
+        /// <remarks>
+        /// 当白板模式下名言显示开关状态更改时：
+        /// 1. 保存名言显示设置
+        /// 2. 如果当前是白板模式，根据时间显示设置显示或隐藏名言水印
+        /// 3. 保存设置到文件
+        /// 4. 重新加载设置以应用更改
+        /// </remarks>
         private void ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -2331,6 +2844,12 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 将画笔不透明度更新为滑块的当前值，并保存到设置中。
+        /// </summary>
+        /// <remarks>
+        /// 使用滑块的当前值作为 alpha 通道更新 drawingAttributes.Color，同时将该值写入 Settings.Canvas.InkAlpha 并持久化配置文件。
+        /// </remarks>
         private void InkAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!isLoaded) return;
@@ -2345,6 +2864,9 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        /// <summary>
+        /// 根据组合框的当前选择更新双曲线渐近线选项（Settings.Canvas.HyperbolaAsymptoteOption），并将更改保存到设置文件。
+        /// </summary>
         private void ComboBoxHyperbolaAsymptoteOption_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3173,6 +3695,13 @@ namespace Ink_Canvas
 
         #region Reset
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认配置。
+        /// </summary>
+        /// <remarks>
+        /// 该方法会重新创建全局 Settings 实例并应用推荐值，覆盖大部分子模块配置（如外观、画布、自动化、PPT、手势、高级选项等）。
+        /// 在重置过程中会保留并恢复当前 Settings.Automation 中的 AutoDelSavedFiles 与 AutoDelSavedFilesDaysThreshold 两项值以避免意外删除策略变化。
+        /// </remarks>
         public static void SetSettingsToRecommendation()
         {
             var AutoDelSavedFilesDays = Settings.Automation.AutoDelSavedFiles;
@@ -3320,6 +3849,12 @@ namespace Ink_Canvas
             Settings.Startup.IsFoldAtStartup = false;
         }
 
+        /// <summary>
+        /// 将应用设置重置为推荐的默认值，并保存与重新加载配置以应用更改。
+        /// </summary>
+        /// <remarks>
+        /// 如果配置重置受安全密码保护，则会提示用户输入密码；在验证失败时中止重置。方法会暂时停止加载标志以避免触发事件、将“开机启动”切换置为关闭，并在完成后显示一条通知。任何内部异常将被吞噬以保证流程不中断。
+        /// </remarks>
         public async void BtnResetToSuggestion_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -3344,7 +3879,7 @@ namespace Ink_Canvas
 
                 ToggleSwitchRunAtStartup.IsOn = false;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             ShowNotification("设置已重置为默认推荐设置~");
         }
@@ -3363,7 +3898,7 @@ namespace Ink_Canvas
                 LoadSettings(isStartup: false, skipAutoUpdateCheck: true);
                 isLoaded = true;
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         #endregion
@@ -4409,6 +4944,12 @@ namespace Ink_Canvas
 
         #endregion
 
+        /// <summary>
+        /// 将当前内存中的 Settings 序列化为格式化的 JSON 并写入应用程序配置文件（位于 App.RootPath 下的 Configs 目录或根设置文件）。
+        /// </summary>
+        /// <remarks>
+        /// 在写入前会确保目标目录/文件具有写入权限（使用 ProcessProtectionManager）。任何写入失败或异常都会被吞掉，调用方不会收到异常抛出。
+        /// </remarks>
         public static void SaveSettingsToFile()
         {
             var text = JsonConvert.SerializeObject(Settings, Formatting.Indented);
@@ -4423,7 +4964,7 @@ namespace Ink_Canvas
                 var path = App.RootPath + settingsFileName;
                 ProcessProtectionManager.WithWriteAccess(path, () => File.WriteAllText(path, text));
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         private void SCManipulationBoundaryFeedback(object sender, ManipulationBoundaryFeedbackEventArgs e)

@@ -29,6 +29,11 @@ namespace Ink_Canvas.Helpers
             WriteLogToFile(msg, LogType.Error);
         }
 
+        /// <summary>
+        /// 将一条日志消息记录到应用的日志文件中（可能是单一日志文件或按启动时间存档的文件），同时在日志条目中包含时间戳、线程 ID 和调用者信息，并遵循应用的日志设置。
+        /// </summary>
+        /// <param name="str">要记录的日志文本消息。</param>
+        /// <param name="logType">日志的类型/等级，用于在日志条目中标识（例如 Info、Error、Warning 等）。</param>
         public static void WriteLogToFile(string str, LogType logType = LogType.Info)
         {
             // 检查日志是否启用
@@ -86,9 +91,22 @@ namespace Ink_Canvas.Helpers
                     }
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LogHelper] WriteLogToFile failed: {ex.Message}");
+            }
         }
 
+        /// <summary>
+        /// 检查指定日志文件夹的总大小，并在超过 MaxLogsFolderSizeBytes 时删除该文件夹下的所有文件并记录清理日志。
+        /// </summary>
+        /// <param name="logsPath">要检查和清理的日志文件夹路径。</param>
+        /// <remarks>
+        /// - 如果目录不存在则直接返回。 
+        /// - 当总大小超过 MaxLogsFolderSizeBytes 时，会尝试删除目录下的每个文件（单个删除失败将被忽略）。 
+        /// - 清理完成后会向该目录下的 Log_{AppStartTime}.txt 写入一条带有时间戳和 [Cleanup] 标签的记录。 
+        /// - 方法内部捕获并忽略所有异常以避免影响调用者流程。
+        /// </remarks>
         private static void CheckAndCleanLogsFolder(string logsPath)
         {
             try
@@ -114,7 +132,10 @@ namespace Ink_Canvas.Helpers
                         {
                             file.Delete();
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[LogHelper] Delete log file failed: {ex.Message}");
+                        }
                     }
 
                     // 记录清理操作
@@ -129,7 +150,10 @@ namespace Ink_Canvas.Helpers
                     });
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LogHelper] CheckAndCleanLogsFolder failed: {ex.Message}");
+            }
         }
 
         internal static void WriteLogToFile(string v, object warning)

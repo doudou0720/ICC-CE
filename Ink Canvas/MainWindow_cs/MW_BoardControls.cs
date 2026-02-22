@@ -12,15 +12,51 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 存储每个白板页面的墨迹集合
+        /// </summary>
         private StrokeCollection[] strokeCollections = new StrokeCollection[101];
+
+        /// <summary>
+        /// 存储每个白板页面的最后操作模式是否为重做
+        /// </summary>
         private bool[] whiteboadLastModeIsRedo = new bool[101];
+
+        /// <summary>
+        /// 存储最后一次触摸按下时的墨迹集合
+        /// </summary>
         private StrokeCollection lastTouchDownStrokeCollection = new StrokeCollection();
+
+        /// <summary>
+        /// 当前白板页面索引
+        /// </summary>
         private int CurrentWhiteboardIndex = 1;
+
+        /// <summary>
+        /// 白板页面总数
+        /// </summary>
         private int WhiteboardTotalCount = 1;
+
+        /// <summary>
+        /// 存储每个白板页面的时间机器历史记录
+        /// </summary>
         private TimeMachineHistory[][] TimeMachineHistories = new TimeMachineHistory[101][];
+
+        /// <summary>
+        /// 存储每个白板页面的多指书写模式状态
+        /// </summary>
         private bool[] savedMultiTouchModeStates = new bool[101];
 
-        // 保存每页白板图片信息
+        /// <summary>
+        /// 将当前画布上的所有未保存的图片/媒体和墨迹提交到时间机器历史并将导出结果保存为指定页的快照。
+        /// </summary>
+        /// <param name="isBackupMain">为 true 时将导出结果保存到主备份槽（索引 0）；为 false 时保存到当前白板索引。</param>
+        /// <remarks>
+        /// - 会提交画布上缺失于历史记录的 Image/MediaElement（但跳过 Tag 等于 VideoPresenterLiveFrameTag 的 Image）和缺失的墨迹；  
+        /// - 导出后把结果存入 TimeMachineHistories 的相应索引，并保存当前多指书写模式到 savedMultiTouchModeStates；  
+        /// - 导出后会清除时间机器的临时墨迹历史以释放内存。  
+        /// - 此方法有副作用：修改 TimeMachineHistories、savedMultiTouchModeStates，并通过 timeMachine 的提交方法改变其内部历史状态。
+        /// </remarks>
         private void SaveStrokes(bool isBackupMain = false)
         {
             // 确保画布上的所有UI元素都被保存到时间机器历史记录中
@@ -119,6 +155,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 清除画布上的所有墨迹并执行内存清理
+        /// </summary>
+        /// <param name="isErasedByCode">是否由代码触发的清除操作</param>
+        /// <remarks>
+        /// - 根据参数设置当前提交类型
+        /// - 清除画布上的所有墨迹
+        /// - 执行轻量级内存清理
+        /// - 恢复当前提交类型为用户输入
+        /// </remarks>
         private void ClearStrokes(bool isErasedByCode)
         {
             _currentCommitType = CommitReason.ClearingCanvas;
@@ -143,7 +189,17 @@ namespace Ink_Canvas
             });
         }
 
-        // 恢复每页白板图片信息
+        /// <summary>
+        /// 恢复指定白板页面的墨迹和元素信息
+        /// </summary>
+        /// <param name="isBackupMain">是否恢复主备份页面</param>
+        /// <remarks>
+        /// - 隐藏图片选择工具栏
+        /// - 清空当前画布的墨迹和所有内容
+        /// - 从时间机器历史记录中恢复页面内容
+        /// - 恢复多指书写模式状态
+        /// - 包含异常处理
+        /// </remarks>
         private void RestoreStrokes(bool isBackupMain = false)
         {
             try
@@ -232,6 +288,16 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理白板页面索引按钮点击事件，显示或隐藏侧边页面列表
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">事件参数</param>
+        /// <remarks>
+        /// - 处理左侧页面列表按钮点击：显示或隐藏左侧页面列表
+        /// - 处理右侧页面列表按钮点击：显示或隐藏右侧页面列表
+        /// - 显示页面列表时会刷新列表内容并滚动到当前页面
+        /// </remarks>
         private async void BtnWhiteBoardPageIndex_Click(object sender, EventArgs e)
         {
             if (sender == BtnLeftPageListWB)
@@ -277,6 +343,12 @@ namespace Ink_Canvas
 
         }
 
+        /// <summary>
+        /// 切换到前一白板页并在切换过程中保存与恢复画布和相关状态（如果当前已是第一页则不执行任何操作）。
+        /// </summary>
+        /// <remarks>
+        /// 该方法在切换前会取消当前选中元素（同时保留并恢复编辑模式）、调用视频呈现器的离开页前钩子、保存当前页的笔迹与元素、清空画布；切换到前一页后恢复该页内容、调用视频呈现器的页已更改钩子并刷新页面索引显示。
+        /// </remarks>
         private void BtnWhiteBoardSwitchPrevious_Click(object sender, EventArgs e)
         {
             if (CurrentWhiteboardIndex <= 1) return;
@@ -304,6 +376,11 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 切换到白板的下一页；在到达最后一页时会新增一页。方法在切页前保存当前页面的笔迹/多媒体状态，在切页后恢复目标页面的内容并更新界面状态。
+        /// </summary>
+        /// <param name="sender">触发事件的源对象（通常为按钮）。</param>
+        /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
             Trace.WriteLine("113223234");
@@ -340,6 +417,16 @@ namespace Ink_Canvas
             UpdateIndexInfoDisplay();
         }
 
+        /// <summary>
+        /// 在白板集合中添加一个新页面：在切换前保存并清除当前页面的笔迹与状态，插入新空白页面，恢复并刷新与页面相关的 UI 状态。
+        /// </summary>
+        /// <remarks>
+        /// - 在达到最大页面数（99）时不执行任何操作。  
+        /// - 在切换前若启用了自动保存且笔迹数量超过阈值，会保存当前画面截图。  
+        /// - 若有选中元素，会取消选中并恢复编辑模式。  
+        /// - 将当前页面的历史保存到时间轴并清空画布，然后在白板集合中插入一个空白页面（其历史为 null），随后恢复该页面并触发页面变更回调。  
+        /// - 更新页码显示并在达到上限时禁用添加按钮；若侧边页列表可见，则刷新该列表。  
+        /// </remarks>
         private void BtnWhiteBoardAdd_Click(object sender, EventArgs e)
         {
             if (WhiteboardTotalCount >= 99) return;
@@ -385,6 +472,20 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>
+        /// 处理白板页面删除按钮点击事件，删除当前白板页面
+        /// </summary>
+        /// <param name="sender">事件发送者</param>
+        /// <param name="e">事件参数</param>
+        /// <remarks>
+        /// - 隐藏图片选择工具栏
+        /// - 清除当前画布内容
+        /// - 重新排列剩余页面的历史记录
+        /// - 更新当前页面索引和页面总数
+        /// - 恢复剩余页面内容
+        /// - 更新页码显示
+        /// - 启用添加按钮（如果页面总数小于99）
+        /// </remarks>
         private void BtnWhiteBoardDelete_Click(object sender, RoutedEventArgs e)
         {
             // 隐藏图片选择工具栏
@@ -415,6 +516,17 @@ namespace Ink_Canvas
             if (WhiteboardTotalCount < 99) BtnWhiteBoardAdd.IsEnabled = true;
         }
 
+        /// <summary>
+        /// 更新白板页码信息显示和按钮状态
+        /// </summary>
+        /// <remarks>
+        /// - 更新页码显示文本
+        /// - 设置下一页按钮文本（根据是否为最后一页）
+        /// - 启用或禁用下一页按钮（根据是否为最后一页和最大页面数）
+        /// - 设置按钮颜色和透明度
+        /// - 启用或禁用上一页按钮（根据是否为第一页）
+        /// - 设置删除按钮状态（根据页面总数）
+        /// </remarks>
         private void UpdateIndexInfoDisplay()
         {
             TextBlockWhiteBoardIndexInfo.Text =

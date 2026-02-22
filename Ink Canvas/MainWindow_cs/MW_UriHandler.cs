@@ -6,6 +6,29 @@ namespace Ink_Canvas
 {
     public partial class MainWindow
     {
+        /// <summary>
+        /// 处理URI命令方法
+        /// </summary>
+        /// <param name="uri">URI命令字符串</param>
+        /// <remarks>
+        /// 处理ICC协议的URI命令，包括以下步骤：
+        /// 1. 检查URI是否为空
+        /// 2. 检查是否启用了外部协议
+        /// 3. 记录处理URI命令的日志
+        /// 4. 解析URI获取命令
+        /// 5. 根据命令执行相应的操作：
+        ///    - fold: 进入收纳模式
+        ///    - unfold/show: 退出收纳模式
+        ///    - toggle: 切换收纳模式
+        ///    - thoroughhideon: 开启收起时彻底隐藏
+        ///    - thoroughhideoff: 关闭收起时彻底隐藏
+        ///    - thoroughhidetoggle: 切换收起时彻底隐藏状态
+        ///    - randone: 随机一个
+        ///    - rand: 随机
+        ///    - timer: 计时器
+        ///    - whiteboard/board: 白板
+        /// 6. 捕获并记录可能出现的异常
+        /// </remarks>
         public void HandleUriCommand(string uri)
         {
             try

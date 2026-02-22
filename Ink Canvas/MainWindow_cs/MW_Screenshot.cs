@@ -12,6 +12,17 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 保存截图
+        /// </summary>
+        /// <param name="isHideNotification">是否隐藏通知</param>
+        /// <param name="fileName">文件名</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 根据设置确定保存路径
+        /// 2. 调用CaptureAndSaveScreenshot方法捕获并保存截图
+        /// 3. 如果设置了自动保存墨迹，调用SaveInkCanvasStrokes方法保存墨迹
+        /// </remarks>
         private void SaveScreenShot(bool isHideNotification, string fileName = null)
         {
             var savePath = Settings.Automation.IsSaveScreenshotsInDateFolders
@@ -24,6 +35,15 @@ namespace Ink_Canvas
                 SaveInkCanvasStrokes(false);
         }
 
+        /// <summary>
+        /// 保存截图到桌面
+        /// </summary>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 生成桌面路径和文件名
+        /// 2. 调用CaptureAndSaveScreenshot方法捕获并保存截图到桌面
+        /// 3. 如果设置了自动保存墨迹，调用SaveInkCanvasStrokes方法保存墨迹
+        /// </remarks>
         internal void SaveScreenShotToDesktop()
         {
             var desktopPath = Path.Combine(
@@ -192,7 +212,21 @@ namespace Ink_Canvas
             await PasteImageFromClipboard();
         }
 
-        // 提取公共的截图和保存逻辑
+        /// <summary>
+        /// 提取公共的截图和保存逻辑
+        /// </summary>
+        /// <param name="savePath">保存路径</param>
+        /// <param name="isHideNotification">是否隐藏通知</param>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 获取虚拟屏幕边界
+        /// 2. 创建位图并设置高质量渲染
+        /// 3. 从屏幕复制内容到位图
+        /// 4. 确保保存目录存在
+        /// 5. 保存为PNG格式
+        /// 6. 如果不隐藏通知，显示保存成功通知
+        /// 7. 异步上传截图到Dlass
+        /// </remarks>
         private void CaptureAndSaveScreenshot(string savePath, bool isHideNotification)
         {
             var rc = SystemInformation.VirtualScreen;
@@ -241,7 +275,17 @@ namespace Ink_Canvas
             });
         }
 
-        // 获取日期文件夹路径
+        /// <summary>
+        /// 获取日期文件夹路径
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <returns>日期文件夹路径</returns>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 如果文件名为空，使用当前时间作为文件名
+        /// 2. 获取基础路径和日期文件夹名
+        /// 3. 组合路径并返回
+        /// </remarks>
         private string GetDateFolderPath(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
@@ -259,7 +303,17 @@ namespace Ink_Canvas
                 $"{fileName}.png");
         }
 
-        // 获取默认文件夹路径
+        /// <summary>
+        /// 获取默认文件夹路径
+        /// </summary>
+        /// <returns>默认文件夹路径</returns>
+        /// <remarks>
+        /// 该方法会：
+        /// 1. 获取基础路径
+        /// 2. 组合截图文件夹路径
+        /// 3. 确保截图文件夹存在
+        /// 4. 生成文件名并组合完整路径返回
+        /// </remarks>
         private string GetDefaultFolderPath()
         {
             var basePath = Settings.Automation.AutoSavedStrokesLocation;

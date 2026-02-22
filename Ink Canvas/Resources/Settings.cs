@@ -273,6 +273,8 @@ namespace Ink_Canvas
         public bool IsShowQuickPanel { get; set; } = true;
         [JsonProperty("chickenSoupSource")]
         public int ChickenSoupSource { get; set; } = 1;
+        [JsonProperty("hitokotoCategories")]
+        public List<string> HitokotoCategories { get; set; } = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" }; // 默认全选所有分类
         [JsonProperty("isShowModeFingerToggleSwitch")]
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]

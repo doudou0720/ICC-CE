@@ -1,4 +1,4 @@
-﻿using iNKORE.UI.WPF.Helpers;
+using iNKORE.UI.WPF.Helpers;
 using Ink_Canvas.Helpers;
 using OSVersionExtension;
 using System;
@@ -38,7 +38,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     CopyrightBannerImage.Source =
                         new BitmapImage(new Uri($"file://{App.RootPath + "icc-about-illustrations.png"}"));
                 }
-                catch { }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             }
             else
             {
@@ -173,7 +173,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }
 
         public static class TouchTabletDetectHelper
