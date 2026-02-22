@@ -512,11 +512,19 @@ namespace Ink_Canvas
             if (pageIndex == CurrentWhiteboardIndex)
             {
                 ClearStrokes(true);
-                if (CurrentWhiteboardIndex != WhiteboardTotalCount)
-                    for (var i = CurrentWhiteboardIndex; i <= WhiteboardTotalCount; i++)
+
+                var oldTotal = WhiteboardTotalCount;
+                if (CurrentWhiteboardIndex != oldTotal)
+                {
+                    for (var i = CurrentWhiteboardIndex; i < oldTotal; i++)
                         TimeMachineHistories[i] = TimeMachineHistories[i + 1];
+                }
                 else
+                {
                     CurrentWhiteboardIndex--;
+                }
+
+                TimeMachineHistories[oldTotal] = null;
                 WhiteboardTotalCount--;
                 RestoreStrokes();
             }
