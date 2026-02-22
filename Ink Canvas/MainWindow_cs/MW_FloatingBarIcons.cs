@@ -3092,6 +3092,17 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         public void BtnExit_Click(object sender, RoutedEventArgs e)
         {
+            // 立即停止PPT监控，避免关闭过程中定时器继续尝试连接
+            try
+            {
+                _pptManager?.StopMonitoring();
+                LogHelper.WriteLogToFile("PPT监控已停止（准备关闭）", LogHelper.LogType.Trace);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"停止PPT监控时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+
             // 如果当前在设置面板中，需要先恢复无焦点模式状态
             if (BorderSettings.Visibility == Visibility.Visible)
             {

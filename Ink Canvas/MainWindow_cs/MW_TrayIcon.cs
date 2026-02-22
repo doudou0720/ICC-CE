@@ -115,8 +115,7 @@ namespace Ink_Canvas
             if (mainWin.IsLoaded)
             {
                 IsAppExitByUser = true;
-                Current.Shutdown();
-                // mainWin.BtnExit_Click(null,null);
+                mainWin.BtnExit_Click(null, null);
             }
         }
 
