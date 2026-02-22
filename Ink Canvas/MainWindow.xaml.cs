@@ -3811,8 +3811,10 @@ namespace Ink_Canvas
             {
                 if (PPTQuickPanelContainer == null || PPTQuickPanel == null) return;
 
-                // 仅在PPT模式下显示
-                if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                // 仅在 PPT 模式下且用户开启“PPT 放映时显示快速面板”时显示
+                bool inSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                bool showQuickPanel = Settings.PowerPointSettings.ShowPPTSidebarByDefault;
+                if (inSlideShow && showQuickPanel)
                 {
                     PPTQuickPanelContainer.Visibility = Visibility.Visible;
                     PPTQuickPanel?.UpdateVisibility(true);

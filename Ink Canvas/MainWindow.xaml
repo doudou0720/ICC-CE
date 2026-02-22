@@ -2438,6 +2438,16 @@
                                             <ComboBoxItem Content="顶部居中" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="PPT 放映时显示快速面板" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent=""
+                                                         Name="ToggleSwitchShowPPTSidebarByDefault" IsOn="False"
+                                                         FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchShowPPTSidebarByDefault_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 关闭后在 PPT 放映时不显示快速面板" TextWrapping="Wrap"
+                                               Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">

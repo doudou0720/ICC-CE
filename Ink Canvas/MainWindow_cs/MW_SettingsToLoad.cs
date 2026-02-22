@@ -562,6 +562,10 @@ namespace Ink_Canvas
                     }
                     ComboBoxPPTTimeCapsulePosition.SelectedIndex = position;
                 }
+                if (ToggleSwitchShowPPTSidebarByDefault != null)
+                {
+                    ToggleSwitchShowPPTSidebarByDefault.IsOn = Settings.PowerPointSettings.ShowPPTSidebarByDefault;
+                }
 
                 // -- new --
                 ToggleSwitchShowPPTButton.IsOn = Settings.PowerPointSettings.ShowPPTButton;

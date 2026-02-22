@@ -1748,6 +1748,15 @@ namespace Ink_Canvas
             UpdatePPTBtnPreview();
         }
 
+        private void ToggleSwitchShowPPTSidebarByDefault_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.PowerPointSettings.ShowPPTSidebarByDefault = ToggleSwitchShowPPTSidebarByDefault.IsOn;
+            SaveSettingsToFile();
+            if (BtnPPTSlideShowEnd?.Visibility == Visibility.Visible)
+                UpdatePPTQuickPanelVisibility();
+        }
+
         private void ToggleSwitchEnablePPTButtonPageClickable_OnToggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
