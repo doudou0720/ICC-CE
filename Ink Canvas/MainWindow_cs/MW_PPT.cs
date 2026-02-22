@@ -1258,6 +1258,21 @@ namespace Ink_Canvas
                 string presentationNameForSave = _pptManager?.GetPresentationName() ?? (pres != null ? pres.Name : null);
                 int totalSlidesForSave = _pptManager?.SlidesCount ?? (pres != null ? pres.Slides.Count : 0);
 
+                if (currentPage > 0 && Settings.PowerPointSettings.IsNotifyPreviousPage && !string.IsNullOrEmpty(presentationNameForSave) && totalSlidesForSave > 0)
+                {
+                    try
+                    {
+                        string folderPathForPosition = GetPresentationStrokeFolderPath(pres, presentationNameForSave, totalSlidesForSave);
+                        if (!Directory.Exists(folderPathForPosition))
+                            Directory.CreateDirectory(folderPathForPosition);
+                        File.WriteAllText(Path.Combine(folderPathForPosition, "Position"), currentPage.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"保存上次播放位置失败: {ex}", LogHelper.LogType.Warning);
+                    }
+                }
+
                 if (Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint && !string.IsNullOrEmpty(presentationNameForSave) && totalSlidesForSave > 0)
                 {
                     string folderPathForSave = GetPresentationStrokeFolderPath(pres, presentationNameForSave, totalSlidesForSave);
