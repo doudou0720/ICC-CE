@@ -856,11 +856,12 @@ namespace Ink_Canvas
                 if (bitmap == null || bitmap.Width <= 0 || bitmap.Height <= 0)
                     return null;
 
-                // 创建一个新的位图，确保格式正确
-                using (var convertedBitmap = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format24bppRgb))
+                // 创建一个新的位图，确保保留Alpha通道
+                using (var convertedBitmap = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format32bppArgb))
                 {
                     using (var graphics = Graphics.FromImage(convertedBitmap))
                     {
+                        graphics.CompositingMode = CompositingMode.SourceCopy;
                         graphics.DrawImage(bitmap, 0, 0);
                     }
 
