@@ -239,7 +239,7 @@ namespace Ink_Canvas
                         if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
                             !item.StrokeHasBeenCleared && 
                             item.InsertedElement != null &&
-                            (removed0 == null || !removed0.Contains(item.InsertedElement)))
+                            !removed0.Contains(item.InsertedElement))
                         {
                             elementsToProcess.Add(item.InsertedElement);
                         }
@@ -258,7 +258,7 @@ namespace Ink_Canvas
                         if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
                             !item.StrokeHasBeenCleared && 
                             item.InsertedElement != null &&
-                            (removed == null || !removed.Contains(item.InsertedElement)))
+                            !removed.Contains(item.InsertedElement))
                         {
                             elementsToProcess.Add(item.InsertedElement);
                         }
@@ -443,7 +443,8 @@ namespace Ink_Canvas
         /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
-            if (Settings.Automation.IsAutoSaveStrokesAtClear &&
+            if (CurrentWhiteboardIndex < WhiteboardTotalCount &&
+                Settings.Automation.IsAutoSaveStrokesAtClear &&
                 inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber)
                 CaptureAndEnqueueScreenshotSave(isHideNotification: true);
 
@@ -513,8 +514,13 @@ namespace Ink_Canvas
             CurrentWhiteboardIndex++;
 
             if (CurrentWhiteboardIndex != WhiteboardTotalCount)
+            {
                 for (var i = WhiteboardTotalCount; i > CurrentWhiteboardIndex; i--)
+                {
                     TimeMachineHistories[i] = TimeMachineHistories[i - 1];
+                    savedMultiTouchModeStates[i] = savedMultiTouchModeStates[i - 1];
+                }
+            }
 
             // 确保新页面的历史记录为空
             TimeMachineHistories[CurrentWhiteboardIndex] = null;
@@ -566,7 +572,10 @@ namespace Ink_Canvas
                 if (CurrentWhiteboardIndex != oldTotal)
                 {
                     for (var i = CurrentWhiteboardIndex; i < oldTotal; i++)
+                    {
                         TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
+                        savedMultiTouchModeStates[i] = savedMultiTouchModeStates[i + 1];
+                    }
                 }
                 else
                 {
@@ -580,7 +589,10 @@ namespace Ink_Canvas
             else if (pageIndex < CurrentWhiteboardIndex)
             {
                 for (var i = pageIndex; i < WhiteboardTotalCount; i++)
+                {
                     TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
+                    savedMultiTouchModeStates[i] = savedMultiTouchModeStates[i + 1];
+                }
                 TimeMachineHistories[WhiteboardTotalCount] = null;
                 WhiteboardTotalCount--;
                 CurrentWhiteboardIndex--;
@@ -588,7 +600,10 @@ namespace Ink_Canvas
             else
             {
                 for (var i = pageIndex; i < WhiteboardTotalCount; i++)
+                {
                     TimeMachineHistories[i] = FlattenPageHistory(TimeMachineHistories[i + 1]);
+                    savedMultiTouchModeStates[i] = savedMultiTouchModeStates[i + 1];
+                }
                 TimeMachineHistories[WhiteboardTotalCount] = null;
                 WhiteboardTotalCount--;
             }
