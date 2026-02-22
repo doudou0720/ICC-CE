@@ -124,6 +124,7 @@ namespace Ink_Canvas.Helpers
         }
 
         public bool IsSupportWPS { get; set; } = false;
+        public bool SkipAnimationsWhenNavigating { get; set; } = false;
 
         /// <summary>
         /// 当前演示文稿的总页数（每次按需计算，不缓存 COM 对象）。
@@ -734,7 +735,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {
@@ -788,7 +790,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {
@@ -842,7 +845,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {

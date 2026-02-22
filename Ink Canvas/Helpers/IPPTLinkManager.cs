@@ -16,6 +16,7 @@ namespace Ink_Canvas.Helpers
         bool IsConnected { get; }
         bool IsInSlideShow { get; }
         bool IsSupportWPS { get; set; }
+        bool SkipAnimationsWhenNavigating { get; set; }
         int SlidesCount { get; }
 
         object PPTApplication { get; }

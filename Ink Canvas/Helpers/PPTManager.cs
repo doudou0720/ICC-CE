@@ -125,6 +125,8 @@ namespace Ink_Canvas.Helpers
             }
         }
         public bool IsSupportWPS { get; set; } = false;
+        public bool SkipAnimationsWhenNavigating { get; set; } = false;
+
         #endregion
 
         #region Private Fields
@@ -883,7 +885,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {
@@ -936,7 +939,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {

@@ -244,6 +244,7 @@ namespace Ink_Canvas
                 }
 
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
+                _pptManager.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
 
                 // 注册事件
                 _pptManager.PPTConnectionChanged += OnPPTConnectionChanged;
@@ -1005,11 +1006,13 @@ namespace Ink_Canvas
                     if (Settings.PowerPointSettings.IsAlwaysGoToFirstPageOnReenter)
                     {
                         _pptManager?.TryNavigateToSlide(1);
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) { try { this.Activate(); } catch { } }
                     }
                     else if (_shouldNavigateToLastPage && _lastPlaybackPage > 0)
                     {
                         _pptManager?.TryNavigateToSlide(_lastPlaybackPage);
                         _shouldNavigateToLastPage = false; // 重置标志位
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) { try { this.Activate(); } catch { } }
                     }
 
                     // 更新UI状态
@@ -1428,6 +1431,7 @@ namespace Ink_Canvas
                 if (Settings.PowerPointSettings.IsAlwaysGoToFirstPageOnReenter)
                 {
                     _pptManager?.TryNavigateToSlide(1);
+                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) { try { this.Activate(); } catch { } }
                 }
                 else if (Settings.PowerPointSettings.IsNotifyPreviousPage)
                 {
@@ -1483,6 +1487,7 @@ namespace Ink_Canvas
                                 {
                                     pres.Windows[1].View.GotoSlide(page);
                                 }
+                                if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) { try { this.Activate(); } catch { } }
                             }
                         }
                         catch (Exception ex)
@@ -1876,10 +1881,25 @@ namespace Ink_Canvas
                 }
             }
 
-            // 更新PPT管理器的WPS支持设置
+            // 更新PPT管理器的WPS支持设置与翻页跳过动画设置
             if (_pptManager != null)
             {
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
+                _pptManager.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
+            }
+
+            SaveSettingsToFile();
+        }
+
+        private void ToggleSwitchSkipAnimationsWhenGoNext_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.PowerPointSettings.SkipAnimationsWhenGoNext = ToggleSwitchSkipAnimationsWhenGoNext.IsOn;
+
+            if (_pptManager != null)
+            {
+                _pptManager.SkipAnimationsWhenNavigating = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
             }
 
             SaveSettingsToFile();
@@ -1923,6 +1943,11 @@ namespace Ink_Canvas
                     // 执行翻页
                     if (_pptManager?.TryNavigatePrevious() == true)
                     {
+                    // 若启用了“翻页时跳过PPT动画”，显示导航后把焦点拉回本窗口
+                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                    {
+                        try { this.Activate(); } catch { }
+                    }
                     }
                     else
                     {
@@ -1961,6 +1986,17 @@ namespace Ink_Canvas
                     // 执行翻页
                     if (_pptManager?.TryNavigateNext() == true)
                     {
+                        // 若启用了“翻页时跳过PPT动画”，翻页后主动把焦点拉回本窗口，避免 PPT 抢焦点
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                        {
+                            try
+                            {
+                                this.Activate();
+                            }
+                            catch
+                            {
+                            }
+                        }
                     }
                     else
                     {
@@ -2097,6 +2133,11 @@ namespace Ink_Canvas
                 if (_pptManager.TryShowSlideNavigation())
                 {
                     LogHelper.WriteLogToFile("成功显示PPT幻灯片导航", LogHelper.LogType.Trace);
+                    // 若启用了“翻页时跳过PPT动画”，显示导航后把焦点拉回本窗口
+                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                    {
+                        try { this.Activate(); } catch { }
+                    }
                 }
                 else
                 {

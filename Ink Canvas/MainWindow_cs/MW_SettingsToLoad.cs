@@ -680,6 +680,8 @@ namespace Ink_Canvas
 
                 ToggleSwitchSupportWPS.IsOn = Settings.PowerPointSettings.IsSupportWPS;
 
+                ToggleSwitchSkipAnimationsWhenGoNext.IsOn = Settings.PowerPointSettings.SkipAnimationsWhenGoNext;
+
                 ToggleSwitchPowerPointEnhancement.IsOn = Settings.PowerPointSettings.EnablePowerPointEnhancement;
 
                 ToggleSwitchAutoSaveScreenShotInPowerPoint.IsOn =

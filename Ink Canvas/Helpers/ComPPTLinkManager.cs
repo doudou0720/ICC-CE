@@ -41,6 +41,12 @@ namespace Ink_Canvas.Helpers
             set => _inner.IsSupportWPS = value;
         }
 
+        public bool SkipAnimationsWhenNavigating
+        {
+            get => _inner.SkipAnimationsWhenNavigating;
+            set => _inner.SkipAnimationsWhenNavigating = value;
+        }
+
         public int SlidesCount => _inner.SlidesCount;
 
         public object PPTApplication => _inner.PPTApplication;
