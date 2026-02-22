@@ -1576,6 +1576,21 @@ namespace Ink_Canvas
                 return;
             }
 
+            if (BtnPPTSlideShowEnd != null && BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+            {
+                e.Cancel = true;
+                BtnPPTSlideShowEnd_Click(BtnPPTSlideShowEnd, null);
+                LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
+                return;
+            }
+            if (currentMode != 0)
+            {
+                e.Cancel = true;
+                CloseWhiteboardImmediately();
+                LogHelper.WriteLogToFile("Ink Canvas closing converted to exit whiteboard", LogHelper.LogType.Event);
+                return;
+            }
+
             try
             {
                 // 快抽按钮现在集成在主窗口中，不需要单独关闭
