@@ -105,7 +105,8 @@ namespace Ink_Canvas
         /// 5. Clear: 处理清除画布操作
         /// 6. ElementInsert: 处理元素插入操作
         /// </remarks>
-        private void ApplyHistoryToCanvas(TimeMachineHistory item, InkCanvas applyCanvas = null)
+        /// <param name="elementsRemovedInThisPage"></param>
+        private void ApplyHistoryToCanvas(TimeMachineHistory item, InkCanvas applyCanvas = null, HashSet<UIElement> elementsRemovedInThisPage = null)
         {
             _currentCommitType = CommitReason.CodeInput;
             var canvas = inkCanvas;
@@ -227,18 +228,19 @@ namespace Ink_Canvas
             }
             else if (item.CommitType == TimeMachineHistoryType.ElementInsert)
             {
-                // 使用传入的canvas参数，而不是总是使用inkCanvas
                 var targetCanvas = canvas ?? inkCanvas;
 
                 if (item.StrokeHasBeenCleared)
                 {
-                    // Undo: 移除元素
+                    if (elementsRemovedInThisPage != null)
+                        return;
                     if (item.InsertedElement != null && targetCanvas.Children.Contains(item.InsertedElement))
                         targetCanvas.Children.Remove(item.InsertedElement);
                 }
                 else
                 {
-                    // Redo: 添加元素
+                    if (elementsRemovedInThisPage != null && item.InsertedElement != null && elementsRemovedInThisPage.Contains(item.InsertedElement))
+                        return;
                     if (item.InsertedElement != null && !targetCanvas.Children.Contains(item.InsertedElement))
                     {
                         targetCanvas.Children.Add(item.InsertedElement);

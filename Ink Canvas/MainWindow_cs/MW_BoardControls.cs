@@ -189,6 +189,18 @@ namespace Ink_Canvas
             });
         }
 
+        private static HashSet<UIElement> CollectRemovedElementsFromHistory(TimeMachineHistory[] history)
+        {
+            var set = new HashSet<UIElement>();
+            if (history == null) return set;
+            foreach (var h in history)
+            {
+                if (h.CommitType == TimeMachineHistoryType.ElementInsert && h.StrokeHasBeenCleared && h.InsertedElement != null)
+                    set.Add(h.InsertedElement);
+            }
+            return set;
+        }
+
         /// <summary>
         /// 恢复指定白板页面的墨迹和元素信息
         /// </summary>
@@ -234,16 +246,15 @@ namespace Ink_Canvas
                 if (isBackupMain)
                 {
                     timeMachine.ImportTimeMachineHistory(TimeMachineHistories[0]);
-                    foreach (var item in TimeMachineHistories[0]) ApplyHistoryToCanvas(item);
-                    // 恢复多指书写模式状态
+                    var removed0 = CollectRemovedElementsFromHistory(TimeMachineHistories[0]);
+                    foreach (var item in TimeMachineHistories[0]) ApplyHistoryToCanvas(item, null, removed0);
                     RestoreMultiTouchModeState(0);
                 }
                 else
                 {
                     timeMachine.ImportTimeMachineHistory(TimeMachineHistories[CurrentWhiteboardIndex]);
-                    // 通过时间机器历史恢复所有内容（墨迹和图片）
-                    foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex]) ApplyHistoryToCanvas(item);
-                    // 恢复多指书写模式状态
+                    var removed = CollectRemovedElementsFromHistory(TimeMachineHistories[CurrentWhiteboardIndex]);
+                    foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex]) ApplyHistoryToCanvas(item, null, removed);
                     RestoreMultiTouchModeState(CurrentWhiteboardIndex);
                 }
 
