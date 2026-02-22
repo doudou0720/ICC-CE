@@ -1947,19 +1947,20 @@ namespace Ink_Canvas
             bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
                 Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
 
+            if (needScreenshot)
+            {
+                var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                if (currentSlide > 0)
+                {
+                    var presentationName = _pptManager?.GetPresentationName() ?? "";
+                    CaptureAndEnqueueScreenshotSave(true, $"{presentationName}/{currentSlide}");
+                }
+            }
+
             Task.Run(() =>
             {
                 try
                 {
-                    if (needScreenshot)
-                    {
-                        var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        if (currentSlide > 0)
-                        {
-                            var presentationName = _pptManager?.GetPresentationName() ?? "";
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() => SaveScreenShot(true, $"{presentationName}/{currentSlide}")));
-                        }
-                    }
                     return _pptManager?.TryNavigatePrevious() ?? false;
                 }
                 catch (Exception ex)
@@ -1997,19 +1998,20 @@ namespace Ink_Canvas
             bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
                 Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
 
+            if (needScreenshot)
+            {
+                var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                if (currentSlide > 0)
+                {
+                    var presentationName = _pptManager?.GetPresentationName() ?? "";
+                    CaptureAndEnqueueScreenshotSave(true, $"{presentationName}/{currentSlide}");
+                }
+            }
+
             Task.Run(() =>
             {
                 try
                 {
-                    if (needScreenshot)
-                    {
-                        var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                        if (currentSlide > 0)
-                        {
-                            var presentationName = _pptManager?.GetPresentationName() ?? "";
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() => SaveScreenShot(true, $"{presentationName}/{currentSlide}")));
-                        }
-                    }
                     return _pptManager?.TryNavigateNext() ?? false;
                 }
                 catch (Exception ex)

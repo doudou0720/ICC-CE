@@ -838,7 +838,7 @@ namespace Ink_Canvas
                 _pptUIManager?.UpdateNavigationPanelsVisibility();
 
                 if (Settings.Automation.IsAutoSaveStrokesAtClear &&
-                    inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
+                    inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) CaptureAndEnqueueScreenshotSave(true);
 
                 if (BtnPPTSlideShowEnd.Visibility == Visibility.Collapsed)
                     new Thread(() =>
@@ -969,10 +969,10 @@ namespace Ink_Canvas
                     {
                         var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                         var presentationName = _pptManager?.GetPresentationName() ?? "";
-                        SaveScreenShot(true, $"{presentationName}/{currentSlide}_{DateTime.Now:HH-mm-ss}");
+                        CaptureAndEnqueueScreenshotSave(true, $"{presentationName}/{currentSlide}_{DateTime.Now:HH-mm-ss}");
                     }
                     else
-                        SaveScreenShot(true);
+                        CaptureAndEnqueueScreenshotSave(true);
                 }
 
                 BtnClear_Click(null, null);
@@ -2165,9 +2165,9 @@ namespace Ink_Canvas
                 {
                     var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
                     var presentationName = _pptManager?.GetPresentationName() ?? "";
-                    SaveScreenShot(true, $"{presentationName}/{currentSlide}_{DateTime.Now:HH-mm-ss}");
+                    CaptureAndEnqueueScreenshotSave(true, $"{presentationName}/{currentSlide}_{DateTime.Now:HH-mm-ss}");
                 }
-                else SaveScreenShot(true);
+                else CaptureAndEnqueueScreenshotSave(true);
             }
 
             if (BtnPPTSlideShowEnd.Visibility != Visibility.Visible)
@@ -3627,7 +3627,7 @@ namespace Ink_Canvas
                         {
                             if (Settings.Automation.IsAutoSaveStrokesAtClear && inkCanvas.Strokes.Count >
                                 Settings.Automation.MinimumAutomationStrokeNumber)
-                                SaveScreenShot(true);
+                                CaptureAndEnqueueScreenshotSave(true);
 
                             //BtnClear_Click(null, null);
                         }
@@ -3643,7 +3643,7 @@ namespace Ink_Canvas
                         {
                             if (Settings.Automation.IsAutoSaveStrokesAtClear && inkCanvas.Strokes.Count >
                                 Settings.Automation.MinimumAutomationStrokeNumber)
-                                SaveScreenShot(true);
+                                CaptureAndEnqueueScreenshotSave(true);
 
                             //BtnClear_Click(null, null);
                         }
