@@ -75,11 +75,17 @@ namespace Ink_Canvas
 
                 if (screenshotResult.HasValue)
                 {
+                    if (screenshotResult.Value.AddToWhiteboard)
+                    {
+                        await AddScreenshotToNewWhiteboardPage(screenshotResult.Value);
+                        return;
+                    }
+
                     // 检查是否是摄像头截图
                     if (screenshotResult.Value.CameraBitmapSource != null)
                     {
                         // 摄像头截图（使用BitmapSource）
-                        await InsertBitmapSourceToCanvas(screenshotResult.Value.CameraBitmapSource);
+                        await InsertBitmapSourceToCanvas(screenshotResult.Value.CameraBitmapSource, "摄像头截图已插入到画布", "插入摄像头截图失败");
                     }
                     else if (screenshotResult.Value.CameraImage != null)
                     {
@@ -412,7 +418,7 @@ namespace Ink_Canvas
         /// 8. 提交历史记录
         /// 9. 插入图片后切换到选择模式并刷新浮动栏高光显示
         /// </remarks>
-        private async Task InsertBitmapSourceToCanvas(BitmapSource bitmapSource)
+        private async Task InsertBitmapSourceToCanvas(BitmapSource bitmapSource, string successMessage = "截图已插入到画布", string failureMessagePrefix = "插入截图失败")
         {
             try
             {
@@ -461,11 +467,11 @@ namespace Ink_Canvas
                 UpdateCurrentToolMode("select");
                 HideSubPanels("select");
 
-                ShowNotification("摄像头截图已插入到画布");
+                ShowNotification(successMessage);
             }
             catch (Exception ex)
             {
-                ShowNotification($"插入摄像头截图失败: {ex.Message}");
+                ShowNotification($"{failureMessagePrefix}: {ex.Message}");
                 LogHelper.WriteLogToFile($"插入摄像头截图失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
@@ -850,11 +856,12 @@ namespace Ink_Canvas
                 if (bitmap == null || bitmap.Width <= 0 || bitmap.Height <= 0)
                     return null;
 
-                // 创建一个新的位图，确保格式正确
-                using (var convertedBitmap = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format24bppRgb))
+                // 创建一个新的位图，确保保留Alpha通道
+                using (var convertedBitmap = new Bitmap(bitmap.Width, bitmap.Height, PixelFormat.Format32bppArgb))
                 {
                     using (var graphics = Graphics.FromImage(convertedBitmap))
                     {
+                        graphics.CompositingMode = CompositingMode.SourceCopy;
                         graphics.DrawImage(bitmap, 0, 0);
                     }
 

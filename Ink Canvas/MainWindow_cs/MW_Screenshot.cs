@@ -207,9 +207,7 @@ namespace Ink_Canvas
 
             BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
 
-            System.Windows.Clipboard.SetImage(bitmapSourceForClipboard);
-            await Task.Delay(60);
-            await PasteImageFromClipboard();
+            await InsertBitmapSourceToCanvas(bitmapSourceForClipboard);
         }
 
         /// <summary>
