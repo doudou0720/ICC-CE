@@ -10536,13 +10536,17 @@
                         BorderThickness="0"
                         Background="Transparent"
                         Click="BtnCloseVideoPresenter_Click">
-                        <Image
-                            Source="/Resources/new-icons/close-white.png"
-                            RenderOptions.BitmapScalingMode="HighQuality"
+                        <Path
+                            Stroke="{DynamicResource IconForeground}"
+                            StrokeThickness="2"
+                            StrokeStartLineCap="Round"
+                            StrokeEndLineCap="Round"
                             Width="16"
                             Height="16"
                             HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
+                            VerticalAlignment="Center"
+                            Stretch="Uniform"
+                            Data="M4.5 4.5L11.5 11.5M11.5 4.5L4.5 11.5" />
                     </Button>
                 </Grid>
 
