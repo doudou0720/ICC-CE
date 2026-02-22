@@ -2267,6 +2267,9 @@ namespace Ink_Canvas
             // 禁用高级橡皮擦系统
             DisableEraserOverlay();
 
+            // 停止橡皮擦自动切换计时器（如果正在运行）
+            StopEraserAutoSwitchBackTimer();
+
             SetFloatingBarHighlightPosition("pen");
 
             // 记录当前是否已经是批注模式且是否为高光显示模式
@@ -2526,6 +2529,12 @@ namespace Ink_Canvas
             HideSubPanels("eraser"); // 高亮橡皮按钮
             Trace.WriteLine($"Eraser: Eraser button clicked, current size: {eraserWidth}, circle: {isEraserCircleShape}");
 
+            // 如果启用了橡皮擦自动切换功能，停止之前的计时器（如果正在运行）
+            if (Settings.Canvas.EnableEraserAutoSwitchBack)
+            {
+                StopEraserAutoSwitchBackTimer();
+            }
+
             if (isAlreadyEraser)
             {
                 // 已是橡皮状态，再次点击才弹出/收起面板
@@ -2569,6 +2578,12 @@ namespace Ink_Canvas
             ApplyAdvancedEraserShape(); // 使用新的橡皮擦形状应用方法
             SetCursorBasedOnEditingMode(inkCanvas);
             HideSubPanels("eraser"); // 高亮橡皮按钮
+
+            // 如果启用了橡皮擦自动切换功能，停止之前的计时器（如果正在运行）
+            if (Settings.Canvas.EnableEraserAutoSwitchBack)
+            {
+                StopEraserAutoSwitchBackTimer();
+            }
 
             if (isAlreadyEraser)
             {

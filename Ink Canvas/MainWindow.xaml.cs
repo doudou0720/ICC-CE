@@ -200,6 +200,10 @@ namespace Ink_Canvas
             inkCanvas.PreviewMouseDown += inkCanvas_PreviewMouseDown;
             inkCanvas.StylusDown += inkCanvas_StylusDown;
             inkCanvas.MouseRightButtonUp += InkCanvas_MouseRightButtonUp;
+            
+            // 注册橡皮擦操作结束事件（StylusUp 用于自动切换回批注；MouseUp 在 MW_ShapeDrawing.cs 的 inkCanvas_MouseUp 中会调用 HandleEraserOperationEnded）
+            inkCanvas.StylusUp += inkCanvas_StylusUp;
+            inkCanvas.MouseUp += inkCanvas_MouseUp;
 
             // 初始化第一页Canvas
             var firstCanvas = new System.Windows.Controls.Canvas();
@@ -1334,8 +1338,18 @@ namespace Ink_Canvas
             // 初始化UIA置顶开关
             ToggleSwitchUIAccessTopMost.IsOn = Settings.Advanced.EnableUIAccessTopMost;
             UpdateUIAccessTopMostVisibility();
-
+            
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
+
+            // 初始化橡皮擦自动切换回批注模式开关
+            if (ToggleSwitchEnableEraserAutoSwitchBack != null)
+            {
+                ToggleSwitchEnableEraserAutoSwitchBack.IsOn = Settings.Canvas.EnableEraserAutoSwitchBack;
+            }
+            if (EraserAutoSwitchBackDelaySlider != null)
+            {
+                EraserAutoSwitchBackDelaySlider.Value = Settings.Canvas.EraserAutoSwitchBackDelaySeconds;
+            }
 
             // 初始化剪贴板监控
             InitializeClipboardMonitoring();
@@ -2164,6 +2178,43 @@ namespace Ink_Canvas
         {
             // 使用辅助方法设置光标
             SetCursorBasedOnEditingMode(sender as InkCanvas);
+        }
+
+        // 手写笔抬起事件（用于橡皮擦自动切换）
+        private void inkCanvas_StylusUp(object sender, StylusEventArgs e)
+        {
+            HandleEraserOperationEnded();
+        }
+
+        /// <summary>
+        /// 处理橡皮擦操作结束事件
+        /// </summary>
+        private void HandleEraserOperationEnded()
+        {
+            try
+            {
+                // 检查是否在橡皮擦模式且启用了自动切换功能
+                if ((inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint || 
+                     inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke) &&
+                    Settings.Canvas.EnableEraserAutoSwitchBack)
+                {
+                    // 启动或重启计时器
+                    StartEraserAutoSwitchBackTimer();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"处理橡皮擦操作结束事件失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 注册橡皮擦操作监听器（在切换到橡皮擦模式时调用）
+        /// </summary>
+        private void RegisterEraserOperationListeners()
+        {
+            // 事件已经在构造函数中注册，这里只需要确保计时器在操作结束时启动
+            // 实际的启动逻辑在HandleEraserOperationEnded中处理
         }
 
         // 触摸结束，恢复光标
@@ -3422,6 +3473,56 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"切换在笔工具菜单中隐藏墨迹渐隐控制开关时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 橡皮擦自动切换回批注模式开关切换事件处理
+        /// </summary>
+        private void ToggleSwitchEnableEraserAutoSwitchBack_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                Settings.Canvas.EnableEraserAutoSwitchBack = ToggleSwitchEnableEraserAutoSwitchBack.IsOn;
+                SaveSettingsToFile();
+
+                // 如果禁用，停止计时器
+                if (!Settings.Canvas.EnableEraserAutoSwitchBack)
+                {
+                    StopEraserAutoSwitchBackTimer();
+                }
+
+                LogHelper.WriteLogToFile($"橡皮擦自动切换回批注模式已{(Settings.Canvas.EnableEraserAutoSwitchBack ? "启用" : "禁用")}", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换橡皮擦自动切换回批注模式时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 橡皮擦自动切换延迟时间滑块值改变事件处理
+        /// </summary>
+        private void EraserAutoSwitchBackDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                Settings.Canvas.EraserAutoSwitchBackDelaySeconds = (int)e.NewValue;
+                SaveSettingsToFile();
+
+                // 如果计时器正在运行，重新启动以应用新的延迟时间
+                if (_eraserAutoSwitchBackTimer != null && _eraserAutoSwitchBackTimer.IsEnabled)
+                {
+                    StartEraserAutoSwitchBackTimer();
+                }
+
+                LogHelper.WriteLogToFile($"橡皮擦自动切换延迟时间已更新为 {Settings.Canvas.EraserAutoSwitchBackDelaySeconds} 秒", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新橡皮擦自动切换延迟时间时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

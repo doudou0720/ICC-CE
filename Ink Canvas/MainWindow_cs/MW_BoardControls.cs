@@ -383,7 +383,6 @@ namespace Ink_Canvas
         /// <param name="e">事件参数。</param>
         private void BtnWhiteBoardSwitchNext_Click(object sender, EventArgs e)
         {
-            Trace.WriteLine("113223234");
 
             if (Settings.Automation.IsAutoSaveStrokesAtClear &&
                 inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber) SaveScreenShot(true);
