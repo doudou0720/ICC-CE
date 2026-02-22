@@ -639,7 +639,6 @@ namespace Ink_Canvas
 
                 // 确保自由绘制路径可见
                 _freehandPolyline.Visibility = Visibility.Visible;
-                UpdateFreehandSelectionMask(_freehandPolyline.Points);
             }
             else
             {
@@ -713,7 +712,6 @@ namespace Ink_Canvas
 
                     // 确保自由绘制路径可见
                     _freehandPolyline.Visibility = Visibility.Visible;
-                    UpdateFreehandSelectionMask(_freehandPolyline.Points);
                 }
                 else
                 {
@@ -763,7 +761,6 @@ namespace Ink_Canvas
                             int screenHeight = (int)(bounds.Height * dpiScale);
 
                             SelectedArea = new DrawingRectangle(screenX, screenY, screenWidth, screenHeight);
-                            UpdateFreehandSelectionMask(optimizedPath);
                             HintText.Text = "自由选区已完成，可点击确认截图/添加到白板；重新拖动可重画";
                             HintTextBorder.Visibility = Visibility.Visible;
                             return;
@@ -993,45 +990,10 @@ namespace Ink_Canvas
 
         private void UpdateTransparentSelectionMask(Rect selectionRect)
         {
-            SetSelectionMaskGeometry(new RectangleGeometry(selectionRect));
-        }
-
-        private void UpdateFreehandSelectionMask(IList<WpfPoint> points)
-        {
-            if (points == null || points.Count < 3)
-            {
-                return;
-            }
-
-            var figure = new PathFigure
-            {
-                StartPoint = points[0],
-                IsClosed = true,
-                IsFilled = true
-            };
-
-            var segments = new PolyLineSegment();
-            for (int i = 1; i < points.Count; i++)
-            {
-                segments.Points.Add(points[i]);
-            }
-            figure.Segments.Add(segments);
-
-            var geometry = new PathGeometry();
-            geometry.Figures.Add(figure);
-            SetSelectionMaskGeometry(geometry);
-        }
-
-        private void SetSelectionMaskGeometry(Geometry selectionGeometry)
-        {
             try
             {
-                if (!(TransparentSelectionMask.Clip is CombinedGeometry combinedGeometry))
-                {
-                    throw new InvalidOperationException("TransparentSelectionMask.Clip 不是 CombinedGeometry");
-                }
-
-                combinedGeometry.Geometry2 = selectionGeometry;
+                // 更新选择区域的几何体
+                SelectionClipGeometry.Rect = selectionRect;
 
                 // 显示透明遮罩，隐藏原始遮罩
                 TransparentSelectionMask.Visibility = Visibility.Visible;
