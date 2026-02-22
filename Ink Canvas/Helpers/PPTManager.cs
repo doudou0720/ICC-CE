@@ -38,89 +38,11 @@ namespace Ink_Canvas.Helpers
         {
             get
             {
-                try
-                {
-                    if (PPTApplication == null) return false;
-                    if (!Marshal.IsComObject(PPTApplication)) return false;
-
-                    // 尝试访问一个简单的属性来验证连接是否有效
-                    var _ = PPTApplication.Name;
-                    return true;
-                }
-                catch (COMException comEx)
-                {
-                    var hr = (uint)comEx.HResult;
-                    // 如果COM对象已失效，返回false
-                    if (hr == 0x8001010E || hr == 0x80004005 || hr == 0x800706B5)
-                    {
-                        return false;
-                    }
-                    return false;
-                }
-                catch
-                {
-                    return false;
-                }
+                if (PPTApplication == null) return false;
+                return _cachedIsConnected;
             }
         }
-        public bool IsInSlideShow
-        {
-            get
-            {
-                object slideShowWindows = null;
-                object slideShowWindow = null;
-                object view = null;
-                try
-                {
-                    if (PPTApplication == null || !Marshal.IsComObject(PPTApplication)) return false;
-
-                    slideShowWindows = PPTApplication.SlideShowWindows;
-                    if (slideShowWindows == null) return false;
-                    
-                    dynamic ssw = slideShowWindows;
-                    if (ssw.Count == 0) return false;
-
-                    try
-                    {
-                        slideShowWindow = ssw[1];
-                        if (slideShowWindow == null) return false;
-
-                        dynamic sswObj = slideShowWindow;
-                        view = sswObj.View;
-                        if (view == null) return false;
-                        
-                        return true;
-                    }
-                    catch (COMException comEx)
-                    {
-                        var hr = (uint)comEx.HResult;
-                        if (!IsPptBusyHResult(hr) && (hr == 0x8001010E || hr == 0x80004005))
-                            DisconnectFromPPT();
-                        return false;
-                    }
-                }
-                catch (COMException comEx)
-                {
-                    var hr = (uint)comEx.HResult;
-                    if (!IsPptBusyHResult(hr) && (hr == 0x8001010E || hr == 0x80004005))
-                        DisconnectFromPPT();
-                    if (!IsPptBusyHResult(hr))
-                        LogHelper.WriteLogToFile($"检查PPT放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"检查PPT放映状态时发生意外错误: {ex}", LogHelper.LogType.Warning);
-                    return false;
-                }
-                finally
-                {
-                    SafeReleaseComObject(view);
-                    SafeReleaseComObject(slideShowWindow);
-                    SafeReleaseComObject(slideShowWindows);
-                }
-            }
-        }
+        public bool IsInSlideShow => _cachedIsInSlideShow;
         public bool IsSupportWPS { get; set; } = false;
         public bool SkipAnimationsWhenNavigating { get; set; } = false;
 
@@ -140,6 +62,8 @@ namespace Ink_Canvas.Helpers
         private WpsWindowInfo _lastForegroundWpsWindow;
         private DateTime _lastWindowCheckTime = DateTime.MinValue;
         private bool _lastSlideShowState;
+        private volatile bool _cachedIsConnected;
+        private volatile bool _cachedIsInSlideShow;
         private readonly object _lockObject = new object();
         private bool _disposed;
         private static bool IsPptBusyHResult(uint hr) => hr == 0x80010001 || hr == 0x8001010A; 
@@ -259,13 +183,64 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        private bool RefreshIsInSlideShowFromCom()
+        {
+            object slideShowWindows = null;
+            object slideShowWindow = null;
+            object view = null;
+            try
+            {
+                if (PPTApplication == null) { _cachedIsInSlideShow = false; return false; }
+                if (!Marshal.IsComObject(PPTApplication)) { _cachedIsInSlideShow = false; return false; }
+
+                slideShowWindows = PPTApplication.SlideShowWindows;
+                if (slideShowWindows == null) { _cachedIsInSlideShow = false; return false; }
+
+                dynamic ssw = slideShowWindows;
+                if (ssw.Count == 0) { _cachedIsInSlideShow = false; return false; }
+
+                slideShowWindow = ssw[1];
+                if (slideShowWindow == null) { _cachedIsInSlideShow = false; return false; }
+
+                dynamic sswObj = slideShowWindow;
+                view = sswObj.View;
+                if (view == null) { _cachedIsInSlideShow = false; return false; }
+
+                _cachedIsInSlideShow = true;
+                return true;
+            }
+            catch (COMException comEx)
+            {
+                var hr = (uint)comEx.HResult;
+                _cachedIsInSlideShow = false;
+                if (!IsPptBusyHResult(hr) && (hr == 0x8001010E || hr == 0x80004005 || hr == 0x800706B5))
+                {
+                    _cachedIsConnected = false;
+                    DisconnectFromPPT();
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"检查PPT放映状态时发生意外错误: {ex}", LogHelper.LogType.Warning);
+                _cachedIsInSlideShow = false;
+                return false;
+            }
+            finally
+            {
+                SafeReleaseComObject(view);
+                SafeReleaseComObject(slideShowWindow);
+                SafeReleaseComObject(slideShowWindows);
+            }
+        }
+
         private void CheckSlideShowState()
         {
             try
             {
                 if (!IsConnected) return;
 
-                var currentSlideShowState = IsInSlideShow;
+                var currentSlideShowState = RefreshIsInSlideShowFromCom();
                 if (currentSlideShowState != _lastSlideShowState)
                 {
                     _lastSlideShowState = currentSlideShowState;
@@ -341,6 +316,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 PPTApplication = pptApp;
+                _cachedIsConnected = true;
 
                 // 在主线程中注册事件，确保COM对象在正确的线程中
                 Application.Current?.Dispatcher?.Invoke(() =>
@@ -370,7 +346,8 @@ namespace Ink_Canvas.Helpers
 
                 LogHelper.WriteLogToFile("成功连接到PPT应用程序", LogHelper.LogType.Event);
 
-                if (IsInSlideShow)
+                RefreshIsInSlideShowFromCom();
+                if (_cachedIsInSlideShow)
                 {
                     OnSlideShowBegin(PPTApplication.SlideShowWindows[1]);
                 }
@@ -382,6 +359,7 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"连接PPT应用程序失败: {ex}", LogHelper.LogType.Error);
+                _cachedIsConnected = false;
                 PPTApplication = null;
             }
         }
@@ -456,6 +434,8 @@ namespace Ink_Canvas.Helpers
                     }
                 }
 
+                _cachedIsConnected = false;
+                _cachedIsInSlideShow = false;
                 PPTApplication = null;
                 CurrentPresentation = null;
                 CurrentSlides = null;
@@ -734,6 +714,7 @@ namespace Ink_Canvas.Helpers
 
         private void OnSlideShowBegin(SlideShowWindow wn)
         {
+            _cachedIsInSlideShow = true;
             try
             {
                 UpdateCurrentPresentationInfo();
@@ -760,6 +741,7 @@ namespace Ink_Canvas.Helpers
 
         private void OnSlideShowEnd(Presentation pres)
         {
+            _cachedIsInSlideShow = false;
             try
             {
                 // 记录WPS进程用于后续管理

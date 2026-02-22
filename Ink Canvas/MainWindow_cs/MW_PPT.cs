@@ -1927,38 +1927,45 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数。</param>
         private void BtnPPTSlidesUp_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            int strokeCount = inkCanvas?.Strokes?.Count ?? 0;
+            bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
+                Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
+
+            Task.Run(() =>
             {
                 try
                 {
-                    var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                    if (inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
-                        Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint && currentSlide > 0)
+                    if (needScreenshot)
                     {
-                        var presentationName = _pptManager?.GetPresentationName() ?? "";
-                        SaveScreenShot(true, $"{presentationName}/{currentSlide}");
+                        var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                        if (currentSlide > 0)
+                        {
+                            var presentationName = _pptManager?.GetPresentationName() ?? "";
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() => SaveScreenShot(true, $"{presentationName}/{currentSlide}")));
+                        }
                     }
-
-                    // 执行翻页
-                    if (_pptManager?.TryNavigatePrevious() == true)
+                    return _pptManager?.TryNavigatePrevious() ?? false;
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"PPT上一页操作异常: {ex}", LogHelper.LogType.Error);
+                    return false;
+                }
+            }).ContinueWith(t =>
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (t.IsFaulted) { _pptUIManager?.UpdateConnectionStatus(false); return; }
+                    if (t.Result)
                     {
-                    // 若启用了“翻页时跳过PPT动画”，显示导航后把焦点拉回本窗口
-                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
-                    {
-                        try { this.Activate(); } catch { }
-                    }
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) try { this.Activate(); } catch { }
                     }
                     else
                     {
                         LogHelper.WriteLogToFile("切换到上一页失败", LogHelper.LogType.Warning);
                         _pptUIManager?.UpdateConnectionStatus(false);
                     }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"PPT上一页操作异常: {ex}", LogHelper.LogType.Error);
-                    _pptUIManager?.UpdateConnectionStatus(false);
-                }
+                }));
             });
         }
 
@@ -1970,44 +1977,45 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnPPTSlidesDown_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            int strokeCount = inkCanvas?.Strokes?.Count ?? 0;
+            bool needScreenshot = strokeCount > Settings.Automation.MinimumAutomationStrokeNumber &&
+                Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint;
+
+            Task.Run(() =>
             {
                 try
                 {
-                    var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
-                    if (inkCanvas.Strokes.Count > Settings.Automation.MinimumAutomationStrokeNumber &&
-                        Settings.PowerPointSettings.IsAutoSaveScreenShotInPowerPoint && currentSlide > 0)
+                    if (needScreenshot)
                     {
-                        var presentationName = _pptManager?.GetPresentationName() ?? "";
-                        SaveScreenShot(true, $"{presentationName}/{currentSlide}");
-                    }
-
-                    // 执行翻页
-                    if (_pptManager?.TryNavigateNext() == true)
-                    {
-                        // 若启用了“翻页时跳过PPT动画”，翻页后主动把焦点拉回本窗口，避免 PPT 抢焦点
-                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                        var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                        if (currentSlide > 0)
                         {
-                            try
-                            {
-                                this.Activate();
-                            }
-                            catch
-                            {
-                            }
+                            var presentationName = _pptManager?.GetPresentationName() ?? "";
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() => SaveScreenShot(true, $"{presentationName}/{currentSlide}")));
                         }
+                    }
+                    return _pptManager?.TryNavigateNext() ?? false;
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"PPT下一页操作异常: {ex}", LogHelper.LogType.Error);
+                    return false;
+                }
+            }).ContinueWith(t =>
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (t.IsFaulted) { _pptUIManager?.UpdateConnectionStatus(false); return; }
+                    if (t.Result)
+                    {
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext) try { this.Activate(); } catch { }
                     }
                     else
                     {
                         LogHelper.WriteLogToFile("切换到下一页失败", LogHelper.LogType.Warning);
                         _pptUIManager?.UpdateConnectionStatus(false);
                     }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"PPT下一页操作异常: {ex}", LogHelper.LogType.Error);
-                    _pptUIManager?.UpdateConnectionStatus(false);
-                }
+                }));
             });
         }
 
