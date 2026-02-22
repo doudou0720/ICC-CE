@@ -1861,6 +1861,24 @@ namespace Ink_Canvas
             return false;
         }
 
+        private bool IsValidStraightLineSnapTarget(Stroke stroke)
+        {
+            if (stroke == null || stroke.StylusPoints.Count == 0)
+                return false;
+            if (stroke.StylusPoints.Count == 1)
+                return false;
+            if (stroke.StylusPoints.Count <= 3)
+            {
+                if (!IsStraightLine(stroke))
+                    return false;
+                double len = GetDistance(stroke.StylusPoints.First().ToPoint(), stroke.StylusPoints.Last().ToPoint());
+                if (len < 20)
+                    return false;
+                return true;
+            }
+            return IsPotentialStraightLine(stroke);
+        }
+
         /// <summary>
         /// 尝试将直线端点吸附到现有笔画的端点
         /// </summary>
@@ -1900,7 +1918,7 @@ namespace Ink_Canvas
                 if (stroke.StylusPoints.Count == 0) continue;
 
                 // 只对直线进行端点吸附，跳过虚线和点线
-                if (!IsStraightLine(stroke))
+                if (!IsValidStraightLineSnapTarget(stroke))
                     continue;
 
                 // Get stroke endpoints
