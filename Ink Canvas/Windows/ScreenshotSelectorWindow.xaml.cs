@@ -598,7 +598,7 @@ namespace Ink_Canvas
             {
                 var clickPoint = e.GetPosition(this);
                 var now = DateTime.Now;
-                if ((now - _lastBlankClickTime).TotalMilliseconds <= DoubleClickTimeThresholdMs &&
+                if ((e.ClickCount >= 2 || (now - _lastBlankClickTime).TotalMilliseconds <= DoubleClickTimeThresholdMs) &&
                     Math.Abs(clickPoint.X - _lastBlankClickPosition.X) <= DoubleClickDistanceThresholdPx &&
                     Math.Abs(clickPoint.Y - _lastBlankClickPosition.Y) <= DoubleClickDistanceThresholdPx)
                 {
@@ -654,6 +654,42 @@ namespace Ink_Canvas
             {
                 UpdateSelection();
             }
+        }
+
+        private void Window_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_isCameraMode)
+            {
+                return;
+            }
+
+            // 点击到工具栏等UI元素时不触发全选
+            var hitElement = e.Source as FrameworkElement;
+            if (hitElement != null && (
+                hitElement is Ellipse ||
+                hitElement is System.Windows.Controls.Button ||
+                hitElement is Border ||
+                hitElement is TextBlock ||
+                hitElement is StackPanel ||
+                hitElement is Separator ||
+                hitElement.Name == "SizeInfoBorder" ||
+                hitElement.Name == "HintText" ||
+                hitElement.Name == "AdjustModeHint"))
+            {
+                return;
+            }
+
+            if (_isSelecting)
+            {
+                _isSelecting = false;
+                if (IsMouseCaptured)
+                {
+                    ReleaseMouseCapture();
+                }
+            }
+
+            SelectFullScreenArea();
+            e.Handled = true;
         }
 
         private void Window_MouseMove(object sender, MouseEventArgs e)
@@ -756,13 +792,12 @@ namespace Ink_Canvas
                     else
                     {
                         SelectedArea = null;
-                        DialogResult = false;
+                        SelectionRectangle.Visibility = Visibility.Collapsed;
+                        SizeInfoBorder.Visibility = Visibility.Collapsed;
+                        HintText.Text = "请拖拽选择区域，右键或双击可全选";
+                        HintTextBorder.Visibility = Visibility.Visible;
+                        return;
                     }
-                }
-
-                if (!_isAdjusting)
-                {
-                    Close();
                 }
             }
         }

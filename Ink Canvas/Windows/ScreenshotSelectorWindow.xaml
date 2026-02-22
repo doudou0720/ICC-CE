@@ -11,6 +11,7 @@
         Cursor="Cross"
         KeyDown="Window_KeyDown"
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        MouseRightButtonDown="Window_MouseRightButtonDown"
         MouseMove="Window_MouseMove"
         MouseLeftButtonUp="Window_MouseLeftButtonUp">
     
@@ -279,7 +280,7 @@
                 Margin="0,0,0,140"
                 Panel.ZIndex="1000">
             <TextBlock Name="HintText"
-                       Text="拖拽选择区域，双击空白处可全选屏幕；自由绘制松开后需点击确认"
+                       Text="拖拽选择区域，右键或双击可全选屏幕；自由绘制松开后需点击确认"
                        Foreground="White"
                        FontSize="14"
                        FontWeight="Medium" />
