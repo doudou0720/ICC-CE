@@ -3655,7 +3655,7 @@
                                           StrokeThickness="1" Margin="0,8,0,8" />
                                     
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                                        <Button Name="BtnDlassSettingsManage" Content="Dlass设置管理" 
+                                        <Button Name="BtnDlassSettingsManage" Content="云存储管理" 
                                                 HorizontalAlignment="Left" 
                                                 Click="BtnDlassSettingsManage_Click" 
                                                 Padding="15,5" 

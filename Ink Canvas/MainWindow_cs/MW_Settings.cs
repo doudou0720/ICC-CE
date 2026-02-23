@@ -3433,8 +3433,8 @@ namespace Ink_Canvas
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"打开Dlass设置管理窗口时出错: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"打开Dlass设置管理窗口时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogHelper.WriteLogToFile($"打开云存储管理窗口时出错: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"打开云存储管理窗口时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

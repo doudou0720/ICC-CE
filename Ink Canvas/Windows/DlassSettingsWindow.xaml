@@ -7,7 +7,7 @@
         xmlns:controls="clr-namespace:Ink_Canvas.Windows.Controls"
         mc:Ignorable="d"
         WindowStyle="None"
-        Title="Dlass设置管理" Height="600" Width="900"
+        Title="云存储管理" Height="600" Width="900"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
         AllowsTransparency="True"

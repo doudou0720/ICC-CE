@@ -95,7 +95,130 @@ namespace Ink_Canvas
                     //savePathWithName = savePath + @"\" + DateTime.Now.ToString("u").Replace(':', '-') + ".icstk";
                     savePathWithName = savePath + @"\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss-fff") + ".icstk";
 
-                if (Settings.Automation.IsSaveFullPageStrokes)
+                if (Settings.Automation.IsSaveStrokesAsXML)
+                {
+                    // XML保存模式 - 检查是否存在多页面墨迹
+                    bool hasMultiplePages = false;
+                    List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
+
+                    // 检查PPT放映模式下的多页面墨迹
+                    if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible && _pptManager?.IsConnected == true)
+                    {
+                        hasMultiplePages = true;
+                        var totalSlides = _pptManager.SlidesCount;
+                        var currentSlide = _pptManager.GetCurrentSlideNumber();
+
+                        for (int i = 1; i <= totalSlides; i++)
+                        {
+                            var slideStrokes = _singlePPTInkManager?.LoadSlideStrokes(i);
+                            if (slideStrokes != null && slideStrokes.Count > 0)
+                            {
+                                allPageStrokes.Add(slideStrokes);
+                            }
+                            else if (i == currentSlide && inkCanvas.Strokes.Count > 0)
+                            {
+                                allPageStrokes.Add(inkCanvas.Strokes.Clone());
+                            }
+                            else
+                            {
+                                allPageStrokes.Add(new StrokeCollection());
+                            }
+                        }
+                    }
+                    // 检查白板模式下的多页面墨迹
+                    else if (currentMode != 0 && WhiteboardTotalCount > 1)
+                    {
+                        hasMultiplePages = true;
+                        for (int i = 1; i <= WhiteboardTotalCount; i++)
+                        {
+                            if (TimeMachineHistories[i] != null)
+                            {
+                                var strokes = ApplyHistoriesToNewStrokeCollection(TimeMachineHistories[i]);
+                                allPageStrokes.Add(strokes);
+                            }
+                            else
+                            {
+                                allPageStrokes.Add(new StrokeCollection());
+                            }
+                        }
+                    }
+
+                    if (hasMultiplePages && allPageStrokes.Count > 0)
+                    {
+                        // 检查是否是PPT模式
+                        bool isPPTMode = BtnPPTSlideShowEnd.Visibility == Visibility.Visible && _pptManager?.IsConnected == true;
+                        
+                        if (isPPTMode)
+                        {
+                            // PPT模式：保存为多个XML文件
+                            string basePath = Path.GetDirectoryName(savePathWithName);
+                            string baseFileName = Path.GetFileNameWithoutExtension(savePathWithName);
+
+                            int savedCount = 0;
+                            for (int i = 0; i < allPageStrokes.Count; i++)
+                            {
+                                var strokes = allPageStrokes[i];
+                                if (strokes.Count > 0)
+                                {
+                                    string pageFileName = Path.Combine(basePath, $"{baseFileName}_Page-{i + 1}.xml");
+                                    SaveStrokesAsXML(strokes, pageFileName);
+                                    savedCount++;
+
+                                    // 异步上传每个XML文件
+                                    _ = Task.Run(async () =>
+                                    {
+                                        try
+                                        {
+                                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
+                                            if (delayMinutes > 0)
+                                            {
+                                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
+                                            }
+                                            await Helpers.UploadHelper.UploadFileAsync(pageFileName);
+                                        }
+                                        catch (Exception)
+                                        {
+                                        }
+                                    });
+                                }
+                            }
+
+                            if (newNotice)
+                            {
+                                Task.Delay(100).ContinueWith(t =>
+                                {
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        ShowNotification($"多页面XML墨迹成功保存为 {savedCount} 个XML文件");
+                                    });
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // 非PPT模式：保存为XML压缩包
+                            string zipFileName = Path.ChangeExtension(savePathWithName, "zip");
+                            SaveMultiPageStrokesAsXMLZip(allPageStrokes, zipFileName, newNotice);
+                        }
+                    }
+                    else
+                    {
+                        // 单页面XML保存
+                        string xmlPath = Path.ChangeExtension(savePathWithName, ".xml");
+                        SaveStrokesAsXML(inkCanvas.Strokes, xmlPath);
+                        if (newNotice)
+                        {
+                            Task.Delay(100).ContinueWith(t =>
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                });
+                            });
+                        }
+                    }
+                }
+                else if (Settings.Automation.IsSaveFullPageStrokes)
                 {
                     // 全页面保存模式 - 检查是否存在多页面墨迹
                     bool hasMultiplePages = false;
@@ -159,9 +282,9 @@ namespace Ink_Canvas
                         SaveSinglePageStrokesAsImage(savePathWithName, newNotice);
                     }
                 }
-                else if (Settings.Automation.IsSaveStrokesAsXML)
+                else
                 {
-                    // XML保存模式 - 检查是否存在多页面墨迹
+                    // 常规保存模式 - 检查是否存在多页面墨迹
                     bool hasMultiplePages = false;
                     List<StrokeCollection> allPageStrokes = new List<StrokeCollection>();
 
@@ -209,99 +332,127 @@ namespace Ink_Canvas
 
                     if (hasMultiplePages && allPageStrokes.Count > 0)
                     {
-                        // 多页面XML保存为压缩包
-                        string zipFileName = Path.ChangeExtension(savePathWithName, "zip");
-                        SaveMultiPageStrokesAsXMLZip(allPageStrokes, zipFileName, newNotice);
-                    }
-                    else
-                    {
-                        // 单页面XML保存
-                        string xmlPath = Path.ChangeExtension(savePathWithName, ".xml");
-                        SaveStrokesAsXML(inkCanvas.Strokes, xmlPath);
-                        if (newNotice)
+                        // 多页面保存为多个icstk文件
+                        string basePath = Path.GetDirectoryName(savePathWithName);
+                        string baseFileName = Path.GetFileNameWithoutExtension(savePathWithName);
+
+                        for (int i = 0; i < allPageStrokes.Count; i++)
                         {
-                            Task.Delay(100).ContinueWith(t =>
+                            var strokes = allPageStrokes[i];
+                            if (strokes.Count > 0)
                             {
-                                Dispatcher.Invoke(() =>
+                                string pageFileName = Path.Combine(basePath, $"{baseFileName}_Page-{i + 1}.icstk");
+                                using (var fs = new FileStream(pageFileName, FileMode.Create))
                                 {
-                                    ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
-                                });
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    // 常规保存模式 - 仅保存墨迹对象
-                    if (Settings.Automation.IsSaveStrokesAsXML)
-                    {
-                        // 保存为XML格式
-                        string xmlPath = Path.ChangeExtension(savePathWithName, ".xml");
-                        SaveStrokesAsXML(inkCanvas.Strokes, xmlPath);
-                        if (newNotice)
-                        {
-                            Task.Delay(100).ContinueWith(t =>
-                            {
-                                Dispatcher.Invoke(() =>
+                                    strokes.Save(fs);
+                                }
+
+                                // 异步上传每个icstk文件
+                                _ = Task.Run(async () =>
                                 {
-                                    ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                    try
+                                    {
+                                        var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
+                                        if (delayMinutes > 0)
+                                        {
+                                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
+                                        }
+                                        await Helpers.UploadHelper.UploadFileAsync(pageFileName);
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
                                 });
-                            });
-                        }
-                    }
-                    else
-                    {
-                        // 保存为二进制格式
-                        var fs = new FileStream(savePathWithName, FileMode.Create);
-                        inkCanvas.Strokes.Save(fs);
-                        fs.Close();
-                        if (newNotice)
-                        {
-                            Task.Delay(100).ContinueWith(t =>
-                            {
-                                Dispatcher.Invoke(() =>
-                                {
-                                    ShowNotification("墨迹成功保存至 " + savePathWithName);
-                                });
-                            });
-                        }
-                    }
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                            if (delayMinutes > 0)
-                            {
-                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
                             }
-
-                            await Helpers.UploadHelper.UploadFileAsync(savePathWithName);
                         }
-                        catch (Exception)
-                        {
-                        }
-                    });
 
-                    // 保存元素信息
-                    var elementInfos = new List<CanvasElementInfo>();
-                    foreach (var child in inkCanvas.Children)
-                    {
-                        if (child is Image img && img.Source is BitmapImage bmp)
+                        if (newNotice)
                         {
-                            elementInfos.Add(new CanvasElementInfo
+                            Task.Delay(100).ContinueWith(t =>
                             {
-                                Type = "Image",
-                                SourcePath = bmp.UriSource?.LocalPath ?? "",
-                                Left = InkCanvas.GetLeft(img),
-                                Top = InkCanvas.GetTop(img),
-                                Width = img.Width,
-                                Height = img.Height,
-                                Stretch = img.Stretch.ToString()
+                                Dispatcher.Invoke(() =>
+                                {
+                                    ShowNotification($"多页面墨迹成功保存为 {allPageStrokes.Count} 个icstk文件");
+                                });
                             });
                         }
                     }
-                    File.WriteAllText(Path.ChangeExtension(savePathWithName, ".elements.json"), JsonConvert.SerializeObject(elementInfos, Newtonsoft.Json.Formatting.Indented));
+                    else
+                    {
+                        // 单页面保存
+                        if (Settings.Automation.IsSaveStrokesAsXML)
+                        {
+                            // 保存为XML格式
+                            string xmlPath = Path.ChangeExtension(savePathWithName, ".xml");
+                            SaveStrokesAsXML(inkCanvas.Strokes, xmlPath);
+                            if (newNotice)
+                            {
+                                Task.Delay(100).ContinueWith(t =>
+                                {
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                    });
+                                });
+                            }
+                        }
+                        else
+                        {
+                            // 保存为二进制格式
+                            var fs = new FileStream(savePathWithName, FileMode.Create);
+                            inkCanvas.Strokes.Save(fs);
+                            fs.Close();
+                            if (newNotice)
+                            {
+                                Task.Delay(100).ContinueWith(t =>
+                                {
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        ShowNotification("墨迹成功保存至 " + savePathWithName);
+                                    });
+                                });
+                            }
+                        }
+
+                        // 异步上传文件
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
+                                if (delayMinutes > 0)
+                                {
+                                    await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
+                                }
+                                string uploadPath = Settings.Automation.IsSaveStrokesAsXML ? Path.ChangeExtension(savePathWithName, ".xml") : savePathWithName;
+                                await Helpers.UploadHelper.UploadFileAsync(uploadPath);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        });
+
+                        // 保存元素信息
+                        var elementInfos = new List<CanvasElementInfo>();
+                        foreach (var child in inkCanvas.Children)
+                        {
+                            if (child is Image img && img.Source is BitmapImage bmp)
+                            {
+                                elementInfos.Add(new CanvasElementInfo
+                                {
+                                    Type = "Image",
+                                    SourcePath = bmp.UriSource?.LocalPath ?? "",
+                                    Left = InkCanvas.GetLeft(img),
+                                    Top = InkCanvas.GetTop(img),
+                                    Width = img.Width,
+                                    Height = img.Height,
+                                    Stretch = img.Stretch.ToString()
+                                });
+                            }
+                        }
+                        string elementsPath = Settings.Automation.IsSaveStrokesAsXML ? Path.ChangeExtension(savePathWithName, ".elements.json") : Path.ChangeExtension(savePathWithName, ".elements.json");
+                        File.WriteAllText(elementsPath, JsonConvert.SerializeObject(elementInfos, Newtonsoft.Json.Formatting.Indented));
+                    }
                 }
             }
             catch (Exception ex)
