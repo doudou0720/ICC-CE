@@ -4289,24 +4289,34 @@ namespace Ink_Canvas
             }
         }
 
+        private bool _isRefreshingConfigProfileList;
+
         private void RefreshConfigProfileList()
         {
             try
             {
                 if (ComboBoxConfigProfile == null) return;
-                var names = ConfigProfileManager.ListProfileNames();
-                var selected = ComboBoxConfigProfile.SelectedItem as string;
-                ComboBoxConfigProfile.ItemsSource = names;
-                if (selected != null && names.Contains(selected))
-                    ComboBoxConfigProfile.SelectedItem = selected;
-                else if (names.Count > 0 && ComboBoxConfigProfile.SelectedIndex < 0)
-                    ComboBoxConfigProfile.SelectedIndex = 0;
-                if (BtnDeleteConfigProfile != null)
-                    BtnDeleteConfigProfile.IsEnabled = ComboBoxConfigProfile.SelectedItem != null;
+                _isRefreshingConfigProfileList = true;
+                try
+                {
+                    var names = ConfigProfileManager.ListProfileNames();
+                    var selected = ComboBoxConfigProfile.SelectedItem as string;
+                    ComboBoxConfigProfile.ItemsSource = names;
+                    if (selected != null && names.Contains(selected))
+                        ComboBoxConfigProfile.SelectedItem = selected;
+                    else if (names.Count > 0 && ComboBoxConfigProfile.SelectedIndex < 0)
+                        ComboBoxConfigProfile.SelectedIndex = 0;
+                    if (BtnDeleteConfigProfile != null)
+                        BtnDeleteConfigProfile.IsEnabled = ComboBoxConfigProfile.SelectedItem != null;
+                }
+                finally
+                {
+                    _isRefreshingConfigProfileList = false;
+                }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"刷新配置方案列表失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -4314,15 +4324,54 @@ namespace Ink_Canvas
         {
             if (BtnDeleteConfigProfile != null)
                 BtnDeleteConfigProfile.IsEnabled = ComboBoxConfigProfile?.SelectedItem != null;
+            if (!isLoaded || _isRefreshingConfigProfileList) return;
+            var name = ComboBoxConfigProfile?.SelectedItem as string;
+            if (string.IsNullOrEmpty(name)) return;
+            try
+            {
+                if (ConfigProfileManager.ApplyProfile(name))
+                {
+                    ReloadSettingsFromFile();
+                    ShowNotification($"已切换至方案「{name}」");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换配置方案失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
-        private void BtnSaveAsConfigProfile_Click(object sender, RoutedEventArgs e)
+        private async void BtnSaveAsConfigProfile_Click(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
-            var name = TextBoxNewProfileName?.Text?.Trim();
+            var input = new System.Windows.Controls.TextBox
+            {
+                MinWidth = 260,
+                Padding = new Thickness(8, 6, 8, 6),
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            var label = new System.Windows.Controls.TextBlock
+            {
+                Text = "方案名称",
+                Margin = new Thickness(0, 0, 0, 8)
+            };
+            var content = new iNKORE.UI.WPF.Modern.Controls.SimpleStackPanel { Spacing = 6 };
+            content.Children.Add(label);
+            content.Children.Add(input);
+            var dialog = new iNKORE.UI.WPF.Modern.Controls.ContentDialog
+            {
+                Title = "另存为方案",
+                Content = content,
+                PrimaryButtonText = "保存",
+                SecondaryButtonText = "取消",
+                Owner = this
+            };
+            var result = await dialog.ShowAsync();
+            if (result != iNKORE.UI.WPF.Modern.Controls.ContentDialogResult.Primary) return;
+            var name = input.Text?.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                MessageBox.Show("请输入配置文件名称后再保存。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("请输入方案名称。", "另存为方案", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             try
@@ -4331,42 +4380,15 @@ namespace Ink_Canvas
                 if (ConfigProfileManager.SaveAsProfile(name, json))
                 {
                     RefreshConfigProfileList();
-                    if (TextBoxNewProfileName != null) TextBoxNewProfileName.Clear();
-                    ShowNotification($"已另存为配置文件：{name}");
+                    ShowNotification($"已另存为方案：{name}");
                 }
                 else
-                    MessageBox.Show("保存配置文件失败，请查看日志。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("保存失败，请查看日志。", "另存为方案", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"另存为配置文件失败: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"保存配置文件失败: {ex.Message}", "配置文件", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnApplyConfigProfile_Click(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            var name = ComboBoxConfigProfile?.SelectedItem as string;
-            if (string.IsNullOrEmpty(name))
-            {
-                MessageBox.Show("请先选择要应用的配置文件。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-            try
-            {
-                if (ConfigProfileManager.ApplyProfile(name))
-                {
-                    ReloadSettingsFromFile();
-                    ShowNotification($"已应用配置文件「{name}」并热重载");
-                }
-                else
-                    MessageBox.Show("应用配置文件失败，请查看日志。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"应用配置文件失败: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"应用配置文件失败: {ex.Message}", "配置文件", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogHelper.WriteLogToFile($"另存为方案失败: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"保存失败: {ex.Message}", "另存为方案", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -4386,7 +4408,14 @@ namespace Ink_Canvas
                 if (ConfigProfileManager.DeleteProfile(name))
                 {
                     RefreshConfigProfileList();
-                    ShowNotification($"已删除配置文件：{name}");
+                    var nextName = ComboBoxConfigProfile?.SelectedItem as string;
+                    if (!string.IsNullOrEmpty(nextName) && ConfigProfileManager.ApplyProfile(nextName))
+                    {
+                        ReloadSettingsFromFile();
+                        ShowNotification($"已删除方案「{name}」，已切换至「{nextName}」");
+                    }
+                    else
+                        ShowNotification($"已删除方案：{name}");
                 }
                 else
                     MessageBox.Show("删除配置文件失败，请查看日志。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Warning);
