@@ -301,8 +301,13 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="privacy.txt" />
-    <EmbeddedResource Include="telemetry_dsn.txt" Condition="Exists('telemetry_dsn.txt')">
+    <EmbeddedResource Include="telemetry_dsn.txt" Condition="Exists('telemetry_dsn.txt') AND '$(DLASS_SENTRY_DSN)' == ''">
       <Link>telemetry_dsn.txt</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildProjectDirectory)\telemetry_dsn.generated.txt" Condition="'$(DLASS_SENTRY_DSN)' != ''">
+      <Link>telemetry_dsn.txt</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -667,4 +672,11 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <Target Name="GenerateTelemetryDsn" BeforeTargets="PrepareResources" Condition="'$(DLASS_SENTRY_DSN)' != ''">
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)\telemetry_dsn.generated.txt" Lines="$(DLASS_SENTRY_DSN)" Overwrite="true" />
+  </Target>
+
+  <Target Name="CleanTelemetryDsn" AfterTargets="Build;Clean" Condition="Exists('$(MSBuildProjectDirectory)\telemetry_dsn.generated.txt')">
+    <Delete Files="$(MSBuildProjectDirectory)\telemetry_dsn.generated.txt" />
+  </Target>
 </Project>
