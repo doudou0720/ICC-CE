@@ -31,6 +31,7 @@ namespace Ink_Canvas.Windows
         private DlassApiClient _apiClient;
         private List<WhiteboardInfo> _currentWhiteboards = new List<WhiteboardInfo>();
         private UserInfo _currentUser;
+        private bool _isFirstTimeDlassTab = true;
 
         public DlassSettingsWindow(MainWindow mainWindow = null)
         {
@@ -663,6 +664,66 @@ namespace Ink_Canvas.Windows
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        /// <summary>
+        /// TabControl选择改变事件
+        /// </summary>
+        private void TabControl_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (sender is System.Windows.Controls.TabControl tabControl && tabControl.SelectedItem is System.Windows.Controls.TabItem selectedTab)
+                {
+                    // 检查是否切换到Dlass标签页
+                    if (selectedTab.Header.ToString() == "Dlass" && _isFirstTimeDlassTab)
+                    {
+                        // 检查是否是第一次打开（检查用户是否已设置Token）
+                        bool hasToken = !string.IsNullOrEmpty(GetUserToken()?.Trim());
+                        bool isFirstTime = !hasToken;
+
+                        if (isFirstTime)
+                        {
+                            // 第一次打开，询问用户是否已注册
+                            var result = MessageBox.Show(
+                                "您是否已经注册了Dlass账号？\n\n" +
+                                "• 如果已注册：将打开Dlass管理标签页\n" +
+                                "• 如果未注册：将打开浏览器跳转到注册页面",
+                                "Dlass账号注册",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Question);
+
+                            if (result == MessageBoxResult.No)
+                            {
+                                // 用户未注册，打开浏览器
+                                try
+                                {
+                                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                                    {
+                                        FileName = "https://dlass.tech/dashboard",
+                                        UseShellExecute = true
+                                    });
+                                    LogHelper.WriteLogToFile("已打开浏览器跳转到Dlass注册页面", LogHelper.LogType.Event);
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogHelper.WriteLogToFile($"打开浏览器时出错: {ex.Message}", LogHelper.LogType.Error);
+                                    MessageBox.Show($"无法打开浏览器。请手动访问: https://dlass.tech/dashboard",
+                                        "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                                }
+                            }
+                            // 如果用户选择"是"，继续打开设置窗口
+                        }
+
+                        // 标记为已打开过Dlass标签页
+                        _isFirstTimeDlassTab = false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"TabControl选择改变事件处理出错: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         /// <summary>
