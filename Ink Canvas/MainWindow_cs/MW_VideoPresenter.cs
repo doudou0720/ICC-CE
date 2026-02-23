@@ -20,7 +20,7 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
-        private static readonly SolidColorBrush BoothButtonHighlightBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#66CCFF"));
+        private static readonly SolidColorBrush BoothButtonHighlightBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF66CCFF"));
         private bool _boothButtonPressHandlersAttached;
 
         // 标记：用于在保存/恢复白板内容时排除“展台实时上屏”画面
@@ -153,6 +153,14 @@ namespace Ink_Canvas
             _cameraService = new CameraService();
             _cameraService.FrameReceived += CameraService_FrameReceived;
             _cameraService.ErrorOccurred += CameraService_ErrorOccurred;
+            SyncBoothResolutionToCameraService();
+        }
+
+        internal void SyncBoothResolutionToCameraService()
+        {
+            if (_cameraService == null) return;
+            _cameraService.ResolutionWidth = BoothResolutionWidth;
+            _cameraService.ResolutionHeight = BoothResolutionHeight;
         }
 
         /// <summary>

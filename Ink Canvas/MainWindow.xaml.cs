@@ -3396,6 +3396,7 @@ namespace Ink_Canvas
                     _boothResolutionWidth = w;
                     _boothResolutionHeight = h;
                     UpdateBoothResolutionTabState();
+                    SyncBoothResolutionToCameraService();
                 }
             }
         }

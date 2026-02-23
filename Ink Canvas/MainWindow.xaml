@@ -10683,7 +10683,7 @@
                     <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="10,6,10,4">
                         <Border Background="{DynamicResource FloatBarBackground}" 
                                 CornerRadius="8" BorderThickness="1" BorderBrush="#616161"
-                                Width="280" Height="40" ToolTip="展台/截图分辨率">
+                                Width="282" Height="40" ToolTip="展台/截图分辨率">
                             <Grid>
                                 <Border x:Name="BoothResolutionTabIndicator" 
                                         Background="#66CCFF" 
