@@ -10688,9 +10688,9 @@
                                 <Border x:Name="BoothResolutionTabIndicator" 
                                         Background="#66CCFF" 
                                         CornerRadius="6" 
-                                        Width="68" Height="38" 
+                                        Width="70" Height="38" 
                                         HorizontalAlignment="Left" VerticalAlignment="Center" 
-                                        Margin="1,0,0,0"/>
+                                        Margin="0,0,0,0"/>
                                 <Grid>
                                     <Button x:Name="BtnBoothResolution720" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
                                             Click="BoothResolutionTab_Click" Tag="1280,720" Cursor="Hand" HorizontalAlignment="Left">

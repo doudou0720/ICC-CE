@@ -3414,7 +3414,7 @@ namespace Ink_Canvas
 
             if (BoothResolutionTabIndicator != null)
             {
-                BoothResolutionTabIndicator.Margin = new Thickness(1 + index * 70, 0, 0, 0);
+                BoothResolutionTabIndicator.Margin = new Thickness(index * 70, 0, 0, 0);
             }
 
             var texts = new[] { BtnBoothResolution720?.Content as TextBlock, BtnBoothResolution1080?.Content as TextBlock, BtnBoothResolution2K?.Content as TextBlock, BtnBoothResolution4K?.Content as TextBlock };

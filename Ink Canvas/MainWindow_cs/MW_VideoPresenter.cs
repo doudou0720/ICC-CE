@@ -20,7 +20,7 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
-        private static readonly SolidColorBrush BoothButtonHighlightBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#66CCFF"));
+        private static readonly SolidColorBrush BoothButtonHighlightBrush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#66CCFF"));
         private bool _boothButtonPressHandlersAttached;
 
         // 标记：用于在保存/恢复白板内容时排除“展台实时上屏”画面
