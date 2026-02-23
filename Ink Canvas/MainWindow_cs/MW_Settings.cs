@@ -4289,6 +4289,115 @@ namespace Ink_Canvas
             }
         }
 
+        private void RefreshConfigProfileList()
+        {
+            try
+            {
+                if (ComboBoxConfigProfile == null) return;
+                var names = ConfigProfileManager.ListProfileNames();
+                var selected = ComboBoxConfigProfile.SelectedItem as string;
+                ComboBoxConfigProfile.ItemsSource = names;
+                if (selected != null && names.Contains(selected))
+                    ComboBoxConfigProfile.SelectedItem = selected;
+                else if (names.Count > 0 && ComboBoxConfigProfile.SelectedIndex < 0)
+                    ComboBoxConfigProfile.SelectedIndex = 0;
+                if (BtnDeleteConfigProfile != null)
+                    BtnDeleteConfigProfile.IsEnabled = ComboBoxConfigProfile.SelectedItem != null;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ComboBoxConfigProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (BtnDeleteConfigProfile != null)
+                BtnDeleteConfigProfile.IsEnabled = ComboBoxConfigProfile?.SelectedItem != null;
+        }
+
+        private void BtnSaveAsConfigProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            var name = TextBoxNewProfileName?.Text?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("请输入配置文件名称后再保存。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            try
+            {
+                var json = JsonConvert.SerializeObject(Settings, Formatting.Indented);
+                if (ConfigProfileManager.SaveAsProfile(name, json))
+                {
+                    RefreshConfigProfileList();
+                    if (TextBoxNewProfileName != null) TextBoxNewProfileName.Clear();
+                    ShowNotification($"已另存为配置文件：{name}");
+                }
+                else
+                    MessageBox.Show("保存配置文件失败，请查看日志。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"另存为配置文件失败: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"保存配置文件失败: {ex.Message}", "配置文件", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnApplyConfigProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            var name = ComboBoxConfigProfile?.SelectedItem as string;
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("请先选择要应用的配置文件。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            try
+            {
+                if (ConfigProfileManager.ApplyProfile(name))
+                {
+                    ReloadSettingsFromFile();
+                    ShowNotification($"已应用配置文件「{name}」并热重载");
+                }
+                else
+                    MessageBox.Show("应用配置文件失败，请查看日志。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"应用配置文件失败: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"应用配置文件失败: {ex.Message}", "配置文件", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnDeleteConfigProfile_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            var name = ComboBoxConfigProfile?.SelectedItem as string;
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("请先选择要删除的配置文件。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            try
+            {
+                if (MessageBox.Show($"确定要删除配置文件「{name}」吗？", "确认删除", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                    return;
+                if (ConfigProfileManager.DeleteProfile(name))
+                {
+                    RefreshConfigProfileList();
+                    ShowNotification($"已删除配置文件：{name}");
+                }
+                else
+                    MessageBox.Show("删除配置文件失败，请查看日志。", "配置文件", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"删除配置文件失败: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"删除配置文件失败: {ex.Message}", "配置文件", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         #endregion
 
         #region RandSettings

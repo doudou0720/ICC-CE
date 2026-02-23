@@ -25,6 +25,15 @@ namespace Ink_Canvas
         /// 从配置文件加载用户设置并将其应用到主窗口和相关控件的状态（包括启动、外观、画布、手势、PPT、自动化等各项配置）。
         /// </summary>
         /// <param name="isStartup">指示当前为应用启动阶段；为 true 时按启动流程应用启动相关设置（例如触发启动专用动作和启动时的行为）。</param>
+        /// <summary>
+        /// 从当前配置文件重新加载设置并应用到界面（热重载），不触发启动逻辑与自动更新检查。
+        /// 用于配置文件切换后立即生效。
+        /// </summary>
+        public void ReloadSettingsFromFile()
+        {
+            LoadSettings(false, skipAutoUpdateCheck: true);
+        }
+
         /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时不会在加载设置后执行自动更新检测。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
@@ -1250,6 +1259,9 @@ namespace Ink_Canvas
 
             // 加载画笔自动恢复设置
             LoadBrushAutoRestoreSettings();
+
+            // 刷新配置文件列表
+            try { RefreshConfigProfileList(); } catch (Exception ex) { LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Warning); }
         }
 
         /// <summary>
