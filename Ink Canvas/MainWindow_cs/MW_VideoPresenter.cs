@@ -71,6 +71,7 @@ namespace Ink_Canvas
             EnsureCameraService();
             if (BtnCapturePhoto != null) BtnCapturePhoto.IsEnabled = false;
             RefreshVideoPresenterDeviceList();
+            UpdateBoothResolutionTabState();
 
             if (ToggleBtnPhotoCorrection != null)
             {
@@ -624,6 +625,9 @@ namespace Ink_Canvas
 
             CapturedPhotosStackPanel.Children.Clear();
 
+            const double PhotoListImageWidth = 310;
+            const double PhotoListImageHeight = 180;
+
             foreach (var photo in _capturedPhotos.Take(30))
             {
                 var btn = new Button
@@ -642,8 +646,9 @@ namespace Ink_Canvas
                 var img = new System.Windows.Controls.Image
                 {
                     Source = photo.Thumbnail,
-                    Stretch = System.Windows.Media.Stretch.UniformToFill,
-                    Height = 90
+                    Stretch = System.Windows.Media.Stretch.Uniform,
+                    Width = PhotoListImageWidth,
+                    Height = PhotoListImageHeight
                 };
                 btn.Content = img;
                 CapturedPhotosStackPanel.Children.Add(btn);
