@@ -51,6 +51,9 @@ namespace Ink_Canvas.Windows
             // 加载通用设置
             LoadUniversalUploadSettings();
 
+            // 加载WebDav设置
+            LoadWebDavSettings();
+
             // 初始化API客户端（优先使用用户token）
             InitializeApiClient();
 
@@ -660,6 +663,61 @@ namespace Ink_Canvas.Windows
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        /// <summary>
+        /// 加载WebDav设置
+        /// </summary>
+        private void LoadWebDavSettings()
+        {
+            try
+            {
+                if (MainWindow.Settings?.Dlass != null)
+                {
+                    TxtWebDavUrl.Text = MainWindow.Settings.Dlass.WebDavUrl;
+                    TxtWebDavUsername.Text = MainWindow.Settings.Dlass.WebDavUsername;
+                    TxtWebDavPassword.Password = MainWindow.Settings.Dlass.WebDavPassword;
+                    TxtWebDavRootDirectory.Text = MainWindow.Settings.Dlass.WebDavRootDirectory;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"加载WebDav设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 保存WebDav设置按钮点击事件
+        /// </summary>
+        private void BtnSaveWebDav_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (MainWindow.Settings?.Dlass != null)
+                {
+                    MainWindow.Settings.Dlass.WebDavUrl = TxtWebDavUrl.Text;
+                    MainWindow.Settings.Dlass.WebDavUsername = TxtWebDavUsername.Text;
+                    MainWindow.Settings.Dlass.WebDavPassword = TxtWebDavPassword.Password;
+                    MainWindow.Settings.Dlass.WebDavRootDirectory = TxtWebDavRootDirectory.Text;
+                    MainWindow.SaveSettingsToFile();
+
+                    MessageBox.Show("WebDav设置已保存", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"保存WebDav设置时出错: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"保存WebDav设置时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// 取消WebDav设置按钮点击事件
+        /// </summary>
+        private void BtnCancelWebDav_Click(object sender, RoutedEventArgs e)
+        {
+            // 重新加载设置，恢复原值
+            LoadWebDavSettings();
         }
 
         /// <summary>

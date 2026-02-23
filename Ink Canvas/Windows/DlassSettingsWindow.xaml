@@ -701,12 +701,200 @@
                                                     HorizontalAlignment="Stretch" 
                                                     Margin="0,2,0,2"/>
                                             
-                                            <!-- 留空区域 -->
-                                            <TextBlock Text="功能开发中..." 
-                                                       FontSize="14" 
+                                            <!-- WebDav地址设置 -->
+                                            <TextBlock Text="WebDav地址" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="{StaticResource TextForeground}"
+                                                       Margin="0,0,0,1"/>
+                                            
+                                            <TextBlock Text="设置您的WebDav服务器地址。" 
+                                                       FontSize="12" 
                                                        Foreground="{StaticResource TextSecondary}"
                                                        TextWrapping="Wrap"
-                                                       Margin="0,20,0,20"/>
+                                                       Margin="0,0,0,2"/>
+                                            
+                                            <TextBox x:Name="TxtWebDavUrl" 
+                                                     FontSize="14"
+                                                     Padding="12,4"
+                                                     Background="#18181b"
+                                                     Foreground="{StaticResource TextForeground}"
+                                                     BorderBrush="{StaticResource BorderBrush}"
+                                                     BorderThickness="1"
+                                                     TextWrapping="Wrap"
+                                                     AcceptsReturn="False"
+                                                     MinHeight="36"
+                                                     Tag="输入WebDav地址">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="TextBox">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="6"
+                                                                            Padding="{TemplateBinding Padding}">
+                                                                        <ScrollViewer x:Name="PART_ContentHost" />
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                            
+                                            <!-- 用户名设置 -->
+                                            <TextBlock Text="用户名" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="{StaticResource TextForeground}"
+                                                       Margin="0,0,0,1"/>
+                                            
+                                            <TextBlock Text="设置您的WebDav用户名。" 
+                                                       FontSize="12" 
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,2"/>
+                                            
+                                            <TextBox x:Name="TxtWebDavUsername" 
+                                                     FontSize="14"
+                                                     Padding="12,4"
+                                                     Background="#18181b"
+                                                     Foreground="{StaticResource TextForeground}"
+                                                     BorderBrush="{StaticResource BorderBrush}"
+                                                     BorderThickness="1"
+                                                     TextWrapping="Wrap"
+                                                     AcceptsReturn="False"
+                                                     MinHeight="36"
+                                                     Tag="输入用户名">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="TextBox">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="6"
+                                                                            Padding="{TemplateBinding Padding}">
+                                                                        <ScrollViewer x:Name="PART_ContentHost" />
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                            
+                                            <!-- 密码设置 -->
+                                            <TextBlock Text="密码" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="{StaticResource TextForeground}"
+                                                       Margin="0,0,0,1"/>
+                                            
+                                            <TextBlock Text="设置您的WebDav密码。" 
+                                                       FontSize="12" 
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,2"/>
+                                            
+                                            <PasswordBox x:Name="TxtWebDavPassword" 
+                                                         FontSize="14"
+                                                         Padding="12,4"
+                                                         Background="#18181b"
+                                                         Foreground="{StaticResource TextForeground}"
+                                                         BorderBrush="{StaticResource BorderBrush}"
+                                                         BorderThickness="1"
+                                                         MinHeight="36">
+                                                <PasswordBox.Style>
+                                                    <Style TargetType="PasswordBox">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="PasswordBox">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="6"
+                                                                            Padding="{TemplateBinding Padding}">
+                                                                        <ScrollViewer x:Name="PART_ContentHost" />
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </PasswordBox.Style>
+                                            </PasswordBox>
+                                            
+                                            <!-- 根目录设置 -->
+                                            <TextBlock Text="根目录" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="{StaticResource TextForeground}"
+                                                       Margin="0,0,0,1"/>
+                                            
+                                            <TextBlock Text="设置您的WebDav根目录路径。" 
+                                                       FontSize="12" 
+                                                       Foreground="{StaticResource TextSecondary}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,0,0,2"/>
+                                            
+                                            <TextBox x:Name="TxtWebDavRootDirectory" 
+                                                     FontSize="14"
+                                                     Padding="12,4"
+                                                     Background="#18181b"
+                                                     Foreground="{StaticResource TextForeground}"
+                                                     BorderBrush="{StaticResource BorderBrush}"
+                                                     BorderThickness="1"
+                                                     TextWrapping="Wrap"
+                                                     AcceptsReturn="False"
+                                                     MinHeight="36"
+                                                     Tag="输入根目录路径">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="TextBox">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                                            CornerRadius="6"
+                                                                            Padding="{TemplateBinding Padding}">
+                                                                        <ScrollViewer x:Name="PART_ContentHost" />
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                            
+                                            <!-- 操作按钮 -->
+                                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                                                <Button Content="保存" 
+                                                        Padding="16,8" 
+                                                        FontSize="14"
+                                                        Background="{StaticResource AccentColor}"
+                                                        Foreground="White"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        Click="BtnSaveWebDav_Click"
+                                                        Style="{StaticResource PrimaryButtonStyle}">
+                                                </Button>
+                                                
+                                                <Button Content="取消" 
+                                                        Padding="16,8" 
+                                                        FontSize="14"
+                                                        Background="Transparent"
+                                                        Foreground="{StaticResource TextForeground}"
+                                                        BorderThickness="1"
+                                                        BorderBrush="{StaticResource BorderBrush}"
+                                                        Cursor="Hand"
+                                                        Click="BtnCancelWebDav_Click"
+                                                        Style="{StaticResource SecondaryButtonStyle}">
+                                                </Button>
+                                            </ui:SimpleStackPanel>
                                         </ui:SimpleStackPanel>
                                     </Border>
                                 </ui:SimpleStackPanel>

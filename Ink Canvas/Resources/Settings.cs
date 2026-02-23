@@ -862,6 +862,19 @@ namespace Ink_Canvas
             get { return _autoUploadDelayMinutes; }
             set { _autoUploadDelayMinutes = Math.Max(0, value); }
         }
+
+        // WebDav设置
+        [JsonProperty("webDavUrl")]
+        public string WebDavUrl { get; set; } = string.Empty;
+
+        [JsonProperty("webDavUsername")]
+        public string WebDavUsername { get; set; } = string.Empty;
+
+        [JsonProperty("webDavPassword")]
+        public string WebDavPassword { get; set; } = string.Empty;
+
+        [JsonProperty("webDavRootDirectory")]
+        public string WebDavRootDirectory { get; set; } = string.Empty;
     }
 
     public class UploadSettings

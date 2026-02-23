@@ -58,6 +58,33 @@ namespace Ink_Canvas.Helpers
         }
     }
 
+    /// <summary>
+    /// WebDav上传提供者
+    /// </summary>
+    public class WebDavUploadProvider : IUploadProvider
+    {
+        /// <summary>
+        /// 提供者名称
+        /// </summary>
+        public string Name => "WebDav";
+
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        public bool IsEnabled => MainWindow.Settings?.Upload?.EnabledProviders?.Contains(Name) ?? false;
+
+        /// <summary>
+        /// 上传文件
+        /// </summary>
+        /// <param name="filePath">文件路径</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>是否上传成功</returns>
+        public async Task<bool> UploadAsync(string filePath, CancellationToken cancellationToken = default)
+        {
+            return await WebDavUploader.UploadFileAsync(filePath, cancellationToken);
+        }
+    }
+
 
 
     /// <summary>
@@ -81,6 +108,7 @@ namespace Ink_Canvas.Helpers
 
                 // 注册默认上传提供者
                 RegisterProviderInternal(new DlassUploadProvider());
+                RegisterProviderInternal(new WebDavUploadProvider());
 
                 _initialized = true;
             }
