@@ -7,16 +7,26 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
+using ui = iNKORE.UI.WPF.Modern.Controls;
 
 namespace Ink_Canvas.Windows
 {
     /// <summary>
-    /// DlassSettingsWindow.xaml 的交互逻辑
+    /// Dlass设置管理窗口
     /// </summary>
+    /// <remarks>
+    /// 该窗口包含三个标签页：
+    /// 1. 通用设置 - 管理所有上传提供者的通用设置，包括上传延迟时间和提供者启用/禁用
+    /// 2. Dlass - 管理Dlass服务端连接和设置，包括用户Token、班级选择和自动上传设置
+    /// 3. WebDav - 预留的WebDav连接设置页面
+    /// </remarks>
     public partial class DlassSettingsWindow : Window
     {
         private const string APP_ID = "app_WkjocWqsrVY7T6zQV2CfiA";
         private const string APP_SECRET = "o7dx5b5ASGUMcM72PCpmRQYAhSijqaOVHoGyBK0IxbA";
+
+        // 静态 Regex 实例，用于验证数字输入
+        private static readonly Regex _nonDigitRegex = new Regex("[^0-9]+", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private DlassApiClient _apiClient;
         private List<WhiteboardInfo> _currentWhiteboards = new List<WhiteboardInfo>();
@@ -37,6 +47,9 @@ namespace Ink_Canvas.Windows
 
             // 加载自动上传设置
             LoadAutoUploadSettings();
+
+            // 加载通用设置
+            LoadUniversalUploadSettings();
 
             // 初始化API客户端（优先使用用户token）
             InitializeApiClient();
@@ -291,7 +304,7 @@ namespace Ink_Canvas.Windows
                     {
                         delayMinutes = 0;
                     }
-                    TxtUploadDelayMinutes.Text = delayMinutes.ToString();
+
                 }
             }
             catch (Exception ex)
@@ -310,6 +323,31 @@ namespace Ink_Canvas.Windows
                 if (MainWindow.Settings?.Dlass != null)
                 {
                     MainWindow.Settings.Dlass.IsAutoUploadNotes = ToggleSwitchAutoUploadNotes.IsOn;
+                    
+                    // 同步更新到EnabledProviders列表
+                    if (MainWindow.Settings.Upload != null)
+                    {
+                        if (MainWindow.Settings.Upload.EnabledProviders == null)
+                        {
+                            MainWindow.Settings.Upload.EnabledProviders = new List<string>();
+                        }
+                        
+                        if (ToggleSwitchAutoUploadNotes.IsOn)
+                        {
+                            if (!MainWindow.Settings.Upload.EnabledProviders.Contains("Dlass"))
+                            {
+                                MainWindow.Settings.Upload.EnabledProviders.Add("Dlass");
+                            }
+                        }
+                        else
+                        {
+                            MainWindow.Settings.Upload.EnabledProviders.Remove("Dlass");
+                        }
+                        
+                        // 重新加载通用设置，更新UI
+                        LoadUniversalUploadSettings();
+                    }
+                    
                     MainWindow.SaveSettingsToFile();
                 }
             }
@@ -319,53 +357,145 @@ namespace Ink_Canvas.Windows
             }
         }
 
+
+
+
+
         /// <summary>
-        /// 上传延迟时间输入框文本改变事件
+        /// 加载通用设置
         /// </summary>
-        private void TxtUploadDelayMinutes_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void LoadUniversalUploadSettings()
         {
             try
             {
-                if (MainWindow.Settings?.Dlass != null && int.TryParse(TxtUploadDelayMinutes.Text, out int delayMinutes))
+                // 加载上传延迟时间
+                if (MainWindow.Settings?.Upload != null)
+                {
+                    var delayMinutes = MainWindow.Settings.Upload.UploadDelayMinutes;
+                    if (delayMinutes < 0 || delayMinutes > 60)
+                    {
+                        delayMinutes = 0;
+                    }
+                    TxtUniversalUploadDelayMinutes.Text = delayMinutes.ToString();
+                }
+
+                // 加载上传提供者列表
+                LoadUploadProvidersList();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"加载通用设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 加载上传提供者列表
+        /// </summary>
+        private void LoadUploadProvidersList()
+        {
+            try
+            {
+                var providers = UploadHelper.GetProviders();
+                LstUploadProviders.ItemsSource = providers;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"加载上传提供者列表时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 通用设置延迟时间输入框文本改变事件
+        /// </summary>
+        private void TxtUniversalUploadDelayMinutes_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            try
+            {
+                if (MainWindow.Settings?.Upload != null && int.TryParse(TxtUniversalUploadDelayMinutes.Text, out int delayMinutes))
                 {
                     // 限制范围在0-60分钟
                     if (delayMinutes < 0)
                     {
                         delayMinutes = 0;
-                        TxtUploadDelayMinutes.Text = "0";
+                        TxtUniversalUploadDelayMinutes.Text = "0";
                     }
                     else if (delayMinutes > 60)
                     {
                         delayMinutes = 60;
-                        TxtUploadDelayMinutes.Text = "60";
+                        TxtUniversalUploadDelayMinutes.Text = "60";
                     }
 
-                    MainWindow.Settings.Dlass.AutoUploadDelayMinutes = delayMinutes;
+                    MainWindow.Settings.Upload.UploadDelayMinutes = delayMinutes;
                     MainWindow.SaveSettingsToFile();
                 }
-                else if (string.IsNullOrWhiteSpace(TxtUploadDelayMinutes.Text))
+                else if (string.IsNullOrWhiteSpace(TxtUniversalUploadDelayMinutes.Text))
                 {
                     // 空文本时设置为0
-                    if (MainWindow.Settings?.Dlass != null)
+                    if (MainWindow.Settings?.Upload != null)
                     {
-                        MainWindow.Settings.Dlass.AutoUploadDelayMinutes = 0;
+                        MainWindow.Settings.Upload.UploadDelayMinutes = 0;
                         MainWindow.SaveSettingsToFile();
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"保存上传延迟时间时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"保存通用设置延迟时间时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
         /// <summary>
-        /// 上传延迟时间输入框预览文本输入事件（只允许数字）
+        /// 通用设置延迟时间输入框预览文本输入事件（只允许数字）
         /// </summary>
-        private void TxtUploadDelayMinutes_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void TxtUniversalUploadDelayMinutes_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            Regex regex = new Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
+            e.Handled = _nonDigitRegex.IsMatch(e.Text);
+        }
+
+        /// <summary>
+        /// 上传提供者启用/禁用开关切换事件
+        /// </summary>
+        private void ToggleProviderEnabled_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is iNKORE.UI.WPF.Modern.Controls.ToggleSwitch toggleSwitch && toggleSwitch.DataContext is IUploadProvider provider)
+                {
+                    if (MainWindow.Settings?.Upload != null)
+                    {
+                        if (MainWindow.Settings.Upload.EnabledProviders == null)
+                        {
+                            MainWindow.Settings.Upload.EnabledProviders = new List<string>();
+                        }
+
+                        if (toggleSwitch.IsOn)
+                        {
+                            if (!MainWindow.Settings.Upload.EnabledProviders.Contains(provider.Name))
+                            {
+                                MainWindow.Settings.Upload.EnabledProviders.Add(provider.Name);
+                            }
+                        }
+                        else
+                        {
+                            MainWindow.Settings.Upload.EnabledProviders.Remove(provider.Name);
+                        }
+                        
+                        // 同步更新Dlass的IsAutoUploadNotes设置（如果是Dlass提供者）
+                        if (provider.Name == "Dlass" && MainWindow.Settings.Dlass != null)
+                        {
+                            MainWindow.Settings.Dlass.IsAutoUploadNotes = toggleSwitch.IsOn;
+                            // 同步更新Dlass标签页中的开关状态
+                            ToggleSwitchAutoUploadNotes.IsOn = toggleSwitch.IsOn;
+                        }
+
+                        MainWindow.SaveSettingsToFile();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"保存上传提供者启用状态时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         /// <summary>

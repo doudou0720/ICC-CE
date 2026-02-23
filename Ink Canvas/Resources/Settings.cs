@@ -32,6 +32,9 @@ namespace Ink_Canvas
         [JsonProperty("dlass")]
         public DlassSettings Dlass { get; set; } = new DlassSettings();
 
+        [JsonProperty("upload")]
+        public UploadSettings Upload { get; set; } = new UploadSettings();
+
         [JsonProperty("security")]
         public Security Security { get; set; } = new Security();
     }
@@ -859,6 +862,25 @@ namespace Ink_Canvas
             get { return _autoUploadDelayMinutes; }
             set { _autoUploadDelayMinutes = Math.Max(0, value); }
         }
+    }
+
+    public class UploadSettings
+    {
+        [JsonProperty("uploadDelayMinutes")]
+        public int UploadDelayMinutes
+        {
+            get { return _uploadDelayMinutes; }
+            set { _uploadDelayMinutes = Math.Max(0, Math.Min(60, value)); }
+        }
+        private int _uploadDelayMinutes = 0;
+
+        [JsonProperty("enabledProviders")]
+        public List<string> EnabledProviders
+        {
+            get { return _enabledProviders; }
+            set { _enabledProviders = value ?? new List<string>(); }
+        }
+        private List<string> _enabledProviders = new List<string>();
     }
 
 

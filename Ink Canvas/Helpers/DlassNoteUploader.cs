@@ -188,20 +188,24 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 保存队列到文件
         /// </summary>
-        private static async Task SaveQueueToFileAsync()
+        private static async Task SaveQueueToFileAsync(CancellationToken cancellationToken = default)
         {
-            if (!await _queueSaveLock.WaitAsync(1000)) // 最多等待1秒
+            if (!await _queueSaveLock.WaitAsync(1000, cancellationToken)) // 最多等待1秒
             {
                 return; // 如果无法获取锁，跳过保存（避免阻塞）
             }
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 var queueData = new List<UploadQueueItemData>();
 
                 // 将队列转换为可序列化的格式
                 foreach (var item in _uploadQueue)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     queueData.Add(new UploadQueueItemData
                     {
                         FilePath = item.FilePath,
@@ -230,6 +234,10 @@ namespace Ink_Canvas.Helpers
                         File.Delete(queueFilePath);
                     File.Move(tempFilePath, queueFilePath);
                 });
+            }
+            catch (OperationCanceledException)
+            {
+                // 取消操作，静默处理
             }
             catch (Exception ex)
             {
@@ -325,11 +333,14 @@ namespace Ink_Canvas.Helpers
         /// 异步上传笔记文件到Dlass（支持PNG、ICSTK、XML和ZIP格式）
         /// </summary>
         /// <param name="filePath">文件路径（支持PNG、ICSTK、XML和ZIP）</param>
+        /// <param name="cancellationToken">取消令牌</param>
         /// <returns>是否成功加入队列（不等待实际上传完成）</returns>
-        public static async Task<bool> UploadNoteFileAsync(string filePath)
+        public static async Task<bool> UploadNoteFileAsync(string filePath, CancellationToken cancellationToken = default)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 // 检查是否启用自动上传
                 if (MainWindow.Settings?.Dlass?.IsAutoUploadNotes != true)
                 {
@@ -357,41 +368,15 @@ namespace Ink_Canvas.Helpers
                     return false;
                 }
 
-                // 获取上传延迟时间（分钟）
-                var delayMinutes = MainWindow.Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-
-                // 如果设置了延迟时间，在后台任务中等待后再加入队列
-                if (delayMinutes > 0)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes)).ConfigureAwait(false);
-                            if (MainWindow.Settings?.Dlass?.IsAutoUploadNotes != true)
-                            {
-                                LogHelper.WriteLogToFile($"延迟结束后自动上传已关闭，跳过入队: {filePath}", LogHelper.LogType.Event);
-                                return;
-                            }
-                            if (!File.Exists(filePath))
-                            {
-                                LogHelper.WriteLogToFile($"延迟结束后文件已不存在，跳过入队: {filePath}", LogHelper.LogType.Event);
-                                return;
-                            }
-                            EnqueueFile(filePath);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"延迟加入上传队列时出错: {ex}", LogHelper.LogType.Error);
-                        }
-                    });
-                }
-                else
-                {
-                    EnqueueFile(filePath);
-                }
+                // 直接加入队列，延迟逻辑由UploadHelper处理
+                EnqueueFile(filePath, 0, cancellationToken);
 
                 return true;
+            }
+            catch (OperationCanceledException)
+            {
+                LogHelper.WriteLogToFile($"上传被取消: {Path.GetFileName(filePath)}", LogHelper.LogType.Event);
+                throw;
             }
             catch (Exception ex)
             {
@@ -403,7 +388,7 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 将文件加入上传队列
         /// </summary>
-        private static void EnqueueFile(string filePath, int retryCount = 0)
+        private static void EnqueueFile(string filePath, int retryCount = 0, CancellationToken cancellationToken = default)
         {
             _uploadQueue.Enqueue(new UploadQueueItem
             {
@@ -416,39 +401,48 @@ namespace Ink_Canvas.Helpers
             {
                 try
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     await SaveQueueToFileAsync().ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // 取消操作，静默处理
                 }
                 catch (Exception ex)
                 {
                     LogHelper.WriteLogToFile($"保存上传队列时出错（后台任务）: {ex}", LogHelper.LogType.Error);
                 }
-            });
+            }, cancellationToken);
 
             // 如果队列达到批量大小，触发批量上传
             if (_uploadQueue.Count >= BATCH_SIZE)
             {
-                _ = ProcessUploadQueueAsync();
+                _ = ProcessUploadQueueAsync(cancellationToken);
             }
         }
 
         /// <summary>
         /// 处理上传队列，批量上传文件
         /// </summary>
-        private static async Task ProcessUploadQueueAsync()
+        private static async Task ProcessUploadQueueAsync(CancellationToken cancellationToken = default)
         {
             // 使用信号量防止并发处理
-            if (!await _queueProcessingLock.WaitAsync(0))
+            if (!await _queueProcessingLock.WaitAsync(0, cancellationToken))
             {
                 return; // 已有处理任务在运行
             }
 
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 var filesToUpload = new List<UploadQueueItem>();
 
                 // 从队列中取出最多BATCH_SIZE个文件
                 while (filesToUpload.Count < BATCH_SIZE && _uploadQueue.TryDequeue(out UploadQueueItem item))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     // 再次检查文件是否存在
                     if (File.Exists(item.FilePath))
                     {
@@ -468,6 +462,8 @@ namespace Ink_Canvas.Helpers
 
                 try
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     var selectedClassName = MainWindow.Settings?.Dlass?.SelectedClassName;
                     if (string.IsNullOrEmpty(selectedClassName))
                     {
@@ -475,7 +471,7 @@ namespace Ink_Canvas.Helpers
                         // 将文件重新加入队列
                         foreach (var item in filesToUpload)
                         {
-                            EnqueueFile(item.FilePath, item.RetryCount);
+                            EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
                         }
                         return;
                     }
@@ -487,7 +483,7 @@ namespace Ink_Canvas.Helpers
                         // 将文件重新加入队列
                         foreach (var item in filesToUpload)
                         {
-                            EnqueueFile(item.FilePath, item.RetryCount);
+                            EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
                         }
                         return;
                     }
@@ -512,7 +508,7 @@ namespace Ink_Canvas.Helpers
                             // 将文件重新加入队列
                             foreach (var item in filesToUpload)
                             {
-                                EnqueueFile(item.FilePath, item.RetryCount);
+                                EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
                             }
                             return;
                         }
@@ -526,11 +522,20 @@ namespace Ink_Canvas.Helpers
                             // 将文件重新加入队列
                             foreach (var item in filesToUpload)
                             {
-                                EnqueueFile(item.FilePath, item.RetryCount);
+                                EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
                             }
                             return;
                         }
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    // 取消操作，将文件重新加入队列
+                    foreach (var item in filesToUpload)
+                    {
+                        EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
+                    }
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -538,7 +543,7 @@ namespace Ink_Canvas.Helpers
                     // 将文件重新加入队列
                     foreach (var item in filesToUpload)
                     {
-                        EnqueueFile(item.FilePath, item.RetryCount);
+                        EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
                     }
                     return;
                 }
@@ -548,7 +553,8 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        var success = await UploadFileInternalAsync(item.FilePath, sharedWhiteboard, apiBaseUrl, userToken);
+                        cancellationToken.ThrowIfCancellationRequested();
+                        var success = await UploadFileInternalAsync(item.FilePath, sharedWhiteboard, apiBaseUrl, userToken, cancellationToken);
                         if (!success)
                         {
                             // 检查是否是可重试的错误
@@ -558,7 +564,7 @@ namespace Ink_Canvas.Helpers
                                 if (item.RetryCount < MAX_RETRY_COUNT)
                                 {
                                     LogHelper.WriteLogToFile($"上传失败，将重试 ({item.RetryCount + 1}/{MAX_RETRY_COUNT}): {Path.GetFileName(item.FilePath)}", LogHelper.LogType.Event);
-                                    EnqueueFile(item.FilePath, item.RetryCount + 1);
+                                    EnqueueFile(item.FilePath, item.RetryCount + 1, cancellationToken);
                                 }
                                 else
                                 {
@@ -567,6 +573,12 @@ namespace Ink_Canvas.Helpers
                             }
                         }
                         return success;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // 取消操作，将文件重新加入队列
+                        EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
+                        throw;
                     }
                     catch (Exception ex)
                     {
@@ -583,7 +595,7 @@ namespace Ink_Canvas.Helpers
                             if (item.RetryCount < MAX_RETRY_COUNT)
                             {
                                 LogHelper.WriteLogToFile($"上传失败({ex.Message})，将重试 ({item.RetryCount + 1}/{MAX_RETRY_COUNT}): {Path.GetFileName(item.FilePath)}", LogHelper.LogType.Event);
-                                EnqueueFile(item.FilePath, item.RetryCount + 1);
+                                EnqueueFile(item.FilePath, item.RetryCount + 1, cancellationToken);
                             }
                             else
                             {
@@ -596,7 +608,7 @@ namespace Ink_Canvas.Helpers
                 await Task.WhenAll(uploadTasks);
 
                 // 上传完成后保存队列状态
-                await SaveQueueToFileAsync();
+                await SaveQueueToFileAsync(cancellationToken);
 
                 // 如果队列达到批量大小，继续处理
                 if (_uploadQueue.Count >= BATCH_SIZE)
@@ -605,13 +617,13 @@ namespace Ink_Canvas.Helpers
                     {
                         try
                         {
-                            await ProcessUploadQueueAsync().ConfigureAwait(false);
+                            await ProcessUploadQueueAsync(cancellationToken).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
                             LogHelper.WriteLogToFile($"继续批量处理上传队列时出错: {ex}", LogHelper.LogType.Error);
                         }
-                    });
+                    }, cancellationToken);
                 }
             }
             finally
@@ -627,10 +639,12 @@ namespace Ink_Canvas.Helpers
         /// <param name="whiteboard">白板信息（如果为null则重新获取）</param>
         /// <param name="apiBaseUrl">API基础URL（如果为null则从设置获取）</param>
         /// <param name="userToken">用户Token（如果为null则从设置获取）</param>
-        private static async Task<bool> UploadFileInternalAsync(string filePath, WhiteboardInfo whiteboard = null, string apiBaseUrl = null, string userToken = null)
+        private static async Task<bool> UploadFileInternalAsync(string filePath, WhiteboardInfo whiteboard = null, string apiBaseUrl = null, string userToken = null, CancellationToken cancellationToken = default)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 // 再次检查文件是否存在（可能在队列等待时被删除）
                 if (!File.Exists(filePath))
                 {
@@ -656,6 +670,8 @@ namespace Ink_Canvas.Helpers
                 // 如果白板信息未提供，则重新获取
                 if (whiteboard == null)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     var selectedClassName = MainWindow.Settings?.Dlass?.SelectedClassName;
                     if (string.IsNullOrEmpty(selectedClassName))
                     {
@@ -736,6 +752,8 @@ namespace Ink_Canvas.Helpers
                 // 创建API客户端并上传文件
                 using (var apiClient = new DlassApiClient(APP_ID, APP_SECRET, apiBaseUrl, userToken))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     var uploadResult = await apiClient.UploadNoteAsync<UploadNoteResponse>(
                         "/api/whiteboard/upload_note",
                         filePath,
