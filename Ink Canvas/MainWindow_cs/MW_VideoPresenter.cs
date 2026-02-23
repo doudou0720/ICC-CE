@@ -12,12 +12,17 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        private static readonly SolidColorBrush BoothButtonHighlightBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#66CCFF"));
+        private bool _boothButtonPressHandlersAttached;
+
         // 标记：用于在保存/恢复白板内容时排除“展台实时上屏”画面
         private const string VideoPresenterLiveFrameTag = "__VideoPresenterLiveFrame";
 
@@ -82,6 +87,48 @@ namespace Ink_Canvas
             if (BtnToggleVideoPresenterLiveOnCanvas != null)
             {
                 BtnToggleVideoPresenterLiveOnCanvas.IsChecked = _liveEnabledPages.Contains(GetCurrentPageIndex());
+            }
+
+            if (!_boothButtonPressHandlersAttached)
+            {
+                AttachBoothButtonPressHandlers();
+            }
+        }
+
+        private void AttachBoothButtonPressHandlers()
+        {
+            if (BtnCapturePhoto == null || BtnRotateImage == null) return;
+            BtnCapturePhoto.PreviewMouseDown += BoothButton_PreviewMouseDown;
+            BtnCapturePhoto.PreviewMouseUp += BoothButton_PreviewMouseUp;
+            BtnCapturePhoto.LostMouseCapture += BoothButton_PreviewMouseUp;
+            BtnRotateImage.PreviewMouseDown += BoothButton_PreviewMouseDown;
+            BtnRotateImage.PreviewMouseUp += BoothButton_PreviewMouseUp;
+            BtnRotateImage.LostMouseCapture += BoothButton_PreviewMouseUp;
+            _boothButtonPressHandlersAttached = true;
+        }
+
+        private void BoothButton_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Control c) ApplyBoothButtonHighlight(c, true);
+        }
+
+        private void BoothButton_PreviewMouseUp(object sender, EventArgs e)
+        {
+            if (sender is Control c) ApplyBoothButtonHighlight(c, false);
+        }
+
+        private static void ApplyBoothButtonHighlight(Control control, bool highlight)
+        {
+            if (control == null) return;
+            if (highlight)
+            {
+                control.Background = BoothButtonHighlightBrush;
+                control.BorderBrush = BoothButtonHighlightBrush;
+            }
+            else
+            {
+                control.SetResourceReference(Control.BackgroundProperty, "FloatBarBackground");
+                control.SetResourceReference(Control.BorderBrushProperty, "FloatBarBorderBrush");
             }
         }
 
@@ -383,6 +430,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnToggleVideoPresenterLiveOnCanvas_Checked(object sender, RoutedEventArgs e)
         {
+            ApplyBoothButtonHighlight(BtnToggleVideoPresenterLiveOnCanvas, true);
             int page = GetCurrentPageIndex();
             _liveEnabledPages.Add(page);
 
@@ -417,6 +465,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void BtnToggleVideoPresenterLiveOnCanvas_Unchecked(object sender, RoutedEventArgs e)
         {
+            ApplyBoothButtonHighlight(BtnToggleVideoPresenterLiveOnCanvas, false);
             int page = GetCurrentPageIndex();
             _liveEnabledPages.Remove(page);
 
@@ -598,6 +647,7 @@ namespace Ink_Canvas
         /// </summary>
         private void ToggleBtnPhotoCorrection_Checked(object sender, RoutedEventArgs e)
         {
+            ApplyBoothButtonHighlight(ToggleBtnPhotoCorrection, true);
             if (Settings?.Automation == null) return;
             Settings.Automation.IsEnablePhotoCorrection = true;
             SaveSettingsToFile();
@@ -608,6 +658,7 @@ namespace Ink_Canvas
         /// </summary>
         private void ToggleBtnPhotoCorrection_Unchecked(object sender, RoutedEventArgs e)
         {
+            ApplyBoothButtonHighlight(ToggleBtnPhotoCorrection, false);
             if (Settings?.Automation == null) return;
             Settings.Automation.IsEnablePhotoCorrection = false;
             SaveSettingsToFile();
