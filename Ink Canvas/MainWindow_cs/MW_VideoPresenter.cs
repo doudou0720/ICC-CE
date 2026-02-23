@@ -181,7 +181,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="frame">来自摄像头的位图帧；为 null 时忽略。</param>
         /// <remarks>
-        /// 缓存该帧为最新帧、更新预览控件的图像来源、启用拍照按钮并尝试在当前白板页上刷新实时画面。
+        /// 缓存该帧为最新帧，并通过 CameraService 提供的 BitmapSource 直接更新预览与实时上屏
         /// </remarks>
         private void CameraService_FrameReceived(object sender, Bitmap frame)
         {
@@ -206,15 +206,15 @@ namespace Ink_Canvas
                     _lastFrame = (Bitmap)serviceCopy.Clone();
                 }
 
-                var preview = ConvertBitmapToBitmapImage(serviceCopy);
+                var previewSource = _cameraService?.GetCurrentFrameAsBitmapSource();
                 serviceCopy.Dispose();
-                if (preview == null) return;
+                if (previewSource == null) return;
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     if (VideoPresenterPreviewImage != null)
                     {
-                        VideoPresenterPreviewImage.Source = preview;
+                        VideoPresenterPreviewImage.Source = previewSource;
                     }
 
                     if (BtnCapturePhoto != null)
@@ -223,7 +223,7 @@ namespace Ink_Canvas
                     }
 
                     // 实时上屏：刷新当前页的画面元素
-                    TryUpdateLiveFrameOnCanvas(preview);
+                    TryUpdateLiveFrameOnCanvas(previewSource);
                 }));
             }
             catch
@@ -247,10 +247,12 @@ namespace Ink_Canvas
         /// <remarks>
         /// 如果当前页面未启用实时显示，或画布/对应图像元素不可用，则函数不执行任何操作。
         /// </remarks>
-        private void TryUpdateLiveFrameOnCanvas(BitmapImage preview)
+        private void TryUpdateLiveFrameOnCanvas(ImageSource preview)
         {
             try
             {
+                if (preview == null) return;
+
                 int page = GetCurrentPageIndex();
                 if (!_liveEnabledPages.Contains(page)) return;
                 if (inkCanvas == null) return;
@@ -459,9 +461,9 @@ namespace Ink_Canvas
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 立即用侧栏预览刷新一次
-            if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
+            if (VideoPresenterPreviewImage?.Source is ImageSource src)
             {
-                img.Source = bi;
+                img.Source = src;
             }
         }
 
@@ -541,9 +543,9 @@ namespace Ink_Canvas
                         inkCanvas.Children.Add(img);
                     }
 
-                    if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
+                    if (VideoPresenterPreviewImage?.Source is ImageSource src)
                     {
-                        img.Source = bi;
+                        img.Source = src;
                     }
                 }
 
