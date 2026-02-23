@@ -18,6 +18,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
+using Ink_Canvas.Properties;
 using SplashScreen = Ink_Canvas.Windows.SplashScreen;
 using Timer = System.Threading.Timer;
 using Sentry;
@@ -645,7 +646,7 @@ namespace Ink_Canvas
                 }
             }
 
-            Ink_Canvas.MainWindow.ShowNewMessage("抱歉，出现未预期的异常，可能导致 InkCanvasForClass 运行不稳定。\n建议保存墨迹后重启应用。");
+            Ink_Canvas.MainWindow.ShowNewMessage(Strings.GetString("Msg_UnexpectedError"));
             LogHelper.NewLog(e.Exception.ToString());
 
             // 记录到崩溃日志
@@ -661,7 +662,7 @@ namespace Ink_Canvas
                 StartupCount.Increment();
                 if (StartupCount.GetCount() >= 5)
                 {
-                    MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                     StartupCount.Reset();
                     Environment.Exit(1);
                 }
@@ -699,7 +700,7 @@ namespace Ink_Canvas
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
                 ShowSplashScreen();
-                SetSplashMessage("正在启动 Ink Canvas...");
+                SetSplashMessage(Strings.GetString("Splash_Starting"));
                 SetSplashProgress(20);
                 await Task.Delay(500);
 
@@ -1236,7 +1237,7 @@ namespace Ink_Canvas
                             StartupCount.Increment();
                             if (StartupCount.GetCount() >= 5)
                             {
-                                MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                                 StartupCount.Reset();
                                 Environment.Exit(1);
                             }
@@ -1261,7 +1262,7 @@ namespace Ink_Canvas
                         StartupCount.Increment();
                         if (StartupCount.GetCount() >= 5)
                         {
-                            MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                             StartupCount.Reset();
                             Environment.Exit(1);
                         }
@@ -1338,7 +1339,7 @@ namespace Ink_Canvas
                         StartupCount.Increment();
                         if (StartupCount.GetCount() >= 5)
                         {
-                            MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                             StartupCount.Reset();
                             Environment.Exit(1);
                         }

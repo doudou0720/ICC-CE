@@ -118,4 +118,107 @@
     <value>展台/截图分辨率</value>
     <comment>展台分辨率选项卡提示</comment>
   </data>
+  <data name="Nav_Gesture_Settings" xml:space="preserve"><value>手势设置</value></data>
+  <data name="Nav_Theme_Settings" xml:space="preserve"><value>个性化设置</value></data>
+  <data name="Nav_PPT_Settings" xml:space="preserve"><value>PPT设置</value></data>
+  <data name="Nav_Advanced_Settings" xml:space="preserve"><value>高级设置</value></data>
+  <data name="Nav_Automation_Settings" xml:space="preserve"><value>自动化设置</value></data>
+  <data name="Nav_RandomWindow_Settings" xml:space="preserve"><value>随机窗口设置</value></data>
+  <data name="Nav_Shortcuts_Settings" xml:space="preserve"><value>快捷键设置</value></data>
+  <data name="CollapseNavSidebar" xml:space="preserve"><value>折叠侧边栏</value></data>
+  <data name="ShowNavSidebar" xml:space="preserve"><value>显示侧边栏</value></data>
+  <data name="Tooltip_IccProtocol" xml:space="preserve"><value>通过 icc:// 协议从外部控制软件</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>设置</value></data>
+  <data name="Settings_AutoSaveHint" xml:space="preserve"><value>设置更改将自动保存，部分设置需要重启软件后生效</value></data>
+  <data name="Btn_Restart" xml:space="preserve"><value>重启</value></data>
+  <data name="Btn_Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="Btn_Exit" xml:space="preserve"><value>退出</value></data>
+  <data name="Settings_Mode" xml:space="preserve"><value>模式设置</value></data>
+  <data name="Settings_ModeDesc" xml:space="preserve"><value>选择软件运行模式。仅PPT模式下，软件将完全隐藏，仅在PPT放映时出现。（实验性功能，可能不稳定。）</value></data>
+  <data name="Mode_Normal" xml:space="preserve"><value>正常模式</value></data>
+  <data name="Mode_PPTOnly" xml:space="preserve"><value>仅PPT模式</value></data>
+  <data name="Settings_NewWindow" xml:space="preserve"><value>新设置窗口</value></data>
+  <data name="Settings_NewWindowDesc" xml:space="preserve"><value>打开新的设置窗口，提供更丰富的设置选项和更好的用户体验。（开发中）</value></data>
+  <data name="Btn_OpenNewSettings" xml:space="preserve"><value>打开新设置窗口</value></data>
+  <data name="Settings_Plugins" xml:space="preserve"><value>插件管理</value></data>
+  <data name="Settings_PluginsDesc" xml:space="preserve"><value>通过插件扩展InkCanvas的功能。您可以启用或禁用插件，或加载自定义插件。</value></data>
+  <data name="Btn_OpenPluginManager" xml:space="preserve"><value>打开插件管理器</value></data>
+  <data name="Startup_Start" xml:space="preserve"><value>启动</value></data>
+  <data name="Startup_NoFocusMode" xml:space="preserve"><value>窗口无焦点模式</value></data>
+  <data name="Startup_NoBorderMode" xml:space="preserve"><value>窗口无边框模式</value></data>
+  <data name="Startup_TopMost" xml:space="preserve"><value>窗口置顶</value></data>
+  <data name="Startup_UIATopMost" xml:space="preserve"><value>UIA置顶</value></data>
+  <data name="Startup_UIATopMostHint" xml:space="preserve"><value># 开启UIA置顶后，软件需要管理员启动才能置顶…</value></data>
+  <data name="Header_AutoUpdate" xml:space="preserve"><value>自动检查更新</value></data>
+  <data name="Header_SilentUpdate" xml:space="preserve"><value>静默更新</value></data>
+  <data name="SilentUpdate_Hint" xml:space="preserve"><value># 静默更新将在软件不使用时自动安装，无需手动操作</value></data>
+  <data name="Update_Channel" xml:space="preserve"><value>更新通道</value></data>
+  <data name="Channel_Release" xml:space="preserve"><value>稳定版 (Release)</value></data>
+  <data name="Channel_Preview" xml:space="preserve"><value>预览版 (Preview)</value></data>
+  <data name="Channel_Beta" xml:space="preserve"><value>测试版 (Beta)</value></data>
+  <data name="Channel_Hint" xml:space="preserve"><value># 稳定版提供可靠更新，预览版提供新功能体验…</value></data>
+  <data name="Btn_ManualUpdate" xml:space="preserve"><value>手动更新</value></data>
+  <data name="ManualUpdate_Hint" xml:space="preserve"><value># 点击后立即检查并下载最新版本</value></data>
+  <data name="Btn_VersionFix" xml:space="preserve"><value>版本修复</value></data>
+  <data name="VersionFix_Hint" xml:space="preserve"><value># 版本修复会根据当前选择的通道下载最新版本并执行安装…</value></data>
+  <data name="Btn_Rollback" xml:space="preserve"><value>历史版本回滚</value></data>
+  <data name="Rollback_Hint" xml:space="preserve"><value># 历史版本回滚，点击后会弹出相应页面…</value></data>
+  <data name="SilentUpdate_AfterDownloadHint" xml:space="preserve"><value># 关闭静默更新后，已完成安装包的下载后将会弹窗询问…</value></data>
+  <data name="SilentUpdate_TimeRange" xml:space="preserve"><value>静默更新时间段</value></data>
+  <data name="Time_Start" xml:space="preserve"><value>起始时间</value></data>
+  <data name="Time_End" xml:space="preserve"><value>终止时间</value></data>
+  <data name="TimeRange_Hint" xml:space="preserve"><value># 若终止时间小于起始时间…</value></data>
+  <data name="Startup_RunAtLogin" xml:space="preserve"><value>开机时运行</value></data>
+  <data name="Startup_MinimizeToSidebar" xml:space="preserve"><value>开机运行后收纳到侧边栏</value></data>
+  <data name="Canvas_AndInk" xml:space="preserve"><value>画板和墨迹</value></data>
+  <data name="Canvas_ShowPenCursor" xml:space="preserve"><value>显示画笔光标</value></data>
+  <data name="Canvas_PressureTouch" xml:space="preserve"><value>启用压感触屏模式</value></data>
+  <data name="Canvas_PressureTouchHint" xml:space="preserve"><value># 开启后，触屏设备也将支持压感效果…</value></data>
+  <data name="Canvas_IgnorePressure" xml:space="preserve"><value>屏蔽压感</value></data>
+  <data name="Canvas_IgnorePressureHint" xml:space="preserve"><value># 开启后，将忽略所有设备的压感信息…</value></data>
+  <data name="Canvas_EraserSize" xml:space="preserve"><value>橡皮大小</value></data>
+  <data name="Size_VerySmall" xml:space="preserve"><value>很小</value></data>
+  <data name="Size_Small" xml:space="preserve"><value>较小</value></data>
+  <data name="Size_Medium" xml:space="preserve"><value>中等</value></data>
+  <data name="Size_Large" xml:space="preserve"><value>较大</value></data>
+  <data name="Size_VeryLarge" xml:space="preserve"><value>很大</value></data>
+  <data name="EraserSize_SwitchHint" xml:space="preserve"><value># 非实时切换，下一次使用面积擦时生效。</value></data>
+  <data name="Canvas_HideInkOnExit" xml:space="preserve"><value>退出画板模式后隐藏墨迹</value></data>
+  <data name="Canvas_HideInkOnExitHint" xml:space="preserve"><value># 开启 退出画板模式后隐藏墨迹 选项后…</value></data>
+  <data name="Canvas_ClearInkHistory" xml:space="preserve"><value>清空墨迹时删除墨迹历史记录</value></data>
+  <data name="Canvas_ClearImageOnClear" xml:space="preserve"><value>清空画布时同时清空图片</value></data>
+  <data name="Canvas_CompressImage" xml:space="preserve"><value>插入图片时自动压缩（大于1920x1080）</value></data>
+  <data name="Canvas_KeepAsymptote" xml:space="preserve"><value>保留双曲线渐近线</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="AskEachTime" xml:space="preserve"><value>每次询问</value></data>
+  <data name="Canvas_AsymptoteHint" xml:space="preserve"><value># 请注意，若不保留双曲线渐近线可能会有遇到撤回相关的 BUG…</value></data>
+  <data name="Canvas_ShowCircleCenter" xml:space="preserve"><value>绘制圆时显示圆心位置</value></data>
+  <data name="Canvas_WPFBezier" xml:space="preserve"><value>使用WPF默认贝塞尔曲线平滑</value></data>
+  <data name="Canvas_AdvancedSmoothing" xml:space="preserve"><value>使用高级曲线平滑（推荐）</value></data>
+  <data name="Canvas_InkFade" xml:space="preserve"><value>启用墨迹渐隐功能</value></data>
+  <data name="Canvas_InkFadeHint" xml:space="preserve"><value># 开启后墨迹不会绘制到画布上…</value></data>
+  <data name="Canvas_InkFadeTime" xml:space="preserve"><value>墨迹渐隐时间</value></data>
+  <data name="Canvas_HideFadeInPenMenu" xml:space="preserve"><value>在笔工具菜单中隐藏墨迹渐隐控制</value></data>
+  <data name="Canvas_HideFadeInPenMenuHint" xml:space="preserve"><value># 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示…</value></data>
+  <data name="Color" xml:space="preserve"><value>颜色</value></data>
+  <data name="Color_Default" xml:space="preserve"><value>默认</value></data>
+  <data name="Color_Black" xml:space="preserve"><value>黑色</value></data>
+  <data name="Color_White" xml:space="preserve"><value>白色</value></data>
+  <data name="Color_Red" xml:space="preserve"><value>红色</value></data>
+  <data name="Color_Yellow" xml:space="preserve"><value>黄色</value></data>
+  <data name="Color_Blue" xml:space="preserve"><value>蓝色</value></data>
+  <data name="Color_Green" xml:space="preserve"><value>绿色</value></data>
+  <data name="Color_Orange" xml:space="preserve"><value>橙色</value></data>
+  <data name="Color_Purple" xml:space="preserve"><value>紫色</value></data>
+  <data name="Msg_UpdateReady" xml:space="preserve"><value>更新已下载完成，将在软件关闭时自动安装。</value></data>
+  <data name="Msg_UpdateReadyTitle" xml:space="preserve"><value>更新已准备就绪</value></data>
+  <data name="Msg_UpdateDownloadFailed" xml:space="preserve"><value>更新下载失败，请检查网络连接后重试。</value></data>
+  <data name="Msg_DownloadFailedTitle" xml:space="preserve"><value>下载失败</value></data>
+  <data name="Msg_SkipVersion" xml:space="preserve"><value>已设置跳过版本 {0}，在下次发布新版本之前不会再提示更新。</value></data>
+  <data name="Msg_SkipVersionTitle" xml:space="preserve"><value>已跳过此版本</value></data>
+  <data name="Msg_UnexpectedError" xml:space="preserve"><value>抱歉，出现未预期的异常，可能导致 InkCanvasForClass 运行不稳定。\n建议保存墨迹后重启应用。</value></data>
+  <data name="Msg_RestartLimitTitle" xml:space="preserve"><value>重启次数过多</value></data>
+  <data name="Msg_RestartLimit" xml:space="preserve"><value>检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。</value></data>
+  <data name="Splash_Starting" xml:space="preserve"><value>正在启动 Ink Canvas...</value></data>
 </root>

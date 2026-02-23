@@ -1,5 +1,6 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Helpers.Plugins;
+using Ink_Canvas.Properties;
 using Ink_Canvas.Windows;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -1994,7 +1995,7 @@ namespace Ink_Canvas
                         else
                         {
                             // 下载失败
-                            MessageBox.Show("更新下载失败，请检查网络连接后重试。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Strings.GetString("Msg_UpdateDownloadFailed"), Strings.GetString("Msg_DownloadFailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         break;
 
@@ -2017,12 +2018,12 @@ namespace Ink_Canvas
                             timerCheckAutoUpdateWithSilence.Start();
 
                             // 通知用户
-                            MessageBox.Show("更新已下载完成，将在软件关闭时自动安装。", "更新已准备就绪", MessageBoxButton.OK, MessageBoxImage.Information);
+                            MessageBox.Show(Strings.GetString("Msg_UpdateReady"), Strings.GetString("Msg_UpdateReadyTitle"), MessageBoxButton.OK, MessageBoxImage.Information);
                         }
                         else
                         {
                             LogHelper.WriteLogToFile("AutoUpdate | Update download failed", LogHelper.LogType.Error);
-                            MessageBox.Show("更新下载失败，请检查网络连接后重试。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Strings.GetString("Msg_UpdateDownloadFailed"), Strings.GetString("Msg_DownloadFailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                         break;
 
@@ -2037,8 +2038,8 @@ namespace Ink_Canvas
                         SaveSettingsToFile();
 
                         // 通知用户
-                        MessageBox.Show($"已设置跳过版本 {AvailableLatestVersion}，在下次发布新版本之前不会再提示更新。",
-                                       "已跳过此版本",
+                        MessageBox.Show(string.Format(Strings.GetString("Msg_SkipVersion"), AvailableLatestVersion),
+                                       Strings.GetString("Msg_SkipVersionTitle"),
                                        MessageBoxButton.OK,
                                        MessageBoxImage.Information);
                         break;
