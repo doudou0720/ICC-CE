@@ -8,6 +8,7 @@
         xmlns:Controls="http://schemas.microsoft.com/netfx/2009/xaml/presentation"
         xmlns:controls="clr-namespace:Ink_Canvas.Controls"
         xmlns:Windows="clr-namespace:Ink_Canvas.Windows"
+        xmlns:props="clr-namespace:Ink_Canvas.Properties"
         mc:Ignorable="d"
         AllowsTransparency="True"
         WindowStyle="None"
@@ -145,7 +146,7 @@
                                 <StackPanel>
                                     <!-- Plugins -->
                                     <Button Width="40" Height="40" Margin="0,5,0,0" Style="{StaticResource NavButton}"
-                                            Click="NavPlugins_Click" Tag="plugins" ToolTip="插件">
+                                            Click="NavPlugins_Click" Tag="plugins" ToolTip="{x:Static props:Strings.Nav_Plugins}">
                                         <Image Width="20" Height="20">
                                             <Image.Source>
                                                 <DrawingImage>
