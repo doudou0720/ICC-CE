@@ -356,7 +356,13 @@ namespace Ink_Canvas
 
             if (!isHideNotification)
             {
-                ShowNotification($"截图成功保存至 {savePath}");
+                Task.Delay(100).ContinueWith(t =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ShowNotification($"截图成功保存至 {savePath}");
+                    });
+                });
             }
             _ = Task.Run(async () =>
             {

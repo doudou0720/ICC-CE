@@ -218,7 +218,16 @@ namespace Ink_Canvas
                         // 单页面XML保存
                         string xmlPath = Path.ChangeExtension(savePathWithName, ".xml");
                         SaveStrokesAsXML(inkCanvas.Strokes, xmlPath);
-                        if (newNotice) ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                        if (newNotice)
+                        {
+                            Task.Delay(100).ContinueWith(t =>
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                });
+                            });
+                        }
                     }
                 }
                 else
@@ -229,7 +238,16 @@ namespace Ink_Canvas
                         // 保存为XML格式
                         string xmlPath = Path.ChangeExtension(savePathWithName, ".xml");
                         SaveStrokesAsXML(inkCanvas.Strokes, xmlPath);
-                        if (newNotice) ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                        if (newNotice)
+                        {
+                            Task.Delay(100).ContinueWith(t =>
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    ShowNotification("墨迹成功保存为XML格式至 " + xmlPath);
+                                });
+                            });
+                        }
                     }
                     else
                     {
@@ -237,7 +255,16 @@ namespace Ink_Canvas
                         var fs = new FileStream(savePathWithName, FileMode.Create);
                         inkCanvas.Strokes.Save(fs);
                         fs.Close();
-                        if (newNotice) ShowNotification("墨迹成功保存至 " + savePathWithName);
+                        if (newNotice)
+                        {
+                            Task.Delay(100).ContinueWith(t =>
+                            {
+                                Dispatcher.Invoke(() =>
+                                {
+                                    ShowNotification("墨迹成功保存至 " + savePathWithName);
+                                });
+                            });
+                        }
                     }
                     _ = Task.Run(async () =>
                     {
@@ -456,7 +483,16 @@ namespace Ink_Canvas
                         }
                     });
 
-                    if (newNotice) ShowNotification($"多页面XML墨迹成功保存至压缩包 {zipFileName}");
+                    if (newNotice)
+                    {
+                        Task.Delay(100).ContinueWith(t =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ShowNotification($"多页面XML墨迹成功保存至压缩包 {zipFileName}");
+                            });
+                        });
+                    }
                 }
                 finally
                 {
@@ -564,7 +600,16 @@ namespace Ink_Canvas
                         }
                     });
 
-                    if (newNotice) ShowNotification($"多页面墨迹成功保存至压缩包 {zipFileName}");
+                    if (newNotice)
+                    {
+                        Task.Delay(100).ContinueWith(t =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ShowNotification($"多页面墨迹成功保存至压缩包 {zipFileName}");
+                            });
+                        });
+                    }
                 }
                 finally
                 {
@@ -667,7 +712,16 @@ namespace Ink_Canvas
             }
 
             // 显示提示
-            if (newNotice) ShowNotification("墨迹成功全页面保存至 " + Path.ChangeExtension(savePathWithName, "png"));
+            if (newNotice)
+            {
+                Task.Delay(100).ContinueWith(t =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ShowNotification("墨迹成功全页面保存至 " + Path.ChangeExtension(savePathWithName, "png"));
+                    });
+                });
+            }
         }
 
         /// <summary>
