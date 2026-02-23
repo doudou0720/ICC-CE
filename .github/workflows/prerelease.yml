@@ -224,6 +224,8 @@ jobs:
         run: dotnet restore "Ink Canvas.sln" --locked-mode
       
       - name: Build the Solution (Release)
+        env:
+          DLASS_SENTRY_DSN: ${{ secrets.DLASS_SENTRY_DSN }}
         run: |
           msbuild /p:platform="AnyCPU" /p:configuration="Release" /p:GitFlow="Github Action" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal -maxcpucount /p:RunAnalyzers=false
 
