@@ -4290,6 +4290,7 @@ namespace Ink_Canvas
         }
 
         private bool _isRefreshingConfigProfileList;
+        private string _lastAppliedProfileName;
 
         private void RefreshConfigProfileList()
         {
@@ -4300,12 +4301,23 @@ namespace Ink_Canvas
                 try
                 {
                     var names = ConfigProfileManager.ListProfileNames();
-                    var selected = ComboBoxConfigProfile.SelectedItem as string;
                     ComboBoxConfigProfile.ItemsSource = names;
-                    if (selected != null && names.Contains(selected))
-                        ComboBoxConfigProfile.SelectedItem = selected;
-                    else if (names.Count > 0 && ComboBoxConfigProfile.SelectedIndex < 0)
-                        ComboBoxConfigProfile.SelectedIndex = 0;
+                    if (names.Count == 0)
+                    {
+                        ComboBoxConfigProfile.SelectedItem = null;
+                    }
+                    else if (_lastAppliedProfileName != null && names.Contains(_lastAppliedProfileName))
+                    {
+                        ComboBoxConfigProfile.SelectedItem = _lastAppliedProfileName;
+                    }
+                    else
+                    {
+                        var selected = ComboBoxConfigProfile.SelectedItem as string;
+                        if (selected != null && names.Contains(selected))
+                            ComboBoxConfigProfile.SelectedItem = selected;
+                        else
+                            ComboBoxConfigProfile.SelectedIndex = 0;
+                    }
                     if (BtnDeleteConfigProfile != null)
                         BtnDeleteConfigProfile.IsEnabled = ComboBoxConfigProfile.SelectedItem != null;
                 }
@@ -4331,6 +4343,7 @@ namespace Ink_Canvas
             {
                 if (ConfigProfileManager.ApplyProfile(name))
                 {
+                    _lastAppliedProfileName = name;
                     ReloadSettingsFromFile();
                     ShowNotification($"已切换至方案「{name}」");
                 }
@@ -4379,6 +4392,7 @@ namespace Ink_Canvas
                 var json = JsonConvert.SerializeObject(Settings, Formatting.Indented);
                 if (ConfigProfileManager.SaveAsProfile(name, json))
                 {
+                    _lastAppliedProfileName = name;
                     RefreshConfigProfileList();
                     ShowNotification($"已另存为方案：{name}");
                 }
@@ -4411,6 +4425,7 @@ namespace Ink_Canvas
                     var nextName = ComboBoxConfigProfile?.SelectedItem as string;
                     if (!string.IsNullOrEmpty(nextName) && ConfigProfileManager.ApplyProfile(nextName))
                     {
+                        _lastAppliedProfileName = nextName;
                         ReloadSettingsFromFile();
                         ShowNotification($"已删除方案「{name}」，已切换至「{nextName}」");
                     }

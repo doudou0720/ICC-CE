@@ -2887,9 +2887,9 @@
                                                       SelectionChanged="ComboBoxConfigProfile_SelectionChanged" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <Button x:Name="BtnDeleteConfigProfile" Content="删除方案" Click="BtnDeleteConfigProfile_Click"
+                                            <Button x:Name="BtnDeleteConfigProfile" Content="删除配置文件" Click="BtnDeleteConfigProfile_Click"
                                                     Padding="10,6" Margin="0,0,8,0" />
-                                            <Button x:Name="BtnSaveAsConfigProfile" Content="另存为方案" Click="BtnSaveAsConfigProfile_Click"
+                                            <Button x:Name="BtnSaveAsConfigProfile" Content="另存为配置文件" Click="BtnSaveAsConfigProfile_Click"
                                                     Padding="10,6" />
                                         </ui:SimpleStackPanel>
                                     </ui:SimpleStackPanel>
