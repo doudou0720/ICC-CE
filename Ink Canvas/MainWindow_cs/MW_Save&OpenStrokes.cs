@@ -276,7 +276,7 @@ namespace Ink_Canvas
                                 await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
                             }
 
-                            await Helpers.DlassNoteUploader.UploadNoteFileAsync(savePathWithName);
+                            await Helpers.UploadHelper.UploadFileAsync(savePathWithName);
                         }
                         catch (Exception)
                         {
@@ -314,7 +314,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 将StrokeCollection保存为XML格式
         /// </summary>
-        private void SaveStrokesAsXML(StrokeCollection strokes, string xmlPath)
+        private void SaveStrokesAsXML(StrokeCollection strokes, string xmlPath, bool triggerUpload = true)
         {
             try
             {
@@ -368,22 +368,25 @@ namespace Ink_Canvas
                 File.WriteAllText(Path.ChangeExtension(xmlPath, ".elements.json"), JsonConvert.SerializeObject(elementInfos, Newtonsoft.Json.Formatting.Indented));
 
                 // 异步上传到Dlass
-                _ = Task.Run(async () =>
+                if (triggerUpload)
                 {
-                    try
+                    _ = Task.Run(async () =>
                     {
-                        var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                        if (delayMinutes > 0)
+                        try
                         {
-                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                        }
+                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
+                            if (delayMinutes > 0)
+                            {
+                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
+                            }
 
-                        await Helpers.DlassNoteUploader.UploadNoteFileAsync(xmlPath);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                });
+                            await Helpers.UploadHelper.UploadFileAsync(xmlPath);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -427,9 +430,9 @@ namespace Ink_Canvas
                         var strokes = allPageStrokes[i];
                         if (strokes.Count > 0)
                         {
-                            // 保存XML文件
+                            // 保存XML文件（临时文件，不触发上传）
                             string xmlFileName = Path.Combine(tempDir, $"page_{i + 1:D4}.xml");
-                            SaveStrokesAsXML(strokes, xmlFileName);
+                            SaveStrokesAsXML(strokes, xmlFileName, false);
                         }
                     }
 
@@ -476,7 +479,7 @@ namespace Ink_Canvas
                                 await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
                             }
 
-                            await Helpers.DlassNoteUploader.UploadNoteFileAsync(zipFileName);
+                            await Helpers.UploadHelper.UploadFileAsync(zipFileName);
                         }
                         catch (Exception)
                         {
@@ -593,7 +596,7 @@ namespace Ink_Canvas
                                 await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
                             }
 
-                            await Helpers.DlassNoteUploader.UploadNoteFileAsync(zipFileName);
+                            await Helpers.UploadHelper.UploadFileAsync(zipFileName);
                         }
                         catch (Exception)
                         {
@@ -702,7 +705,7 @@ namespace Ink_Canvas
                                 await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
                             }
 
-                            await Helpers.DlassNoteUploader.UploadNoteFileAsync(imagePathWithName);
+                            await Helpers.UploadHelper.UploadFileAsync(imagePathWithName);
                         }
                         catch (Exception)
                         {

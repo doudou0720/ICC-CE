@@ -81,7 +81,7 @@ namespace Ink_Canvas.Helpers
         /// <returns>是否上传成功</returns>
         public async Task<bool> UploadAsync(string filePath, CancellationToken cancellationToken = default)
         {
-            return await WebDavUploader.UploadFileAsync(filePath, cancellationToken);
+            return await WebDavUploadQueue.UploadFileAsync(filePath, cancellationToken);
         }
     }
 

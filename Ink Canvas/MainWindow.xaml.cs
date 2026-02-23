@@ -1159,8 +1159,9 @@ namespace Ink_Canvas
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
 
-            // 初始化Dlass上传队列（恢复上次的上传队列）
+            // 初始化上传队列（恢复上次的上传队列）
             DlassNoteUploader.InitializeQueue();
+            WebDavUploadQueue.InitializeQueue();
 
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
 

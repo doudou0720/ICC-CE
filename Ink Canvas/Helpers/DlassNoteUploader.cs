@@ -765,7 +765,7 @@ namespace Ink_Canvas.Helpers
 
                     if (uploadResult != null && uploadResult.Success)
                     {
-                        LogHelper.WriteLogToFile($"笔记上传成功：{fileName} -> {uploadResult.FileUrl}", LogHelper.LogType.Event);
+                        LogHelper.WriteLogToFile($"[Dlass] 笔记上传成功：{fileName} -> {uploadResult.FileUrl}", LogHelper.LogType.Event);
                         return true;
                     }
                     else

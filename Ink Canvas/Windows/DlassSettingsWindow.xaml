@@ -617,7 +617,7 @@
                                                 <ui:ToggleSwitch x:Name="ToggleSwitchAutoUploadNotes"
                                                                  Header="自动上传笔记"
                                                                  FontSize="14"
-                                                                 Foreground="White"
+                                                                 Foreground="{StaticResource TextForeground}"
                                                                  OnContent="启用"
                                                                  OffContent="关闭"
                                                                  Toggled="ToggleSwitchAutoUploadNotes_Toggled">
@@ -675,7 +675,15 @@
                         </TabItem>
                         
                         <!-- WebDav 设置标签页 -->
-                        <TabItem Header="WebDav">
+                        <TabItem>
+                            <TabItem.Header>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="WebDav" Margin="0,0,8,0" />
+                                    <Border Background="#07aef0dc" CornerRadius="4" Padding="4,2" Height="20">
+                                        <TextBlock Text="Beta" FontSize="8" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Border>
+                                </StackPanel>
+                            </TabItem.Header>
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <ui:SimpleStackPanel Spacing="16">
                                     <!-- 内容区域 -->

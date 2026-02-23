@@ -27,7 +27,7 @@ namespace Ink_Canvas.Helpers
                 // 检查文件是否存在
                 if (!File.Exists(filePath))
                 {
-                    LogHelper.WriteLogToFile($"WebDav上传失败：文件不存在 - {filePath}", LogHelper.LogType.Error);
+                    LogHelper.WriteLogToFile($"[WebDAV] 上传失败：文件不存在 - {filePath}", LogHelper.LogType.Error);
                     return false;
                 }
 
@@ -40,7 +40,7 @@ namespace Ink_Canvas.Helpers
                 // 验证设置
                 if (string.IsNullOrEmpty(webDavUrl))
                 {
-                    LogHelper.WriteLogToFile("WebDav上传失败：未设置WebDav地址", LogHelper.LogType.Error);
+                    LogHelper.WriteLogToFile("[WebDAV] 上传失败：未设置WebDav地址", LogHelper.LogType.Error);
                     return false;
                 }
 
@@ -79,12 +79,12 @@ namespace Ink_Canvas.Helpers
                         var result = await client.PutFile(targetPath, fileStream);
                         if (result.IsSuccessful)
                         {
-                            LogHelper.WriteLogToFile($"WebDav上传成功：{filePath} -> {targetPath}", LogHelper.LogType.Event);
+                            LogHelper.WriteLogToFile($"[WebDAV] 上传成功：{filePath} -> {targetPath}", LogHelper.LogType.Event);
                             return true;
                         }
                         else
                         {
-                            LogHelper.WriteLogToFile($"WebDav上传失败：{filePath}, 状态码: {result.StatusCode}, 原因: {result.Description}", LogHelper.LogType.Error);
+                            LogHelper.WriteLogToFile($"[WebDAV] 上传失败：{filePath}, 状态码: {result.StatusCode}, 原因: {result.Description}", LogHelper.LogType.Error);
                             return false;
                         }
                     }
@@ -92,12 +92,12 @@ namespace Ink_Canvas.Helpers
             }
             catch (OperationCanceledException)
             {
-                LogHelper.WriteLogToFile("WebDav上传被取消", LogHelper.LogType.Event);
+                LogHelper.WriteLogToFile("[WebDAV] 上传被取消", LogHelper.LogType.Event);
                 throw;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"WebDav上传异常：{ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[WebDAV] 上传异常：{ex.Message}", LogHelper.LogType.Error);
                 return false;
             }
         }
@@ -133,13 +133,38 @@ namespace Ink_Canvas.Helpers
                     // 如果目录已存在，忽略错误（409 Conflict）
                     if (!result.IsSuccessful && result.StatusCode != 409)
                     {
-                        LogHelper.WriteLogToFile($"创建WebDav目录失败：{currentPath}, 状态码: {result.StatusCode}", LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile($"[WebDAV] 创建目录失败：{currentPath}, 状态码: {result.StatusCode}", LogHelper.LogType.Warning);
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"确保WebDav目录存在时出错：{ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"[WebDAV] 确保目录存在时出错：{ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 检查WebDAV是否已启用
+        /// </summary>
+        /// <returns>是否启用</returns>
+        public static bool IsWebDavEnabled()
+        {
+            // 检查WebDav设置是否有效
+            var webDavUrl = MainWindow.Settings?.Dlass?.WebDavUrl;
+            if (string.IsNullOrEmpty(webDavUrl))
+            {
+                return false;
+            }
+
+            // 尝试解析URL
+            try
+            {
+                new Uri(webDavUrl);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
     }
