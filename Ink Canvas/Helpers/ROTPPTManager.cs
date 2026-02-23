@@ -39,19 +39,22 @@ namespace Ink_Canvas.Helpers
                     if (_pptApplication == null) return false;
                     if (!Marshal.IsComObject(_pptApplication)) return false;
 
-                    // 访问 Name 属性验证 COM 是否仍然有效
-                    dynamic app = _pptApplication;
-                    var _ = app.Name;
-                    return true;
-                }
-                catch (COMException comEx)
-                {
-                    var hr = (uint)comEx.HResult;
-                    if (hr == 0x8001010E || hr == 0x80004005 || hr == 0x800706B5)
+                    try
                     {
+                        dynamic app = _pptApplication;
+                        var _ = app.Name;
+                        return true;
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        if (hr == 0x8001010E || hr == 0x80004005)
+                        {
+                            return true;
+                        }
+                        if (hr == 0x800706B5) return false;
                         return false;
                     }
-                    return false;
                 }
                 catch
                 {
@@ -94,7 +97,6 @@ namespace Ink_Canvas.Helpers
                         var hr = (uint)comEx.HResult;
                         if (hr == 0x8001010E || hr == 0x80004005)
                         {
-                            DisconnectFromPPT();
                         }
                         return false;
                     }
@@ -104,9 +106,11 @@ namespace Ink_Canvas.Helpers
                     var hr = (uint)comEx.HResult;
                     if (hr == 0x8001010E || hr == 0x80004005)
                     {
-                        DisconnectFromPPT();
                     }
-                    LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                    else
+                    {
+                        LogHelper.WriteLogToFile($"[ROT] 检查 PPT 放映状态失败: {comEx.Message} (HR: 0x{hr:X8})", LogHelper.LogType.Warning);
+                    }
                     return false;
                 }
                 catch (Exception ex)
@@ -124,6 +128,7 @@ namespace Ink_Canvas.Helpers
         }
 
         public bool IsSupportWPS { get; set; } = false;
+        public bool SkipAnimationsWhenNavigating { get; set; } = false;
 
         /// <summary>
         /// 当前演示文稿的总页数（每次按需计算，不缓存 COM 对象）。
@@ -195,31 +200,53 @@ namespace Ink_Canvas.Helpers
                 OnSlideShowStateCheckTimerElapsed(sender, e);
         }
 
+        /// <summary>
+        /// 启动内部轮询计时器以开始监测 ROT/PPT 连接状态和幻灯片放映状态。
+        /// </summary>
+        /// <remarks>
+        /// 如果实例已被释放（Dispose 已调用）或计时器未初始化，则此方法不会执行任何操作。
+        /// </remarks>
         public void StartMonitoring()
         {
             if (_disposed) return;
 
             _unifiedRotTimer?.Start();
-            LogHelper.WriteLogToFile("[ROT] PPT 监控已启动", LogHelper.LogType.Trace);
         }
 
+        /// <summary>
+        /// 停止内部的 ROT 监视计时器并断开与当前 PowerPoint 实例的连接。
+        /// </summary>
         public void StopMonitoring()
         {
             _unifiedRotTimer?.Stop();
-            DisconnectFromPPT();
-            LogHelper.WriteLogToFile("[ROT] PPT 监控已停止", LogHelper.LogType.Trace);
+            DisconnectFromPPT(restartMonitoring: false);
+        }
+
+        /// <summary>
+        /// 强制断开当前与 PowerPoint 的 ROT 连接并触发后续的重连流程。
+        /// </summary>
+        public void ReloadConnection()
+        {
+            if (_disposed) return;
+            LogHelper.WriteLogToFile("[ROT] 执行热重载：强制断开并重新连接", LogHelper.LogType.Event);
+            DisconnectFromPPT(restartMonitoring: true);
         }
         #endregion
 
         #region Connection Management
+        /// <summary>
+        /// 在计时器触发时检查与 PowerPoint 的 ROT 连接，并在尚未处于已释放或模块卸载期间时尝试通过 ROT 建立连接。
+        /// </summary>
+        /// <remarks>
+        /// 如果在检查或连接过程中发生异常，异常信息会记录到日志并被吞掉，不会向上抛出。
+        /// </remarks>
         private void OnConnectionCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
             try
             {
-                if (!_isModuleUnloading)
-                {
-                    CheckAndConnectToPPTViaRot();
-                }
+                if (_disposed || _isModuleUnloading)
+                    return;
+                CheckAndConnectToPPTViaRot();
             }
             catch (Exception ex)
             {
@@ -227,14 +254,19 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 在定时器触发时检查并在必要时更新 PPT 的放映状态。
+        /// </summary>
+        /// <remarks>
+        /// 当实例未被释放、模块未在卸载过程中且与 PowerPoint 仍保持连接时会调用内部的放映状态检查逻辑。若检查过程中发生异常，会将错误写入日志并吞并异常以保证定时器循环继续运行。
+        /// </remarks>
         private void OnSlideShowStateCheckTimerElapsed(object sender, ElapsedEventArgs e)
         {
             try
             {
-                if (!_isModuleUnloading && IsConnected)
-                {
-                    CheckSlideShowState();
-                }
+                if (_disposed || _isModuleUnloading || !IsConnected)
+                    return;
+                CheckSlideShowState();
             }
             catch (Exception ex)
             {
@@ -242,15 +274,31 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 使用 ROT 检查并在必要时建立、切换或断开与 PowerPoint 的 COM 连接。
+        /// </summary>
+        /// <remarks>
+        /// 当管理器已释放或模块正在卸载时不执行任何操作。此方法在内部加锁以防止并发切换；会通过 ROT 获取当前可用的 PowerPoint 实例并：
+        /// - 若尚未连接则建立连接；
+        /// - 若当前无可用实例则断开现有连接；
+        /// - 若检测到已连接的实例发生变化则先断开再重新连接。
+        /// 遇到异常时会记录错误日志，并在存在活动连接时尝试断开以保证状态一致性。
+        /// </remarks>
         private void CheckAndConnectToPPTViaRot()
         {
-            if (_isModuleUnloading) return;
+            if (_disposed || _isModuleUnloading) return;
 
             lock (_lockObject)
             {
                 try
                 {
                     if (_isModuleUnloading) return;
+
+                    if (_pptApplication != null && !IsConnected)
+                    {
+                        DisconnectFromPPT();
+                        return;
+                    }
 
                     // 使用 ROT 获取当前最佳 PPT 实例
                     var bestApp = PPTROTConnectionHelper.TryConnectViaROT(IsSupportWPS);
@@ -299,8 +347,28 @@ namespace Ink_Canvas.Helpers
                 var currentSlideShowState = IsInSlideShow;
                 if (currentSlideShowState != _lastSlideShowState)
                 {
+                    var wasInSlideShow = _lastSlideShowState;
                     _lastSlideShowState = currentSlideShowState;
                     SlideShowStateChanged?.Invoke(currentSlideShowState);
+
+                    if (currentSlideShowState && !wasInSlideShow)
+                    {
+                        try
+                        {
+                            var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                            if (app != null && app.SlideShowWindows.Count >= 1)
+                            {
+                                var wn = app.SlideShowWindows[1];
+                                if (wn != null)
+                                {
+                                    OnSlideShowBeginInternal(wn);
+                                }
+                            }
+                        }
+                        catch (COMException)
+                        {
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -309,13 +377,20 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        /// <summary>
+        /// 将指定的 PowerPoint COM 应用对象作为当前连接并在 UI 线程上注册必要的演示文稿与幻灯片放映事件，触发连接通知并在已处于放映时尝试触发一次放映开始回调。
+        /// </summary>
+        /// <param name="appObj">要绑定的 PowerPoint COM 应用对象（通常来自 ROT）。</param>
+        /// <remarks>
+        /// 如果事件注册或后续处理失败，会记录错误并在异常路径上清除内部引用（将内部应用对象置空）。方法会触发 <c>PPTConnectionChanged(true)</c> 并记录连接成功的事件日志；若检测到当前正处于幻灯片放映，则尝试调用一次放映开始的内部处理以同步状态。异常信息会写入日志，但方法不会向外抛出未捕获的异常（内部会捕获并记录错误后清理状态）。
+        /// </remarks>
         private void ConnectToPPT(object appObj)
         {
             try
             {
                 _pptApplication = appObj;
 
-                // 在 UI 线程上注册事件（使用 Interop 类型做内部绑定，不向外泄露）
+                // 在 UI 线程上注册事件（无打开文档时可能失败，不因此断开连接）
                 Application.Current?.Dispatcher?.Invoke(() =>
                 {
                     try
@@ -328,13 +403,11 @@ namespace Ink_Canvas.Helpers
                         app.SlideShowBegin += OnSlideShowBeginInternal;
                         app.SlideShowNextSlide += OnSlideShowNextSlideInternal;
                         app.SlideShowEnd += OnSlideShowEndInternal;
-
                         LogHelper.WriteLogToFile("[ROT] PPT 事件注册成功", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile($"[ROT] PPT 事件注册失败: {ex}", LogHelper.LogType.Error);
-                        throw;
+                        LogHelper.WriteLogToFile($"[ROT] PPT 事件注册失败（将依赖轮询检测放映状态）: {ex}", LogHelper.LogType.Warning);
                     }
                 }, DispatcherPriority.Normal);
 
@@ -352,7 +425,7 @@ namespace Ink_Canvas.Helpers
                             OnSlideShowBeginInternal(app.SlideShowWindows[1]);
                         }
                     }
-                    catch
+                    catch (COMException)
                     {
                     }
                 }
@@ -364,27 +437,33 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private void DisconnectFromPPT()
+        private void DisconnectFromPPT(bool restartMonitoring = true)
         {
+            object appToRelease = null;
             try
             {
-                _isModuleUnloading = true;
-                _unifiedRotTimer?.Stop();
-
                 PPTConnectionChanged?.Invoke(false);
                 LogHelper.WriteLogToFile("[ROT] 准备断开 PPT 连接，先卸载监控模块", LogHelper.LogType.Event);
 
-                if (_pptApplication != null)
+                lock (_lockObject)
+                {
+                    _isModuleUnloading = true;
+                    _unifiedRotTimer?.Stop();
+                    appToRelease = _pptApplication;
+                    _pptApplication = null;
+                }
+
+                if (appToRelease != null)
                 {
                     try
                     {
-                        if (Marshal.IsComObject(_pptApplication))
+                        if (Marshal.IsComObject(appToRelease))
                         {
                             Application.Current?.Dispatcher?.Invoke(() =>
                             {
                                 try
                                 {
-                                    var app = _pptApplication as Microsoft.Office.Interop.PowerPoint.Application;
+                                    var app = appToRelease as Microsoft.Office.Interop.PowerPoint.Application;
                                     if (app != null)
                                     {
                                         app.PresentationOpen -= OnPresentationOpenInternal;
@@ -397,7 +476,6 @@ namespace Ink_Canvas.Helpers
                                 catch (Exception ex)
                                 {
                                     LogHelper.WriteLogToFile($"[ROT] 取消 PPT 事件注册异常: {ex}", LogHelper.LogType.Warning);
-                                    LogHelper.WriteLogToFile(ex.ToString(), LogHelper.LogType.Trace);
                                 }
                             }, DispatcherPriority.Normal);
                         }
@@ -407,28 +485,26 @@ namespace Ink_Canvas.Helpers
                         LogHelper.WriteLogToFile($"[ROT] 取消 PPT 事件注册失败: {ex}", LogHelper.LogType.Warning);
                     }
 
-                    if (Marshal.IsComObject(_pptApplication))
+                    if (Marshal.IsComObject(appToRelease))
                     {
                         try
                         {
-                            Marshal.FinalReleaseComObject(_pptApplication);
+                            Marshal.FinalReleaseComObject(appToRelease);
                         }
                         catch
                         {
                             try
                             {
-                                int refCount = Marshal.ReleaseComObject(_pptApplication);
+                                int refCount = Marshal.ReleaseComObject(appToRelease);
                                 while (refCount > 0)
                                 {
-                                    refCount = Marshal.ReleaseComObject(_pptApplication);
+                                    refCount = Marshal.ReleaseComObject(appToRelease);
                                 }
                             }
-                            catch { }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                         }
                     }
                 }
-
-                _pptApplication = null;
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -440,30 +516,38 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        System.Threading.Thread.Sleep(2000);
+                        System.Threading.Thread.Sleep(300);
 
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
                         GC.Collect();
 
-                        System.Threading.Thread.Sleep(1000);
+                        System.Threading.Thread.Sleep(200);
 
-                        _isModuleUnloading = false;
-                        _unifiedRotTimer?.Start();
-
-                        LogHelper.WriteLogToFile("[ROT] PPT 联动模块已重新进入联动状态", LogHelper.LogType.Trace);
+                        lock (_lockObject)
+                        {
+                            _isModuleUnloading = false;
+                            if (restartMonitoring && !_disposed)
+                                _unifiedRotTimer?.Start();
+                        }
                     }
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"[ROT] 重新进入监控状态失败: {ex}", LogHelper.LogType.Error);
-                        _isModuleUnloading = false;
+                        lock (_lockObject)
+                        {
+                            _isModuleUnloading = false;
+                        }
                     }
                 });
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"[ROT] 断开 PPT 连接失败: {ex}", LogHelper.LogType.Error);
-                _isModuleUnloading = false;
+                lock (_lockObject)
+                {
+                    _isModuleUnloading = false;
+                }
             }
         }
         #endregion
@@ -675,7 +759,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {
@@ -729,7 +814,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {
@@ -783,7 +869,8 @@ namespace Ink_Canvas.Helpers
                     if (slideShowWindow != null)
                     {
                         dynamic sswObj = slideShowWindow;
-                        sswObj.Activate();
+                        if (!SkipAnimationsWhenNavigating)
+                            sswObj.Activate();
                         view = sswObj.View;
                         if (view != null)
                         {
@@ -1040,11 +1127,10 @@ namespace Ink_Canvas.Helpers
             catch (COMException comEx)
             {
                 var hr = (uint)comEx.HResult;
-                if (hr == 0x8001010E || hr == 0x80004005)
+                if (hr != 0x8001010E && hr != 0x80004005)
                 {
-                    DisconnectFromPPT();
+                    LogHelper.WriteLogToFile($"[ROT] 获取当前演示文稿失败: {comEx.Message}", LogHelper.LogType.Error);
                 }
-                LogHelper.WriteLogToFile($"[ROT] 获取当前演示文稿失败: {comEx.Message}", LogHelper.LogType.Error);
                 return null;
             }
             catch (Exception ex)

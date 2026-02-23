@@ -861,7 +861,78 @@
                                                          Toggled="ToggleSwitchHideInkFadeControlInPenMenu_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <TextBlock Text="# 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关" TextWrapping="Wrap" Foreground="#a1a1aa" />
-
+                                    <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
+                                          StrokeThickness="1" Margin="0,4,0,4" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="启用画笔自动恢复" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchBrushAutoRestore"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchBrushAutoRestore_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 启用后，临时修改画笔设置后将在指定时间点自动恢复到你在此处配置的颜色 / 透明度 / 粗细" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <ui:SimpleStackPanel Orientation="Vertical" HorizontalAlignment="Left"
+                                                         Spacing="4"
+                                                         Visibility="{Binding ElementName=ToggleSwitchBrushAutoRestore, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Foreground="#fafafa" Text="自动恢复时间点 (HH:mm，可多个，用 ; 分隔)"
+                                                   FontSize="14" Margin="0,0,0,0" />
+                                        <TextBox Name="BrushAutoRestoreTimesTextBox" Width="260"
+                                                 TextChanged="BrushAutoRestoreTimesTextBox_TextChanged" />
+                                        <TextBlock Foreground="#fafafa" Text="恢复目标颜色" FontSize="14" Margin="0,8,0,0" />
+                                        <ComboBox Name="ComboBoxBrushAutoRestoreColor" Width="260"
+                                                  SelectionChanged="ComboBoxBrushAutoRestoreColor_SelectionChanged">
+                                            <ComboBoxItem Content="默认" Tag="#FFFF0000" />
+                                            <ComboBoxItem Content="黑色" Tag="#FF000000" />
+                                            <ComboBoxItem Content="白色" Tag="#FFFFFFFF" />
+                                            <ComboBoxItem Content="红色" Tag="#FFFF0000" />
+                                            <ComboBoxItem Content="黄色" Tag="#FFFFFF00" />
+                                            <ComboBoxItem Content="蓝色" Tag="#FF2563EB" />
+                                            <ComboBoxItem Content="绿色" Tag="#FF16A34A" />
+                                            <ComboBoxItem Content="橙色" Tag="#FFFB9650" />
+                                            <ComboBoxItem Content="紫色" Tag="#FF9333EA" />
+                                        </ComboBox>
+                                        <TextBlock Foreground="#fafafa" Text="恢复笔粗细" FontSize="14" Margin="0,8,0,0" />
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Slider Name="BrushAutoRestoreWidthSlider" Width="200" Minimum="1" Maximum="20"
+                                                    TickFrequency="1" IsSnapToTickEnabled="True"
+                                                    Value="5"
+                                                    ValueChanged="BrushAutoRestoreWidthSlider_ValueChanged" />
+                                            <TextBlock Foreground="#fafafa"
+                                                       Text="{Binding ElementName=BrushAutoRestoreWidthSlider, Path=Value, StringFormat={}{0:0}px}"
+                                                       FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                        </ui:SimpleStackPanel>
+                                        <TextBlock Foreground="#fafafa" Text="恢复透明度" FontSize="14" Margin="0,8,0,0" />
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Slider Name="BrushAutoRestoreAlphaSlider" Width="200" Minimum="0" Maximum="255"
+                                                    TickFrequency="5" IsSnapToTickEnabled="True"
+                                                    ValueChanged="BrushAutoRestoreAlphaSlider_ValueChanged" />
+                                            <TextBlock Foreground="#fafafa"
+                                                       Text="{Binding ElementName=BrushAutoRestoreAlphaSlider, Path=Value, StringFormat={}{0:0}}"
+                                                       FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center" />
+                                        </ui:SimpleStackPanel>
+                                    </ui:SimpleStackPanel>
+                                    <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
+                                          StrokeThickness="1" Margin="0,4,0,4" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="使用橡皮擦后自动切换回批注模式" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableEraserAutoSwitchBack"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchEnableEraserAutoSwitchBack_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 开启后，使用橡皮擦进行擦除操作后静置一段时间将自动切换回批注模式" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
+                                                         Visibility="{Binding ElementName=ToggleSwitchEnableEraserAutoSwitchBack, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Foreground="#fafafa" Text="自动切换延迟时间" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <Slider Name="EraserAutoSwitchBackDelaySlider" Width="150" Minimum="1" Maximum="60" 
+                                                Value="10" TickFrequency="1" IsSnapToTickEnabled="True"
+                                                ValueChanged="EraserAutoSwitchBackDelaySlider_ValueChanged" />
+                                        <TextBlock Foreground="#fafafa" Text="{Binding ElementName=EraserAutoSwitchBackDelaySlider, Path=Value, StringFormat={}{0:0}秒}" 
+                                                   VerticalAlignment="Center" FontSize="14" Margin="16,0,0,0" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 若在计时时间内再次进行擦除操作，计时器将重新开始计时" TextWrapping="Wrap" Foreground="#a1a1aa"
+                                               Visibility="{Binding ElementName=ToggleSwitchEnableEraserAutoSwitchBack, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <!-- 崩溃后操作设置 -->
@@ -1218,17 +1289,23 @@
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <ui:SimpleStackPanel Orientation="Vertical" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="信仰の源出自Where？" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
-                                        <ComboBox Name="ComboBoxChickenSoupSource" FontFamily="Microsoft YaHei UI"
-                                                  SelectedIndex="1"
-                                                  SelectionChanged="ComboBoxChickenSoupSource_SelectionChanged">
-                                            <ComboBoxItem Content="osu!玩家语录" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="励志立志的名言警句" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="高考祝福语" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="一言（Hitokoto API）" FontFamily="Microsoft YaHei UI" />
-                                        </ComboBox>
+                                                   FontSize="14" Margin="0,0,0,6" />
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <ComboBox Name="ComboBoxChickenSoupSource" FontFamily="Microsoft YaHei UI"
+                                                      SelectedIndex="1" Width="240"
+                                                      SelectionChanged="ComboBoxChickenSoupSource_SelectionChanged">
+                                                <ComboBoxItem Content="osu!玩家语录" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="励志立志的名言警句" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="高考祝福语" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="一言（Hitokoto API）" FontFamily="Microsoft YaHei UI" />
+                                            </ComboBox>
+                                            <Button Name="BtnHitokotoCustomize" Content="自定义" FontFamily="Microsoft YaHei UI"
+                                                    FontSize="14" Padding="14,4" Margin="8,0,0,0" MinWidth="65" VerticalAlignment="Center"
+                                                    Click="BtnHitokotoCustomize_Click"
+                                                    Visibility="Collapsed" />
+                                        </ui:SimpleStackPanel>
                                     </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
                                           Stroke="#3f3f46" StrokeThickness="1" Margin="0,4,0,4" />
@@ -1465,7 +1542,16 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="使用 ROT 联动（需要重启）" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="抢占焦点放映（用于跳过PPT动画）" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchSkipAnimationsWhenGoNext"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchSkipAnimationsWhenGoNext_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
+                                               Height="28" VerticalAlignment="Center" />
+                                        <TextBlock Foreground="#fafafa" Text="使用 ROT 联动" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchUseRotPptLink"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -2352,6 +2438,16 @@
                                             <ComboBoxItem Content="顶部居中" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="PPT 放映时显示快速面板" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent=""
+                                                         Name="ToggleSwitchShowPPTSidebarByDefault" IsOn="False"
+                                                         FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchShowPPTSidebarByDefault_Toggled" />
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="# 关闭后在 PPT 放映时不显示快速面板" TextWrapping="Wrap"
+                                               Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -2776,6 +2872,26 @@
                                                 Background="#2563eb" Foreground="White" Padding="12,6" Margin="0,0,12,0" />
                                         <Button x:Name="BtnRestoreBackup" Content="还原备份" Click="BtnRestoreBackup_Click"
                                                 Background="#2563eb" Foreground="White" Padding="12,6" />
+                                    </ui:SimpleStackPanel>
+                                    <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
+                                          StrokeThickness="1" Margin="0,8,0,4" />
+                                    <TextBlock Text="配置文件切换与热重载" FontWeight="Bold" Foreground="#fafafa"
+                                               FontSize="16" Margin="0,5,0,5" />
+                                    <TextBlock TextWrapping="Wrap" Foreground="#a1a1aa"
+                                               Text="# 选择配置文件即切换并热重载；另存为可将当前配置保存为新配置文件" />
+                                    <ui:SimpleStackPanel Spacing="8" Margin="0,6,0,0">
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <TextBlock Foreground="#fafafa" Text="配置文件：" VerticalAlignment="Center"
+                                                       FontSize="14" Margin="0,0,8,0" />
+                                            <ComboBox x:Name="ComboBoxConfigProfile" Width="220" MinWidth="180"
+                                                      SelectionChanged="ComboBoxConfigProfile_SelectionChanged" />
+                                        </ui:SimpleStackPanel>
+                                        <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Button x:Name="BtnDeleteConfigProfile" Content="删除配置文件" Click="BtnDeleteConfigProfile_Click"
+                                                    Padding="10,6" Margin="0,0,8,0" />
+                                            <Button x:Name="BtnSaveAsConfigProfile" Content="另存为配置文件" Click="BtnSaveAsConfigProfile_Click"
+                                                    Padding="10,6" />
+                                        </ui:SimpleStackPanel>
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                             </GroupBox>
@@ -4081,6 +4197,7 @@
                                             <RowDefinition />
                                             <RowDefinition />
                                             <RowDefinition />
+                                            <RowDefinition />
                                         </Grid.RowDefinitions>
                                         <ui:SimpleStackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical">
                                             <Image Source="/Resources/DeveloperAvatars/RaspberryKan.jpg"
@@ -4258,6 +4375,21 @@
                                                 PrefacedCorg
                                             </TextBlock>
                                         </ui:SimpleStackPanel>
+                                        <ui:SimpleStackPanel Grid.Column="0" Grid.Row="3" Orientation="Vertical"
+                                                             Margin="0,16,0,0">
+                                            <Image Source="/Resources/DeveloperAvatars/PANDA-JSR.jpg"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" Width="48"
+                                                   Margin="0,0,0,6" Height="48">
+                                                <Image.Clip>
+                                                    <EllipseGeometry Center="24,24" RadiusX="24" RadiusY="24" />
+                                                </Image.Clip>
+                                            </Image>
+                                            <TextBlock Margin="0,0,0,2" VerticalAlignment="Center"
+                                                       HorizontalAlignment="Center" FontSize="12" Foreground="White">
+                                                PANDA-JSR
+                                            </TextBlock>
+                                        </ui:SimpleStackPanel>
                                     </Grid>
                                     <ui:SimpleStackPanel Spacing="3" Orientation="Vertical">
                                         <TextBlock
@@ -4386,12 +4518,9 @@
                   ManipulationStarting="GridInkCanvasSelectionCover_ManipulationStarting"
                   ManipulationCompleted="GridInkCanvasSelectionCover_ManipulationCompleted"
                   ManipulationDelta="GridInkCanvasSelectionCover_ManipulationDelta"
-            PreviewTouchDown="GridInkCanvasSelectionCover_PreviewTouchDown"
-            PreviewTouchUp="GridInkCanvasSelectionCover_PreviewTouchUp"
-            PreviewTouchMove="GridInkCanvasSelectionCover_PreviewTouchMove"
-            TouchDown="GridInkCanvasSelectionCover_TouchDown"
-            TouchUp="GridInkCanvasSelectionCover_TouchUp"
-            TouchMove="GridInkCanvasSelectionCover_TouchMove"
+                  TouchDown="GridInkCanvasSelectionCover_TouchDown"
+                  TouchUp="GridInkCanvasSelectionCover_TouchUp"
+                  TouchMove="GridInkCanvasSelectionCover_TouchMove"
                   Background="#01FFFFFF" Opacity="0.01" Visibility="Visible" Margin="1,0,-1,0">
                 
                 <!-- 选择框 -->
@@ -4409,23 +4538,31 @@
                 <Canvas Name="SelectionHandlesCanvas" Visibility="Collapsed">
                     <!-- 四个角选择点 -->
                     <Rectangle Name="TopLeftHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeNWSE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeNWSE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     <Rectangle Name="TopRightHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeNESW" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeNESW" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     <Rectangle Name="BottomLeftHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeNESW" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeNESW" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     <Rectangle Name="BottomRightHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeNWSE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeNWSE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     
                     <!-- 四个边选择点 -->
                     <Rectangle Name="TopHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeNS" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeNS" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     <Rectangle Name="BottomHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeNS" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeNS" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     <Rectangle Name="LeftHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeWE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeWE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                     <Rectangle Name="RightHandle" Width="8" Height="8" Fill="LightBlue" Stroke="Blue" StrokeThickness="1" 
-                               Cursor="SizeWE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" />
+                               Cursor="SizeWE" MouseDown="SelectionHandle_MouseDown" MouseMove="SelectionHandle_MouseMove" MouseUp="SelectionHandle_MouseUp" 
+                               TouchDown="SelectionHandle_TouchDown" TouchMove="SelectionHandle_TouchMove" TouchUp="SelectionHandle_TouchUp" />
                 </Canvas>
             </Grid>
             <Border Name="BorderStrokeSelectionControl"
@@ -4836,7 +4973,7 @@
                                                                 <Border Margin="0,4" Width="160" BorderBrush="{DynamicResource BoardFloatBarBorderBrush}"
                                                                         BorderThickness="1">
                                                                     <Grid>
-                                                                        <Viewbox Width="160">
+                                                                        <Viewbox Width="160" Height="120" Stretch="Uniform">
                                                                             <InkCanvas EditingMode="None"
                                                                                 Background="{Binding ElementName=GridBackgroundCover, Path=Background}"
                                                                                 Strokes="{Binding Strokes}"
@@ -4856,6 +4993,13 @@
                                                                                 Text="{Binding Index}">
                                                                             </TextBlock>
                                                                         </Border>
+                                                                        <Button Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4"
+                                                                                ToolTip="删除此页"
+                                                                                Click="WhiteBoardPageListItem_DeleteClick"
+                                                                                Background="#CC000000" Foreground="White"
+                                                                                BorderThickness="0" Padding="0" Cursor="Hand">
+                                                                            <ui:SymbolIcon Symbol="Delete" />
+                                                                        </Button>
                                                                     </Grid>
                                                                 </Border>
                                                             </ui:SimpleStackPanel>
@@ -4893,25 +5037,31 @@
                                 </ui:SimpleStackPanel>
                             </Border>
                             <Border Width="60" Height="50"
-                                    BorderThickness="1" BorderBrush="{DynamicResource BoardFloatBarBorderBrush}"
-                                    MouseUp="BtnWhiteBoardAdd_Click" CornerRadius="5" Background="{DynamicResource BoardFloatBarBackground}"
+                                    BorderThickness="1"
+                                    BorderBrush="{DynamicResource BoardFloatBarBorderBrush}"
+                                    MouseUp="BtnToggleVideoPresenter_Click"
+                                    CornerRadius="5"
+                                    Background="{DynamicResource BoardFloatBarBackground}"
                                     Opacity="1">
                                 <Grid Margin="6,6,6,4">
-                                    <Image VerticalAlignment="Top"
-                                           RenderOptions.BitmapScalingMode="HighQuality" Height="20" Width="20">
-                                        <Image.Source>
-                                            <DrawingImage>
-                                                <DrawingImage.Drawing>
-                                                    <DrawingGroup ClipGeometry="M0,0 V24 H24 V0 H0 Z">
-                                                        <GeometryDrawing Brush="{DynamicResource IconForeground}"
-                                                                         Geometry="F0 M24,24z M0,0z M7.39778,13.723L10.7693,13.723 10.7693,10.3514 13.2307,10.3514 13.2307,13.723 16.6022,13.723 16.6022,16.1843 13.2307,16.1843 13.2307,19.5559 10.7693,19.5559 10.7693,16.1843 7.39778,16.1843 7.39778,13.723z M3.1391,1.17001L3.1391,22.83 20.8609,22.83 20.8609,6.66948 15.3614,1.17002 3.1391,1.17001z M12.9846,3.13911L5.10819,3.1391 5.10819,20.8609 18.8918,20.8609 18.8918,9.04638 12.9846,9.04638 12.9846,3.13911z M18.484,7.07729L14.9536,3.54692 14.9536,7.07729 18.484,7.07729z" />
-                                                    </DrawingGroup>
-                                                </DrawingImage.Drawing>
-                                            </DrawingImage>
-                                        </Image.Source>
-                                    </Image>
-                                    <TextBlock Text="新页面" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
-                                               HorizontalAlignment="Center" FontSize="12" />
+                                    <Path
+                                        VerticalAlignment="Top"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,2"
+                                        Width="22"
+                                        Height="22"
+                                        Stroke="{DynamicResource IconForeground}"
+                                        StrokeThickness="2"
+                                        StrokeStartLineCap="Round"
+                                        StrokeEndLineCap="Round"
+                                        StrokeLineJoin="Round"
+                                        Data="M15 10 L19.553 7.724 C19.7054 7.64783 19.8748 7.61188 20.045 7.61954 C20.2152 7.62721 20.3806 7.67824 20.5256 7.7678 C20.6706 7.85736 20.7902 7.98247 20.8733 8.13127 C20.9563 8.28006 20.9999 8.44761 21 8.618 V15.382 C20.9999 15.5524 20.9563 15.7199 20.8733 15.8687 C20.7902 16.0175 20.6706 16.1426 20.5256 16.2322 C20.3806 16.3218 20.2152 16.3728 20.045 16.3805 C19.8748 16.3881 19.7054 16.3522 19.553 16.276 L15 14 Z M3 8 C3 7.46957 3.21071 6.96086 3.58579 6.58579 C3.96086 6.21071 4.46957 6 5 6 H13 C13.5304 6 14.0391 6.21071 14.4142 6.58579 C14.7893 6.96086 15 7.46957 15 8 V16 C15 16.5304 14.7893 17.0391 14.4142 17.4142 C14.0391 17.7893 13.5304 18 13 18 H5 C4.46957 18 3.96086 17.7893 3.58579 17.4142 C3.21071 17.0391 3 16.5304 3 16 Z" />
+                                    <TextBlock
+                                        Text="展台"
+                                        Foreground="{DynamicResource FloatBarForeground}"
+                                        VerticalAlignment="Bottom"
+                                        HorizontalAlignment="Center"
+                                        FontSize="12" />
                                 </Grid>
                             </Border>
                         </ui:SimpleStackPanel>
@@ -6991,7 +7141,7 @@
                                                                 <Border Margin="0,4" Width="160" BorderBrush="{DynamicResource BoardFloatBarBorderBrush}"
                                                                         BorderThickness="1">
                                                                     <Grid>
-                                                                        <Viewbox Width="160">
+                                                                        <Viewbox Width="160" Height="120" Stretch="Uniform">
                                                                             <InkCanvas EditingMode="None"
                                                                                 Background="{Binding ElementName=GridBackgroundCover, Path=Background}"
                                                                                 Strokes="{Binding Strokes}"
@@ -7011,6 +7161,13 @@
                                                                                 Text="{Binding Index}">
                                                                             </TextBlock>
                                                                         </Border>
+                                                                        <Button Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4"
+                                                                                ToolTip="删除此页"
+                                                                                Click="WhiteBoardPageListItem_DeleteClick"
+                                                                                Background="#CC000000" Foreground="White"
+                                                                                BorderThickness="0" Padding="0" Cursor="Hand">
+                                                                            <ui:SymbolIcon Symbol="Delete" />
+                                                                        </Button>
                                                                     </Grid>
                                                                 </Border>
                                                             </ui:SimpleStackPanel>
@@ -8394,31 +8551,44 @@
                                                                        FontSize="17" VerticalAlignment="Center" />
                                                                 <Slider x:Name="InkWidthSlider" Minimum="1"
                                                                         Maximum="20"
-                                                                        Width="208" FontFamily="Microsoft YaHei UI"
+                                                                        Width="200" FontFamily="Microsoft YaHei UI"
                                                                         FontSize="20" IsSnapToTickEnabled="True"
                                                                         Value="5"
                                                                         TickFrequency="0.1" TickPlacement="None"
                                                                         ValueChanged="InkWidthSlider_ValueChanged" />
-                                                                <TextBlock
+                                                                <TextBlock Width="36" TextAlignment="Right"
                                                                     Text="{Binding Value, ElementName=InkWidthSlider, Mode=OneWay}"
-                                                                    FontFamily="Consolas" VerticalAlignment="Bottom"
-                                                                    Margin="10,0,0,4.5" FontSize="15" />
+                                                                    FontFamily="Consolas" VerticalAlignment="Center"
+                                                                    Margin="10,0,0,0" FontSize="15" />
+                                                                <Button x:Name="BoardBrushModeButton" Width="24" Height="24" Margin="8,0,0,0"
+                                                                        Style="{StaticResource NavButton}"
+                                                                        VerticalAlignment="Center"
+                                                                        Click="BoardBrushModeButton_Click"
+                                                                        ToolTip="板刷模式">
+                                                                    <Viewbox Margin="4" Stretch="Uniform">
+                                                                        <Path x:Name="BoardBrushModeIcon" Fill="{DynamicResource FloatBarForeground}" Stretch="Fill">
+                                                                            <Path.Data>
+                                                                                <PathGeometry Figures="M6.7812 6.9375C6.81411 7.06468 6.87172 7.18413 6.95081 7.28903C7.0299 7.39392 7.12891 7.4822 7.24213 7.54882C7.47058 7.68347 7.74313 7.72187 7.99989 7.65557C8.25664 7.58928 8.47657 7.42372 8.61128 7.19531L11.9238 1.57031C12.0584 1.34186 12.0968 1.06928 12.0305 0.812526C11.9642 0.555772 11.7987 0.335869 11.5703 0.201167C11.3418 0.0665197 11.0693 0.028121 10.8125 0.0944166C10.5558 0.160712 10.3358 0.326268 10.2011 0.554683L6.88862 6.17968C6.82183 6.29276 6.77796 6.41788 6.75953 6.54791C6.7411 6.67793 6.74847 6.81031 6.7812 6.9375Z M5.21875 5.09375L10.1662 8.14759C10.7697 8.46231 10.9861 9.26072 10.3308 9.74464L9.70892 9.96117L3.6897 6.43971L3.7074 5.53239C3.99623 4.94715 4.46209 4.71653 5.21875 5.09375Z M3.05377 7.48846L9.04364 10.9631L7.99908 12.5052C7.77811 12.7482 7.86648 13.0797 8.08746 13.2123L9.03766 14.0298H3.66809C1.47755 14.0298 0.471255 11.9653 1.52466 10.1408L3.05377 7.48846Z" />
+                                                                            </Path.Data>
+                                                                        </Path>
+                                                                    </Viewbox>
+                                                                </Button>
                                                             </StackPanel>
                                                             <StackPanel Orientation="Horizontal" Height="30">
                                                                 <Label Margin="0,0,10,0" Content="透明" FontWeight="Bold"
                                                                        Foreground="{DynamicResource FloatBarForeground}"
                                                                        FontSize="17" VerticalAlignment="Center" />
                                                                 <Slider x:Name="InkAlphaSlider" Margin="0,0,0,0"
-                                                                        Minimum="1" Maximum="255" Width="208"
+                                                                        Minimum="1" Maximum="255" Width="200"
                                                                         FontFamily="Microsoft YaHei UI" FontSize="20"
                                                                         IsSnapToTickEnabled="True" Value="255"
                                                                         TickFrequency="1"
                                                                         TickPlacement="None"
                                                                         ValueChanged="InkAlphaSlider_ValueChanged" />
-                                                                <TextBlock
+                                                                <TextBlock Width="36" TextAlignment="Right"
                                                                     Text="{Binding Value, ElementName=InkAlphaSlider, Mode=OneWay}"
-                                                                    FontFamily="Consolas" VerticalAlignment="Bottom"
-                                                                    Margin="10,0,0,4.5" FontSize="15" />
+                                                                    FontFamily="Consolas" VerticalAlignment="Center"
+                                                                    Margin="10,0,0,0" FontSize="15" />
                                                             </StackPanel>
                                                         </ui:SimpleStackPanel>
                                                     </Viewbox>
@@ -10352,6 +10522,199 @@
                 </ui:SimpleStackPanel>
             </Border>
         </Viewbox>
+
+        <!-- 视频展台侧栏 -->
+        <Border
+            x:Name="VideoPresenterSidebar"
+            Width="350"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Stretch"
+            Background="{DynamicResource FloatBarBackground}"
+            BorderBrush="{DynamicResource FloatBarBorderBrush}"
+            BorderThickness="0,0,1,0"
+            Visibility="Collapsed"
+            Panel.ZIndex="996">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="110" />
+                </Grid.RowDefinitions>
+
+                <!-- 顶部标题栏 -->
+                <Grid Grid.Row="0" Height="50">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="50" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="15,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Foreground="{DynamicResource FloatBarForeground}"
+                        Text="视频展台" />
+                    <Button
+                        Grid.Column="1"
+                        Width="50"
+                        Height="50"
+                        Padding="0"
+                        BorderThickness="0"
+                        Background="Transparent"
+                        Click="BtnCloseVideoPresenter_Click">
+                        <Path
+                            Stroke="{DynamicResource IconForeground}"
+                            StrokeThickness="2"
+                            StrokeStartLineCap="Round"
+                            StrokeEndLineCap="Round"
+                            Width="16"
+                            Height="16"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Stretch="Uniform"
+                            Data="M4.5 4.5L11.5 11.5M11.5 4.5L4.5 11.5" />
+                    </Button>
+                </Grid>
+
+                <!-- 预览区域 -->
+                <Border Grid.Row="1" Margin="10,10,10,2" Padding="10" CornerRadius="6" Background="#1f2328">
+                    <Image x:Name="VideoPresenterPreviewImage" Stretch="Uniform" Height="180" />
+                </Border>
+
+                <!-- 照片显示区域 -->
+                <Border Grid.Row="2" Margin="10,2,10,2" Padding="10" CornerRadius="6" Background="{DynamicResource FloatBarBackground}">
+                    <StackPanel>
+                        <TextBlock
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource FloatBarForeground}"
+                            Text="拍摄照片" />
+                        <ScrollViewer
+                            x:Name="CapturedPhotosScrollViewer"
+                            MaxHeight="280"
+                            VerticalScrollBarVisibility="Auto"
+                            PanningMode="VerticalFirst">
+                            <StackPanel x:Name="CapturedPhotosStackPanel" Margin="0,0,0,5" />
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <!-- 设备选择区域 -->
+                <Border Grid.Row="3" Margin="10,2,10,5" Padding="10" CornerRadius="6" Background="{DynamicResource FloatBarBackground}">
+                    <StackPanel>
+                        <TextBlock
+                            Margin="0,0,0,8"
+                            HorizontalAlignment="Left"
+                            FontSize="12"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource FloatBarForeground}"
+                            Text="摄像头设备" />
+                        <ScrollViewer
+                            x:Name="CameraDevicesScrollViewer"
+                            MaxHeight="120"
+                            VerticalScrollBarVisibility="Auto"
+                            PanningMode="VerticalFirst">
+                            <StackPanel x:Name="CameraDevicesStackPanel" />
+                        </ScrollViewer>
+                    </StackPanel>
+                </Border>
+
+                <!-- 底部按钮区域 -->
+                <Grid Grid.Row="4" Margin="0,0,0,6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,4,10,2">
+                        <ToggleButton
+                            x:Name="BtnToggleVideoPresenterLiveOnCanvas"
+                            Width="70"
+                            Height="40"
+                            Margin="2,0"
+                            Background="{DynamicResource FloatBarBackground}"
+                            BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                            BorderThickness="1"
+                            Checked="BtnToggleVideoPresenterLiveOnCanvas_Checked"
+                            Unchecked="BtnToggleVideoPresenterLiveOnCanvas_Unchecked">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="上屏" />
+                        </ToggleButton>
+                        <ToggleButton
+                            x:Name="ToggleBtnPhotoCorrection"
+                            Width="70"
+                            Height="40"
+                            Margin="2,0"
+                            Background="{DynamicResource FloatBarBackground}"
+                            BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                            BorderThickness="1"
+                            Checked="ToggleBtnPhotoCorrection_Checked"
+                            Unchecked="ToggleBtnPhotoCorrection_Unchecked">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="矫正" />
+                        </ToggleButton>
+                        <Button
+                            x:Name="BtnCapturePhoto"
+                            Width="70"
+                            Height="40"
+                            Margin="2,0"
+                            Background="{DynamicResource FloatBarBackground}"
+                            BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                            BorderThickness="1"
+                            Click="BtnCapturePhoto_Click">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="拍照" />
+                        </Button>
+                        <Button
+                            x:Name="BtnRotateImage"
+                            Width="70"
+                            Height="40"
+                            Margin="2,0"
+                            Background="{DynamicResource FloatBarBackground}"
+                            BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                            BorderThickness="1"
+                            Click="BtnRotateImage_Click">
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="旋转" />
+                        </Button>
+                    </StackPanel>
+                    <!-- 分辨率 Tab -->
+                    <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="10,6,10,4">
+                        <Border Background="{DynamicResource FloatBarBackground}" 
+                                CornerRadius="8" BorderThickness="1" BorderBrush="#616161"
+                                Width="282" Height="40" ToolTip="展台/截图分辨率">
+                            <Grid>
+                                <Border x:Name="BoothResolutionTabIndicator" 
+                                        Background="#66CCFF" 
+                                        CornerRadius="6" 
+                                        Width="70" Height="38" 
+                                        HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                        Margin="0,0,0,0"/>
+                                <Grid>
+                                    <Button x:Name="BtnBoothResolution720" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="1280,720" Cursor="Hand" HorizontalAlignment="Left">
+                                        <TextBlock Text="720p" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Opacity="0.7"/>
+                                    </Button>
+                                    <Button x:Name="BtnBoothResolution1080" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="1920,1080" Cursor="Hand" HorizontalAlignment="Left" Margin="70,0,0,0">
+                                        <TextBlock x:Name="TbBoothResolution1080" Text="1080p" FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                    </Button>
+                                    <Button x:Name="BtnBoothResolution2K" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="2560,1440" Cursor="Hand" HorizontalAlignment="Left" Margin="140,0,0,0">
+                                        <TextBlock Text="2K" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Opacity="0.7"/>
+                                    </Button>
+                                    <Button x:Name="BtnBoothResolution4K" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="3840,2160" Cursor="Hand" HorizontalAlignment="Left" Margin="210,0,0,0">
+                                        <TextBlock Text="4K" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Opacity="0.7"/>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
         
         <Border x:Name="TimerContainer" 
                 Visibility="Collapsed"
