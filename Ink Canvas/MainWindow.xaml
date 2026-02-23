@@ -615,60 +615,60 @@
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchUIAccessTopMost_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Name="UIAccessTopMostDescription" Text="# 开启UIA置顶后，软件需要管理员启动才能置顶，关闭此功能需要完全关闭软件后再手动启动，无法使用重启来关闭此功能" TextWrapping="Wrap" Foreground="#a1a1aa" Visibility="Collapsed" />
+                                    <TextBlock Name="UIAccessTopMostDescription" Text="{i18n:I18n Key=Startup_UIAccessTopMostHint}" TextWrapping="Wrap" Foreground="#a1a1aa" Visibility="Collapsed" />
                                     <ui:ToggleSwitch OnContent="" OffContent=""
                                                      Name="ToggleSwitchIsAutoUpdate" Header="{i18n:I18n Key=Header_AutoUpdate}"
                                                      FontFamily="Microsoft YaHei UI"
                                                      Toggled="ToggleSwitchIsAutoUpdate_Toggled" />
                                     <ui:ToggleSwitch OnContent="" OffContent=""
-                                                     Name="ToggleSwitchIsAutoUpdateWithSilence" Header="静默更新"
+                                                     Name="ToggleSwitchIsAutoUpdateWithSilence" Header="{i18n:I18n Key=Header_SilentUpdate}"
                                                      FontFamily="Microsoft YaHei UI"
                                                      Toggled="ToggleSwitchIsAutoUpdateWithSilence_Toggled" />
-                                    <TextBlock Text="# 静默更新将在软件不使用时自动安装，无需手动操作" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Startup_SilentUpdateHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     
                                     <!-- 更新通道选择 -->
                                     <ui:SimpleStackPanel Spacing="8" Margin="0,8,0,0">
-                                        <TextBlock Text="更新通道" FontSize="15" FontWeight="Bold" Foreground="#fafafa"/>
+<TextBlock Text="{i18n:I18n Key=Startup_UpdateChannel}" FontSize="15" FontWeight="Bold" Foreground="#fafafa"/>
                                         <ui:RadioButtons x:Name="UpdateChannelSelector" Margin="0,4,0,0">
-                                            <RadioButton Content="稳定版 (Release)" GroupName="UpdateChannel" 
+                                            <RadioButton Content="{i18n:I18n Key=Update_Release}" GroupName="UpdateChannel"
                                                            Tag="Release" Checked="UpdateChannelSelector_Checked"/>
-                                            <RadioButton Content="预览版 (Preview)" GroupName="UpdateChannel" 
+                                            <RadioButton Content="{i18n:I18n Key=Update_Preview}" GroupName="UpdateChannel"
                                                            Tag="Preview" Checked="UpdateChannelSelector_Checked"/>
-                                            <RadioButton Content="测试版 (Beta)" GroupName="UpdateChannel" 
+                                            <RadioButton Content="{i18n:I18n Key=Update_Beta}" GroupName="UpdateChannel"
                                                            Tag="Beta" Checked="UpdateChannelSelector_Checked"/>
                                         </ui:RadioButtons>
-                                        <TextBlock Text="# 稳定版提供可靠更新，预览版提供新功能体验同时拥有相较Beta版更强的稳定性，测试版提供新功能抢先体验" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                        <TextBlock Text="{i18n:I18n Key=Startup_UpdateChannelHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     </ui:SimpleStackPanel>
                                     
                                     <!-- 手动更新按钮 -->
-                                    <Button x:Name="ManualUpdateButton" Content="手动更新" Margin="0,8,0,0"
+                                    <Button x:Name="ManualUpdateButton" Content="{i18n:I18n Key=Btn_ManualUpdate}" Margin="0,8,0,0"
                                             Width="120" HorizontalAlignment="Left" Click="ManualUpdateButton_Click"
                                             Visibility="{Binding ElementName=ToggleSwitchIsAutoUpdate, Path=IsOn, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                                    <TextBlock Text="# 点击后立即检查并下载最新版本" 
-                                               TextWrapping="Wrap" Foreground="#a1a1aa" 
+<TextBlock Text="{i18n:I18n Key=Startup_ManualUpdateHint}"
+                                               TextWrapping="Wrap" Foreground="#a1a1aa"
                                                Visibility="{Binding ElementName=ToggleSwitchIsAutoUpdate, Path=IsOn, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                                     <!-- 版本修复按钮 -->
-                                    <Button x:Name="FixVersionButton" Content="版本修复" Margin="0,8,0,0"
+                                    <Button x:Name="FixVersionButton" Content="{i18n:I18n Key=Btn_FixVersion}" Margin="0,8,0,0"
                                             Width="120" HorizontalAlignment="Left" Click="FixVersionButton_Click"/>
-                                    <TextBlock Text="# 版本修复会根据当前选择的通道下载最新版本并执行安装，可用于修复损坏的安装" 
+<TextBlock Text="{i18n:I18n Key=Startup_FixVersionHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
-                                    <Button x:Name="HistoryRollbackButton" Content="历史版本回滚" Width="120" Margin="0,10,0,0" Click="HistoryRollbackButton_Click"/>
-                                    <TextBlock Text="# 历史版本回滚，点击后会弹出相应页面供用户手动回滚到之前的版本" 
+                                    <Button x:Name="HistoryRollbackButton" Content="{i18n:I18n Key=Btn_HistoryRollback}" Width="120" Margin="0,10,0,0" Click="HistoryRollbackButton_Click"/>
+                                    <TextBlock Text="{i18n:I18n Key=Startup_HistoryRollbackHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Border BorderBrush="White" BorderThickness="1" CornerRadius="5" Padding="12"
                                             Visibility="{Binding ElementName=ToggleSwitchIsAutoUpdateWithSilence, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <ui:SimpleStackPanel Spacing="12">
                                             <TextBlock
-                                                Text="# 关闭静默更新后，已完成安装包的下载后将会弹窗询问是否进行更新，开启静默更新后将会在安装包下载完成后每隔十分钟进行如下检测：①处于静默更新时间段内 ②未处于书写模式 ③未处于画板内。若以上检测通过即会关闭软件进行自动更新。"
+                                                Text="{i18n:I18n Key=Startup_SilentUpdateFullHint}"
                                                 TextWrapping="Wrap" Foreground="#a1a1aa" />
                                             <ui:SimpleStackPanel x:Name="AutoUpdateTimePeriodBlock" Spacing="12">
                                                 <ui:SimpleStackPanel Spacing="12">
-                                                    <TextBlock Text="静默更新时间段" FontSize="15" FontWeight="Bold"
+                                                    <TextBlock Text="{i18n:I18n Key=Startup_SilentUpdateTimePeriod}" FontSize="15" FontWeight="Bold"
                                                                TextWrapping="Wrap" Foreground="#fafafa" />
                                                     <ui:SimpleStackPanel Orientation="Horizontal" Spacing="12">
                                                         <ui:SimpleStackPanel Orientation="Horizontal">
                                                             <TextBlock Margin="0,0,10,0" VerticalAlignment="Center"
-                                                                       Text="起始时间" FontSize="14" TextWrapping="Wrap"
+                                                                       Text="{i18n:I18n Key=Startup_StartTime}" FontSize="14" TextWrapping="Wrap"
                                                                        Foreground="#fafafa" />
                                                             <ComboBox x:Name="AutoUpdateWithSilenceStartTimeComboBox"
                                                                       Width="90"
@@ -676,7 +676,7 @@
                                                         </ui:SimpleStackPanel>
                                                         <ui:SimpleStackPanel Orientation="Horizontal">
                                                             <TextBlock Margin="0,0,10,0" VerticalAlignment="Center"
-                                                                       Text="终止时间" FontSize="14" TextWrapping="Wrap"
+                                                                       Text="{i18n:I18n Key=Startup_EndTime}" FontSize="14" TextWrapping="Wrap"
                                                                        Foreground="#fafafa" />
                                                             <ComboBox x:Name="AutoUpdateWithSilenceEndTimeComboBox"
                                                                       Width="90"
@@ -684,21 +684,21 @@
                                                         </ui:SimpleStackPanel>
                                                     </ui:SimpleStackPanel>
                                                     <TextBlock Width="340" HorizontalAlignment="Left"
-                                                               Text="# 若终止时间小于起始时间，即将终止时间视为第二天的时间。# 若起始时间与终止时间相同，即视为全天候时间。"
+                                                               Text="{i18n:I18n Key=Startup_TimePeriodHint}"
                                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                                 </ui:SimpleStackPanel>
                                             </ui:SimpleStackPanel>
                                         </ui:SimpleStackPanel>
                                     </Border>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="开机时运行" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Startup_RunAtStartup}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchRunAtStartup"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchRunAtStartup_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="开机运行后收纳到侧边栏" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Startup_FoldAtStartup}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchFoldAtStartup"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -712,62 +712,62 @@
                             </GroupBox>
                             <GroupBox>
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="画板和墨迹" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Canvas_GroupTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="显示画笔光标" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_ShowCursor}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchShowCursor"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchShowCursor_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用压感触屏模式" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_EnablePressureTouch}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnablePressureTouchMode"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnablePressureTouchMode_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，触屏设备也将支持压感效果，适用于部分支持压感但无法被系统识别的触屏设备。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_EnablePressureTouchHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="屏蔽压感" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_DisablePressure}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchDisablePressure"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchDisablePressure_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，将忽略所有设备的压感信息，使所有笔画具有统一的粗细。与压感触屏模式互斥。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_DisablePressureHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
 
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="橡皮大小" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_EraserSize}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxEraserSize" FontFamily="Microsoft YaHei UI"
                                                   SelectedIndex="2"
                                                   SelectionChanged="ComboBoxEraserSize_SelectionChanged">
-                                            <ComboBoxItem Content="很小" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="较小" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="中等" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="较大" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="很大" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_VerySmall}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_Small}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_Medium}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_Large}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_VeryLarge}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 非实时切换，下一次使用面积擦时生效。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_EraserSizeHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="退出画板模式后隐藏墨迹" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_HideStrokeWhenSelecting}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchHideStrokeWhenSelecting" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchHideStrokeWhenSelecting_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启 退出画板模式后隐藏墨迹 选项后，进入 PPT 模式时未处于批注模式时不会显示墨迹。"
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_HideStrokeWhenSelectingHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="清空墨迹时删除墨迹历史记录" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_ClearInkAlsoClearHistory}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchClearCanvasAndClearTimeMachine" IsOn="True"
@@ -775,13 +775,13 @@
                                                          Toggled="ToggleSwitchClearCanvasAndClearTimeMachine_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="清空画布时同时清空图片" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_ClearCanvasAlsoClearImages}" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchClearCanvasAlsoClearImages"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchClearCanvasAlsoClearImages_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="插入图片时自动压缩（大于1920x1080）" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_CompressPicturesUploaded}" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchCompressPicturesUploaded"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchCompressPicturesUploaded_Toggled" />
@@ -789,33 +789,33 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="保留双曲线渐近线" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_KeepHyperbolaAsymptote}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxHyperbolaAsymptoteOption"
                                                   FontFamily="Microsoft YaHei UI" SelectedIndex="0"
                                                   SelectionChanged="ComboBoxHyperbolaAsymptoteOption_SelectionChanged">
-                                            <ComboBoxItem Content="是" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="否" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="每次询问" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Yes}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_No}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_AskEachTime}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 请注意，若不保留双曲线渐近线可能会有遇到撤回相关的 BUG 影响用。" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_HyperbolaAsymptoteHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock Foreground="#fafafa" Text="绘制圆时显示圆心位置" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                    <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_ShowCircleCenter}" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchShowCircleCenter"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchShowCircleCenter_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <TextBlock Foreground="#fafafa" Text="使用WPF默认贝塞尔曲线平滑"
+                                    <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_WPFBezierSmoothing}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchFitToCurve"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchFitToCurve_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="使用高级曲线平滑（推荐）"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_AdvancedBezierSmoothing}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchAdvancedBezierSmoothing"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -824,16 +824,16 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用墨迹渐隐功能" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_EnableInkFade}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableInkFade"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableInkFade_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后墨迹不会绘制到画布上，而是保持湿墨迹状态，根据设置的渐隐时间自动消失" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_EnableInkFadeHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnableInkFade, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="墨迹渐隐时间" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_InkFadeTime}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider Name="InkFadeTimeSlider" Width="150" Minimum="1000" Maximum="10000" 
                                                 Value="3000" TickFrequency="1000" IsSnapToTickEnabled="True"
@@ -844,44 +844,44 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="在笔工具菜单中隐藏墨迹渐隐控制" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_HideInkFadeInPenMenu}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchHideInkFadeControlInPenMenu"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchHideInkFadeControlInPenMenu_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_HideInkFadeInPenMenuHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用画笔自动恢复" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_BrushAutoRestore}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchBrushAutoRestore"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchBrushAutoRestore_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 启用后，临时修改画笔设置后将在指定时间点自动恢复到你在此处配置的颜色 / 透明度 / 粗细" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_BrushAutoRestoreHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Vertical" HorizontalAlignment="Left"
                                                          Spacing="4"
                                                          Visibility="{Binding ElementName=ToggleSwitchBrushAutoRestore, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="自动恢复时间点 (HH:mm，可多个，用 ; 分隔)"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_AutoRestoreTimePoints}"
                                                    FontSize="14" Margin="0,0,0,0" />
                                         <TextBox Name="BrushAutoRestoreTimesTextBox" Width="260"
                                                  TextChanged="BrushAutoRestoreTimesTextBox_TextChanged" />
-                                        <TextBlock Foreground="#fafafa" Text="恢复目标颜色" FontSize="14" Margin="0,8,0,0" />
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_RestoreColor}" FontSize="14" Margin="0,8,0,0" />
                                         <ComboBox Name="ComboBoxBrushAutoRestoreColor" Width="260"
                                                   SelectionChanged="ComboBoxBrushAutoRestoreColor_SelectionChanged">
-                                            <ComboBoxItem Content="默认" Tag="#FFFF0000" />
-                                            <ComboBoxItem Content="黑色" Tag="#FF000000" />
-                                            <ComboBoxItem Content="白色" Tag="#FFFFFFFF" />
-                                            <ComboBoxItem Content="红色" Tag="#FFFF0000" />
-                                            <ComboBoxItem Content="黄色" Tag="#FFFFFF00" />
-                                            <ComboBoxItem Content="蓝色" Tag="#FF2563EB" />
-                                            <ComboBoxItem Content="绿色" Tag="#FF16A34A" />
-                                            <ComboBoxItem Content="橙色" Tag="#FFFB9650" />
-                                            <ComboBoxItem Content="紫色" Tag="#FF9333EA" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Default}" Tag="#FFFF0000" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Black}" Tag="#FF000000" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_White}" Tag="#FFFFFFFF" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Red}" Tag="#FFFF0000" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Yellow}" Tag="#FFFFFF00" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Blue}" Tag="#FF2563EB" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Green}" Tag="#FF16A34A" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Orange}" Tag="#FFFB9650" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Canvas_Color_Purple}" Tag="#FF9333EA" />
                                         </ComboBox>
-                                        <TextBlock Foreground="#fafafa" Text="恢复笔粗细" FontSize="14" Margin="0,8,0,0" />
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_RestoreWidth}" FontSize="14" Margin="0,8,0,0" />
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                             <Slider Name="BrushAutoRestoreWidthSlider" Width="200" Minimum="1" Maximum="20"
                                                     TickFrequency="1" IsSnapToTickEnabled="True"
@@ -891,7 +891,7 @@
                                                        Text="{Binding ElementName=BrushAutoRestoreWidthSlider, Path=Value, StringFormat={}{0:0}px}"
                                                        FontSize="12" Margin="12,0,0,0" VerticalAlignment="Center" />
                                         </ui:SimpleStackPanel>
-                                        <TextBlock Foreground="#fafafa" Text="恢复透明度" FontSize="14" Margin="0,8,0,0" />
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_RestoreOpacity}" FontSize="14" Margin="0,8,0,0" />
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                             <Slider Name="BrushAutoRestoreAlphaSlider" Width="200" Minimum="0" Maximum="255"
                                                     TickFrequency="5" IsSnapToTickEnabled="True"
@@ -904,16 +904,16 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="使用橡皮擦后自动切换回批注模式" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_SwitchBackAfterEraser}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableEraserAutoSwitchBack"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableEraserAutoSwitchBack_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，使用橡皮擦进行擦除操作后静置一段时间将自动切换回批注模式" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_SwitchBackAfterEraserHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnableEraserAutoSwitchBack, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="自动切换延迟时间" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_SwitchBackDelay}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider Name="EraserAutoSwitchBackDelaySlider" Width="150" Minimum="1" Maximum="60" 
                                                 Value="10" TickFrequency="1" IsSnapToTickEnabled="True"
@@ -921,90 +921,90 @@
                                         <TextBlock Foreground="#fafafa" Text="{Binding ElementName=EraserAutoSwitchBackDelaySlider, Path=Value, StringFormat={}{0:0}秒}" 
                                                    VerticalAlignment="Center" FontSize="14" Margin="16,0,0,0" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 若在计时时间内再次进行擦除操作，计时器将重新开始计时" TextWrapping="Wrap" Foreground="#a1a1aa"
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_SwitchBackDelayHint}" TextWrapping="Wrap" Foreground="#a1a1aa"
                                                Visibility="{Binding ElementName=ToggleSwitchEnableEraserAutoSwitchBack, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <!-- 崩溃后操作设置 -->
                             <GroupBox>
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="崩溃后操作" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Crash_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
-                                    <TextBlock Text="请选择软件发生未处理异常时的自动操作：" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Crash_Desc}" Foreground="#a1a1aa" />
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,4,0,0">
                                         <RadioButton x:Name="RadioCrashSilentRestart" GroupName="CrashAction"
-                                                     Content="静默重启软件" FontSize="14" Margin="0,0,24,0"
+                                                     Content="{i18n:I18n Key=Crash_SilentRestart}" FontSize="14" Margin="0,0,24,0"
                                                      Checked="RadioCrashAction_Checked"/>
                                         <RadioButton x:Name="RadioCrashNoAction" GroupName="CrashAction"
-                                                     Content="无操作" FontSize="14"
+                                                     Content="{i18n:I18n Key=Crash_NoAction}" FontSize="14"
                                                      Checked="RadioCrashAction_Checked"/>
                                     </StackPanel>
-                                    <TextBlock Text="# 静默重启：崩溃后自动重启软件，无提示。无操作：崩溃后仅记录日志，不自动重启。" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Crash_Hint}" Foreground="#a1a1aa" />
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <GroupBox>
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="手势" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Gesture_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="进退白板模式自动开关双指移动功能"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_AutoToggleTwoFinger}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchAutoSwitchTwoFingerGesture" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchAutoSwitchTwoFingerGesture_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后退出画板模式时自动关闭双指移动手势，进入白板模式时自动开启双指移动手势" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=Gesture_AutoToggleHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="允许双指旋转与缩放选中的墨迹"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_AllowRotateScale}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableTwoFingerRotationOnSelection"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableTwoFingerRotation_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 允许选中墨迹后对墨迹进行双指或多指缩放操作（此设置不受“允许双指旋转”设置的影响）" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=Gesture_AllowRotateScaleHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用手掌擦" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_EnablePalmEraser}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnablePalmEraser"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnablePalmEraser_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，两个及以上触点且触摸面积较大时自动切换为橡皮擦，抬手后恢复原编辑模式。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Gesture_PalmHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnablePalmEraser, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="手掌擦敏感度" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_PalmSensitivity}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxPalmEraserSensitivity" Width="120" SelectionChanged="ComboBoxPalmEraserSensitivity_SelectionChanged">
-                                            <ComboBoxItem Content="低敏感度" />
-                                            <ComboBoxItem Content="中敏感度" />
-                                            <ComboBoxItem Content="高敏感度" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Gesture_PalmSensitivityLow}" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Gesture_PalmSensitivityMedium}" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Gesture_PalmSensitivityHigh}" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 低敏感度：需要更大的触摸面积和更多触摸点，减少误判；高敏感度：更容易触发手掌擦，但可能误判手指。" 
+                                    <TextBlock Text="{i18n:I18n Key=Gesture_PalmHint}" 
                                                TextWrapping="Wrap" Foreground="#a1a1aa"
                                                Visibility="{Binding ElementName=ToggleSwitchEnablePalmEraser, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}" />    
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <GroupBox Name="GroupBoxInkRecognition">
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="墨迹纠正" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=InkRecog_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用墨迹识别" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_EnableInkRecognition}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableInkToShape"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1013,7 +1013,7 @@
                                     <ui:SimpleStackPanel Spacing="6"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnableInkToShape, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="阻止矫正后的矩形带有模拟压感值"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_BlockRectFakePressure}"
                                                        VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                             <ui:ToggleSwitch OnContent="" OffContent=""
                                                              Name="ToggleSwitchEnableInkToShapeNoFakePressureRectangle"
@@ -1022,7 +1022,7 @@
                                                              Toggled="ToggleSwitchEnableInkToShapeNoFakePressureRectangle_Toggled" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="阻止矫正后的三角形带有模拟压感值"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_BlockTriFakePressure}"
                                                        VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                             <ui:ToggleSwitch OnContent="" OffContent=""
                                                              Name="ToggleSwitchEnableInkToShapeNoFakePressureTriangle"
@@ -1037,7 +1037,7 @@
                                                       Checked="ToggleCheckboxEnableInkToShapeTriangle_CheckedChanged"
                                                       Unchecked="ToggleCheckboxEnableInkToShapeTriangle_CheckedChanged">
                                                 <CheckBox.Content>
-                                                    <TextBlock Foreground="#fafafa" Text="矫正手绘三角形"
+                                                    <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_FixTriangle}"
                                                                VerticalAlignment="Center" FontSize="14"
                                                                Margin="0,0,16,0" />
                                                 </CheckBox.Content>
@@ -1048,7 +1048,7 @@
                                                       Checked="ToggleCheckboxEnableInkToShapeRectangle_CheckedChanged"
                                                       Unchecked="ToggleCheckboxEnableInkToShapeRectangle_CheckedChanged">
                                                 <CheckBox.Content>
-                                                    <TextBlock Foreground="#fafafa" Text="矫正手绘矩形"
+                                                    <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_FixRectangle}"
                                                                VerticalAlignment="Center" FontSize="14"
                                                                Margin="0,0,16,0" />
                                                 </CheckBox.Content>
@@ -1059,7 +1059,7 @@
                                                       Checked="ToggleCheckboxEnableInkToShapeRounded_CheckedChanged"
                                                       Unchecked="ToggleCheckboxEnableInkToShapeRounded_CheckedChanged">
                                                 <CheckBox.Content>
-                                                    <TextBlock Foreground="#fafafa" Text="矫正手绘圆形与椭圆"
+                                                    <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_FixEllipse}"
                                                                VerticalAlignment="Center" FontSize="14"
                                                                Margin="0,0,16,0" />
                                                 </CheckBox.Content>
@@ -1069,7 +1069,7 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
                                           Stroke="#3f3f46" StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="直线自动拉直" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_AutoStraightLine}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchAutoStraightenLine"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1077,7 +1077,7 @@
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" 
                                                          Visibility="{Binding ElementName=ToggleSwitchAutoStraightenLine, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="长度阈值" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_LengthThreshold}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider Name="AutoStraightenLineThresholdSlider" Width="150" Minimum="30" Maximum="300" 
                                                 Value="80" TickFrequency="30" IsSnapToTickEnabled="True"
@@ -1087,7 +1087,7 @@
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" 
                                                          Visibility="{Binding ElementName=ToggleSwitchAutoStraightenLine, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="灵敏度" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_Sensitivity}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider Name="LineStraightenSensitivitySlider" Width="150" Minimum="0.05" Maximum="2.0" 
                                                 Value="0.20" TickFrequency="0.05" IsSnapToTickEnabled="True"
@@ -1097,17 +1097,17 @@
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                          Visibility="{Binding ElementName=ToggleSwitchAutoStraightenLine, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="高精度直线拉直" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_HighPrecisionStraighten}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchHighPrecisionLineStraighten"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchHighPrecisionLineStraighten_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，当绘制的直线超过设定长度阈值时，将自动调整为完美直线。灵敏度范围0.05-2.0，越小要求越严格，越弯曲的线条越不容易被拉直；值越大越容易识别为直线。高精度模式下，每隔10像素取一个计数点，获取更准确的平均值用于判断。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=InkRecog_HighPrecisionHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
                                           Stroke="#3f3f46" StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="直线端点吸附" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_LineEndpointSnapping}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchLineEndpointSnapping"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1115,7 +1115,7 @@
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" 
                                                          Visibility="{Binding ElementName=ToggleSwitchLineEndpointSnapping, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <TextBlock Foreground="#fafafa" Text="吸附距离" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_SnappingDistance}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider Name="LineEndpointSnappingThresholdSlider" Width="150" Minimum="5" Maximum="50" 
                                                 Value="15" TickFrequency="5" IsSnapToTickEnabled="True"
@@ -1123,81 +1123,81 @@
                                         <TextBlock Foreground="#fafafa" Text="{Binding ElementName=LineEndpointSnappingThresholdSlider, Path=Value, StringFormat={}{0:0}}" 
                                                    VerticalAlignment="Center" FontSize="14" Margin="16,0,0,0" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后，当绘制的直线端点靠近其他直线端点时，将自动吸附连接。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=InkRecog_LineEndpointSnappingHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <GroupBox Name="GroupBoxAppearanceNewUI">
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="个性化" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Theme_GroupTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="主题" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_Label}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxTheme" FontFamily="Microsoft YaHei UI"
                                                   SelectedIndex="0"
                                                   SelectionChanged="ComboBoxTheme_SelectionChanged">
-                                            <ComboBoxItem Content="浅色主题" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="深色主题" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="跟随系统" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Light}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Dark}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_System}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用启动动画" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_EnableSplash}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableSplashScreen"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableSplashScreen_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启动动画样式" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_SplashStyle}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxSplashScreenStyle" FontFamily="Microsoft YaHei UI"
                                                   SelectedIndex="1" Width="150"
                                                   SelectionChanged="ComboBoxSplashScreenStyle_SelectionChanged">
-                                            <ComboBoxItem Content="随机" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="跟随四季" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="春季" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="夏季" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="秋季" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="冬季" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="马年限定" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Random}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Seasonal}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Spring}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Summer}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Autumn}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Winter}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Splash_Horse}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
                                           Stroke="#3f3f46" StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="浮动工具栏图标" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_FloatingBarIcon}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxFloatingBarImg" FontFamily="Microsoft YaHei UI"
                                                   SelectedIndex="0"
                                                   SelectionChanged="ComboBoxFloatingBarImg_SelectionChanged">
-                                            <ComboBoxItem Content="“ICC-CE”默认" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="“ICC-CE”无阴影" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="“ICC-CE”深色" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="“ICC-CE”深色呼吸版" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="“ICC-CE”白色透明版" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="“ICC-CE”黑色透明版" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="酷安斗鸡眼滑稽" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="酷安受虐滑稽" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="酷安呲牙笑" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="酷安头戴内裤滑稽" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="酷安绿帽Doge" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="贴吧滑稽" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccDefault}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccNoShadow}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccDark}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccDarkBreath}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccWhiteTransparent}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_IccBlackTransparent}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkCrossEye}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkAbused}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkSmile}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkUnderwear}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_CoolapkGreenHatDoge}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_FloatingIcon_TiebaEmoji}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                                       
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,6,0,0">
-                                        <TextBlock Foreground="#fafafa" Text="自定义浮动栏图标" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_CustomFloatingIconLabel}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
-                                        <Button Name="ButtonAddCustomIcon" Content="上传" FontFamily="Microsoft YaHei UI" 
+                                        <Button Name="ButtonAddCustomIcon" Content="{i18n:I18n Key=Theme_Upload}" FontFamily="Microsoft YaHei UI" 
                                                 Click="ButtonAddCustomIcon_Click" Padding="10,3"/>
-                                        <Button Name="ButtonManageCustomIcons" Content="管理" FontFamily="Microsoft YaHei UI" 
+                                        <Button Name="ButtonManageCustomIcons" Content="{i18n:I18n Key=Theme_Manage}" FontFamily="Microsoft YaHei UI" 
                                                 Click="ButtonManageCustomIcons_Click" Padding="10,3" Margin="5,0,0,0"/>
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="浮动工具栏缩放" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_FloatingBarScale}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider x:Name="ViewboxFloatingBarScaleTransformValueSlider" Minimum="0.5"
                                                 Maximum="1.25" Width="168" FontFamily="Microsoft YaHei UI"
@@ -1210,7 +1210,7 @@
                                             Margin="12,0,16,0" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="浮动工具栏透明度" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_FloatingBarOpacity}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider x:Name="ViewboxFloatingBarOpacityValueSlider" Minimum="0.3"
                                                 Maximum="1" Width="168" FontFamily="Microsoft YaHei UI"
@@ -1223,7 +1223,7 @@
                                             Margin="12,0,16,0" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="浮栏在PPT下透明度" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_FloatingBarOpacityInPPT}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <Slider x:Name="ViewboxFloatingBarOpacityInPPTValueSlider" Minimum="0.3"
                                                 Maximum="1" Width="168" FontFamily="Microsoft YaHei UI"
@@ -1235,12 +1235,12 @@
                                             VerticalAlignment="Center" FontSize="14" FontFamily="Consolas"
                                             Margin="12,0,16,0" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 重新进入PPT放映后生效"
+                                    <TextBlock Text="{i18n:I18n Key=Theme_FloatingBarOpacityInPPTHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
                                           Stroke="#3f3f46" StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="在调色盘窗口中显示 笔尖模式 按钮"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowNibButton}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableDisPlayNibModeToggle" IsOn="False"
@@ -1255,7 +1255,7 @@
                 </ui:SimpleStackPanel>-->
 
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="白板 UI 80% 缩放" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_BlackboardScale80}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableViewboxBlackBoardScaleTransform"
@@ -1263,7 +1263,7 @@
                                                          Toggled="ToggleSwitchEnableViewboxBlackBoardScaleTransform_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="在白板中显示当前时间和日期" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowTimeInWhiteboard}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableTimeDisplayInWhiteboardMode"
@@ -1271,7 +1271,7 @@
                                                          Toggled="ToggleSwitchEnableTimeDisplayInWhiteboardMode_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="在白板中显示信仰の源1（好喝的/毒的鸡汤）"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowQuoteInWhiteboard}"
                                                    VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
@@ -1280,18 +1280,18 @@
                                                          Toggled="ToggleSwitchEnableChickenSoupInWhiteboardMode_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Vertical" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="信仰の源出自Where？" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_QuoteSource}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,0,6" />
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                             <ComboBox Name="ComboBoxChickenSoupSource" FontFamily="Microsoft YaHei UI"
                                                       SelectedIndex="1" Width="240"
                                                       SelectionChanged="ComboBoxChickenSoupSource_SelectionChanged">
-                                                <ComboBoxItem Content="osu!玩家语录" FontFamily="Microsoft YaHei UI" />
-                                                <ComboBoxItem Content="励志立志的名言警句" FontFamily="Microsoft YaHei UI" />
-                                                <ComboBoxItem Content="高考祝福语" FontFamily="Microsoft YaHei UI" />
-                                                <ComboBoxItem Content="一言（Hitokoto API）" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_OsuQuotes}" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_Mottos}" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_GaokaoBless}" FontFamily="Microsoft YaHei UI" />
+                                                <ComboBoxItem Content="{i18n:I18n Key=Theme_QuoteSource_Hitokoto}" FontFamily="Microsoft YaHei UI" />
                                             </ComboBox>
-                                            <Button Name="BtnHitokotoCustomize" Content="自定义" FontFamily="Microsoft YaHei UI"
+                                            <Button Name="BtnHitokotoCustomize" Content="{i18n:I18n Key=Theme_Customize}" FontFamily="Microsoft YaHei UI"
                                                     FontSize="14" Padding="14,4" Margin="8,0,0,0" MinWidth="65" VerticalAlignment="Center"
                                                     Click="BtnHitokotoCustomize_Click"
                                                     Visibility="Collapsed" />
@@ -1300,20 +1300,20 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
                                           Stroke="#3f3f46" StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="在收纳模式下启用快速面板" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_EnableQuickPanel}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableQuickPanel"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableQuickPanel_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="取消收纳按钮图标" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_UnfoldButtonIcon}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxUnFoldBtnImg" FontFamily="Microsoft YaHei UI"
                                                   SelectedIndex="0"
                                                   SelectionChanged="ComboBoxUnFoldBtnImg_SelectionChanged">
-                                            <ComboBoxItem Content="箭头" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="笔" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_UnfoldIcon_Arrow}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_UnfoldIcon_Pen}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0"
@@ -1336,7 +1336,7 @@
                                                     </Image.Source>
                                                 </Image>
                                             </ui:SimpleStackPanel>
-                                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Text="浮动栏按钮显示"
+                                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Text="{i18n:I18n Key=Theme_FloatingBarButtonsTitle}"
                                                        FontWeight="Bold" Foreground="#fafafa"
                                                        FontSize="20" />
                                         </Grid>
@@ -1344,7 +1344,7 @@
                                     
                                     <!-- 老版UI切换按钮 -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
-                                        <TextBlock Foreground="#fafafa" Text="使用老版浮动栏按钮UI" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_UseLegacyFloatingBarUI}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,8,0" />
                                         <CheckBox Name="CheckBoxUseLegacyFloatingBarUI"
                                                   IsChecked="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1354,14 +1354,14 @@
                                     <!-- 第一行：形状按钮和撤销按钮 -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示形状按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowShapeButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowShapeButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowShapeButton_Checked" Unchecked="CheckBoxShowShapeButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示撤销按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowUndoButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowUndoButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1372,14 +1372,14 @@
                                     <!-- 第二行：重做按钮和清空按钮 -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示重做按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowRedoButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowRedoButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowRedoButton_Checked" Unchecked="CheckBoxShowRedoButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示清空按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowClearButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowClearButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1390,14 +1390,14 @@
                                     <!-- 第三行：白板按钮和隐藏按钮 -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示白板按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowWhiteboardButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowWhiteboardButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowWhiteboardButton_Checked" Unchecked="CheckBoxShowWhiteboardButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示隐藏按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowHideButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowHideButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1408,14 +1408,14 @@
                                     <!-- 第四行：套索选择按钮和清并鼠按钮 -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示套索选择按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowLassoButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowLassoSelectButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowLassoSelectButton_Checked" Unchecked="CheckBoxShowLassoSelectButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-                                            <TextBlock Foreground="#fafafa" Text="显示清并鼠按钮" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowClearAndMouseButton}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,8,0" />
                                             <CheckBox Name="CheckBoxShowClearAndMouseButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1425,7 +1425,7 @@
                                     
                                     <!-- 第五行：快捷调色盘（单独一行，因为需要更多空间） -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
-                                        <TextBlock Foreground="#fafafa" Text="显示快捷调色盘" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowQuickPalette}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,8,0" />
                                         <CheckBox Name="CheckBoxShowQuickColorPalette"
                                                   IsChecked="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1433,26 +1433,26 @@
                                     </ui:SimpleStackPanel>
                                     
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="快捷调色盘显示模式" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_QuickPaletteMode}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxQuickColorPaletteDisplayMode"
                                                   FontFamily="Microsoft YaHei UI" SelectedIndex="1"
                                                   SelectionChanged="ComboBoxQuickColorPaletteDisplayMode_SelectionChanged">
-                                            <ComboBoxItem Content="单行显示(6色)" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="双行显示(8色)" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_QuickPalette_SingleRow}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_QuickPalette_DoubleRow}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="橡皮按钮显示" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_EraserButtonDisplay}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ComboBox Name="ComboBoxEraserDisplayOption"
                                                   FontFamily="Microsoft YaHei UI" SelectedIndex="0"
                                                   SelectionChanged="ComboBoxEraserDisplayOption_SelectionChanged">
-                                            <ComboBoxItem Content="两个都显示" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="仅显示面积擦" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="仅显示线擦" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="都不显示" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_EraserDisplay_Both}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_EraserDisplay_AreaOnly}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_EraserDisplay_LineOnly}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_EraserDisplay_None}" FontFamily="Microsoft YaHei UI" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     
@@ -1489,13 +1489,13 @@
                                                 <Image Name="ICCTrayIconExampleImage" Height="24" Width="24"
                                                        Source="Resources/icc.ico" Margin="8,0,0,0" />
                                             </ui:SimpleStackPanel>
-                                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Text="任务栏托盘图标"
+                                            <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Text="{i18n:I18n Key=Tray_GroupTitle}"
                                                        FontWeight="Bold" Foreground="#fafafa"
                                                        FontSize="20" />
                                         </Grid>
                                     </Border>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用托盘图标" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Tray_EnableTrayIcon}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableTrayIcon"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1505,15 +1505,15 @@
                             </GroupBox>
                             <GroupBox>
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="PPT联动" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=PPT_GroupTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
-                                    <TextBlock Text="此部分的设置项将会在幻灯片播放时使用，优先级高于其他设置项" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=PPT_GroupHint}" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="Microsoft PowerPoint 支持"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_SupportPowerPoint}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchSupportPowerPoint" IsOn="True"
@@ -1523,7 +1523,7 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="PowerPoint 联动增强" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_Enhancement}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchPowerPointEnhancement"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1532,7 +1532,7 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="抢占焦点放映（用于跳过PPT动画）" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_SkipAnimations}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchSkipAnimationsWhenGoNext"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1541,7 +1541,7 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="使用 ROT 联动" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_UseRot}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchUseRotPptLink"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1550,7 +1550,7 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/WPS.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="WPS 支持" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_SupportWPS}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchSupportWPS"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1559,14 +1559,14 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/WPS.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="WPP进程查杀（防止WPP残留进程）" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_KillWppProcess}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableWppProcessKill"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnableWppProcessKill_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 关闭后将不会自动查杀WPP残留进程，可能导致WPP关闭卡顿或无法彻底退出。" TextWrapping="Wrap" Foreground="#a1a1aa" />
-                                    <TextBlock Text="# 如果您只使用PowerPoint请不要打开WPS联动开关，如果使用WPS建议不要使用PowerPoint！" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=PPT_KillWppHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=PPT_WpsHint1}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Border BorderBrush="#ef4444"
                                             BorderThickness="2" Padding="8" CornerRadius="6" Background="#991b1b">
                                         <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
@@ -1583,16 +1583,16 @@
                                                 </Image.Source>
                                             </Image>
                                             <TextBlock Margin="2,0,0,0" FontSize="13" VerticalAlignment="Center"
-                                                       Text="开启WPS支持后会导致WPS关闭时卡顿！">
+                                                       Text="{i18n:I18n Key=PPT_WpsLagWarning}">
                                             </TextBlock>
                                         </ui:SimpleStackPanel>
                                     </Border>
                                     <TextBlock
-                                        Text="# 可支持 WPS，但目前无法同时支持 MSOffice 和 WPS。若要启用WPS支持，请确保 WPS 是否在 “配置工具” 中开启了 “WPS Office 兼容第三方系统和软件” 选项，否则将无法识别到WPS！"
+                                        Text="{i18n:I18n Key=PPT_WpsSupportHint}"
                                         TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
-                                    <TextBlock Margin="0,0,0,8" Text="PPT翻页按钮" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,0,0,8" Text="{i18n:I18n Key=PPT_FlipButtonsTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="20" />
                                     <Border ClipToBounds="True" Width="324" Height="182">
                                         <Grid>
@@ -1634,7 +1634,7 @@
                                         </Grid>
                                     </Border>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="在 PPT 模式下显示翻页按钮"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_ShowFlipButtons}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchShowPPTButton" IsOn="True"
@@ -1647,27 +1647,23 @@
                                                              HorizontalAlignment="Left" Spacing="16">
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableLBPPTButton"
                                                       Checked="CheckboxEnableLBPPTButton_IsCheckChanged"
-                                                      Unchecked="CheckboxEnableLBPPTButton_IsCheckChanged">
-                                                左下
-                                            </CheckBox>
+                                                      Unchecked="CheckboxEnableLBPPTButton_IsCheckChanged"
+                                                      Content="{i18n:I18n Key=PPT_Position_LeftBottom}" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableRBPPTButton"
                                                       Checked="CheckboxEnableRBPPTButton_IsCheckChanged"
-                                                      Unchecked="CheckboxEnableRBPPTButton_IsCheckChanged">
-                                                右下
-                                            </CheckBox>
+                                                      Unchecked="CheckboxEnableRBPPTButton_IsCheckChanged"
+                                                      Content="{i18n:I18n Key=PPT_Position_RightBottom}" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableLSPPTButton"
                                                       Checked="CheckboxEnableLSPPTButton_IsCheckChanged"
-                                                      Unchecked="CheckboxEnableLSPPTButton_IsCheckChanged">
-                                                左侧
-                                            </CheckBox>
+                                                      Unchecked="CheckboxEnableLSPPTButton_IsCheckChanged"
+                                                      Content="{i18n:I18n Key=PPT_Position_Left}" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableRSPPTButton"
                                                       Checked="CheckboxEnableRSPPTButton_IsCheckChanged"
-                                                      Unchecked="CheckboxEnableRSPPTButton_IsCheckChanged">
-                                                右侧
-                                            </CheckBox>
+                                                      Unchecked="CheckboxEnableRSPPTButton_IsCheckChanged"
+                                                      Content="{i18n:I18n Key=PPT_Position_Right}" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="左侧偏移" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_LeftOffset}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTButtonLeftPositionValueSlider" Minimum="-500"
                                                     Maximum="500" Width="138" FontFamily="Microsoft YaHei UI"
@@ -1743,7 +1739,7 @@
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                              Name="PPTLSButtonOpacityPanel"
                                                              Visibility="{Binding ElementName=CheckboxSPPTHalfOpacity, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Foreground="#fafafa" Text="左侧透明度" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_LeftOpacity}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTLSButtonOpacityValueSlider" Minimum="0.1"
                                                     Maximum="1.0" Width="138" FontFamily="Microsoft YaHei UI"
@@ -1817,7 +1813,7 @@
                                                 Margin="8,0,0,0" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="右侧偏移" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_RightOffset}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTButtonRightPositionValueSlider" Minimum="-500"
                                                     Maximum="500" Width="138" FontFamily="Microsoft YaHei UI"
@@ -1893,7 +1889,7 @@
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                              Name="PPTRSButtonOpacityPanel"
                                                              Visibility="{Binding ElementName=CheckboxSPPTHalfOpacity, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Foreground="#fafafa" Text="右侧透明度" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_RightOpacity}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTRSButtonOpacityValueSlider" Minimum="0.1"
                                                     Maximum="1.0" Width="138" FontFamily="Microsoft YaHei UI"
@@ -1967,10 +1963,10 @@
                                                 Margin="8,0,0,0" />
                                         </ui:SimpleStackPanel>
                                         <TextBlock
-                                            Text="# 调大往上偏移，调小往下偏移，修改为0为不偏移，居中放置"
+                                            Text="{i18n:I18n Key=PPT_OffsetHint}"
                                             TextWrapping="Wrap" Foreground="#a1a1aa" />
                                                                                 <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="左下偏移" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_LeftBottomOffset}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTButtonLBPositionValueSlider" Minimum="-500"
                                                     Maximum="500" Width="138" FontFamily="Microsoft YaHei UI"
@@ -2048,7 +2044,7 @@
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                              Name="PPTLBButtonOpacityPanel"
                                                              Visibility="{Binding ElementName=CheckboxBPPTHalfOpacity, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Foreground="#fafafa" Text="左下透明度" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_LeftBottomOpacity}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTLBButtonOpacityValueSlider" Minimum="0.1"
                                                     Maximum="1.0" Width="138" FontFamily="Microsoft YaHei UI"
@@ -2122,7 +2118,7 @@
                                                 Margin="8,0,0,0" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="右下偏移" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_RightBottomOffset}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTButtonRBPositionValueSlider" Minimum="-500"
                                                     Maximum="500" Width="138" FontFamily="Microsoft YaHei UI"
@@ -2200,7 +2196,7 @@
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left"
                                                              Name="PPTRBButtonOpacityPanel"
                                                              Visibility="{Binding ElementName=CheckboxBPPTHalfOpacity, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Foreground="#fafafa" Text="右下透明度" VerticalAlignment="Center"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_RightBottomOpacity}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
                                             <Slider x:Name="PPTRBButtonOpacityValueSlider" Minimum="0.1"
                                                     Maximum="1.0" Width="138" FontFamily="Microsoft YaHei UI"
@@ -2274,55 +2270,49 @@
                                                 Margin="8,0,0,0" />
                                         </ui:SimpleStackPanel>
                                         <TextBlock
-                                            Text="# 调大往右偏移，调小往左偏移，修改为0为不偏移，居中放置"
+                                            Text="{i18n:I18n Key=PPT_OffsetHintHorizontal}"
                                             TextWrapping="Wrap" Foreground="#a1a1aa" />
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Margin="0,0,24,0" Text="两侧" FontWeight="Bold"
+                                            <TextBlock Margin="0,0,24,0" Text="{i18n:I18n Key=PPT_SideGroupTitle}" FontWeight="Bold"
                                                        VerticalAlignment="Center" Foreground="#fafafa"
                                                        FontSize="20" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxSPPTDisplayPage"
                                                       Checked="CheckboxSPPTDisplayPage_IsCheckChange"
-                                                      Unchecked="CheckboxSPPTDisplayPage_IsCheckChange">
-                                                显示页码
-                                            </CheckBox>
+                                                      Unchecked="CheckboxSPPTDisplayPage_IsCheckChange"
+                                                      Content="{i18n:I18n Key=PPT_ShowPageNumber}" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxSPPTHalfOpacity"
                                                       Checked="CheckboxSPPTHalfOpacity_IsCheckChange"
                                                       Unchecked="CheckboxSPPTHalfOpacity_IsCheckChange"
-                                                      Margin="16,0,0,0">
-                                                半透明
-                                            </CheckBox>
+                                                      Margin="16,0,0,0"
+                                                      Content="{i18n:I18n Key=PPT_HalfOpacity}" />
                                             <CheckBox IsChecked="True" MinWidth="0"
                                                       Margin="16,0,0,0" Name="CheckboxSPPTBlackBackground"
                                                       Checked="CheckboxSPPTBlackBackground_IsCheckChange"
-                                                      Unchecked="CheckboxSPPTBlackBackground_IsCheckChange">
-                                                黑色背景
-                                            </CheckBox>
+                                                      Unchecked="CheckboxSPPTBlackBackground_IsCheckChange"
+                                                      Content="{i18n:I18n Key=PPT_BlackBackground}" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                            <TextBlock Margin="0,0,24,0" Text="左下右下" FontWeight="Bold"
+                                            <TextBlock Margin="0,0,24,0" Text="{i18n:I18n Key=PPT_BottomGroupTitle}" FontWeight="Bold"
                                                        VerticalAlignment="Center" Foreground="#fafafa"
                                                        FontSize="20" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxBPPTDisplayPage"
                                                       Checked="CheckboxBPPTDisplayPage_IsCheckChange"
-                                                      Unchecked="CheckboxBPPTDisplayPage_IsCheckChange">
-                                                显示页码
-                                            </CheckBox>
+                                                      Unchecked="CheckboxBPPTDisplayPage_IsCheckChange"
+                                                      Content="{i18n:I18n Key=PPT_ShowPageNumber}" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxBPPTHalfOpacity"
                                                       Checked="CheckboxBPPTHalfOpacity_IsCheckChange"
                                                       Unchecked="CheckboxBPPTHalfOpacity_IsCheckChange"
-                                                      Margin="16,0,0,0">
-                                                半透明
-                                            </CheckBox>
+                                                      Margin="16,0,0,0"
+                                                      Content="{i18n:I18n Key=PPT_HalfOpacity}" />
                                             <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxBPPTBlackBackground"
                                                       Checked="CheckboxBPPTBlackBackground_IsCheckChange"
                                                       Unchecked="CheckboxBPPTBlackBackground_IsCheckChange"
-                                                      Margin="16,0,0,0">
-                                                黑色背景
-                                            </CheckBox>
+                                                      Margin="16,0,0,0"
+                                                      Content="{i18n:I18n Key=PPT_BlackBackground}" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal"
                                                              HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="PPT 页码按钮可点击"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_PageButtonClickable}"
                                                        VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                             <ui:ToggleSwitch OnContent="" OffContent=""
                                                              Name="ToggleSwitchEnablePPTButtonPageClickable"
@@ -2331,11 +2321,11 @@
                                                              Toggled="ToggleSwitchEnablePPTButtonPageClickable_OnToggled" />
                                         </ui:SimpleStackPanel>
                                         <TextBlock
-                                            Text="# 开启该选项后，点击页码按钮可以唤起PowerPoint自带的网格缩略图视图。WPS不支持该功能，开启也没用。"
+                                            Text="{i18n:I18n Key=PPT_PageButtonClickableHint}"
                                             TextWrapping="Wrap" Foreground="#a1a1aa" />
                                         <ui:SimpleStackPanel Orientation="Horizontal"
                                                              HorizontalAlignment="Left">
-                                            <TextBlock Foreground="#fafafa" Text="PPT 翻页按钮长按翻页"
+                                            <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_LongPressPageTurn}"
                                                        VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                             <ui:ToggleSwitch OnContent="" OffContent=""
                                                              Name="ToggleSwitchEnablePPTButtonLongPressPageTurn"
@@ -2344,14 +2334,14 @@
                                                              Toggled="ToggleSwitchEnablePPTButtonLongPressPageTurn_OnToggled" />
                                         </ui:SimpleStackPanel>
                                         <TextBlock
-                                            Text="# 开启该选项后，长按PPT翻页按钮可以连续翻页，提高翻页效率。"
+                                            Text="{i18n:I18n Key=PPT_LongPressPageTurnHint}"
                                             TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Name="SettingsShowCanvasAtNewSlideShowStackPanel"
                                                          Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="进入 PPT 放映时自动进入批注模式"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_EnterAnnotationOnShow}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchShowCanvasAtNewSlideShow" IsOn="True"
@@ -2374,12 +2364,12 @@
                                                 </Image.Source>
                                             </Image>
                                             <TextBlock Margin="2,0,0,0" FontSize="13" VerticalAlignment="Center"
-                                                       Text="该项与“自动化”中的“播放PPT时自动收纳”选项冲突！">
+                                                       Text="该项与“自动化”中的“播放PPT时自动收纳”">
                                             </TextBlock>
                                         </ui:SimpleStackPanel>
                                     </Border>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="允许幻灯片模式下的双指手势" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_TwoFingerGesture}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableTwoFingerGestureInPresentationMode"
@@ -2387,7 +2377,7 @@
                                                          Toggled="ToggleSwitchEnableTwoFingerGestureInPresentationMode_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="允许使用手指手势进行幻灯片翻页"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_FingerGestureSlide}"
                                                    VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableFingerGestureSlideShowControl"
@@ -2395,75 +2385,75 @@
                                                          Toggled="ToggleSwitchEnableFingerGestureSlideShowControl_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <TextBlock
-                                        Text="# 允许开启画板时使用手指手势进行幻灯片翻页（启用后，在幻灯片放映模式下，当画板无墨迹时，使用手指（笔尖或手掌无法识别）左右滑动即可控制幻灯片翻页。）"
+                                        Text="{i18n:I18n Key=PPT_FingerGestureSlideHint}"
                                         TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="PPT 放映模式显示手势按钮" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_ShowGestureButtonInShow}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchShowGestureButtonInSlideShow" IsOn="False"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchShowGestureButtonInSlideShow_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后在 PPT 放映模式下也显示手势按钮" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=PPT_ShowGestureButtonInShowHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="PPT时间显示胶囊" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_TimeCapsule}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnablePPTTimeCapsule" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnablePPTTimeCapsule_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启后在 PPT 放映模式下显示时间胶囊，可替代最小化计时器窗口" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=PPT_TimeCapsuleHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                                        <TextBlock Foreground="#fafafa" Text="时间胶囊位置：" VerticalAlignment="Center"
+<TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_TimeCapsulePosition}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
-                                        <ComboBox Name="ComboBoxPPTTimeCapsulePosition" 
+                                        <ComboBox Name="ComboBoxPPTTimeCapsulePosition"
                                                   Width="150"
                                                   SelectionChanged="ComboBoxPPTTimeCapsulePosition_SelectionChanged">
-                                            <ComboBoxItem Content="左上角" />
-                                            <ComboBoxItem Content="右上角" />
-                                            <ComboBoxItem Content="顶部居中" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=PPT_TimeCapsulePos_TL}" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=PPT_TimeCapsulePos_TR}" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=PPT_TimeCapsulePos_Center}" />
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="PPT 放映时显示快速面板" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_ShowQuickPanelInShow}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchShowPPTSidebarByDefault" IsOn="False"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchShowPPTSidebarByDefault_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 关闭后在 PPT 放映时不显示快速面板" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=PPT_ShowQuickPanelInShowHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="自动幻灯片截屏" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_AutoScreenshot}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchAutoSaveScreenShotInPowerPoint" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchAutoSaveScreenShotInPowerPoint_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启 自动幻灯片截屏 后将会在幻灯片有墨迹时翻页自动截屏" TextWrapping="Wrap"
+                                    <TextBlock Text="{i18n:I18n Key=PPT_AutoScreenshotHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="自动保存幻灯片墨迹" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_AutoSaveStrokes}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchAutoSaveStrokesInPowerPoint" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchAutoSaveStrokesInPowerPoint_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 开启 自动保存幻灯片墨迹 后将在结束幻灯片放映时自动将保存已有墨迹，并在下次打开时自动加载（文件名和幻灯片页数都要相同）"
+                                    <TextBlock Text="{i18n:I18n Key=PPT_AutoSaveStrokesHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="记忆并提示上次播放位置" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_RememberLastPage}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchNotifyPreviousPage" IsOn="True"
@@ -2473,7 +2463,7 @@
                                     <TextBlock Text="#开启后会记录上次播放的页数，点击“是”后会自动跳转"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="进入放映时回到首页" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_GoToFirstPageOnReenter}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchAlwaysGoToFirstPageOnReenter" IsOn="False"
@@ -2481,14 +2471,14 @@
                                                          Toggled="ToggleSwitchAlwaysGoToFirstPageOnReenter_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="提示隐藏幻灯片" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_NotifyHiddenPage}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchNotifyHiddenPage"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchNotifyHiddenPage_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="提示是否已启用自动播放" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_NotifyAutoPlay}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchNotifyAutoPlayPresentation" IsOn="True"
@@ -2500,14 +2490,14 @@
                             </GroupBox>
                             <GroupBox>
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="高级设置" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Advanced_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
-                                    <TextBlock Text="可在手指触摸画板时显示圆形橡皮或手掌触摸画板时显示的橡皮比&#x000A;手掌大很多时调整"
+                                    <TextBlock Text="{i18n:I18n Key=Advanced_TouchMultiplierHint}"
                                                Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="特殊屏幕模式" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_SpecialScreenMode}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsSpecialScreen"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -2519,7 +2509,7 @@
                                                          Toggled="ToggleSwitchIsEnableUriScheme_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock Foreground="#fafafa" Text="触摸倍数" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_TouchMultiplier}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <StackPanel Orientation="Horizontal"
                                                     Visibility="{Binding Visibility,ElementName=TouchMultiplierSlider}">
@@ -2539,8 +2529,8 @@
                                     </StackPanel>
                                     <ui:SimpleStackPanel Spacing="8" Margin="0,4,0,4"
                                                          Visibility="{Binding Visibility,ElementName=TouchMultiplierSlider}">
-                                        <TextBlock FontSize="14" Text="在下方区域内用笔尖点击以估计触摸大小倍数" />
-                                        <TextBlock Text="# 数值仅供参考" Foreground="#a1a1aa" />
+                                        <TextBlock FontSize="14" Text="{i18n:I18n Key=Advanced_TouchMultiplierCalibrateHint}" />
+                                        <TextBlock Text="{i18n:I18n Key=Advanced_TouchMultiplierValueHint}" Foreground="#a1a1aa" />
                                         <Border Margin="0,0,20,0" CornerRadius="4" Height="48" Background="Transparent"
                                                 BorderBrush="#a1a1aa" BorderThickness="2"
                                                 TouchDown="BorderCalculateMultiplier_TouchDown" />
@@ -2549,7 +2539,7 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="橡皮擦绑定触摸大小倍数" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_EraserBindTouchMultiplier}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEraserBindTouchMultiplier" IsOn="True"
@@ -2558,7 +2548,7 @@
                                     </ui:SimpleStackPanel>
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
-                                    <TextBlock Text="# BoundsWidth 参数作为接触面积区分界限，用来区分橡皮和书写模式。笔尖模式参数值应较小。"
+                                    <TextBlock Text="{i18n:I18n Key=Advanced_EraserBindTouchHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <StackPanel Orientation="Horizontal"
                                                 Visibility="{Binding Visibility,ElementName=TouchMultiplierSlider}">
@@ -2585,7 +2575,7 @@
                                             VerticalAlignment="Bottom" Margin="10,0,0,8" FontSize="14" Width="30" />
                                     </StackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="四边红外模式" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_QuadIRMode}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsQuadIR"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -2594,22 +2584,22 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="记录日志" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_Logging}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsLogEnabled"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchIsLogEnabled_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="日志以日期保存" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_LogByDate}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchIsSaveLogByDate"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchIsSaveLogByDate_Toggled" />
                                     </ui:SimpleStackPanel>
-                                    <TextBlock Text="# 日志文件超过 512 KB 时会自动删除。开启日期保存后，日志将保存在Logs文件夹中，当文件夹大小超过5MB时自动清空。" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Advanced_LogRotateHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="关闭软件时二次弹窗确认" VerticalAlignment="Center"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_ConfirmExit}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchIsSecondConfimeWhenShutdownApp" IsOn="True"
@@ -2619,7 +2609,7 @@
                                     <Line HorizontalAlignment="Center" X1="0" Y1="0" X2="400" Y2="0" Stroke="#3f3f46"
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="启用FullScreenHelper"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_FullScreenHelper}"
                                                    VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,6,0" />
                                         <Border Height="20" CornerRadius="3" Background="#7f1d1d" Margin="0,0,12,0"
@@ -2638,7 +2628,7 @@
                                                         </DrawingImage>
                                                     </Image.Source>
                                                 </Image>
-                                                <TextBlock Foreground="#fca5a5" Text="实验性选项" FontSize="12"
+                                                <TextBlock Foreground="#fca5a5" Text="{i18n:I18n Key=Advanced_Experimental}" FontSize="12"
                                                            VerticalAlignment="Center">
                                                 </TextBlock>
                                             </ui:SimpleStackPanel>
@@ -2649,10 +2639,10 @@
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold" />
                                     </ui:SimpleStackPanel>
                                     <TextBlock TextWrapping="Wrap" Foreground="#a1a1aa"
-                                               Text="# 感谢lindexi大佬提供的FullScreenHelper，可以减少任务栏弹出的问题，且支持多显示器自动全屏（虽然对icc来说没什么用就是了），如果遇到一些玄学问题，可以关闭该功能，重启icc后生效。" />
+                                               Text="{i18n:I18n Key=Advanced_FullScreenHelperHint}" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                                                             
-                                        <TextBlock Foreground="#fafafa" Text="启用AvoidFullScreenHelper"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_AvoidFullScreenHelper}"
                                                    VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,6,0" />
                                         <Border Height="20" CornerRadius="3" Background="#7f1d1d" Margin="0,0,12,0"
@@ -2671,7 +2661,7 @@
                                                         </DrawingImage>
                                                     </Image.Source>
                                                 </Image>
-                                                <TextBlock Foreground="#fca5a5" Text="实验性选项" FontSize="12"
+                                                <TextBlock Foreground="#fca5a5" Text="{i18n:I18n Key=Advanced_Experimental}" FontSize="12"
                                                            VerticalAlignment="Center">
                                                 </TextBlock>
                                             </ui:SimpleStackPanel>
@@ -2682,10 +2672,10 @@
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold" />
                                     </ui:SimpleStackPanel>
                                     <TextBlock TextWrapping="Wrap" Foreground="#a1a1aa"
-                                               Text="# 避免画布全屏，应该可解决任务栏非置顶和Win11任务栏无法点击的问题，会导致左侧或顶部有AppBar（Dock栏软件）时导致浮动工具栏偏移，重启icc后生效。" />
+                                               Text="{i18n:I18n Key=Advanced_AvoidFullScreenHelperHint}" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     
-                                        <TextBlock Foreground="#fafafa" Text="启用EdgeGestureUtil"
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_EdgeGestureUtil}"
                                                    VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,6,0" />
                                         <Border Height="20" CornerRadius="3" Background="#7f1d1d" Margin="0,0,12,0"
@@ -2704,7 +2694,7 @@
                                                         </DrawingImage>
                                                     </Image.Source>
                                                 </Image>
-                                                <TextBlock Foreground="#fca5a5" Text="实验性选项" FontSize="12"
+                                                <TextBlock Foreground="#fca5a5" Text="{i18n:I18n Key=Advanced_Experimental}" FontSize="12"
                                                            VerticalAlignment="Center">
                                                 </TextBlock>
                                             </ui:SimpleStackPanel>

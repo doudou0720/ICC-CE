@@ -221,4 +221,255 @@
   <data name="Msg_RestartLimitTitle" xml:space="preserve"><value>重启次数过多</value></data>
   <data name="Msg_RestartLimit" xml:space="preserve"><value>检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。</value></data>
   <data name="Splash_Starting" xml:space="preserve"><value>正在启动 Ink Canvas...</value></data>
+  <data name="Crash_Title" xml:space="preserve"><value>崩溃后操作</value></data>
+  <data name="Crash_Desc" xml:space="preserve"><value>请选择软件发生未处理异常时的自动操作：</value></data>
+  <data name="Crash_SilentRestart" xml:space="preserve"><value>静默重启软件</value></data>
+  <data name="Crash_NoAction" xml:space="preserve"><value>无操作</value></data>
+  <data name="Crash_Hint" xml:space="preserve"><value># 静默重启：崩溃后自动重启软件，无提示。无操作：崩溃后仅记录日志，不自动重启。</value></data>
+  <data name="Gesture_Title" xml:space="preserve"><value>手势</value></data>
+  <data name="Gesture_AutoToggleTwoFinger" xml:space="preserve"><value>进退白板模式自动开关双指移动功能</value></data>
+  <data name="Gesture_AutoToggleHint" xml:space="preserve"><value># 开启后退出画板模式时自动关闭双指移动手势，进入白板模式时自动开启双指移动手势</value></data>
+  <data name="Gesture_AllowRotateScale" xml:space="preserve"><value>允许双指旋转与缩放选中的墨迹</value></data>
+  <data name="Gesture_AllowRotateScaleHint" xml:space="preserve"><value># 允许选中墨迹后对墨迹进行双指或多指缩放操作（此设置不受“允许双指旋转”设置的影响）</value></data>
+  <data name="Gesture_EnablePalmEraser" xml:space="preserve"><value>启用手掌擦</value></data>
+  <data name="Gesture_PalmSensitivity" xml:space="preserve"><value>手掌擦敏感度</value></data>
+  <data name="Gesture_PalmSensitivityLow" xml:space="preserve"><value>低敏感度</value></data>
+  <data name="Gesture_PalmSensitivityMedium" xml:space="preserve"><value>中敏感度</value></data>
+  <data name="Gesture_PalmSensitivityHigh" xml:space="preserve"><value>高敏感度</value></data>
+  <data name="Gesture_PalmHint" xml:space="preserve"><value># 低敏感度：需要更大的触摸面积和更多触摸点，减少误判；高敏感度：更容易触发手掌擦，但可能误判手指。</value></data>
+  <data name="InkRecog_Title" xml:space="preserve"><value>墨迹纠正</value></data>
+  <data name="InkRecog_EnableInkRecognition" xml:space="preserve"><value>启用墨迹识别</value></data>
+  <data name="InkRecog_BlockRectFakePressure" xml:space="preserve"><value>阻止矫正后的矩形带有模拟压感值</value></data>
+  <data name="InkRecog_BlockTriFakePressure" xml:space="preserve"><value>阻止矫正后的三角形带有模拟压感值</value></data>
+  <data name="InkRecog_FixTriangle" xml:space="preserve"><value>矫正手绘三角形</value></data>
+  <data name="InkRecog_FixRectangle" xml:space="preserve"><value>矫正手绘矩形</value></data>
+  <data name="InkRecog_FixEllipse" xml:space="preserve"><value>矫正手绘圆形与椭圆</value></data>
+  <data name="InkRecog_AutoStraightLine" xml:space="preserve"><value>直线自动拉直</value></data>
+  <data name="InkRecog_LengthThreshold" xml:space="preserve"><value>长度阈值</value></data>
+  <data name="InkRecog_Sensitivity" xml:space="preserve"><value>灵敏度</value></data>
+  <data name="InkRecog_HighPrecisionStraighten" xml:space="preserve"><value>高精度直线拉直</value></data>
+  <data name="InkRecog_HighPrecisionHint" xml:space="preserve"><value># 开启后，当绘制的直线超过设定长度阈值时，将自动调整为完美直线。灵敏度范围0.05-2.0，越小要求越严格，越弯曲的线条越不容易被拉直；值越大越容易识别为直线。高精度模式下，每隔10像素取一个计数点，获取更准确的平均值用于判断。</value></data>
+  <data name="InkRecog_LineEndpointSnapping" xml:space="preserve"><value>直线端点吸附</value></data>
+  <data name="InkRecog_SnappingDistance" xml:space="preserve"><value>吸附距离</value></data>
+  <data name="Theme_GroupTitle" xml:space="preserve"><value>个性化</value></data>
+  <data name="Theme_Label" xml:space="preserve"><value>主题</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>浅色主题</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>深色主题</value></data>
+  <data name="Theme_System" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Theme_EnableSplash" xml:space="preserve"><value>启用启动动画</value></data>
+  <data name="Theme_SplashStyle" xml:space="preserve"><value>启动动画样式</value></data>
+  <data name="Theme_Splash_Random" xml:space="preserve"><value>随机</value></data>
+  <data name="Theme_Splash_Seasonal" xml:space="preserve"><value>跟随四季</value></data>
+  <data name="Theme_Splash_Spring" xml:space="preserve"><value>春季</value></data>
+  <data name="Theme_Splash_Summer" xml:space="preserve"><value>夏季</value></data>
+  <data name="Theme_Splash_Autumn" xml:space="preserve"><value>秋季</value></data>
+  <data name="Theme_Splash_Winter" xml:space="preserve"><value>冬季</value></data>
+  <data name="Theme_Splash_Horse" xml:space="preserve"><value>马年限定</value></data>
+  <data name="Theme_FloatingBarIcon" xml:space="preserve"><value>浮动工具栏图标</value></data>
+  <data name="Theme_FloatingIcon_IccDefault" xml:space="preserve"><value>“ICC-CE”默认</value></data>
+  <data name="Theme_FloatingIcon_IccNoShadow" xml:space="preserve"><value>“ICC-CE”无阴影</value></data>
+  <data name="Theme_FloatingIcon_IccDark" xml:space="preserve"><value>“ICC-CE”深色</value></data>
+  <data name="Theme_FloatingIcon_IccDarkBreath" xml:space="preserve"><value>“ICC-CE”深色呼吸版</value></data>
+  <data name="Theme_FloatingIcon_IccWhiteTransparent" xml:space="preserve"><value>“ICC-CE”白色透明版</value></data>
+  <data name="Theme_FloatingIcon_IccBlackTransparent" xml:space="preserve"><value>“ICC-CE”黑色透明版</value></data>
+  <data name="Theme_FloatingIcon_CoolapkCrossEye" xml:space="preserve"><value>酷安斗鸡眼滑稽</value></data>
+  <data name="Theme_FloatingIcon_CoolapkAbused" xml:space="preserve"><value>酷安受虐滑稽</value></data>
+  <data name="Theme_FloatingIcon_CoolapkSmile" xml:space="preserve"><value>酷安呲牙笑</value></data>
+  <data name="Theme_FloatingIcon_CoolapkUnderwear" xml:space="preserve"><value>酷安头戴内裤滑稽</value></data>
+  <data name="Theme_FloatingIcon_CoolapkGreenHatDoge" xml:space="preserve"><value>酷安绿帽Doge</value></data>
+  <data name="Theme_FloatingIcon_TiebaEmoji" xml:space="preserve"><value>贴吧滑稽</value></data>
+  <data name="Theme_CustomFloatingIconLabel" xml:space="preserve"><value>自定义浮动栏图标</value></data>
+  <data name="Theme_Upload" xml:space="preserve"><value>上传</value></data>
+  <data name="Theme_Manage" xml:space="preserve"><value>管理</value></data>
+  <data name="Theme_FloatingBarScale" xml:space="preserve"><value>浮动工具栏缩放</value></data>
+  <data name="Theme_FloatingBarOpacity" xml:space="preserve"><value>浮动工具栏透明度</value></data>
+  <data name="Theme_FloatingBarOpacityInPPT" xml:space="preserve"><value>浮栏在PPT下透明度</value></data>
+  <data name="Theme_FloatingBarOpacityInPPTHint" xml:space="preserve"><value># 重新进入PPT放映后生效</value></data>
+  <data name="Theme_ShowNibButton" xml:space="preserve"><value>在调色盘窗口中显示 笔尖模式 按钮</value></data>
+  <data name="Theme_BlackboardScale80" xml:space="preserve"><value>白板 UI 80% 缩放</value></data>
+  <data name="Theme_ShowTimeInWhiteboard" xml:space="preserve"><value>在白板中显示当前时间和日期</value></data>
+  <data name="Theme_ShowQuoteInWhiteboard" xml:space="preserve"><value>在白板中显示信仰の源1（好喝的/毒的鸡汤）</value></data>
+  <data name="Theme_QuoteSource" xml:space="preserve"><value>信仰の源出自Where？</value></data>
+  <data name="Theme_QuoteSource_OsuQuotes" xml:space="preserve"><value>osu!玩家语录</value></data>
+  <data name="Theme_QuoteSource_Mottos" xml:space="preserve"><value>励志立志的名言警句</value></data>
+  <data name="Theme_QuoteSource_GaokaoBless" xml:space="preserve"><value>高考祝福语</value></data>
+  <data name="Theme_QuoteSource_Hitokoto" xml:space="preserve"><value>一言（Hitokoto API）</value></data>
+  <data name="Theme_Customize" xml:space="preserve"><value>自定义</value></data>
+  <data name="Theme_EnableQuickPanel" xml:space="preserve"><value>在收纳模式下启用快速面板</value></data>
+  <data name="Theme_UnfoldButtonIcon" xml:space="preserve"><value>取消收纳按钮图标</value></data>
+  <data name="Theme_UnfoldIcon_Arrow" xml:space="preserve"><value>箭头</value></data>
+  <data name="Theme_UnfoldIcon_Pen" xml:space="preserve"><value>笔</value></data>
+  <data name="Theme_FloatingBarButtonsTitle" xml:space="preserve"><value>浮动栏按钮显示</value></data>
+  <data name="Theme_UseLegacyFloatingBarUI" xml:space="preserve"><value>使用老版浮动栏按钮UI</value></data>
+  <data name="Theme_ShowShapeButton" xml:space="preserve"><value>显示形状按钮</value></data>
+  <data name="Theme_ShowUndoButton" xml:space="preserve"><value>显示撤销按钮</value></data>
+  <data name="Theme_ShowRedoButton" xml:space="preserve"><value>显示重做按钮</value></data>
+  <data name="Theme_ShowClearButton" xml:space="preserve"><value>显示清空按钮</value></data>
+  <data name="Theme_ShowWhiteboardButton" xml:space="preserve"><value>显示白板按钮</value></data>
+  <data name="Theme_ShowHideButton" xml:space="preserve"><value>显示隐藏按钮</value></data>
+  <data name="Theme_ShowLassoButton" xml:space="preserve"><value>显示套索选择按钮</value></data>
+  <data name="Theme_ShowClearAndMouseButton" xml:space="preserve"><value>显示清并鼠按钮</value></data>
+  <data name="Theme_ShowQuickPalette" xml:space="preserve"><value>显示快捷调色盘</value></data>
+  <data name="Theme_QuickPaletteMode" xml:space="preserve"><value>快捷调色盘显示模式</value></data>
+  <data name="Theme_QuickPalette_SingleRow" xml:space="preserve"><value>单行显示(6色)</value></data>
+  <data name="Theme_QuickPalette_DoubleRow" xml:space="preserve"><value>双行显示(8色)</value></data>
+  <data name="Theme_EraserButtonDisplay" xml:space="preserve"><value>橡皮按钮显示</value></data>
+  <data name="Theme_EraserDisplay_Both" xml:space="preserve"><value>两个都显示</value></data>
+  <data name="Theme_EraserDisplay_AreaOnly" xml:space="preserve"><value>仅显示面积擦</value></data>
+  <data name="Theme_EraserDisplay_LineOnly" xml:space="preserve"><value>仅显示线擦</value></data>
+  <data name="Theme_EraserDisplay_None" xml:space="preserve"><value>都不显示</value></data>
+  <data name="Tray_GroupTitle" xml:space="preserve"><value>任务栏托盘图标</value></data>
+  <data name="Tray_EnableTrayIcon" xml:space="preserve"><value>启用托盘图标</value></data>
+  <data name="PPT_GroupTitle" xml:space="preserve"><value>PPT联动</value></data>
+  <data name="PPT_GroupHint" xml:space="preserve"><value>此部分的设置项将会在幻灯片播放时使用，优先级高于其他设置项</value></data>
+  <data name="PPT_SupportPowerPoint" xml:space="preserve"><value>Microsoft PowerPoint 支持</value></data>
+  <data name="PPT_Enhancement" xml:space="preserve"><value>PowerPoint 联动增强</value></data>
+  <data name="PPT_SkipAnimations" xml:space="preserve"><value>抢占焦点放映（用于跳过PPT动画）</value></data>
+  <data name="PPT_UseRot" xml:space="preserve"><value>使用 ROT 联动</value></data>
+  <data name="PPT_SupportWPS" xml:space="preserve"><value>WPS 支持</value></data>
+  <data name="PPT_KillWppProcess" xml:space="preserve"><value>WPP进程查杀（防止WPP残留进程）</value></data>
+  <data name="PPT_KillWppHint" xml:space="preserve"><value># 关闭后将不会自动查杀WPP残留进程，可能导致WPP关闭卡顿或无法彻底退出。</value></data>
+  <data name="PPT_WpsHint1" xml:space="preserve"><value># 如果您只使用PowerPoint请不要打开WPS联动开关，如果使用WPS建议不要使用PowerPoint！</value></data>
+  <data name="PPT_WpsLagWarning" xml:space="preserve"><value>开启WPS支持后会导致WPS关闭时卡顿！</value></data>
+  <data name="PPT_WpsSupportHint" xml:space="preserve"><value># 可支持 WPS，但目前无法同时支持 MSOffice 和 WPS。若要启用WPS支持，请确保 WPS 是否在 “配置工具” 中开启了 “WPS Office 兼容第三方系统和软件” 选项，否则将无法识别到WPS！</value></data>
+  <data name="Canvas_HideStrokeWhenSelecting" xml:space="preserve"><value>退出画板模式后隐藏墨迹</value></data>
+  <data name="Canvas_HideStrokeWhenSelectingHint" xml:space="preserve"><value># 开启 退出画板模式后隐藏墨迹 选项后，进入 PPT 模式时未处于批注模式时不会显示墨迹。</value></data>
+  <data name="Canvas_ClearInkAlsoClearHistory" xml:space="preserve"><value>清空墨迹时删除墨迹历史记录</value></data>
+  <data name="Canvas_ClearCanvasAlsoClearImages" xml:space="preserve"><value>清空画布时同时清空图片</value></data>
+  <data name="Canvas_CompressPicturesUploaded" xml:space="preserve"><value>插入图片时自动压缩（大于1920x1080）</value></data>
+  <data name="PPT_FlipButtonsTitle" xml:space="preserve"><value>PPT翻页按钮</value></data>
+  <data name="PPT_ShowFlipButtons" xml:space="preserve"><value>在 PPT 模式下显示翻页按钮</value></data>
+  <data name="PPT_Position_LeftBottom" xml:space="preserve"><value>左下</value></data>
+  <data name="PPT_Position_RightBottom" xml:space="preserve"><value>右下</value></data>
+  <data name="PPT_Position_Left" xml:space="preserve"><value>左侧</value></data>
+  <data name="PPT_Position_Right" xml:space="preserve"><value>右侧</value></data>
+  <data name="PPT_LeftOffset" xml:space="preserve"><value>左侧偏移</value></data>
+  <data name="PPT_LeftOpacity" xml:space="preserve"><value>左侧透明度</value></data>
+  <data name="PPT_RightOffset" xml:space="preserve"><value>右侧偏移</value></data>
+  <data name="PPT_RightOpacity" xml:space="preserve"><value>右侧透明度</value></data>
+  <data name="PPT_OffsetHint" xml:space="preserve"><value># 调大往上偏移，调小往下偏移，修改为0为不偏移，居中放置</value></data>
+  <data name="PPT_LeftBottomOffset" xml:space="preserve"><value>左下偏移</value></data>
+  <data name="PPT_LeftBottomOpacity" xml:space="preserve"><value>左下透明度</value></data>
+  <data name="PPT_RightBottomOffset" xml:space="preserve"><value>右下偏移</value></data>
+  <data name="PPT_RightBottomOpacity" xml:space="preserve"><value>右下透明度</value></data>
+  <data name="PPT_OffsetHintHorizontal" xml:space="preserve"><value># 调大往右偏移，调小往左偏移，修改为0为不偏移，居中放置</value></data>
+  <data name="PPT_SideGroupTitle" xml:space="preserve"><value>两侧</value></data>
+  <data name="PPT_ShowPageNumber" xml:space="preserve"><value>显示页码</value></data>
+  <data name="PPT_HalfOpacity" xml:space="preserve"><value>半透明</value></data>
+  <data name="PPT_BlackBackground" xml:space="preserve"><value>黑色背景</value></data>
+  <data name="PPT_BottomGroupTitle" xml:space="preserve"><value>左下右下</value></data>
+  <data name="PPT_PageButtonClickable" xml:space="preserve"><value>PPT 页码按钮可点击</value></data>
+  <data name="PPT_PageButtonClickableHint" xml:space="preserve"><value># 开启该选项后，点击页码按钮可以唤起PowerPoint自带的网格缩略图视图。WPS不支持该功能，开启也没用。</value></data>
+  <data name="PPT_LongPressPageTurn" xml:space="preserve"><value>PPT 翻页按钮长按翻页</value></data>
+  <data name="PPT_LongPressPageTurnHint" xml:space="preserve"><value># 开启该选项后，长按PPT翻页按钮可以连续翻页，提高翻页效率。</value></data>
+  <data name="Startup_UIAccessTopMostHint" xml:space="preserve"><value># 开启UIA置顶后，软件需要管理员启动才能置顶，关闭此功能需要完全关闭软件后再手动启动，无法使用重启来关闭此功能</value></data>
+  <data name="Header_SilentUpdate" xml:space="preserve"><value>静默更新</value></data>
+  <data name="Startup_SilentUpdateHint" xml:space="preserve"><value># 静默更新将在软件不使用时自动安装，无需手动操作</value></data>
+  <data name="Startup_UpdateChannel" xml:space="preserve"><value>更新通道</value></data>
+  <data name="Update_Release" xml:space="preserve"><value>稳定版 (Release)</value></data>
+  <data name="Update_Preview" xml:space="preserve"><value>预览版 (Preview)</value></data>
+  <data name="Update_Beta" xml:space="preserve"><value>测试版 (Beta)</value></data>
+  <data name="Startup_UpdateChannelHint" xml:space="preserve"><value># 稳定版提供可靠更新，预览版提供新功能体验同时拥有相较Beta版更强的稳定性，测试版提供新功能抢先体验</value></data>
+  <data name="Btn_ManualUpdate" xml:space="preserve"><value>手动更新</value></data>
+  <data name="Startup_ManualUpdateHint" xml:space="preserve"><value># 点击后立即检查并下载最新版本</value></data>
+  <data name="Btn_FixVersion" xml:space="preserve"><value>版本修复</value></data>
+  <data name="Startup_FixVersionHint" xml:space="preserve"><value># 版本修复会根据当前选择的通道下载最新版本并执行安装，可用于修复损坏的安装</value></data>
+  <data name="Btn_HistoryRollback" xml:space="preserve"><value>历史版本回滚</value></data>
+  <data name="Startup_HistoryRollbackHint" xml:space="preserve"><value># 历史版本回滚，点击后会弹出相应页面供用户手动回滚到之前的版本</value></data>
+  <data name="Startup_SilentUpdateFullHint" xml:space="preserve"><value># 关闭静默更新后，已完成安装包的下载后将会弹窗询问是否进行更新，开启静默更新后将会在安装包下载完成后每隔十分钟进行如下检测：①处于静默更新时间段内 ②未处于书写模式 ③未处于画板内。若以上检测通过即会关闭软件进行自动更新。</value></data>
+  <data name="Startup_SilentUpdateTimePeriod" xml:space="preserve"><value>静默更新时间段</value></data>
+  <data name="Startup_StartTime" xml:space="preserve"><value>起始时间</value></data>
+  <data name="Startup_EndTime" xml:space="preserve"><value>终止时间</value></data>
+  <data name="Startup_TimePeriodHint" xml:space="preserve"><value># 若终止时间小于起始时间，即将终止时间视为第二天的时间。# 若起始时间与终止时间相同，即视为全天候时间。</value></data>
+  <data name="Startup_RunAtStartup" xml:space="preserve"><value>开机时运行</value></data>
+  <data name="Startup_FoldAtStartup" xml:space="preserve"><value>开机运行后收纳到侧边栏</value></data>
+  <data name="Canvas_GroupTitle" xml:space="preserve"><value>画板和墨迹</value></data>
+  <data name="Canvas_ShowCursor" xml:space="preserve"><value>显示画笔光标</value></data>
+  <data name="Canvas_EnablePressureTouch" xml:space="preserve"><value>启用压感触屏模式</value></data>
+  <data name="Canvas_EnablePressureTouchHint" xml:space="preserve"><value># 开启后，触屏设备也将支持压感效果，适用于部分支持压感但无法被系统识别的触屏设备。</value></data>
+  <data name="Canvas_DisablePressure" xml:space="preserve"><value>屏蔽压感</value></data>
+  <data name="Canvas_DisablePressureHint" xml:space="preserve"><value># 开启后，将忽略所有设备的压感信息，使所有笔画具有统一的粗细。与压感触屏模式互斥。</value></data>
+  <data name="Canvas_EraserSize" xml:space="preserve"><value>橡皮大小</value></data>
+  <data name="Canvas_EraserSize_VerySmall" xml:space="preserve"><value>很小</value></data>
+  <data name="Canvas_EraserSize_Small" xml:space="preserve"><value>较小</value></data>
+  <data name="Canvas_EraserSize_Medium" xml:space="preserve"><value>中等</value></data>
+  <data name="Canvas_EraserSize_Large" xml:space="preserve"><value>较大</value></data>
+  <data name="Canvas_EraserSize_VeryLarge" xml:space="preserve"><value>很大</value></data>
+  <data name="Canvas_EraserSizeHint" xml:space="preserve"><value># 非实时切换，下一次使用面积擦时生效。</value></data>
+  <data name="Canvas_KeepHyperbolaAsymptote" xml:space="preserve"><value>保留双曲线渐近线</value></data>
+  <data name="Canvas_Yes" xml:space="preserve"><value>是</value></data>
+  <data name="Canvas_No" xml:space="preserve"><value>否</value></data>
+  <data name="Canvas_AskEachTime" xml:space="preserve"><value>每次询问</value></data>
+  <data name="Canvas_HyperbolaAsymptoteHint" xml:space="preserve"><value># 请注意，若不保留双曲线渐近线可能会有遇到撤回相关的 BUG 影响用。</value></data>
+  <data name="Canvas_ShowCircleCenter" xml:space="preserve"><value>绘制圆时显示圆心位置</value></data>
+  <data name="Canvas_WPFBezierSmoothing" xml:space="preserve"><value>使用WPF默认贝塞尔曲线平滑</value></data>
+  <data name="Canvas_AdvancedBezierSmoothing" xml:space="preserve"><value>使用高级曲线平滑（推荐）</value></data>
+  <data name="Canvas_EnableInkFade" xml:space="preserve"><value>启用墨迹渐隐功能</value></data>
+  <data name="Canvas_EnableInkFadeHint" xml:space="preserve"><value># 开启后墨迹不会绘制到画布上，而是保持湿墨迹状态，根据设置的渐隐时间自动消失</value></data>
+  <data name="Canvas_InkFadeTime" xml:space="preserve"><value>墨迹渐隐时间</value></data>
+  <data name="Canvas_HideInkFadeInPenMenu" xml:space="preserve"><value>在笔工具菜单中隐藏墨迹渐隐控制</value></data>
+  <data name="Canvas_HideInkFadeInPenMenuHint" xml:space="preserve"><value># 开启后，主工具栏上点击笔工具后弹出的上下文菜单中将不显示墨迹渐隐控制开关</value></data>
+  <data name="Canvas_BrushAutoRestore" xml:space="preserve"><value>启用画笔自动恢复</value></data>
+  <data name="Canvas_BrushAutoRestoreHint" xml:space="preserve"><value># 启用后，临时修改画笔设置后将在指定时间点自动恢复到你在此处配置的颜色 / 透明度 / 粗细</value></data>
+  <data name="Canvas_AutoRestoreTimePoints" xml:space="preserve"><value>自动恢复时间点 (HH:mm，可多个，用 ; 分隔)</value></data>
+  <data name="Canvas_RestoreColor" xml:space="preserve"><value>恢复目标颜色</value></data>
+  <data name="Canvas_Color_Default" xml:space="preserve"><value>默认</value></data>
+  <data name="Canvas_Color_Black" xml:space="preserve"><value>黑色</value></data>
+  <data name="Canvas_Color_White" xml:space="preserve"><value>白色</value></data>
+  <data name="Canvas_Color_Red" xml:space="preserve"><value>红色</value></data>
+  <data name="Canvas_Color_Yellow" xml:space="preserve"><value>黄色</value></data>
+  <data name="Canvas_Color_Blue" xml:space="preserve"><value>蓝色</value></data>
+  <data name="Canvas_Color_Green" xml:space="preserve"><value>绿色</value></data>
+  <data name="Canvas_Color_Orange" xml:space="preserve"><value>橙色</value></data>
+  <data name="Canvas_Color_Purple" xml:space="preserve"><value>紫色</value></data>
+  <data name="Canvas_RestoreWidth" xml:space="preserve"><value>恢复笔粗细</value></data>
+  <data name="Canvas_RestoreOpacity" xml:space="preserve"><value>恢复透明度</value></data>
+  <data name="Canvas_SwitchBackAfterEraser" xml:space="preserve"><value>使用橡皮擦后自动切换回批注模式</value></data>
+  <data name="Canvas_SwitchBackAfterEraserHint" xml:space="preserve"><value># 开启后，使用橡皮擦进行擦除操作后静置一段时间将自动切换回批注模式</value></data>
+  <data name="Canvas_SwitchBackDelay" xml:space="preserve"><value>自动切换延迟时间</value></data>
+  <data name="Canvas_SwitchBackDelayHint" xml:space="preserve"><value># 若在计时时间内再次进行擦除操作，计时器将重新开始计时</value></data>
+  <data name="InkRecog_LineEndpointSnappingHint" xml:space="preserve"><value># 开启后，当绘制的直线端点靠近其他直线端点时，将自动吸附连接。</value></data>
+  <data name="PPT_EnterAnnotationOnShow" xml:space="preserve"><value>进入 PPT 放映时自动进入批注模式</value></data>
+  <data name="PPT_ConflictWithAutoFold" xml:space="preserve"><value>该项与"自动化"中的"播放PPT时自动收纳"选项冲突！</value></data>
+  <data name="PPT_TwoFingerGesture" xml:space="preserve"><value>允许幻灯片模式下的双指手势</value></data>
+  <data name="PPT_FingerGestureSlide" xml:space="preserve"><value>允许使用手指手势进行幻灯片翻页</value></data>
+  <data name="PPT_FingerGestureSlideHint" xml:space="preserve"><value># 允许开启画板时使用手指手势进行幻灯片翻页（启用后，在幻灯片放映模式下，当画板无墨迹时，使用手指（笔尖或手掌无法识别）左右滑动即可控制幻灯片翻页。）</value></data>
+  <data name="PPT_ShowGestureButtonInShow" xml:space="preserve"><value>PPT 放映模式显示手势按钮</value></data>
+  <data name="PPT_ShowGestureButtonInShowHint" xml:space="preserve"><value># 开启后在 PPT 放映模式下也显示手势按钮</value></data>
+  <data name="PPT_TimeCapsule" xml:space="preserve"><value>PPT时间显示胶囊</value></data>
+  <data name="PPT_TimeCapsuleHint" xml:space="preserve"><value># 开启后在 PPT 放映模式下显示时间胶囊，可替代最小化计时器窗口</value></data>
+  <data name="PPT_TimeCapsulePosition" xml:space="preserve"><value>时间胶囊位置：</value></data>
+  <data name="PPT_TimeCapsulePos_TL" xml:space="preserve"><value>左上角</value></data>
+  <data name="PPT_TimeCapsulePos_TR" xml:space="preserve"><value>右上角</value></data>
+  <data name="PPT_TimeCapsulePos_Center" xml:space="preserve"><value>顶部居中</value></data>
+  <data name="PPT_ShowQuickPanelInShow" xml:space="preserve"><value>PPT 放映时显示快速面板</value></data>
+  <data name="PPT_ShowQuickPanelInShowHint" xml:space="preserve"><value># 关闭后在 PPT 放映时不显示快速面板</value></data>
+  <data name="PPT_AutoScreenshot" xml:space="preserve"><value>自动幻灯片截屏</value></data>
+  <data name="PPT_AutoScreenshotHint" xml:space="preserve"><value># 开启 自动幻灯片截屏 后将会在幻灯片有墨迹时翻页自动截屏</value></data>
+  <data name="PPT_AutoSaveStrokes" xml:space="preserve"><value>自动保存幻灯片墨迹</value></data>
+  <data name="PPT_AutoSaveStrokesHint" xml:space="preserve"><value># 开启 自动保存幻灯片墨迹 后将在结束幻灯片放映时自动将保存已有墨迹，并在下次打开时自动加载（文件名和幻灯片页数都要相同）</value></data>
+  <data name="PPT_RememberLastPage" xml:space="preserve"><value>记忆并提示上次播放位置</value></data>
+  <data name="PPT_RememberLastPageHint" xml:space="preserve"><value>#开启后会记录上次播放的页数，点击"是"后会自动跳转</value></data>
+  <data name="PPT_GoToFirstPageOnReenter" xml:space="preserve"><value>进入放映时回到首页</value></data>
+  <data name="PPT_NotifyHiddenPage" xml:space="preserve"><value>提示隐藏幻灯片</value></data>
+  <data name="PPT_NotifyAutoPlay" xml:space="preserve"><value>提示是否已启用自动播放</value></data>
+  <data name="Advanced_Title" xml:space="preserve"><value>高级设置</value></data>
+  <data name="Advanced_TouchMultiplierHint" xml:space="preserve"><value>可在手指触摸画板时显示圆形橡皮或手掌触摸画板时显示的橡皮比&#x000A;手掌大很多时调整</value></data>
+  <data name="Advanced_SpecialScreenMode" xml:space="preserve"><value>特殊屏幕模式</value></data>
+  <data name="Advanced_TouchMultiplier" xml:space="preserve"><value>触摸倍数</value></data>
+  <data name="Advanced_TouchMultiplierCalibrateHint" xml:space="preserve"><value>在下方区域内用笔尖点击以估计触摸大小倍数</value></data>
+  <data name="Advanced_TouchMultiplierValueHint" xml:space="preserve"><value># 数值仅供参考</value></data>
+  <data name="Advanced_EraserBindTouchMultiplier" xml:space="preserve"><value>橡皮擦绑定触摸大小倍数</value></data>
+  <data name="Advanced_EraserBindTouchHint" xml:space="preserve"><value># BoundsWidth 参数作为接触面积区分界限</value></data>
+  <data name="Advanced_QuadIRMode" xml:space="preserve"><value>四边红外模式</value></data>
+  <data name="Advanced_Logging" xml:space="preserve"><value>记录日志</value></data>
+  <data name="Advanced_LogByDate" xml:space="preserve"><value>日志以日期保存</value></data>
+  <data name="Advanced_LogRotateHint" xml:space="preserve"><value># 日志文件超过 512 KB 时会自动删除。开启日期保存后，日志将保存在Logs文件夹中，当文件夹大小超过5MB时自动清空。</value></data>
+  <data name="Advanced_ConfirmExit" xml:space="preserve"><value>关闭软件时二次弹窗确认</value></data>
+  <data name="Advanced_FullScreenHelper" xml:space="preserve"><value>启用FullScreenHelper</value></data>
+  <data name="Advanced_Experimental" xml:space="preserve"><value>实验性选项</value></data>
+  <data name="Advanced_FullScreenHelperHint" xml:space="preserve"><value># 感谢lindexi大佬提供的FullScreenHelper，可以减少任务栏弹出的问题，且支持多显示器自动全屏（虽然对icc来说没什么用就是了），如果遇到一些玄学问题，可以关闭该功能，重启icc后生效。</value></data>
+  <data name="Advanced_AvoidFullScreenHelper" xml:space="preserve"><value>启用AvoidFullScreenHelper</value></data>
+  <data name="Advanced_AvoidFullScreenHelperHint" xml:space="preserve"><value># 避免画布全屏，应该可解决任务栏非置顶和Win11任务栏无法点击的问题，会导致左侧或顶部有AppBar（Dock栏软件）时导致浮动工具栏偏移，重启icc后生效。</value></data>
+  <data name="Advanced_EdgeGestureUtil" xml:space="preserve"><value>启用EdgeGestureUtil</value></data>
 </root>
