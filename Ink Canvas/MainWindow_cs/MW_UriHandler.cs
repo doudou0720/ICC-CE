@@ -1,13 +1,18 @@
 using Ink_Canvas.Helpers;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 
 namespace Ink_Canvas
 {
     /// <summary>
     /// 处理 icc: URL 协议命令
-    /// 支持：收纳/展开/切换、彻底隐藏、点名/计时器/白板、工具状态切换与查询。
+    /// 支持：收纳/展开/切换、彻底隐藏、点名/计时器/白板、工具状态切换与查询、配置方案列表与切换。
+    /// 配置方案：icc://config-profile/list 输出列表到 %TEMP%\InkCanvasConfigProfileList.json；
+    ///          icc://config-profile/switch?name=方案名 切换方案，结果写入 %TEMP%\InkCanvasConfigProfileSwitchResult.txt。
     /// </summary>
     public partial class MainWindow
     {
@@ -131,6 +136,19 @@ namespace Ink_Canvas
                     return;
                 }
 
+                if (pathLower == "config-profile/list")
+                {
+                    WriteConfigProfileListToTemp();
+                    return;
+                }
+
+                if (pathLower.StartsWith("config-profile/switch"))
+                {
+                    string profileName = GetUriQueryValue(uri, "name");
+                    HandleUriConfigProfileSwitch(profileName);
+                    return;
+                }
+
                 LogHelper.WriteLogToFile($"未知的 URI 命令: {command}", LogHelper.LogType.Warning);
             }
             catch (Exception ex)
@@ -156,6 +174,76 @@ namespace Ink_Canvas
 
             string raw = uri.Trim().Substring(4).TrimStart('/').ToLowerInvariant();
             return raw;
+        }
+
+        private static string GetUriQueryValue(string uri, string key)
+        {
+            if (string.IsNullOrEmpty(uri) || string.IsNullOrEmpty(key)) return "";
+            try
+            {
+                if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri u) || string.IsNullOrEmpty(u.Query))
+                    return "";
+                string q = u.Query.TrimStart('?');
+                foreach (var pair in q.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var kv = pair.Split(new[] { '=' }, 2, StringSplitOptions.None);
+                    if (kv.Length == 2 && kv[0].Trim().Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return Uri.UnescapeDataString(kv[1].Trim());
+                }
+            }
+            catch (Exception ex) { LogHelper.WriteLogToFile($"解析 URI 参数失败: {ex.Message}", LogHelper.LogType.Warning); }
+            return "";
+        }
+
+        private const string ConfigProfileListTempFile = "InkCanvasConfigProfileList.json";
+        private const string ConfigProfileSwitchResultTempFile = "InkCanvasConfigProfileSwitchResult.txt";
+
+        private void WriteConfigProfileListToTemp()
+        {
+            try
+            {
+                var names = ConfigProfileManager.ListProfileNames();
+                var current = _lastAppliedProfileName ?? "";
+                var payload = new { list = names, current = current };
+                string path = Path.Combine(Path.GetTempPath(), ConfigProfileListTempFile);
+                File.WriteAllText(path, JsonConvert.SerializeObject(payload, Formatting.Indented), System.Text.Encoding.UTF8);
+                LogHelper.WriteLogToFile($"URI 已输出配置方案列表到: {path}", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"URI 输出配置方案列表失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void HandleUriConfigProfileSwitch(string profileName)
+        {
+            string resultPath = Path.Combine(Path.GetTempPath(), ConfigProfileSwitchResultTempFile);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(profileName))
+                {
+                    File.WriteAllText(resultPath, "error: 缺少参数 name", System.Text.Encoding.UTF8);
+                    LogHelper.WriteLogToFile("URI 切换配置方案: 未指定方案名", LogHelper.LogType.Warning);
+                    return;
+                }
+                if (!ConfigProfileManager.ApplyProfile(profileName.Trim()))
+                {
+                    File.WriteAllText(resultPath, "error: 方案不存在或应用失败", System.Text.Encoding.UTF8);
+                    ShowNotification($"切换失败：方案「{profileName}」不存在");
+                    return;
+                }
+                _lastAppliedProfileName = profileName.Trim();
+                ReloadSettingsFromFile();
+                RefreshConfigProfileList();
+                File.WriteAllText(resultPath, "ok", System.Text.Encoding.UTF8);
+                ShowNotification($"已通过 URI 切换至方案「{profileName}」");
+                LogHelper.WriteLogToFile($"URI 已切换配置方案: {profileName}", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                try { File.WriteAllText(resultPath, "error: " + ex.Message, System.Text.Encoding.UTF8); } catch { }
+                LogHelper.WriteLogToFile($"URI 切换配置方案失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
     }
 }
