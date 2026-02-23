@@ -4973,7 +4973,7 @@
                                                                 <Border Margin="0,4" Width="160" BorderBrush="{DynamicResource BoardFloatBarBorderBrush}"
                                                                         BorderThickness="1">
                                                                     <Grid>
-                                                                        <Viewbox Width="160">
+                                                                        <Viewbox Width="160" Height="120" Stretch="Uniform">
                                                                             <InkCanvas EditingMode="None"
                                                                                 Background="{Binding ElementName=GridBackgroundCover, Path=Background}"
                                                                                 Strokes="{Binding Strokes}"
@@ -7141,7 +7141,7 @@
                                                                 <Border Margin="0,4" Width="160" BorderBrush="{DynamicResource BoardFloatBarBorderBrush}"
                                                                         BorderThickness="1">
                                                                     <Grid>
-                                                                        <Viewbox Width="160">
+                                                                        <Viewbox Width="160" Height="120" Stretch="Uniform">
                                                                             <InkCanvas EditingMode="None"
                                                                                 Background="{Binding ElementName=GridBackgroundCover, Path=Background}"
                                                                                 Strokes="{Binding Strokes}"
@@ -10540,7 +10540,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="60" />
+                    <RowDefinition Height="110" />
                 </Grid.RowDefinitions>
 
                 <!-- 顶部标题栏 -->
@@ -10627,71 +10627,91 @@
 
                 <!-- 底部按钮区域 -->
                 <Grid Grid.Row="4" Margin="0,0,0,6">
-                    <WrapPanel
-                        Margin="10,5"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        ItemHeight="40">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,4,10,2">
                         <ToggleButton
                             x:Name="BtnToggleVideoPresenterLiveOnCanvas"
+                            Width="70"
                             Height="40"
-                            Margin="3,0"
+                            Margin="2,0"
                             Background="{DynamicResource FloatBarBackground}"
                             BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             BorderThickness="1"
                             Checked="BtnToggleVideoPresenterLiveOnCanvas_Checked"
                             Unchecked="BtnToggleVideoPresenterLiveOnCanvas_Unchecked">
-                            <TextBlock
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource FloatBarForeground}"
-                                Text="上屏" />
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="上屏" />
                         </ToggleButton>
                         <ToggleButton
                             x:Name="ToggleBtnPhotoCorrection"
+                            Width="70"
                             Height="40"
-                            Margin="3,0"
+                            Margin="2,0"
                             Background="{DynamicResource FloatBarBackground}"
                             BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             BorderThickness="1"
                             Checked="ToggleBtnPhotoCorrection_Checked"
                             Unchecked="ToggleBtnPhotoCorrection_Unchecked">
-                            <TextBlock
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource FloatBarForeground}"
-                                Text="矫正" />
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="矫正" />
                         </ToggleButton>
                         <Button
                             x:Name="BtnCapturePhoto"
+                            Width="70"
                             Height="40"
-                            Margin="3,0"
+                            Margin="2,0"
                             Background="{DynamicResource FloatBarBackground}"
                             BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             BorderThickness="1"
                             Click="BtnCapturePhoto_Click">
-                            <TextBlock
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource FloatBarForeground}"
-                                Text="拍照" />
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="拍照" />
                         </Button>
                         <Button
                             x:Name="BtnRotateImage"
+                            Width="70"
                             Height="40"
-                            Margin="3,0"
+                            Margin="2,0"
                             Background="{DynamicResource FloatBarBackground}"
                             BorderBrush="{DynamicResource FloatBarBorderBrush}"
                             BorderThickness="1"
                             Click="BtnRotateImage_Click">
-                            <TextBlock
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                Foreground="{DynamicResource FloatBarForeground}"
-                                Text="旋转" />
+                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Text="旋转" />
                         </Button>
-                    </WrapPanel>
+                    </StackPanel>
+                    <!-- 分辨率 Tab -->
+                    <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="10,6,10,4">
+                        <Border Background="{DynamicResource FloatBarBackground}" 
+                                CornerRadius="8" BorderThickness="1" BorderBrush="#616161"
+                                Width="280" Height="40" ToolTip="展台/截图分辨率">
+                            <Grid>
+                                <Border x:Name="BoothResolutionTabIndicator" 
+                                        Background="#66CCFF" 
+                                        CornerRadius="6" 
+                                        Width="68" Height="38" 
+                                        HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                        Margin="1,0,0,0"/>
+                                <Grid>
+                                    <Button x:Name="BtnBoothResolution720" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="1280,720" Cursor="Hand" HorizontalAlignment="Left">
+                                        <TextBlock Text="720p" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Opacity="0.7"/>
+                                    </Button>
+                                    <Button x:Name="BtnBoothResolution1080" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="1920,1080" Cursor="Hand" HorizontalAlignment="Left" Margin="70,0,0,0">
+                                        <TextBlock x:Name="TbBoothResolution1080" Text="1080p" FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                    </Button>
+                                    <Button x:Name="BtnBoothResolution2K" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="2560,1440" Cursor="Hand" HorizontalAlignment="Left" Margin="140,0,0,0">
+                                        <TextBlock Text="2K" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Opacity="0.7"/>
+                                    </Button>
+                                    <Button x:Name="BtnBoothResolution4K" Width="70" Height="40" Background="Transparent" BorderThickness="0" 
+                                            Click="BoothResolutionTab_Click" Tag="3840,2160" Cursor="Hand" HorizontalAlignment="Left" Margin="210,0,0,0">
+                                        <TextBlock Text="4K" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource FloatBarForeground}" Opacity="0.7"/>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Grid>
             </Grid>
         </Border>

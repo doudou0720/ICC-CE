@@ -71,6 +71,11 @@ namespace Ink_Canvas
         // 全屏处理状态标志
         public bool isFullScreenApplied = false;
 
+        private int _boothResolutionWidth = 1920;
+        private int _boothResolutionHeight = 1080;
+        public int BoothResolutionWidth => _boothResolutionWidth;
+        public int BoothResolutionHeight => _boothResolutionHeight;
+
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
 
@@ -3373,6 +3378,61 @@ namespace Ink_Canvas
 
                 LogHelper.WriteLogToFile($"打开快捷键设置窗口时出错: {ex.Message}", LogHelper.LogType.Error);
                 MessageBox.Show($"打开快捷键设置窗口时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        #endregion
+
+        #region 展台/白板分辨率切换
+        private const int BoothResolutionTabCount = 4;
+        private static readonly (int w, int h)[] BoothResolutionValues = { (1280, 720), (1920, 1080), (2560, 1440), (3840, 2160) };
+
+        private void BoothResolutionTab_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string tag)
+            {
+                var parts = tag.Split(',');
+                if (parts.Length == 2 && int.TryParse(parts[0].Trim(), out int w) && int.TryParse(parts[1].Trim(), out int h) && w > 0 && h > 0)
+                {
+                    _boothResolutionWidth = w;
+                    _boothResolutionHeight = h;
+                    UpdateBoothResolutionTabState();
+                }
+            }
+        }
+
+        private void UpdateBoothResolutionTabState()
+        {
+            int index = 0;
+            for (int i = 0; i < BoothResolutionValues.Length; i++)
+            {
+                if (BoothResolutionValues[i].w == _boothResolutionWidth && BoothResolutionValues[i].h == _boothResolutionHeight)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (BoothResolutionTabIndicator != null)
+            {
+                BoothResolutionTabIndicator.Margin = new Thickness(1 + index * 70, 0, 0, 0);
+            }
+
+            var texts = new[] { BtnBoothResolution720?.Content as TextBlock, BtnBoothResolution1080?.Content as TextBlock, BtnBoothResolution2K?.Content as TextBlock, BtnBoothResolution4K?.Content as TextBlock };
+            for (int i = 0; i < texts.Length && i < 4; i++)
+            {
+                if (texts[i] == null) continue;
+                if (i == index)
+                {
+                    texts[i].FontWeight = FontWeights.Bold;
+                    texts[i].Foreground = new SolidColorBrush(Colors.White);
+                    texts[i].Opacity = 1.0;
+                }
+                else
+                {
+                    texts[i].FontWeight = FontWeights.SemiBold;
+                    texts[i].SetResourceReference(TextBlock.ForegroundProperty, "FloatBarForeground");
+                    texts[i].Opacity = 0.7;
+                }
             }
         }
         #endregion
