@@ -724,23 +724,13 @@ namespace Ink_Canvas
                         LogHelper.WriteLogToFile("PPT连接已断开", LogHelper.LogType.Event);
                         _singlePPTInkManager?.ClearAllStrokes();
                         _exitPPTModeAfterDisconnectTimer?.Stop();
-                        _exitPPTModeAfterDisconnectTimer = new DispatcherTimer
-                        {
-                            Interval = TimeSpan.FromMilliseconds(ExitPPTModeAfterDisconnectDelayMs)
-                        };
-                        _exitPPTModeAfterDisconnectTimer.Tick += (s, e) =>
-                        {
-                            _exitPPTModeAfterDisconnectTimer?.Stop();
-                            _exitPPTModeAfterDisconnectTimer = null;
-                            if (_pptManager?.IsConnected != true)
-                            {
-                                _pptUIManager?.UpdateSlideShowStatus(false);
-                                _pptUIManager?.UpdateSidebarExitButtons(false);
-                                ResetPPTStateVariables();
-                                _ = HandleManualSlideShowEnd();
-                            }
-                        };
-                        _exitPPTModeAfterDisconnectTimer.Start();
+                        _exitPPTModeAfterDisconnectTimer = null;
+                        _pptUIManager?.UpdateSlideShowStatus(false);
+                        _pptUIManager?.UpdateSidebarExitButtons(false);
+                        ResetPPTStateVariables();
+                        _ = HandleManualSlideShowEnd();
+                        if (Settings.PowerPointSettings.UseRotPptLink)
+                            _pptManager?.ReloadConnection();
                     }
                 });
             }
@@ -921,14 +911,36 @@ namespace Ink_Canvas
                 string presentationName = null;
                 Presentation activePresentation = null;
 
-                if (wn?.View != null && wn.Presentation != null)
+                if (wn != null)
                 {
-                    activePresentation = wn.Presentation;
-                    currentSlide = wn.View.CurrentShowPosition;
-                    totalSlides = activePresentation.Slides.Count;
-                    presentationName = activePresentation.Name;
+                    try
+                    {
+                        if (wn.View != null && wn.Presentation != null)
+                        {
+                            activePresentation = wn.Presentation;
+                            currentSlide = wn.View.CurrentShowPosition;
+                            totalSlides = activePresentation.Slides.Count;
+                            presentationName = activePresentation.Name;
+                        }
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        activePresentation = null;
+                        currentSlide = 0;
+                        totalSlides = 0;
+                        presentationName = null;
+                    }
+                    catch (Exception ex)
+                    {
+                        activePresentation = null;
+                        currentSlide = 0;
+                        totalSlides = 0;
+                        presentationName = null;
+                    }
                 }
-                else
+
+                if (activePresentation == null)
                 {
                     activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
                     currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
@@ -1134,10 +1146,41 @@ namespace Ink_Canvas
         {
             try
             {
-                if (wn?.View == null || wn.Presentation == null) return;
+                int currentSlide = 0;
+                int totalSlides = 0;
 
-                int currentSlide = wn.View.CurrentShowPosition;
-                int totalSlides = wn.Presentation.Slides.Count;
+                if (wn != null)
+                {
+                    try
+                    {
+                        if (wn.View != null)
+                        {
+                            currentSlide = wn.View.CurrentShowPosition;
+                        }
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        LogHelper.WriteLogToFile(
+                            $"通过 SlideShowWindow.View 获取当前页失败: {comEx.Message} (HR: 0x{hr:X8})，将回退到 PPT 管理器获取",
+                            LogHelper.LogType.Warning);
+                        currentSlide = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"通过 SlideShowWindow.View 获取当前页时发生异常，将回退到 PPT 管理器获取: {ex}",
+                            LogHelper.LogType.Warning);
+                        currentSlide = 0;
+                    }
+                }
+
+                if (currentSlide <= 0)
+                {
+                    currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                }
+
+                totalSlides = _pptManager?.SlidesCount ?? 0;
 
                 if (currentSlide == _previousSlideID) return;
 

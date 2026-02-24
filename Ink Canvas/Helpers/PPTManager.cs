@@ -459,6 +459,12 @@ namespace Ink_Canvas.Helpers
                     try
                     {
                         Thread.Sleep(2000);
+
+                        if (_disposed)
+                        {
+                            _isModuleUnloading = false;
+                            return;
+                        }
                         
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
@@ -467,7 +473,18 @@ namespace Ink_Canvas.Helpers
                         Thread.Sleep(1000);
                         
                         _isModuleUnloading = false;
-                        _unifiedPptTimer?.Start();
+
+                        try
+                        {
+                            if (!_disposed)
+                            {
+                                _unifiedPptTimer?.Start();
+                            }
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            LogHelper.WriteLogToFile("PPT联动模块重载时计时器已释放，跳过重启", LogHelper.LogType.Trace);
+                        }
                         
                         LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
                     }
