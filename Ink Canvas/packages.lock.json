@@ -137,6 +137,12 @@
           "System.Text.Json": "8.0.5"
         }
       },
+      "WebDav.Client": {
+        "type": "Direct",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "GLhd1tQAJeuVO1sj3Wm/dkg0GEVWxk+XGl6rdegMSMHenZuOaWQw4PifWDsjNEC1dtV1/C8JJfK0qfdkM+VIgA=="
+      },
       "AForge": {
         "type": "Transitive",
         "resolved": "2.2.5",

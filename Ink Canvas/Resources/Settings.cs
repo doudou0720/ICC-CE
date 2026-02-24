@@ -32,6 +32,9 @@ namespace Ink_Canvas
         [JsonProperty("dlass")]
         public DlassSettings Dlass { get; set; } = new DlassSettings();
 
+        [JsonProperty("upload")]
+        public UploadSettings Upload { get; set; } = new UploadSettings();
+
         [JsonProperty("security")]
         public Security Security { get; set; } = new Security();
     }
@@ -102,13 +105,10 @@ namespace Ink_Canvas
         public bool LineEndpointSnapping { get; set; } = true; // 是否启用直线端点吸附
         [JsonProperty("lineEndpointSnappingThreshold")]
         public int LineEndpointSnappingThreshold { get; set; } = 15; // 直线端点吸附的距离阈值（像素）
-
         [JsonProperty("usingWhiteboard")]
         public bool UsingWhiteboard { get; set; }
-
         [JsonProperty("customBackgroundColor")]
         public string CustomBackgroundColor { get; set; } = "#162924";
-
         [JsonProperty("hyperbolaAsymptoteOption")]
         public OptionalOperation HyperbolaAsymptoteOption { get; set; } = OptionalOperation.Ask;
         [JsonProperty("isCompressPicturesUploaded")]
@@ -121,8 +121,6 @@ namespace Ink_Canvas
         public bool ClearCanvasAlsoClearImages { get; set; } = true;
         [JsonProperty("showCircleCenter")]
         public bool ShowCircleCenter { get; set; }
-
-        // 墨迹渐隐功能设置
         [JsonProperty("enableInkFade")]
         public bool EnableInkFade { get; set; } = false;
         [JsonProperty("inkFadeTime")]
@@ -448,6 +446,7 @@ namespace Ink_Canvas
 
         [JsonProperty("isAutoFoldInEasiNote3")]
         public bool IsAutoFoldInEasiNote3 { get; set; }
+        
         [JsonProperty("isAutoFoldInEasiNote3C")]
         public bool IsAutoFoldInEasiNote3C { get; set; }
 
@@ -859,6 +858,37 @@ namespace Ink_Canvas
             get { return _autoUploadDelayMinutes; }
             set { _autoUploadDelayMinutes = Math.Max(0, value); }
         }
+
+        [JsonProperty("webDavUrl")]
+        public string WebDavUrl { get; set; } = string.Empty;
+
+        [JsonProperty("webDavUsername")]
+        public string WebDavUsername { get; set; } = string.Empty;
+
+        [JsonProperty("webDavPassword")]
+        public string WebDavPassword { get; set; } = string.Empty;
+
+        [JsonProperty("webDavRootDirectory")]
+        public string WebDavRootDirectory { get; set; } = string.Empty;
+    }
+
+    public class UploadSettings
+    {
+        [JsonProperty("uploadDelayMinutes")]
+        public int UploadDelayMinutes
+        {
+            get { return _uploadDelayMinutes; }
+            set { _uploadDelayMinutes = Math.Max(0, Math.Min(60, value)); }
+        }
+        private int _uploadDelayMinutes = 0;
+
+        [JsonProperty("enabledProviders")]
+        public List<string> EnabledProviders
+        {
+            get { return _enabledProviders; }
+            set { _enabledProviders = value ?? new List<string>(); }
+        }
+        private List<string> _enabledProviders = new List<string>();
     }
 
 
