@@ -336,7 +336,18 @@ namespace Ink_Canvas.Windows
                             MainWindow.Settings.Upload.EnabledProviders = new List<string>();
                         }
                         
-                        if (ToggleSwitchAutoUploadNotes.IsOn)
+                        bool isAutoUploadEnabled = ToggleSwitchAutoUploadNotes.IsOn;
+                        bool isDlassInEnabledProviders = MainWindow.Settings.Upload.EnabledProviders.Contains("Dlass");
+                        bool isAlreadyConsistent = (isAutoUploadEnabled == isDlassInEnabledProviders);
+
+                        // 如果状态已经一致，就不需要更新EnabledProviders列表
+                        if (isAlreadyConsistent)
+                        {
+                            MainWindow.SaveSettingsToFile();
+                            return;
+                        }
+                        
+                        if (isAutoUploadEnabled)
                         {
                             if (!MainWindow.Settings.Upload.EnabledProviders.Contains("Dlass"))
                             {
@@ -487,9 +498,17 @@ namespace Ink_Canvas.Windows
                         // 同步更新Dlass的IsAutoUploadNotes设置（如果是Dlass提供者）
                         if (provider.Name == "Dlass" && MainWindow.Settings.Dlass != null)
                         {
-                            MainWindow.Settings.Dlass.IsAutoUploadNotes = toggleSwitch.IsOn;
-                            // 同步更新Dlass标签页中的开关状态
-                            ToggleSwitchAutoUploadNotes.IsOn = toggleSwitch.IsOn;
+                            bool isToggleOn = toggleSwitch.IsOn;
+                            bool isDlassAutoUploadEnabled = MainWindow.Settings.Dlass.IsAutoUploadNotes;
+                            bool isAlreadyConsistent = (isToggleOn == isDlassAutoUploadEnabled);
+
+                            // 如果状态已经一致，就不需要更新
+                            if (!isAlreadyConsistent)
+                            {
+                                MainWindow.Settings.Dlass.IsAutoUploadNotes = toggleSwitch.IsOn;
+                                // 同步更新Dlass标签页中的开关状态
+                                ToggleSwitchAutoUploadNotes.IsOn = toggleSwitch.IsOn;
+                            }
                         }
 
                         MainWindow.SaveSettingsToFile();
@@ -725,6 +744,8 @@ namespace Ink_Canvas.Windows
                 LogHelper.WriteLogToFile($"TabControl选择改变事件处理出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
+
+
 
         /// <summary>
         /// 加载WebDav设置
