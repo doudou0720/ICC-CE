@@ -607,7 +607,7 @@
                                                     Margin="0,2,0,1"/>
                                             
                                             <!-- 自动上传设置 -->
-                                            <TextBlock Text="自动上传设置" 
+                                            <TextBlock Text="自动上传笔记" 
                                                        FontSize="16" 
                                                        FontWeight="SemiBold" 
                                                        Foreground="{StaticResource TextForeground}"
@@ -615,7 +615,6 @@
                                             
                                             <ui:SimpleStackPanel Orientation="Vertical" Spacing="4">
                                                 <ui:ToggleSwitch x:Name="ToggleSwitchAutoUploadNotes"
-                                                                 Header="自动上传笔记"
                                                                  FontSize="14"
                                                                  Foreground="{StaticResource TextForeground}"
                                                                  OnContent="启用"
@@ -631,8 +630,8 @@
                                                 
 
                                                 
-                                                <TextBlock Text="上传延迟时间可在“通用设置”中配置" 
-                                                           FontSize="12" 
+                                                <TextBlock Text="* 上传延迟时间可在“通用设置”中配置" 
+                                                           FontSize="10" 
                                                            Foreground="{StaticResource TextSecondary}"
                                                            TextWrapping="Wrap"
                                                            Margin="0,2,0,0"/>
