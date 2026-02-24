@@ -931,7 +931,7 @@ namespace Ink_Canvas
                         totalSlides = 0;
                         presentationName = null;
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         activePresentation = null;
                         currentSlide = 0;
