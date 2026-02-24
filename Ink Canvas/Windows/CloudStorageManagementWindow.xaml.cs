@@ -20,7 +20,7 @@ namespace Ink_Canvas.Windows
     /// 2. Dlass - 管理Dlass服务端连接和设置，包括用户Token、班级选择和自动上传设置
     /// 3. WebDav - 预留的WebDav连接设置页面
     /// </remarks>
-    public partial class DlassSettingsWindow : Window
+    public partial class CloudStorageManagementWindow : Window
     {
         private const string APP_ID = "app_WkjocWqsrVY7T6zQV2CfiA";
         private const string APP_SECRET = "o7dx5b5ASGUMcM72PCpmRQYAhSijqaOVHoGyBK0IxbA";
@@ -33,7 +33,7 @@ namespace Ink_Canvas.Windows
         private UserInfo _currentUser;
         private bool _isFirstTimeDlassTab = true;
 
-        public DlassSettingsWindow(MainWindow mainWindow = null)
+        public CloudStorageManagementWindow(MainWindow mainWindow = null)
         {
             InitializeComponent();
 

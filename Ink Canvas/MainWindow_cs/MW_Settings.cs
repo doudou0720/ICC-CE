@@ -3384,16 +3384,16 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void BtnDlassSettingsManage_Click(object sender, RoutedEventArgs e)
+        private void BtnCloudStorageManagementSettingsManage_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
             HideSubPanels();
             try
             {
                 // 打开设置管理窗口
-                var dlassSettingsWindow = new Windows.DlassSettingsWindow();
-                dlassSettingsWindow.Owner = this;
-                dlassSettingsWindow.ShowDialog();
+                var CloudStorageManagementSettingsWindow = new Windows.CloudStorageManagementWindow();
+                CloudStorageManagementSettingsWindow.Owner = this;
+                CloudStorageManagementSettingsWindow.ShowDialog();
             }
             catch (Exception ex)
             {

@@ -3657,7 +3657,7 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
                                         <Button Name="BtnDlassSettingsManage" Content="云存储管理" 
                                                 HorizontalAlignment="Left" 
-                                                Click="BtnDlassSettingsManage_Click" 
+                                                Click="BtnCloudStorageManagementSettingsManage_Click" 
                                                 Padding="15,5" 
                                                 Margin="0,0,0,0"/>
                                     </ui:SimpleStackPanel>
