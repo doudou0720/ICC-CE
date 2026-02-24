@@ -167,10 +167,12 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 发送POST请求
         /// </summary>
-        public async Task<T> PostAsync<T>(string endpoint, object data = null, bool requireAuth = true)
+        public async Task<T> PostAsync<T>(string endpoint, object data = null, bool requireAuth = true, CancellationToken cancellationToken = default)
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 string token = null;
                 if (requireAuth)
                 {
@@ -197,7 +199,7 @@ namespace Ink_Canvas.Helpers
                     request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                 }
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.SendAsync(request, cancellationToken);
                 var content = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
@@ -354,7 +356,8 @@ namespace Ink_Canvas.Helpers
         /// <param name="title">笔记标题（可选）</param>
         /// <param name="description">笔记描述（可选）</param>
         /// <param name="tags">笔记标签（可选）</param>
-        public async Task<T> UploadNoteAsync<T>(string endpoint, string filePath, string boardId, string secretKey, string title = null, string description = null, string tags = null)
+        /// <param name="cancellationToken">取消令牌</param>
+        public async Task<T> UploadNoteAsync<T>(string endpoint, string filePath, string boardId, string secretKey, string title = null, string description = null, string tags = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -394,7 +397,7 @@ namespace Ink_Canvas.Helpers
 
                 request.Content = content;
 
-                var response = await _httpClient.SendAsync(request);
+                var response = await _httpClient.SendAsync(request, cancellationToken);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)

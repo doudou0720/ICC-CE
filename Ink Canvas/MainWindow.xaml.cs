@@ -1160,7 +1160,15 @@ namespace Ink_Canvas
             CheckUpdateChannelAndTelemetryConsistency();
 
             // 初始化上传队列（恢复上次的上传队列）
-            UploadQueueHelper.InitializeAllQueues();
+            try
+            {
+                UploadQueueHelper.InitializeAllQueues();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[MainWindow] 初始化上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
+                // 继续执行其他初始化操作，不中断整个加载过程
+            }
 
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
 

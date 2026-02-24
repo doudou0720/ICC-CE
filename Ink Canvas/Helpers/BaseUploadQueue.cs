@@ -36,7 +36,7 @@ namespace Ink_Canvas.Helpers
     /// <summary>
     /// 通用上传队列基类
     /// </summary>
-    public abstract class BaseUploadQueue
+    public abstract class BaseUploadQueue : IDisposable
     {
         protected const int BATCH_SIZE = 10; // 批量上传大小
         protected const int MAX_RETRY_COUNT = 3; // 最大重试次数
@@ -62,6 +62,11 @@ namespace Ink_Canvas.Helpers
         protected bool _isQueueInitialized = false;
 
         /// <summary>
+        /// 是否已释放
+        /// </summary>
+        private bool _disposed = false;
+
+        /// <summary>
         /// 队列文件名
         /// </summary>
         protected abstract string QueueFileName { get; }
@@ -84,33 +89,35 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         public void InitializeQueue()
         {
-            if (_isQueueInitialized)
+            lock (_queueProcessingLock)
             {
-                return;
-            }
-
-            try
-            {
-                var queueFilePath = GetQueueFilePath();
-                if (!File.Exists(queueFilePath))
+                if (_isQueueInitialized)
                 {
-                    _isQueueInitialized = true;
                     return;
                 }
 
-                var jsonContent = File.ReadAllText(queueFilePath);
-                if (string.IsNullOrWhiteSpace(jsonContent))
+                try
                 {
-                    _isQueueInitialized = true;
-                    return;
-                }
+                    var queueFilePath = GetQueueFilePath();
+                    if (!File.Exists(queueFilePath))
+                    {
+                        _isQueueInitialized = true;
+                        return;
+                    }
 
-                var queueData = JsonConvert.DeserializeObject<List<UploadQueueItemData>>(jsonContent);
-                if (queueData == null || queueData.Count == 0)
-                {
-                    _isQueueInitialized = true;
-                    return;
-                }
+                    var jsonContent = File.ReadAllText(queueFilePath);
+                    if (string.IsNullOrWhiteSpace(jsonContent))
+                    {
+                        _isQueueInitialized = true;
+                        return;
+                    }
+
+                    var queueData = JsonConvert.DeserializeObject<List<UploadQueueItemData>>(jsonContent);
+                    if (queueData == null || queueData.Count == 0)
+                    {
+                        _isQueueInitialized = true;
+                        return;
+                    }
 
                 int restoredCount = 0;
                 int skippedCount = 0;
@@ -167,6 +174,7 @@ namespace Ink_Canvas.Helpers
             {
                 LogHelper.WriteLogToFile($"[{GetType().Name}] 恢复上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
                 _isQueueInitialized = true; // 即使出错也标记为已初始化，避免重复尝试
+            }
             }
         }
 
@@ -271,7 +279,7 @@ namespace Ink_Canvas.Helpers
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    await SaveQueueToFileAsync().ConfigureAwait(false);
+                    await SaveQueueToFileAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -283,8 +291,20 @@ namespace Ink_Canvas.Helpers
                 }
             }, cancellationToken);
 
-            // 触发队列处理
-            _ = ProcessUploadQueueAsync(cancellationToken);
+            // 触发队列处理并观察异常
+            _ = ProcessUploadQueueAsync(cancellationToken).ContinueWith(task =>
+            {
+                if (task.IsFaulted && task.Exception != null)
+                {
+                    foreach (var ex in task.Exception.InnerExceptions)
+                    {
+                        if (!(ex is OperationCanceledException))
+                        {
+                            LogHelper.WriteLogToFile($"[{GetType().Name}] 队列处理时出错: {ex}", LogHelper.LogType.Error);
+                        }
+                    }
+                }
+            });
         }
 
         /// <summary>
@@ -306,7 +326,7 @@ namespace Ink_Canvas.Helpers
 
                 // 从队列中取出最多BATCH_SIZE个文件
                 int count = 0;
-                while (_uploadQueue.TryDequeue(out UploadQueueItem item) && count < BATCH_SIZE)
+                while (count < BATCH_SIZE && _uploadQueue.TryDequeue(out UploadQueueItem item))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     
@@ -327,10 +347,10 @@ namespace Ink_Canvas.Helpers
                 if (!IsUploadEnabled())
                 {
                     LogHelper.WriteLogToFile($"[{GetType().Name}] 上传失败：上传未启用", LogHelper.LogType.Error);
-                    // 将文件重新加入队列
+                    // 将文件重新加入队列（直接加入内部队列，不触发处理）
                     foreach (var item in filesToUpload)
                     {
-                        EnqueueFile(item.FilePath, item.RetryCount, cancellationToken);
+                        _uploadQueue.Enqueue(item);
                     }
                     return;
                 }
@@ -412,43 +432,59 @@ namespace Ink_Canvas.Helpers
                 // 上传完成后保存队列状态
                 await SaveQueueToFileAsync(cancellationToken);
 
-                // 检查队列中是否还有文件，如果有就继续处理
-                if (_uploadQueue.Count > 0)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await ProcessUploadQueueAsync(cancellationToken).ConfigureAwait(false);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"[{GetType().Name}] 继续处理上传队列时出错: {ex}", LogHelper.LogType.Error);
-                        }
-                    }, cancellationToken);
-                }
             }
             finally
             {
                 _queueProcessingLock.Release();
             }
+
+            // 检查队列中是否还有文件，如果有就继续处理
+            if (_uploadQueue.Count > 0)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await ProcessUploadQueueAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"[{GetType().Name}] 继续处理上传队列时出错: {ex}", LogHelper.LogType.Error);
+                    }
+                }, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// 允许的文件扩展名
+        /// </summary>
+        protected virtual IReadOnlySet<string> AllowedExtensions => new HashSet<string> { ".png", ".icstk", ".xml", ".zip" };
+
+        /// <summary>
+        /// 获取文件最大大小
+        /// </summary>
+        /// <param name="extension">文件扩展名</param>
+        /// <returns>最大文件大小（字节）</returns>
+        protected virtual long GetMaxFileSize(string extension)
+        {
+            return extension == ".zip" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
         }
 
         /// <summary>
         /// 验证文件是否有效
         /// </summary>
-        protected bool IsValidFile(string filePath)
+        protected virtual bool IsValidFile(string filePath)
         {
             try
             {
                 var fileExtension = Path.GetExtension(filePath).ToLower();
-                if (fileExtension != ".png" && fileExtension != ".icstk" && fileExtension != ".xml" && fileExtension != ".zip")
+                if (!AllowedExtensions.Contains(fileExtension))
                 {
                     return false;
                 }
 
                 var fileInfo = new FileInfo(filePath);
-                long maxSize = fileExtension == ".zip" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                long maxSize = GetMaxFileSize(fileExtension);
                 if (fileInfo.Length > maxSize)
                 {
                     return false;
@@ -502,7 +538,7 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 异步上传文件
         /// </summary>
-        public async Task<bool> UploadFileAsync(string filePath, CancellationToken cancellationToken = default)
+        public Task<bool> UploadFileAsync(string filePath, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -511,19 +547,19 @@ namespace Ink_Canvas.Helpers
                 // 检查是否启用
                 if (!IsUploadEnabled())
                 {
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 // 基本验证
                 if (!File.Exists(filePath))
                 {
                     LogHelper.WriteLogToFile($"[{GetType().Name}] 上传失败：文件不存在 - {filePath}", LogHelper.LogType.Error);
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 if (!IsValidFile(filePath))
                 {
-                    return false;
+                    return Task.FromResult(false);
                 }
 
                 // 确保队列已初始化
@@ -535,7 +571,7 @@ namespace Ink_Canvas.Helpers
                 // 加入队列
                 EnqueueFile(filePath, 0, cancellationToken);
 
-                return true;
+                return Task.FromResult(true);
             }
             catch (OperationCanceledException)
             {
@@ -545,7 +581,35 @@ namespace Ink_Canvas.Helpers
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"[{GetType().Name}] 加入上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
-                return false;
+                return Task.FromResult(false);
+            }
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing">是否释放托管资源</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // 释放托管资源
+                    _queueProcessingLock?.Dispose();
+                    _queueSaveLock?.Dispose();
+                }
+
+                _disposed = true;
             }
         }
     }

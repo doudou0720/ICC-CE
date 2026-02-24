@@ -116,51 +116,54 @@ namespace Ink_Canvas.Helpers
                 long maxSize = fileExtension == ".zip" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
                 if (fileInfo.Length > maxSize)
                 {
-                    LogHelper.WriteLogToFile($"[DlassUploadQueue] 上传失败：文件过大（{fileInfo.Length / 1024 / 1024}MB），超过{maxSize / 1024 / 1024}MB限制", LogHelper.LogType.Error);
-                    return false;
-                }
-
-                // 获取白板信息
-                var whiteboard = await GetWhiteboardInfo(cancellationToken);
-                if (whiteboard == null)
-                {
+                    double fileSizeMB = fileInfo.Length / (1024.0 * 1024.0);
+                    double maxSizeMB = maxSize / (1024.0 * 1024.0);
+                    LogHelper.WriteLogToFile($"[DlassUploadQueue] 上传失败：文件过大（{fileSizeMB:F2}MB），超过{maxSizeMB:F2}MB限制", LogHelper.LogType.Error);
                     return false;
                 }
 
                 // 获取API基础URL和用户Token
                 var apiBaseUrl = MainWindow.Settings?.Dlass?.ApiBaseUrl ?? "https://dlass.tech";
                 var userToken = MainWindow.Settings?.Dlass?.UserToken;
+                var selectedClassName = MainWindow.Settings?.Dlass?.SelectedClassName;
 
-                // 准备上传参数
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                var title = fileName;
-                string fileType;
-                string tags;
-                if (fileExtension == ".zip")
-                {
-                    fileType = "多页面墨迹压缩包";
-                    tags = "自动上传,多页面,zip,压缩包";
-                }
-                else if (fileExtension == ".icstk")
-                {
-                    fileType = "墨迹文件";
-                    tags = "自动上传,墨迹,icstk";
-                }
-                else if (fileExtension == ".xml")
-                {
-                    fileType = "XML文件";
-                    tags = "自动上传,xml";
-                }
-                else
-                {
-                    fileType = "笔记";
-                    tags = "自动上传,笔记,png";
-                }
-                var description = $"自动上传的{fileType} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
-
-                // 创建API客户端并上传文件
+                // 创建API客户端
                 using (var apiClient = new DlassApiClient(APP_ID, APP_SECRET, apiBaseUrl, userToken))
                 {
+                    // 获取白板信息
+                    var whiteboard = await GetWhiteboardInfo(apiClient, selectedClassName, cancellationToken);
+                    if (whiteboard == null)
+                    {
+                        return false;
+                    }
+
+                    // 准备上传参数
+                    var fileName = Path.GetFileNameWithoutExtension(filePath);
+                    var title = fileName;
+                    string fileType;
+                    string tags;
+                    if (fileExtension == ".zip")
+                    {
+                        fileType = "多页面墨迹压缩包";
+                        tags = "自动上传,多页面,zip,压缩包";
+                    }
+                    else if (fileExtension == ".icstk")
+                    {
+                        fileType = "墨迹文件";
+                        tags = "自动上传,墨迹,icstk";
+                    }
+                    else if (fileExtension == ".xml")
+                    {
+                        fileType = "XML文件";
+                        tags = "自动上传,xml";
+                    }
+                    else
+                    {
+                        fileType = "笔记";
+                        tags = "自动上传,笔记,png";
+                    }
+                    var description = $"自动上传的{fileType} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+
                     cancellationToken.ThrowIfCancellationRequested();
                     
                     var uploadResult = await apiClient.UploadNoteAsync<UploadNoteResponse>(
@@ -170,7 +173,8 @@ namespace Ink_Canvas.Helpers
                         whiteboard.SecretKey,
                         title,
                         description,
-                        tags);
+                        tags,
+                        cancellationToken);
 
                     if (uploadResult != null && uploadResult.Success)
                     {
@@ -195,58 +199,50 @@ namespace Ink_Canvas.Helpers
         /// <summary>
         /// 获取白板信息
         /// </summary>
-        private async Task<WhiteboardInfo> GetWhiteboardInfo(CancellationToken cancellationToken)
+        private async Task<WhiteboardInfo> GetWhiteboardInfo(DlassApiClient apiClient, string selectedClassName, CancellationToken cancellationToken)
         {
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 
-                var selectedClassName = MainWindow.Settings?.Dlass?.SelectedClassName;
                 if (string.IsNullOrEmpty(selectedClassName))
                 {
                     LogHelper.WriteLogToFile("[DlassUploadQueue] 上传失败：未选择班级", LogHelper.LogType.Error);
                     return null;
                 }
 
-                var userToken = MainWindow.Settings?.Dlass?.UserToken;
-                if (string.IsNullOrEmpty(userToken))
+                // 创建认证数据
+                var authData = new
                 {
-                    LogHelper.WriteLogToFile("[DlassUploadQueue] 上传失败：未设置用户Token", LogHelper.LogType.Error);
+                    app_id = APP_ID,
+                    app_secret = APP_SECRET,
+                    user_token = MainWindow.Settings?.Dlass?.UserToken
+                };
+
+                var authResult = await apiClient.PostAsync<AuthWithTokenResponse>("/api/whiteboard/framework/auth-with-token", authData, requireAuth: false, cancellationToken);
+
+                if (authResult == null || !authResult.Success || authResult.Whiteboards == null)
+                {
+                    LogHelper.WriteLogToFile("[DlassUploadQueue] 上传失败：无法获取白板信息", LogHelper.LogType.Error);
                     return null;
                 }
 
-                var apiBaseUrl = MainWindow.Settings?.Dlass?.ApiBaseUrl ?? "https://dlass.tech";
+                // 查找匹配班级的白板
+                var whiteboard = authResult.Whiteboards
+                    .FirstOrDefault(w => !string.IsNullOrEmpty(w.ClassName) && w.ClassName == selectedClassName);
 
-                // 创建API客户端并获取白板信息
-                using (var apiClient = new DlassApiClient(APP_ID, APP_SECRET, apiBaseUrl, userToken))
+                if (whiteboard == null || string.IsNullOrEmpty(whiteboard.BoardId) || string.IsNullOrEmpty(whiteboard.SecretKey))
                 {
-                    var authData = new
-                    {
-                        app_id = APP_ID,
-                        app_secret = APP_SECRET,
-                        user_token = userToken
-                    };
-
-                    var authResult = await apiClient.PostAsync<AuthWithTokenResponse>("/api/whiteboard/framework/auth-with-token", authData, requireAuth: false);
-
-                    if (authResult == null || !authResult.Success || authResult.Whiteboards == null)
-                    {
-                        LogHelper.WriteLogToFile("[DlassUploadQueue] 上传失败：无法获取白板信息", LogHelper.LogType.Error);
-                        return null;
-                    }
-
-                    // 查找匹配班级的白板
-                    var whiteboard = authResult.Whiteboards
-                        .FirstOrDefault(w => !string.IsNullOrEmpty(w.ClassName) && w.ClassName == selectedClassName);
-
-                    if (whiteboard == null || string.IsNullOrEmpty(whiteboard.BoardId) || string.IsNullOrEmpty(whiteboard.SecretKey))
-                    {
-                        LogHelper.WriteLogToFile($"[DlassUploadQueue] 上传失败：未找到班级'{selectedClassName}'对应的白板", LogHelper.LogType.Error);
-                        return null;
-                    }
-
-                    return whiteboard;
+                    LogHelper.WriteLogToFile($"[DlassUploadQueue] 上传失败：未找到班级'{selectedClassName}'对应的白板", LogHelper.LogType.Error);
+                    return null;
                 }
+
+                return whiteboard;
+            }
+            catch (OperationCanceledException)
+            {
+                // 重新抛出取消操作异常
+                throw;
             }
             catch (Exception ex)
             {
