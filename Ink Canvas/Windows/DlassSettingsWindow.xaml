@@ -190,7 +190,7 @@
                         </TabControl.Resources>
                         
                         <!-- 通用设置标签页 -->
-                        <TabItem Header="通用设置">
+                        <TabItem Header="通用设置" Margin="0,0,0,0">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <ui:SimpleStackPanel Spacing="16">
                                     <!-- 内容区域 -->
@@ -358,7 +358,7 @@
                         </TabItem>
                         
                         <!-- Dlass 设置标签页 -->
-                        <TabItem Header="Dlass" Tag="DlassTab">
+                        <TabItem Header="Dlass" Tag="DlassTab" Margin="0,0,0,0">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <ui:SimpleStackPanel Spacing="16">
                                     <!-- 内容区域 -->
@@ -675,7 +675,7 @@
                         </TabItem>
                         
                         <!-- WebDav 设置标签页 -->
-                        <TabItem>
+                        <TabItem Margin="0,0,8,0">
                             <TabItem.Header>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="WebDav" Margin="0,0,8,0" />
