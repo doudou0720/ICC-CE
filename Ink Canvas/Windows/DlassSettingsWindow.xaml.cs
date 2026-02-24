@@ -12,7 +12,7 @@ using ui = iNKORE.UI.WPF.Modern.Controls;
 namespace Ink_Canvas.Windows
 {
     /// <summary>
-    /// Dlass设置管理窗口
+    /// 云储存管理窗口
     /// </summary>
     /// <remarks>
     /// 该窗口包含三个标签页：

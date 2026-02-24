@@ -118,7 +118,7 @@
                                   Stretch="Uniform" 
                                   Margin="0,0,8,0"/>
                             <!-- 标题文字 -->
-                            <TextBlock Text="Dlass设置管理" 
+                            <TextBlock Text="云储存管理" 
                                        FontSize="28" 
                                        FontWeight="Bold" 
                                        Foreground="{StaticResource TitleForeground}" 
@@ -368,7 +368,7 @@
                                             Padding="20"
                                             Background="#27272a">
                                         <ui:SimpleStackPanel Spacing="16">
-                                            <TextBlock Text="Dlass设置管理" 
+                                            <TextBlock Text="云储存管理" 
                                                        FontSize="18" 
                                                        FontWeight="SemiBold" 
                                                        Foreground="{StaticResource TextForeground}"/>
