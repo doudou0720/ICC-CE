@@ -1160,8 +1160,7 @@ namespace Ink_Canvas
             CheckUpdateChannelAndTelemetryConsistency();
 
             // 初始化上传队列（恢复上次的上传队列）
-            DlassNoteUploader.InitializeQueue();
-            WebDavUploadQueue.InitializeQueue();
+            UploadQueueHelper.InitializeAllQueues();
 
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
 
