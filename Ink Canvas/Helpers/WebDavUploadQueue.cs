@@ -379,8 +379,9 @@ namespace Ink_Canvas.Helpers
                 
                 var filesToUpload = new List<UploadQueueItem>();
 
-                // 从队列中取出所有文件
-                while (_uploadQueue.TryDequeue(out UploadQueueItem item))
+                // 从队列中取出最多BATCH_SIZE个文件
+                int count = 0;
+                while (_uploadQueue.TryDequeue(out UploadQueueItem item) && count < BATCH_SIZE)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     
@@ -388,6 +389,7 @@ namespace Ink_Canvas.Helpers
                     if (File.Exists(item.FilePath))
                     {
                         filesToUpload.Add(item);
+                        count++;
                     }
                 }
 

@@ -358,7 +358,7 @@
                         </TabItem>
                         
                         <!-- Dlass 设置标签页 -->
-                        <TabItem Header="Dlass">
+                        <TabItem Header="Dlass" Tag="DlassTab">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <ui:SimpleStackPanel Spacing="16">
                                     <!-- 内容区域 -->
@@ -631,7 +631,7 @@
                                                 
 
                                                 
-                                                <TextBlock Text="设置上传延迟时间（0-60分钟），可以在保存后等待一段时间再上传。" 
+                                                <TextBlock Text="上传延迟时间可在“通用设置”中配置" 
                                                            FontSize="12" 
                                                            Foreground="{StaticResource TextSecondary}"
                                                            TextWrapping="Wrap"

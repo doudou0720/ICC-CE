@@ -161,7 +161,7 @@ namespace Ink_Canvas
                                 if (strokes.Count > 0)
                                 {
                                     string pageFileName = Path.Combine(basePath, $"{baseFileName}_Page-{i + 1}.xml");
-                                    SaveStrokesAsXML(strokes, pageFileName);
+                                    SaveStrokesAsXML(strokes, pageFileName, false);
                                     savedCount++;
 
                                     // 异步上传每个XML文件
@@ -169,11 +169,6 @@ namespace Ink_Canvas
                                     {
                                         try
                                         {
-                                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                                            if (delayMinutes > 0)
-                                            {
-                                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                                            }
                                             await Helpers.UploadHelper.UploadFileAsync(pageFileName);
                                         }
                                         catch (Exception)
@@ -352,11 +347,6 @@ namespace Ink_Canvas
                                 {
                                     try
                                     {
-                                        var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                                        if (delayMinutes > 0)
-                                        {
-                                            await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                                        }
                                         await Helpers.UploadHelper.UploadFileAsync(pageFileName);
                                     }
                                     catch (Exception)
@@ -419,11 +409,6 @@ namespace Ink_Canvas
                         {
                             try
                             {
-                                var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                                if (delayMinutes > 0)
-                                {
-                                    await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                                }
                                 string uploadPath = Settings.Automation.IsSaveStrokesAsXML ? Path.ChangeExtension(savePathWithName, ".xml") : savePathWithName;
                                 await Helpers.UploadHelper.UploadFileAsync(uploadPath);
                             }
@@ -525,12 +510,6 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                            if (delayMinutes > 0)
-                            {
-                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                            }
-
                             await Helpers.UploadHelper.UploadFileAsync(xmlPath);
                         }
                         catch (Exception)
@@ -614,28 +593,22 @@ namespace Ink_Canvas
                     }
 
                     // 创建ZIP文件
-                    if (File.Exists(zipFileName))
-                        File.Delete(zipFileName);
+                if (File.Exists(zipFileName))
+                    File.Delete(zipFileName);
 
-                    ZipFile.CreateFromDirectory(tempDir, zipFileName);
+                ZipFile.CreateFromDirectory(tempDir, zipFileName);
 
-                    // 异步上传ZIP文件到Dlass
-                    _ = Task.Run(async () =>
+                // 异步上传ZIP文件到Dlass
+                _ = Task.Run(async () =>
+                {
+                    try
                     {
-                        try
-                        {
-                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                            if (delayMinutes > 0)
-                            {
-                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                            }
-
-                            await Helpers.UploadHelper.UploadFileAsync(zipFileName);
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    });
+                        await Helpers.UploadHelper.UploadFileAsync(zipFileName);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                });
 
                     if (newNotice)
                     {
@@ -741,12 +714,6 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                            if (delayMinutes > 0)
-                            {
-                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                            }
-
                             await Helpers.UploadHelper.UploadFileAsync(zipFileName);
                         }
                         catch (Exception)
@@ -850,12 +817,6 @@ namespace Ink_Canvas
                     {
                         try
                         {
-                            var delayMinutes = Settings?.Dlass?.AutoUploadDelayMinutes ?? 0;
-                            if (delayMinutes > 0)
-                            {
-                                await Task.Delay(TimeSpan.FromMinutes(delayMinutes));
-                            }
-
                             await Helpers.UploadHelper.UploadFileAsync(imagePathWithName);
                         }
                         catch (Exception)

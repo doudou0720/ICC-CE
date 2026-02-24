@@ -676,7 +676,7 @@ namespace Ink_Canvas.Windows
                 if (sender is System.Windows.Controls.TabControl tabControl && tabControl.SelectedItem is System.Windows.Controls.TabItem selectedTab)
                 {
                     // 检查是否切换到Dlass标签页
-                    if (selectedTab.Header.ToString() == "Dlass" && _isFirstTimeDlassTab)
+                    if (selectedTab.Tag?.ToString() == "DlassTab" && _isFirstTimeDlassTab)
                     {
                         // 检查是否是第一次打开（检查用户是否已设置Token）
                         bool hasToken = !string.IsNullOrEmpty(GetUserToken()?.Trim());
