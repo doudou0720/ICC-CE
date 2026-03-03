@@ -94,6 +94,19 @@ namespace Ink_Canvas
                 处于画板模式内：Topmost == false / currentMode != 0
                 处于 PPT 放映内：BtnPPTSlideShowEnd.Visibility
             */
+            try
+            {
+                var preferredLanguage = Settings?.Appearance?.Language;
+                if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                {
+                    LocalizationHelper.TrySetCulture(preferredLanguage);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"应用首选界面语言失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
             InitializeComponent();
 
             BlackboardLeftSide.Visibility = Visibility.Collapsed;
@@ -1471,6 +1484,40 @@ namespace Ink_Canvas
                 }
             }), DispatcherPriority.Loaded);
             AddTouchSupportToSliders();
+        }
+
+        private void ApplyLanguageFromSettings()
+        {
+            try
+            {
+                if (ComboBoxLanguage == null || Settings?.Appearance == null) return;
+
+                var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
+                int index;
+
+                if (string.IsNullOrWhiteSpace(preferredLanguage))
+                {
+                    index = 0;
+                }
+                else if (string.Equals(preferredLanguage, "zh-CN", StringComparison.OrdinalIgnoreCase))
+                {
+                    index = 1;
+                }
+                else if (string.Equals(preferredLanguage, "en-US", StringComparison.OrdinalIgnoreCase))
+                {
+                    index = 2;
+                }
+                else
+                {
+                    index = 0;
+                }
+
+                ComboBoxLanguage.SelectedIndex = index;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化语言选项失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
 
@@ -4497,6 +4544,43 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"切换主题时出错: {ex.Message}", LogHelper.LogType.Error);
                 ShowNotification("主题切换失败");
+            }
+        }
+
+
+        private void ComboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (Settings?.Appearance == null) return;
+                if (ComboBoxLanguage == null) return;
+
+                var index = ComboBoxLanguage.SelectedIndex;
+                string language;
+
+                switch (index)
+                {
+                    case 1:
+                        language = "zh-CN";
+                        break;
+                    case 2:
+                        language = "en-US";
+                        break;
+                    case 0:
+                    default:
+                        language = string.Empty;
+                        break;
+                }
+
+                Settings.Appearance.Language = language;
+                SaveSettingsToFile();
+                ShowNotification("已更新界面语言设置，重启应用后生效。");
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换界面语言时出错: {ex.Message}", LogHelper.LogType.Error);
+                ShowNotification("切换界面语言失败。");
             }
         }
 

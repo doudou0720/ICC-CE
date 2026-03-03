@@ -310,6 +310,8 @@ namespace Ink_Canvas
         public int QuickColorPaletteDisplayMode { get; set; } = 1;
         [JsonProperty("enableHotkeysInMouseMode")]
         public bool EnableHotkeysInMouseMode { get; set; } = false;
+        [JsonProperty("language")]
+        public string Language { get; set; } = "";
 
     }
 

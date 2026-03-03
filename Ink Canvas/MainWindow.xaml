@@ -1144,6 +1144,20 @@
                                         </ComboBox>
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_LanguageLabel}" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ComboBox Name="ComboBoxLanguage" FontFamily="Microsoft YaHei UI"
+                                                  SelectedIndex="0"
+                                                  SelectionChanged="ComboBoxLanguage_SelectionChanged"
+                                                  Width="160">
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Language_System}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Language_ChineseSimplified}" FontFamily="Microsoft YaHei UI" />
+                                            <ComboBoxItem Content="{i18n:I18n Key=Theme_Language_English}" FontFamily="Microsoft YaHei UI" />
+                                        </ComboBox>
+                                    </ui:SimpleStackPanel>
+                                    <TextBlock Text="{i18n:I18n Key=Theme_Language_RestartHint}"
+                                               TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_EnableSplash}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnableSplashScreen"

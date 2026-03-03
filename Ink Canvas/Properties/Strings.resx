@@ -735,4 +735,9 @@
   <data name="Booth_Correction" xml:space="preserve"><value>矫正</value></data>
   <data name="Booth_Capture" xml:space="preserve"><value>拍照</value></data>
   <data name="Booth_Rotate" xml:space="preserve"><value>旋转</value></data>
+  <data name="Theme_LanguageLabel" xml:space="preserve"><value>界面语言</value></data>
+  <data name="Theme_Language_System" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Theme_Language_ChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Theme_Language_English" xml:space="preserve"><value>English</value></data>
+  <data name="Theme_Language_RestartHint" xml:space="preserve"><value>更改界面语言后需要重启应用程序才能完全生效。</value></data>
 </root>

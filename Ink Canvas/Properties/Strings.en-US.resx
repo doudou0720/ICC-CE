@@ -720,4 +720,9 @@
   <data name="Booth_Correction" xml:space="preserve"><value>Correct</value></data>
   <data name="Booth_Capture" xml:space="preserve"><value>Capture</value></data>
   <data name="Booth_Rotate" xml:space="preserve"><value>Rotate</value></data>
+  <data name="Theme_LanguageLabel" xml:space="preserve"><value>UI language</value></data>
+  <data name="Theme_Language_System" xml:space="preserve"><value>Follow system</value></data>
+  <data name="Theme_Language_ChineseSimplified" xml:space="preserve"><value>Chinese (Simplified)</value></data>
+  <data name="Theme_Language_English" xml:space="preserve"><value>English</value></data>
+  <data name="Theme_Language_RestartHint" xml:space="preserve"><value>You need to restart the app for language changes to fully take effect.</value></data>
 </root>
