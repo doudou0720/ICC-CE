@@ -207,6 +207,7 @@ namespace Ink_Canvas
 
             CheckColorTheme(true);
             CheckPenTypeUIState();
+            ApplyLanguageFromSettings();
 
             // 初始化墨迹平滑管理器
             _inkSmoothingManager = new InkSmoothingManager(Dispatcher);
@@ -218,7 +219,7 @@ namespace Ink_Canvas
             inkCanvas.PreviewMouseDown += inkCanvas_PreviewMouseDown;
             inkCanvas.StylusDown += inkCanvas_StylusDown;
             inkCanvas.MouseRightButtonUp += InkCanvas_MouseRightButtonUp;
-            // 注册橡皮擦操作结束事件（StylusUp 用于自动切换回批注；MouseUp 由 XAML 绑定触发，无需再单独注册）
+            // 注册橡皮擦操作结束事件
             inkCanvas.StylusUp += inkCanvas_StylusUp;
 
             // 初始化第一页Canvas
@@ -4575,7 +4576,31 @@ namespace Ink_Canvas
 
                 Settings.Appearance.Language = language;
                 SaveSettingsToFile();
-                ShowNotification("已更新界面语言设置，重启应用后生效。");
+
+                if (!string.IsNullOrWhiteSpace(language))
+                {
+                    LocalizationHelper.TrySetCulture(language);
+                }
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try
+                    {
+                        var newWindow = new MainWindow
+                        {
+                            WindowState = WindowState,
+                            Left = Left,
+                            Top = Top
+                        };
+                        newWindow.Show();
+                        Close();
+                    }
+                    catch (Exception ex2)
+                    {
+                        LogHelper.WriteLogToFile($"重建主窗口以应用语言时出错: {ex2.Message}", LogHelper.LogType.Error);
+                        ShowNotification("已更新界面语言设置，重启应用后可完全生效。");
+                    }
+                }), DispatcherPriority.Normal);
             }
             catch (Exception ex)
             {
