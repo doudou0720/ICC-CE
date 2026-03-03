@@ -1,6 +1,6 @@
+using Ink_Canvas.Properties;
 using System.Globalization;
 using System.Threading;
-using Ink_Canvas.Properties;
 
 namespace Ink_Canvas.Helpers
 {

@@ -147,7 +147,7 @@ namespace Ink_Canvas
                     {
                         // 检查是否是PPT模式
                         bool isPPTMode = BtnPPTSlideShowEnd.Visibility == Visibility.Visible && _pptManager?.IsConnected == true;
-                        
+
                         if (isPPTMode)
                         {
                             // PPT模式：保存为多个XML文件
@@ -593,22 +593,22 @@ namespace Ink_Canvas
                     }
 
                     // 创建ZIP文件
-                if (File.Exists(zipFileName))
-                    File.Delete(zipFileName);
+                    if (File.Exists(zipFileName))
+                        File.Delete(zipFileName);
 
-                ZipFile.CreateFromDirectory(tempDir, zipFileName);
+                    ZipFile.CreateFromDirectory(tempDir, zipFileName);
 
-                // 异步上传ZIP文件到Dlass
-                _ = Task.Run(async () =>
-                {
-                    try
+                    // 异步上传ZIP文件到Dlass
+                    _ = Task.Run(async () =>
                     {
-                        await Helpers.UploadHelper.UploadFileAsync(zipFileName);
-                    }
-                    catch (Exception)
-                    {
-                    }
-                });
+                        try
+                        {
+                            await Helpers.UploadHelper.UploadFileAsync(zipFileName);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    });
 
                     if (newNotice)
                     {
@@ -1087,7 +1087,7 @@ namespace Ink_Canvas
                     {
                         StrokeCollection strokes = null;
                         string extension = Path.GetExtension(file).ToLower();
-                        
+
                         if (extension == ".xml")
                         {
                             // 从XML文件加载

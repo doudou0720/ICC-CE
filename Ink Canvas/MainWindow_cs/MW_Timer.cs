@@ -743,7 +743,7 @@ namespace Ink_Canvas
                     {
                         return true;
                     }
-                    else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                    else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher &&
                              (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
                     {
                         return true;
@@ -760,7 +760,7 @@ namespace Ink_Canvas
                     {
                         return true;
                     }
-                    else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                    else if (Settings.Automation.IsAutoFoldInMSWhiteboard &&
                              (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
                     {
                         return true;
@@ -899,7 +899,7 @@ namespace Ink_Canvas
                     return true;
                 }
                 // 检查SeewoPinco
-                else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher &&
                          (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
                 {
                     return true;
@@ -926,7 +926,7 @@ namespace Ink_Canvas
                     return true;
                 }
                 // 检查MSWhiteboard
-                else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                else if (Settings.Automation.IsAutoFoldInMSWhiteboard &&
                          (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
                 {
                     return true;
@@ -1027,19 +1027,20 @@ namespace Ink_Canvas
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
 
                 Thickness currentMargin = new Thickness();
-                Dispatcher.Invoke(() => {
+                Dispatcher.Invoke(() =>
+                {
                     currentMargin = ViewboxFloatingBar.Margin;
                 });
-                
+
                 if (hasFullScreen)
                 {
-                    if (!isFloatingBarFolded) 
+                    if (!isFloatingBarFolded)
                     {
                         FoldFloatingBar_MouseUp(null, null);
                     }
                     else if (currentMargin.Left > -50 && !isFloatingBarChangingHideMode)
                     {
-                        FoldFloatingBar_MouseUp(null, null); 
+                        FoldFloatingBar_MouseUp(null, null);
                     }
                     return;
                 }
@@ -1052,20 +1053,20 @@ namespace Ink_Canvas
                         {
                             var versionInfo = FileVersionInfo.GetVersionInfo(ForegroundWindowInfo.ProcessPath());
                             string version = versionInfo.FileVersion;
-                            
+
                             if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
                             {
                                 bool isAnnotationWindow = windowTitle.Length == 0 && ForegroundWindowInfo.WindowRect().Height < 500;
                                 if (Settings.Automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno && isAnnotationWindow)
                                 {
-                                    if (!isFloatingBarFolded) 
+                                    if (!isFloatingBarFolded)
                                     {
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
                                 }
                                 else if (!isAnnotationWindow)
                                 {
-                                    if (!unfoldFloatingBarByUser && !isFloatingBarFolded) 
+                                    if (!unfoldFloatingBarByUser && !isFloatingBarFolded)
                                     {
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
@@ -1457,7 +1458,7 @@ namespace Ink_Canvas
             try
             {
                 // 检查是否仍然在橡皮擦模式
-                if (inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint && 
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint &&
                     inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke)
                 {
                     StopEraserAutoSwitchBackTimer();

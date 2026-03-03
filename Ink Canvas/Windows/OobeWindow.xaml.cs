@@ -10,7 +10,7 @@ namespace Ink_Canvas.Windows
     {
         private readonly Settings _settings;
         private int _currentStep = 0;
-        private const int MaxStepIndex = 11; 
+        private const int MaxStepIndex = 11;
 
         /// <summary>
         /// 初始化 OobeWindow，并使用指定的 Settings 填充初始状态与界面。

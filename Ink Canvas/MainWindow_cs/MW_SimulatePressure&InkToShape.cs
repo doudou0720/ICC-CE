@@ -1408,7 +1408,7 @@ namespace Ink_Canvas
                 double dx = end.X - start.X;
                 double dy = end.Y - start.Y;
                 double lineLength = Math.Sqrt(dx * dx + dy * dy);
-                
+
                 if (lineLength > 1e-10)
                 {
                     directionX = dx / lineLength;
@@ -1693,13 +1693,13 @@ namespace Ink_Canvas
             else
             {
                 Point midPoint = new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2);
-                
+
                 var startToMid = GeneratePointsBetween(start, midPoint, 0.4f, 0.8f, 8.0);
                 foreach (var pt in startToMid)
                 {
                     points.Add(pt);
                 }
-                
+
                 var midToEnd = GeneratePointsBetween(midPoint, end, 0.8f, 0.4f, 8.0);
                 for (int i = 1; i < midToEnd.Count; i++)
                 {
@@ -2030,7 +2030,7 @@ namespace Ink_Canvas
         {
             double deltaY = Math.Abs(p1.Y - p2.Y);
             double deltaX = Math.Abs(p1.X - p2.X);
-            
+
             if (deltaY < 1e-10 || deltaX / deltaY > 8)
             {
                 //水平
@@ -2068,7 +2068,7 @@ namespace Ink_Canvas
         public StylusPointCollection GenerateFakePressureTriangle(StylusPointCollection points)
         {
             var newPoint = new StylusPointCollection();
-            
+
             if (Settings.InkToShape.IsInkToShapeNoFakePressureTriangle || penType == 1)
             {
                 if (points.Count >= 3)
@@ -2114,9 +2114,9 @@ namespace Ink_Canvas
                     {
                         Point start = points[i].ToPoint();
                         Point end = points[(i + 1) % 3].ToPoint();
-                        
+
                         Point midPoint = GetCenterPoint(start, end);
-                        
+
                         var startToMid = GeneratePointsBetween(start, midPoint, 0.4f, 0.8f, 8.0);
                         if (i == 0)
                         {
@@ -2132,7 +2132,7 @@ namespace Ink_Canvas
                                 newPoint.Add(startToMid[j]);
                             }
                         }
-                        
+
                         var midToEnd = GeneratePointsBetween(midPoint, end, 0.8f, 0.4f, 8.0);
                         for (int j = 1; j < midToEnd.Count; j++)
                         {
@@ -2161,18 +2161,18 @@ namespace Ink_Canvas
         {
             var result = new StylusPointCollection();
             double distance = GetDistance(start, end);
-            
+
             if (distance < minPointInterval)
             {
                 result.Add(new StylusPoint(start.X, start.Y, startPressure));
                 result.Add(new StylusPoint(end.X, end.Y, endPressure));
                 return result;
             }
-            
+
             int pointCount = Math.Max(2, (int)(distance / minPointInterval) + 1);
-            
+
             result.Add(new StylusPoint(start.X, start.Y, startPressure));
-            
+
             for (int i = 1; i < pointCount - 1; i++)
             {
                 double ratio = (double)i / (pointCount - 1);
@@ -2181,16 +2181,16 @@ namespace Ink_Canvas
                 double y = start.Y + (end.Y - start.Y) * ratio;
                 result.Add(new StylusPoint(x, y, (float)pressure));
             }
-            
+
             result.Add(new StylusPoint(end.X, end.Y, endPressure));
-            
+
             return result;
         }
 
         public StylusPointCollection GenerateFakePressureRectangle(StylusPointCollection points)
         {
             var newPoint = new StylusPointCollection();
-            
+
             if (Settings.InkToShape.IsInkToShapeNoFakePressureRectangle || penType == 1)
             {
                 if (points.Count >= 4)
@@ -2229,9 +2229,9 @@ namespace Ink_Canvas
                 {
                     Point start = points[i].ToPoint();
                     Point end = points[(i + 1) % 4].ToPoint();
-                    
+
                     Point midPoint = GetCenterPoint(start, end);
-                    
+
                     var startToMid = GeneratePointsBetween(start, midPoint, 0.4f, 0.8f, 8.0);
                     if (i == 0)
                     {
@@ -2247,7 +2247,7 @@ namespace Ink_Canvas
                             newPoint.Add(startToMid[j]);
                         }
                     }
-                    
+
                     var midToEnd = GeneratePointsBetween(midPoint, end, 0.8f, 0.4f, 8.0);
                     for (int j = 1; j < midToEnd.Count; j++)
                     {
@@ -2259,7 +2259,7 @@ namespace Ink_Canvas
             {
                 return points;
             }
-            
+
             return newPoint;
         }
 

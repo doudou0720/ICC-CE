@@ -418,15 +418,15 @@ namespace Ink_Canvas
                 ComboBoxTheme.SelectedIndex = Settings.Appearance.Theme;
 
                 ComboBoxChickenSoupSource.SelectedIndex = Settings.Appearance.ChickenSoupSource;
-                
+
                 // 初始化自定义按钮的可见性（仅在选择API时显示）
                 if (BtnHitokotoCustomize != null)
                 {
-                    BtnHitokotoCustomize.Visibility = Settings.Appearance.ChickenSoupSource == 3 
-                        ? Visibility.Visible 
+                    BtnHitokotoCustomize.Visibility = Settings.Appearance.ChickenSoupSource == 3
+                        ? Visibility.Visible
                         : Visibility.Collapsed;
                 }
-                
+
                 // 初始化HitokotoCategories，如果为空则默认全选
                 if (Settings.Appearance.HitokotoCategories == null || Settings.Appearance.HitokotoCategories.Count == 0)
                 {
@@ -1307,7 +1307,7 @@ namespace Ink_Canvas
                 {
                     if (string.IsNullOrWhiteSpace(Settings.Canvas.BrushAutoRestoreColor))
                     {
-                        Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000"; 
+                        Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000";
                     }
 
                     bool found = false;
@@ -1328,13 +1328,13 @@ namespace Ink_Canvas
                             break;
                         }
                     }
-                    
+
                     if (!found && ComboBoxBrushAutoRestoreColor.Items.Count > 0)
                     {
                         ComboBoxBrushAutoRestoreColor.SelectionChanged -= ComboBoxBrushAutoRestoreColor_SelectionChanged;
                         try
                         {
-                            ComboBoxBrushAutoRestoreColor.SelectedIndex = 0; 
+                            ComboBoxBrushAutoRestoreColor.SelectedIndex = 0;
                             Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000";
                         }
                         finally
@@ -1347,8 +1347,8 @@ namespace Ink_Canvas
                 // 同步粗细滑块
                 if (BrushAutoRestoreWidthSlider != null)
                 {
-                    BrushAutoRestoreWidthSlider.Value = Settings.Canvas.BrushAutoRestoreWidth > 0 
-                        ? Settings.Canvas.BrushAutoRestoreWidth 
+                    BrushAutoRestoreWidthSlider.Value = Settings.Canvas.BrushAutoRestoreWidth > 0
+                        ? Settings.Canvas.BrushAutoRestoreWidth
                         : 5;
                 }
 

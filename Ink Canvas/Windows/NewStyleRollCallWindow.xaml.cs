@@ -180,8 +180,8 @@ namespace Ink_Canvas
         private const double PROBABILITY_RECOVERY_RATE = 0.2;
         private const double FREQUENCY_BOOST_FACTOR = 2.0;
 
-        private const int MaxGapThreshold = 3;       
-        private const int MinCandidatePoolSize = 2; 
+        private const int MaxGapThreshold = 3;
+        private const int MinCandidatePoolSize = 2;
 
         // 单次抽相关
         private bool isSingleDrawMode = false;

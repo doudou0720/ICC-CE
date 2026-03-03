@@ -73,22 +73,22 @@ namespace Ink_Canvas
         /// PowerPoint应用程序实例，用于与PowerPoint进行交互。
         /// </summary>
         public static Microsoft.Office.Interop.PowerPoint.Application pptApplication;
-        
+
         /// <summary>
         /// 当前活动的PowerPoint演示文稿。
         /// </summary>
         public static Presentation presentation;
-        
+
         /// <summary>
         /// 当前演示文稿的幻灯片集合。
         /// </summary>
         public static Slides slides;
-        
+
         /// <summary>
         /// 当前活动的幻灯片。
         /// </summary>
         public static Slide slide;
-        
+
         /// <summary>
         /// 当前演示文稿的幻灯片总数。
         /// </summary>
@@ -99,8 +99,8 @@ namespace Ink_Canvas
         /// <summary>
         /// 幻灯片放映结束事件重入保护标志，防止重复处理放映结束事件。
         /// </summary>
-        private bool isEnteredSlideShowEndEvent; 
-        
+        private bool isEnteredSlideShowEndEvent;
+
         /// <summary>
         /// 演示文稿是否有黑边的指示标志。
         /// </summary>
@@ -111,17 +111,17 @@ namespace Ink_Canvas
         /// 用于处理长按翻页功能的定时器。
         /// </summary>
         private DispatcherTimer _longPressTimer;
-        
+
         /// <summary>
         /// 长按翻页方向标志，true表示下一页，false表示上一页。
         /// </summary>
         private bool _isLongPressNext = true; // true为下一页，false为上一页
-        
+
         /// <summary>
         /// 长按延迟时间（毫秒），即用户需要按住按钮多长时间才开始连续翻页。
         /// </summary>
         private const int LongPressDelay = 500; // 长按延迟时间（毫秒）
-        
+
         /// <summary>
         /// 长按翻页间隔（毫秒），即连续翻页的时间间隔。
         /// </summary>
@@ -132,7 +132,7 @@ namespace Ink_Canvas
         /// 用于监控PowerPoint应用程序状态的定时器。
         /// </summary>
         private DispatcherTimer _powerPointProcessMonitorTimer;
-        
+
         /// <summary>
         /// 应用程序监控间隔（毫秒），即每隔多长时间检查一次PowerPoint应用程序状态。
         /// </summary>
@@ -143,12 +143,12 @@ namespace Ink_Canvas
         /// 上次播放的幻灯片页码。
         /// </summary>
         private int _lastPlaybackPage = 0;
-        
+
         /// <summary>
         /// 是否应该导航到上次播放页码的标志。
         /// </summary>
         private bool _shouldNavigateToLastPage = false;
-        
+
         // 当前播放页码跟踪
         /// <summary>
         /// 当前幻灯片放映的位置（页码）。
@@ -162,11 +162,11 @@ namespace Ink_Canvas
         /// 用于在PowerPoint连接断开后延迟退出PPT模式的定时器。
         /// </summary>
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
-        
+
         /// <summary>
         /// 断开连接后退出PPT模式的延迟时间（毫秒），即连接断开后多长时间才退出PPT模式。
         /// </summary>
-        private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
+        private const int ExitPPTModeAfterDisconnectDelayMs = 1200;
         #endregion
 
         #region PPT Managers
@@ -174,12 +174,12 @@ namespace Ink_Canvas
         /// PPT链接管理器，用于管理与PowerPoint的连接和事件处理。
         /// </summary>
         private IPPTLinkManager _pptManager;
-        
+
         /// <summary>
         /// PPT墨迹管理器，用于管理PowerPoint幻灯片上的墨迹。
         /// </summary>
         private PPTInkManager _singlePPTInkManager;
-        
+
         /// <summary>
         /// PPT UI管理器，用于管理与PowerPoint相关的用户界面元素。
         /// </summary>
@@ -1432,7 +1432,7 @@ namespace Ink_Canvas
                         if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
                             BtnHideInkCanvas_Click(BtnHideInkCanvas, null);
                         SetCurrentToolMode(InkCanvasEditingMode.None);
-                        
+
                         UpdateCurrentToolMode("cursor");
                         SetFloatingBarHighlightPosition("cursor");
                     }
@@ -1785,7 +1785,7 @@ namespace Ink_Canvas
                 // 重置上次播放位置相关字段
                 _lastPlaybackPage = 0;
                 _shouldNavigateToLastPage = false;
-                
+
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
                 _previousSlideID = 0;
@@ -1922,7 +1922,7 @@ namespace Ink_Canvas
                 {
                     Settings.PowerPointSettings.PowerPointSupport = true;
                     ToggleSwitchSupportPowerPoint.IsOn = true;
-                    
+
                     // 启动PPT监控
                     if (_pptManager == null)
                     {
@@ -1973,7 +1973,7 @@ namespace Ink_Canvas
         /// 指示是否正在显示恢复隐藏幻灯片的窗口
         /// </summary>
         public static bool IsShowingRestoreHiddenSlidesWindow;
-        
+
         /// <summary>
         /// 指示是否正在显示自动播放提示窗口
         /// </summary>
@@ -2305,7 +2305,7 @@ namespace Ink_Canvas
                 {
                     PureViewboxFloatingBarMarginAnimationInDesktopMode();
                     if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
-                    {   
+                    {
                         await Task.Delay(350);
                         if (!isFloatingBarFolded)
                         {

@@ -66,7 +66,7 @@ namespace Ink_Canvas.Helpers
         private volatile bool _cachedIsInSlideShow;
         private readonly object _lockObject = new object();
         private bool _disposed;
-        private static bool IsPptBusyHResult(uint hr) => hr == 0x80010001 || hr == 0x8001010A; 
+        private static bool IsPptBusyHResult(uint hr) => hr == 0x80010001 || hr == 0x8001010A;
         #endregion
 
         #region Constructor & Initialization
@@ -141,13 +141,13 @@ namespace Ink_Canvas.Helpers
         private void CheckAndConnectToPPT()
         {
             if (_isModuleUnloading) return;
-            
+
             lock (_lockObject)
             {
                 try
                 {
                     if (_isModuleUnloading) return;
-                    
+
                     // 尝试连接到PowerPoint
                     var pptApp = TryConnectToPowerPoint();
                     if (pptApp == null && IsSupportWPS)
@@ -465,7 +465,7 @@ namespace Ink_Canvas.Helpers
                     SafeReleaseComObject(CurrentSlide, "CurrentSlide");
                     SafeReleaseComObject(CurrentSlides, "CurrentSlides");
                     SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
-                    
+
                     if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
                     {
                         try
@@ -518,13 +518,13 @@ namespace Ink_Canvas.Helpers
                             _isModuleUnloading = false;
                             return;
                         }
-                        
+
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
                         GC.Collect();
-                        
+
                         Thread.Sleep(1000);
-                        
+
                         _isModuleUnloading = false;
 
                         try
@@ -538,7 +538,7 @@ namespace Ink_Canvas.Helpers
                         {
                             LogHelper.WriteLogToFile("PPT联动模块重载时计时器已释放，跳过重启", LogHelper.LogType.Trace);
                         }
-                        
+
                         LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)

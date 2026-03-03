@@ -1,5 +1,4 @@
 using Ink_Canvas.Helpers;
-using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;

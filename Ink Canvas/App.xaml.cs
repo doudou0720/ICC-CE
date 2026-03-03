@@ -1,8 +1,10 @@
 using Hardcodet.Wpf.TaskbarNotification;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -18,10 +20,8 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
-using Ink_Canvas.Properties;
 using SplashScreen = Ink_Canvas.Windows.SplashScreen;
 using Timer = System.Threading.Timer;
-using Sentry;
 
 namespace Ink_Canvas
 {
@@ -1088,7 +1088,7 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile($"启动完成心跳已记录");
                 }
                 LogHelper.WriteLogToFile($"启动时长: {(startupCompleteHeartbeat - appStartupStartTime).TotalSeconds:F2}秒");
-                
+
                 if (_isSplashScreenShown)
                 {
                     SetSplashMessage("完成初始化...");
@@ -1226,8 +1226,8 @@ namespace Ink_Canvas
 
                 if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
                 {
-                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue 
-                        ? splashScreenStartTime 
+                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue
+                        ? splashScreenStartTime
                         : appStartupStartTime;
                     TimeSpan elapsedSinceStart = now - startTime;
                     if (elapsedSinceStart >= StartupTimeout)
@@ -1255,7 +1255,7 @@ namespace Ink_Canvas
                         return;
                     }
                 }
-                
+
                 if (isStartupComplete && (now - lastHeartbeat).TotalSeconds > 10)
                 {
                     if (appStartupStartTime != DateTime.MinValue && (now - appStartupStartTime) < StartupTimeout)
@@ -1397,7 +1397,7 @@ namespace Ink_Canvas
 
                 string assemblyLocation = Assembly.GetExecutingAssembly().Location;
                 string currentDir = Path.GetDirectoryName(assemblyLocation);
-                
+
                 for (int i = 0; i < 5; i++)
                 {
                     string dsnFilePath = Path.Combine(currentDir, "telemetry_dsn.txt");
@@ -1409,7 +1409,7 @@ namespace Ink_Canvas
                             return dsn;
                         }
                     }
-                    
+
                     DirectoryInfo parentDir = Directory.GetParent(currentDir);
                     if (parentDir == null)
                     {

@@ -35,27 +35,27 @@ namespace Ink_Canvas
         /// 当前提交类型
         /// </summary>
         private CommitReason _currentCommitType = CommitReason.UserInput;
-        
+
         /// <summary>
         /// 是否为点橡皮擦模式
         /// </summary>
         private bool IsEraseByPoint => inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint;
-        
+
         /// <summary>
         /// 替换的笔画集合
         /// </summary>
         private StrokeCollection ReplacedStroke;
-        
+
         /// <summary>
         /// 添加的笔画集合
         /// </summary>
         private StrokeCollection AddedStroke;
-        
+
         /// <summary>
         /// 长方体笔画集合
         /// </summary>
         private StrokeCollection CuboidStrokeCollection;
-        
+
         /// <summary>
         /// 笔画操作历史记录
         /// </summary>

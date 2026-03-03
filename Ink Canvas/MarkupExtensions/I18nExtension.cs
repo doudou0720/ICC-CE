@@ -1,6 +1,6 @@
+using Ink_Canvas.Properties;
 using System;
 using System.Windows.Markup;
-using Ink_Canvas.Properties;
 
 namespace Ink_Canvas.MarkupExtensions
 {

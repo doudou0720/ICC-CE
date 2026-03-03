@@ -71,7 +71,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 var requestData = new
                 {
                     app_id = _appId,
@@ -122,7 +122,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 string token = null;
                 if (requireAuth)
                 {
@@ -185,7 +185,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 string token = null;
                 if (requireAuth)
                 {
@@ -254,7 +254,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 string token = null;
                 if (requireAuth)
                 {
@@ -323,7 +323,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 string token = null;
                 if (requireAuth)
                 {
@@ -386,7 +386,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 if (!File.Exists(filePath))
                 {
                     throw new FileNotFoundException($"文件不存在: {filePath}");

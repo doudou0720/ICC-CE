@@ -97,7 +97,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // 再次检查文件是否存在（可能在队列等待时被删除）
                 if (!File.Exists(filePath))
                 {
@@ -148,7 +148,7 @@ namespace Ink_Canvas.Helpers
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     var uploadResult = await apiClient.UploadNoteAsync<UploadNoteResponse>(
                         "/api/whiteboard/upload_note",
                         filePath,
@@ -191,7 +191,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 var selectedClassName = MainWindow.Settings?.Dlass?.SelectedClassName;
                 if (string.IsNullOrEmpty(selectedClassName))
                 {

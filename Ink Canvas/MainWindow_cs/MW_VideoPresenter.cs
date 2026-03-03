@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -609,12 +608,12 @@ namespace Ink_Canvas
                             {
                                 var ci = new CapturedImage(bmpImage);
                                 _capturedPhotos.Insert(0, ci);
-                                
+
                                 while (_capturedPhotos.Count > MaxCapturedPhotos)
                                 {
                                     _capturedPhotos.RemoveAt(_capturedPhotos.Count - 1);
                                 }
-                                
+
                                 UpdateCapturedPhotosDisplay();
                             }));
                         }

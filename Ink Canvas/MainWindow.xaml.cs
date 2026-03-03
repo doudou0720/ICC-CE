@@ -239,7 +239,7 @@ namespace Ink_Canvas
             ShowPage(currentPageIndex);
 
             // 手动实现触摸滑动
-            const double TouchTapMovementThreshold = 15.0; 
+            const double TouchTapMovementThreshold = 15.0;
             double leftTouchStartY = 0;
             double leftTouchStartX = 0;
             double leftScrollStartOffset = 0;
@@ -849,7 +849,7 @@ namespace Ink_Canvas
                 if (drawingAttributes == null)
                     drawingAttributes = inkCanvas.DefaultDrawingAttributes;
 
-                if (penType == 1) return; 
+                if (penType == 1) return;
 
                 if (_isBoardBrushMode)
                 {
@@ -1066,7 +1066,7 @@ namespace Ink_Canvas
                 }
                 else
                 {
-                    width = sliderValue / 2.0; 
+                    width = sliderValue / 2.0;
                 }
 
                 SetBrushAttributesDirectly(targetColor, width, width);
@@ -1373,7 +1373,7 @@ namespace Ink_Canvas
             // 初始化UIA置顶开关
             ToggleSwitchUIAccessTopMost.IsOn = Settings.Advanced.EnableUIAccessTopMost;
             UpdateUIAccessTopMostVisibility();
-            
+
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
 
             // 初始化橡皮擦自动切换回批注模式开关
@@ -1439,7 +1439,7 @@ namespace Ink_Canvas
                 if (TimerControl != null && MinimizedTimerControl != null)
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
-                    
+
                     // 设置PPT时间胶囊的父控件
                     if (PPTTimeCapsule != null)
                     {
@@ -1451,9 +1451,9 @@ namespace Ink_Canvas
                         if (TimerContainer != null && MinimizedTimerContainer != null && MinimizedTimerControl != null)
                         {
                             TimerContainer.Visibility = Visibility.Collapsed;
-                            
-                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
-                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+
+                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
+                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
                                 PPTTimeCapsule != null)
                             {
                                 MinimizedTimerContainer.Visibility = Visibility.Collapsed;
@@ -1473,20 +1473,20 @@ namespace Ink_Canvas
                             MinimizedTimerContainer.Visibility = Visibility.Collapsed;
                             MinimizedTimerControl.Visibility = Visibility.Collapsed;
                         }
-                        
+
                         // 如果启用了PPT时间胶囊，停止倒计时显示
                         if (Settings.PowerPointSettings.EnablePPTTimeCapsule && PPTTimeCapsule != null)
                         {
                             PPTTimeCapsule.StopCountdown();
                         }
                     };
-                    
+
                     // 监听计时器完成事件
                     TimerControl.TimerCompleted += (s, args) =>
                     {
                         // 如果启用了PPT时间胶囊且在PPT模式下，触发完成动画
-                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
-                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
+                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
                             PPTTimeCapsule != null)
                         {
                             PPTTimeCapsule.OnTimerCompleted();
@@ -2286,7 +2286,7 @@ namespace Ink_Canvas
             try
             {
                 // 检查是否在橡皮擦模式且启用了自动切换功能
-                if ((inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint || 
+                if ((inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint ||
                      inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke) &&
                     Settings.Canvas.EnableEraserAutoSwitchBack)
                 {
@@ -3935,7 +3935,7 @@ namespace Ink_Canvas
             {
                 if (PPTTimeCapsuleContainer == null || PPTTimeCapsule == null) return;
 
-                if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
                     BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                 {
                     PPTTimeCapsuleContainer.Visibility = Visibility.Visible;

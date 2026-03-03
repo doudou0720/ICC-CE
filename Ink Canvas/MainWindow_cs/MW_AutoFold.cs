@@ -17,7 +17,7 @@ namespace Ink_Canvas
         /// 浮动栏是否折叠的标志。
         /// </summary>
         public bool isFloatingBarFolded;
-        
+
         /// <summary>
         /// 浮动栏正在改变隐藏模式的标志，用于防止重复操作。
         /// </summary>
@@ -100,7 +100,7 @@ namespace Ink_Canvas
                 if (sender == Fold_Icon && lastBorderMouseDownObject != Fold_Icon) isShouldRejectAction = true;
             });
 
-            if (isShouldRejectAction) 
+            if (isShouldRejectAction)
             {
                 return;
             }
@@ -114,7 +114,7 @@ namespace Ink_Canvas
 
             if (isFloatingBarFolded) return;
 
-            if (isFloatingBarChangingHideMode) 
+            if (isFloatingBarChangingHideMode)
             {
                 return;
             }
@@ -384,12 +384,12 @@ namespace Ink_Canvas
                 unfoldFloatingBarByUser = true;
             foldFloatingBarByUser = false;
 
-            if (isFloatingBarChangingHideMode) 
+            if (isFloatingBarChangingHideMode)
             {
                 return;
             }
 
-            
+
             await Dispatcher.InvokeAsync(() =>
             {
                 isFloatingBarChangingHideMode = true;

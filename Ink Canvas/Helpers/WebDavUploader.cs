@@ -23,7 +23,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // 检查文件是否存在
                 if (!File.Exists(filePath))
                 {
@@ -66,7 +66,7 @@ namespace Ink_Canvas.Helpers
                     {
                         // 检查取消令牌
                         cancellationToken.ThrowIfCancellationRequested();
-                        
+
                         var result = await client.PutFile(targetPath, fileStream);
                         if (result.IsSuccessful)
                         {
@@ -79,7 +79,7 @@ namespace Ink_Canvas.Helpers
                             if (!string.IsNullOrEmpty(directoryPath))
                             {
                                 await EnsureDirectoryExistsAsync(client, directoryPath, cancellationToken);
-                                
+
                                 // 再次尝试上传文件
                                 cancellationToken.ThrowIfCancellationRequested();
                                 using (var retryStream = File.OpenRead(filePath))
@@ -132,7 +132,7 @@ namespace Ink_Canvas.Helpers
 
                     // 检查取消令牌
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     // 尝试创建目录
                     await client.Mkcol(currentPath);
                 }

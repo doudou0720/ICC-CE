@@ -790,7 +790,7 @@ namespace Ink_Canvas
                 var touchPoint = e.GetTouchPoint(null);
                 centerPoint = touchPoint.Position;
                 lastTouchPointOnGridInkCanvasCover = touchPoint.Position;
-                
+
                 var touchPointInCanvas = e.GetTouchPoint(inkCanvas);
                 lastDragPointInCanvas = touchPointInCanvas.Position;
             }
@@ -806,15 +806,15 @@ namespace Ink_Canvas
             dec.Remove(e.TouchDevice.Id);
             if (dec.Count >= 1) return;
             isProgramChangeStrokeSelection = false;
-            
+
             lastDragPointInCanvas = new Point(0, 0);
-            
+
             var touchUpPoint = e.GetTouchPoint(null).Position;
             if (lastTouchPointOnGridInkCanvasCover == touchUpPoint)
             {
                 var touchPointInCanvas = e.GetTouchPoint(inkCanvas).Position;
                 var selectionBounds = inkCanvas.GetSelectionBounds();
-                
+
                 if (!(touchPointInCanvas.X < selectionBounds.Left) &&
                     !(touchPointInCanvas.Y < selectionBounds.Top) &&
                     !(touchPointInCanvas.X > selectionBounds.Right) &&
@@ -1025,8 +1025,8 @@ namespace Ink_Canvas
         {
             // 四个边选择点，向外扩展8像素
             TopHandle.Margin = new Thickness(bounds.Left + bounds.Width / 2 - 4, bounds.Top - 12, 0, 0);
-            BottomHandle.Margin = new Thickness(bounds.Left + bounds.Width / 2 - 4, bounds.Bottom + 4 , 0, 0);
-            LeftHandle.Margin = new Thickness(bounds.Left - 12 , bounds.Top + bounds.Height / 2 - 4, 0, 0);
+            BottomHandle.Margin = new Thickness(bounds.Left + bounds.Width / 2 - 4, bounds.Bottom + 4, 0, 0);
+            LeftHandle.Margin = new Thickness(bounds.Left - 12, bounds.Top + bounds.Height / 2 - 4, 0, 0);
             RightHandle.Margin = new Thickness(bounds.Right + 4, bounds.Top + bounds.Height / 2 - 4, 0, 0);
 
             // 四个角选择点，完全位于选择框外部

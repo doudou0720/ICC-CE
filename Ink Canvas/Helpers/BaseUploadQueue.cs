@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -204,14 +203,14 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 var queueData = new List<UploadQueueItemData>();
 
                 // 将队列转换为可序列化的格式
                 foreach (var item in _uploadQueue)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     queueData.Add(new UploadQueueItemData
                     {
                         FilePath = item.FilePath,
@@ -322,7 +321,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 var filesToUpload = new List<UploadQueueItem>();
 
                 // 从队列中取出最多BATCH_SIZE个文件
@@ -330,7 +329,7 @@ namespace Ink_Canvas.Helpers
                 while (count < BATCH_SIZE && _uploadQueue.TryDequeue(out UploadQueueItem item))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     // 再次检查文件是否存在
                     if (File.Exists(item.FilePath) && IsValidFile(item.FilePath))
                     {
@@ -525,7 +524,7 @@ namespace Ink_Canvas.Helpers
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 // 检查是否启用
                 if (!IsUploadEnabled())
                 {

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
-using ui = iNKORE.UI.WPF.Modern.Controls;
 
 namespace Ink_Canvas.Windows
 {
@@ -327,7 +326,7 @@ namespace Ink_Canvas.Windows
                 if (MainWindow.Settings?.Dlass != null)
                 {
                     MainWindow.Settings.Dlass.IsAutoUploadNotes = ToggleSwitchAutoUploadNotes.IsOn;
-                    
+
                     // 同步更新到EnabledProviders列表
                     if (MainWindow.Settings.Upload != null)
                     {
@@ -335,7 +334,7 @@ namespace Ink_Canvas.Windows
                         {
                             MainWindow.Settings.Upload.EnabledProviders = new List<string>();
                         }
-                        
+
                         bool isAutoUploadEnabled = ToggleSwitchAutoUploadNotes.IsOn;
                         bool isDlassInEnabledProviders = MainWindow.Settings.Upload.EnabledProviders.Contains("Dlass");
                         bool isAlreadyConsistent = (isAutoUploadEnabled == isDlassInEnabledProviders);
@@ -346,7 +345,7 @@ namespace Ink_Canvas.Windows
                             MainWindow.SaveSettingsToFile();
                             return;
                         }
-                        
+
                         if (isAutoUploadEnabled)
                         {
                             if (!MainWindow.Settings.Upload.EnabledProviders.Contains("Dlass"))
@@ -358,11 +357,11 @@ namespace Ink_Canvas.Windows
                         {
                             MainWindow.Settings.Upload.EnabledProviders.Remove("Dlass");
                         }
-                        
+
                         // 重新加载通用设置，更新UI
                         LoadUniversalUploadSettings();
                     }
-                    
+
                     MainWindow.SaveSettingsToFile();
                 }
             }
@@ -494,7 +493,7 @@ namespace Ink_Canvas.Windows
                         {
                             MainWindow.Settings.Upload.EnabledProviders.Remove(provider.Name);
                         }
-                        
+
                         // 同步更新Dlass的IsAutoUploadNotes设置（如果是Dlass提供者）
                         if (provider.Name == "Dlass" && MainWindow.Settings.Dlass != null)
                         {

@@ -2,8 +2,6 @@ using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Windows.Ink;
 
 namespace Ink_Canvas.Helpers
@@ -455,7 +453,8 @@ namespace Ink_Canvas.Helpers
             {
                 for (int i = 0; i < _memoryStreams.Length; i++)
                 {
-                    try { _memoryStreams[i]?.Dispose(); } catch (Exception ex) { LogHelper.WriteLogToFile($"释放内存流 {i} 失败: {ex}", LogHelper.LogType.Warning); }
+                    try { _memoryStreams[i]?.Dispose(); }
+                    catch (Exception ex) { LogHelper.WriteLogToFile($"释放内存流 {i} 失败: {ex}", LogHelper.LogType.Warning); }
                     finally { _memoryStreams[i] = null; }
                 }
                 _memoryStreams = new MemoryStream[_maxSlides + 2];
@@ -544,7 +543,8 @@ namespace Ink_Canvas.Helpers
                 if (_memoryStreams[i] != null)
                 {
                     long len = _memoryStreams[i].Length;
-                    try { _memoryStreams[i].Dispose(); freed += len; cleaned++; } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                    try { _memoryStreams[i].Dispose(); freed += len; cleaned++; }
+                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                     finally { _memoryStreams[i] = null; }
                 }
             }

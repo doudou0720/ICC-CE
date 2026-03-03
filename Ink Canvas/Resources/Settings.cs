@@ -136,7 +136,7 @@ namespace Ink_Canvas
         [JsonProperty("brushAutoRestoreColor")]
         public string BrushAutoRestoreColor { get; set; } = "#FFFF0000";
         [JsonProperty("brushAutoRestoreWidth")]
-        public double BrushAutoRestoreWidth { get; set; } =5;
+        public double BrushAutoRestoreWidth { get; set; } = 5;
         [JsonProperty("brushAutoRestoreAlpha")]
         public int BrushAutoRestoreAlpha { get; set; } = 255;
         [JsonProperty("enableEraserAutoSwitchBack")]
@@ -403,7 +403,7 @@ namespace Ink_Canvas
         [JsonProperty("enablePPTTimeCapsule")]
         public bool EnablePPTTimeCapsule { get; set; } = true;
         [JsonProperty("pptTimeCapsulePosition")]
-        public int PPTTimeCapsulePosition { get; set; } = 1; 
+        public int PPTTimeCapsulePosition { get; set; } = 1;
         [JsonProperty("useRotPptLink")]
         public bool UseRotPptLink { get; set; } = false;
         [JsonProperty("showPPTSidebarByDefault")]
@@ -448,7 +448,7 @@ namespace Ink_Canvas
 
         [JsonProperty("isAutoFoldInEasiNote3")]
         public bool IsAutoFoldInEasiNote3 { get; set; }
-        
+
         [JsonProperty("isAutoFoldInEasiNote3C")]
         public bool IsAutoFoldInEasiNote3C { get; set; }
 

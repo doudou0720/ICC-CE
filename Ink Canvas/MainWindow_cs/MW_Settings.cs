@@ -187,7 +187,7 @@ namespace Ink_Canvas
                                 // 用户同意，保存设置
                                 Settings.Startup.HasAcceptedTelemetryPrivacy = true;
                                 Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
-                                
+
                                 // 更新UI，即使 isLoaded 为 false（启动时）
                                 // 使用标志避免触发事件处理程序
                                 // 使用 Dispatcher 确保在 UI 线程上更新
@@ -245,7 +245,7 @@ namespace Ink_Canvas
                 Settings.Startup.UpdateChannel = UpdateChannel.Release;
                 DeviceIdentifier.UpdateUsageChannel(UpdateChannel.Release);
                 SaveSettingsToFile();
-                
+
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _isChangingUpdateChannelInternally = true;
@@ -288,7 +288,7 @@ namespace Ink_Canvas
                 if (result == MessageBoxResult.Yes)
                 {
                     Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
-                    
+
                     if (isLoaded && ComboBoxTelemetryUploadLevel != null)
                     {
                         ComboBoxTelemetryUploadLevel.SelectedIndex = 1;
@@ -303,7 +303,7 @@ namespace Ink_Canvas
                     Settings.Startup.UpdateChannel = UpdateChannel.Release;
                     DeviceIdentifier.UpdateUsageChannel(UpdateChannel.Release);
                     SaveSettingsToFile();
-                    
+
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         _isChangingUpdateChannelInternally = true;
@@ -746,21 +746,21 @@ namespace Ink_Canvas
             if (!isLoaded) return;
 
             Settings.PowerPointSettings.PowerPointSupport = ToggleSwitchSupportPowerPoint.IsOn;
-            
+
             if (!Settings.PowerPointSettings.PowerPointSupport)
             {
                 if (Settings.PowerPointSettings.IsSupportWPS)
                 {
                     Settings.PowerPointSettings.IsSupportWPS = false;
                     ToggleSwitchSupportWPS.IsOn = false;
-                    
+
                     if (_pptManager != null)
                     {
                         _pptManager.IsSupportWPS = false;
                     }
                 }
             }
-            
+
             SaveSettingsToFile();
 
             // 使用新的PPT管理器
@@ -1266,14 +1266,14 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.Appearance.ChickenSoupSource = ComboBoxChickenSoupSource.SelectedIndex;
-            
+
             if (BtnHitokotoCustomize != null)
             {
-                BtnHitokotoCustomize.Visibility = ComboBoxChickenSoupSource.SelectedIndex == 3 
-                    ? Visibility.Visible 
+                BtnHitokotoCustomize.Visibility = ComboBoxChickenSoupSource.SelectedIndex == 3
+                    ? Visibility.Visible
                     : Visibility.Collapsed;
             }
-            
+
             SaveSettingsToFile();
             await UpdateChickenSoupTextAsync();
         }
@@ -1334,7 +1334,7 @@ namespace Ink_Canvas
             // 全选复选框逻辑
             bool isUpdatingSelectAll = false;
             selectAllCheckBox.IsChecked = Settings.Appearance.HitokotoCategories.Count == categories.Count;
-            
+
             selectAllCheckBox.Checked += (s, args) =>
             {
                 if (isUpdatingSelectAll) return;
@@ -1423,7 +1423,7 @@ namespace Ink_Canvas
                 }
 
                 SaveSettingsToFile();
-                
+
                 // 如果当前正在使用API，更新名言
                 if (Settings.Appearance.ChickenSoupSource == 3 && Settings.Appearance.EnableChickenSoupInWhiteboardMode)
                 {
@@ -5125,8 +5125,8 @@ namespace Ink_Canvas
             {
                 var oldChannel = Settings.Startup.UpdateChannel;
                 string channel = radioButton.Tag.ToString();
-                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta 
-                    : channel == "Preview" ? UpdateChannel.Preview 
+                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta
+                    : channel == "Preview" ? UpdateChannel.Preview
                     : UpdateChannel.Release;
 
                 // 如果通道没有变化，不需要执行更新检查

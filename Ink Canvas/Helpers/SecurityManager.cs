@@ -1,12 +1,10 @@
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Security.Cryptography;
-using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Ink_Canvas.Windows;
-using iNKORE.UI.WPF.Modern.Controls;
-using MessageBox=iNKORE.UI.WPF.Modern.Controls.MessageBox;
-using System.Threading.Tasks;
+using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 
 namespace Ink_Canvas.Helpers
 {

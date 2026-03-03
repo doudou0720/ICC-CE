@@ -1,3 +1,4 @@
+using Ink_Canvas.Helpers;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -6,9 +7,8 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
 using System.Windows.Ink;
-using Ink_Canvas.Helpers;
+using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas
 {

@@ -1,7 +1,6 @@
 using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -236,8 +235,8 @@ namespace Ink_Canvas
                     var elementsToProcess = new List<UIElement>();
                     foreach (var item in TimeMachineHistories[0])
                     {
-                        if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
-                            !item.StrokeHasBeenCleared && 
+                        if (item.CommitType == TimeMachineHistoryType.ElementInsert &&
+                            !item.StrokeHasBeenCleared &&
                             item.InsertedElement != null &&
                             !removed0.Contains(item.InsertedElement))
                         {
@@ -255,8 +254,8 @@ namespace Ink_Canvas
                     var elementsToProcess = new List<UIElement>();
                     foreach (var item in TimeMachineHistories[CurrentWhiteboardIndex])
                     {
-                        if (item.CommitType == TimeMachineHistoryType.ElementInsert && 
-                            !item.StrokeHasBeenCleared && 
+                        if (item.CommitType == TimeMachineHistoryType.ElementInsert &&
+                            !item.StrokeHasBeenCleared &&
                             item.InsertedElement != null &&
                             !removed.Contains(item.InsertedElement))
                         {

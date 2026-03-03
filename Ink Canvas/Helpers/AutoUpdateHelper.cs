@@ -643,20 +643,20 @@ namespace Ink_Canvas.Helpers
                         LogHelper.WriteLogToFile("AutoUpdate | 使用GitHub API调用");
                         var response = await client.GetStringAsync(apiUrl);
                         var releases = JArray.Parse(response);
-                        
+
                         if (releases.Count > 0)
                         {
                             var latestRelease = releases[0];
                             string version = latestRelease["tag_name"]?.ToString();
                             string releaseNotes = latestRelease["body"]?.ToString();
                             string downloadUrl = latestRelease["assets"]?.First?["browser_download_url"]?.ToString();
-                            
+
                             DateTime? releaseTime = null;
                             if (latestRelease["published_at"] != null && DateTime.TryParse(latestRelease["published_at"].ToString(), out DateTime parsedTime))
                             {
                                 releaseTime = parsedTime;
                             }
-                            
+
                             if (!string.IsNullOrEmpty(version) && !string.IsNullOrEmpty(downloadUrl))
                                 return (version, downloadUrl, releaseNotes, releaseTime);
                         }
