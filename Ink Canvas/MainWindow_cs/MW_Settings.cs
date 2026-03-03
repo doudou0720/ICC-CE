@@ -1477,74 +1477,73 @@ namespace Ink_Canvas
             if (index == 0)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 1)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-noshadow.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-noshadow.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 2)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-dark.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-dark.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 3)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-sharpdark.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-sharpdark.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 4)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-light-small.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-light-small.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 5)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(
-                        new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-dark-small.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-dark-small.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(1.2);
             }
             else if (index == 6)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandoujiyanhuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandoujiyanhuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 7)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanshounvhuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanshounvhuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 8)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanciya.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanciya.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 9)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanneikuhuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanneikuhuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 10)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandogeyuanliangwo.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandogeyuanliangwo.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 11)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/tiebahuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/tiebahuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1);
             }
             else if (index >= 12 && index - 12 < Settings.Appearance.CustomFloatingBarImgs.Count)
@@ -1553,16 +1552,37 @@ namespace Ink_Canvas
                 var customIcon = Settings.Appearance.CustomFloatingBarImgs[index - 12];
                 try
                 {
-                    FloatingbarHeadIconImg.Source = new BitmapImage(new Uri(customIcon.FilePath));
+                    var dpi = VisualTreeHelper.GetDpi(this);
+                    var targetPixels = (int)Math.Round(58 * dpi.DpiScaleX);
+                    var decodePixels = targetPixels * 2;
+                    if (decodePixels < 64) decodePixels = 64;
+                    if (decodePixels > 512) decodePixels = 512;
+
+                    FloatingbarHeadIconImg.Source = CreateBitmapImage(new Uri(customIcon.FilePath), decodePixels);
                     FloatingbarHeadIconImg.Margin = new Thickness(2);
                 }
                 catch
                 {
                     // 如果加载失败，使用默认图标
-                    FloatingbarHeadIconImg.Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
+                    FloatingbarHeadIconImg.Source = CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
                     FloatingbarHeadIconImg.Margin = new Thickness(0.5);
                 }
             }
+        }
+
+        private static BitmapImage CreateBitmapImage(Uri uri, int decodePixelWidth = 0)
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.UriSource = uri;
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            if (decodePixelWidth > 0)
+            {
+                image.DecodePixelWidth = decodePixelWidth;
+            }
+            image.EndInit();
+            image.Freeze();
+            return image;
         }
 
         /// <summary>
