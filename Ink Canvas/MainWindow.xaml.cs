@@ -4,6 +4,7 @@ using Ink_Canvas.Windows;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -68,6 +69,9 @@ namespace Ink_Canvas
         // 设置面板相关状态
         private bool isTemporarilyDisablingNoFocusMode = false;
 
+        private bool _isApplyingLanguageFromSettings;
+        private bool _isReloadingForLanguageChange;
+
         // 全屏处理状态标志
         public bool isFullScreenApplied = false;
 
@@ -96,15 +100,21 @@ namespace Ink_Canvas
             */
             try
             {
-                var preferredLanguage = Settings?.Appearance?.Language;
-                if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                var path = App.RootPath + settingsFileName;
+                if (File.Exists(path))
                 {
-                    LocalizationHelper.TrySetCulture(preferredLanguage);
+                    var json = File.ReadAllText(path);
+                    var loadedSettings = JsonConvert.DeserializeObject<Settings>(json);
+                    var preferredLanguage = loadedSettings?.Appearance?.Language;
+                    if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                    {
+                        LocalizationHelper.TrySetCulture(preferredLanguage);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"应用首选界面语言失败: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"启动时预加载语言失败: {ex.Message}", LogHelper.LogType.Error);
             }
 
             InitializeComponent();
@@ -207,7 +217,6 @@ namespace Ink_Canvas
 
             CheckColorTheme(true);
             CheckPenTypeUIState();
-            ApplyLanguageFromSettings();
 
             // 初始化墨迹平滑管理器
             _inkSmoothingManager = new InkSmoothingManager(Dispatcher);
@@ -1169,6 +1178,7 @@ namespace Ink_Canvas
             loadPenCanvas();
             //加载设置
             LoadSettings(true);
+            ApplyLanguageFromSettings();
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
 
@@ -1513,7 +1523,15 @@ namespace Ink_Canvas
                     index = 0;
                 }
 
-                ComboBoxLanguage.SelectedIndex = index;
+                _isApplyingLanguageFromSettings = true;
+                try
+                {
+                    ComboBoxLanguage.SelectedIndex = index;
+                }
+                finally
+                {
+                    _isApplyingLanguageFromSettings = false;
+                }
             }
             catch (Exception ex)
             {
@@ -2520,28 +2538,28 @@ namespace Ink_Canvas
             switch (sectionTag.ToLower())
             {
                 case "startup":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "启动");
+                    targetGroupBox = GroupBoxStartup;
                     break;
                 case "canvas":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "画板和墨迹");
+                    targetGroupBox = GroupBoxCanvas;
                     break;
                 case "gesture":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "手势");
+                    targetGroupBox = GroupBoxGesture;
                     break;
                 case "inkrecognition":
                     targetGroupBox = GroupBoxInkRecognition;
                     break;
                 case "crashaction":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "崩溃后操作");
+                    targetGroupBox = GroupBoxCrashAction;
                     break;
                 case "ppt":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "PPT联动");
+                    targetGroupBox = GroupBoxPPT;
                     break;
                 case "advanced":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "高级设置");
+                    targetGroupBox = GroupBoxAdvanced;
                     break;
                 case "automation":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "自动化");
+                    targetGroupBox = GroupBoxAutomation;
                     break;
                 case "randomwindow":
                     targetGroupBox = GroupBoxRandWindow;
@@ -2551,10 +2569,10 @@ namespace Ink_Canvas
                     break;
                 case "shortcuts":
                     // 快捷键设置部分可能尚未实现
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "快捷键");
+                    targetGroupBox = null;
                     break;
                 case "about":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "关于");
+                    targetGroupBox = GroupBoxAbout;
                     break;
                 case "plugins":
                     targetGroupBox = GroupBoxPlugins;
@@ -4554,6 +4572,8 @@ namespace Ink_Canvas
             try
             {
                 if (!isLoaded) return;
+                if (_isApplyingLanguageFromSettings) return;
+                if (_isReloadingForLanguageChange) return;
                 if (Settings?.Appearance == null) return;
                 if (ComboBoxLanguage == null) return;
 
@@ -4577,11 +4597,9 @@ namespace Ink_Canvas
                 Settings.Appearance.Language = language;
                 SaveSettingsToFile();
 
-                if (!string.IsNullOrWhiteSpace(language))
-                {
-                    LocalizationHelper.TrySetCulture(language);
-                }
+                LocalizationHelper.TrySetCulture(language);
 
+                _isReloadingForLanguageChange = true;
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     try
@@ -4599,13 +4617,15 @@ namespace Ink_Canvas
                     {
                         LogHelper.WriteLogToFile($"重建主窗口以应用语言时出错: {ex2.Message}", LogHelper.LogType.Error);
                         ShowNotification("已更新界面语言设置，重启应用后可完全生效。");
+                        _isReloadingForLanguageChange = false;
                     }
-                }), DispatcherPriority.Normal);
+                }), DispatcherPriority.ApplicationIdle);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"切换界面语言时出错: {ex.Message}", LogHelper.LogType.Error);
                 ShowNotification("切换界面语言失败。");
+                _isReloadingForLanguageChange = false;
             }
         }
 

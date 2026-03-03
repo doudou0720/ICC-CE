@@ -152,6 +152,22 @@ namespace Ink_Canvas
 
             try
             {
+                if (Settings?.Appearance != null)
+                {
+                    var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
+                    if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                    {
+                        LocalizationHelper.TrySetCulture(preferredLanguage);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"从配置应用界面语言失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            try
+            {
                 ProcessProtectionManager.ApplyFromSettings();
             }
             catch

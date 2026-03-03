@@ -581,7 +581,7 @@
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxStartup">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Startup_Start}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -710,7 +710,7 @@
                 -->
                                 </ui:SimpleStackPanel>
                             </GroupBox>
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxCanvas">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Canvas_GroupTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -926,7 +926,7 @@
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <!-- 崩溃后操作设置 -->
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxCrashAction">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Crash_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -944,7 +944,7 @@
                                     <TextBlock Text="{i18n:I18n Key=Crash_Hint}" Foreground="#a1a1aa" />
                                 </ui:SimpleStackPanel>
                             </GroupBox>
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxGesture">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Gesture_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -1517,7 +1517,7 @@
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                             </GroupBox>
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxPPT">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=PPT_GroupTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -2502,7 +2502,7 @@
                                 </ui:SimpleStackPanel>
 
                             </GroupBox>
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxAdvanced">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Advanced_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -2887,7 +2887,7 @@
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                             </GroupBox>
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxAutomation">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Automation_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
@@ -3959,7 +3959,7 @@
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                             </GroupBox>
-                            <GroupBox>
+                            <GroupBox Name="GroupBoxAbout">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=About_Title}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />

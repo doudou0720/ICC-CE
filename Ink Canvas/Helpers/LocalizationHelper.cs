@@ -31,6 +31,11 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(cultureName))
+                {
+                    CurrentCulture = CultureInfo.InstalledUICulture;
+                    return true;
+                }
                 var culture = CultureInfo.GetCultureInfo(cultureName);
                 CurrentCulture = culture;
                 return true;
