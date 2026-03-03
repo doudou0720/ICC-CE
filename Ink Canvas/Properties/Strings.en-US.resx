@@ -725,4 +725,27 @@
   <data name="Theme_Language_ChineseSimplified" xml:space="preserve"><value>Chinese (Simplified)</value></data>
   <data name="Theme_Language_English" xml:space="preserve"><value>English</value></data>
   <data name="Theme_Language_RestartHint" xml:space="preserve"><value>You need to restart the app for language changes to fully take effect.</value></data>
+  <data name="FloatingBar_AreaEraser" xml:space="preserve"><value>Area eraser</value></data>
+  <data name="FloatingBar_StrokeEraser" xml:space="preserve"><value>Stroke eraser</value></data>
+  <data name="FloatingBar_LassoSelect" xml:space="preserve"><value>Lasso</value></data>
+  <data name="FloatingBar_Geometry" xml:space="preserve"><value>Geometry</value></data>
+  <data name="FloatingBar_ClearAndMouse" xml:space="preserve"><value>Clear &amp; cursor</value></data>
+  <data name="FloatingBar_Whiteboard" xml:space="preserve"><value>Board</value></data>
+  <data name="FloatingBar_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Geometry_Title" xml:space="preserve"><value>Geometry drawing</value></data>
+  <data name="Geometry_DrawLine" xml:space="preserve"><value>Line</value></data>
+  <data name="Geometry_DrawDashedLine" xml:space="preserve"><value>Dashed line</value></data>
+  <data name="Geometry_DrawDottedLine" xml:space="preserve"><value>Dotted line</value></data>
+  <data name="Geometry_DrawArrow" xml:space="preserve"><value>Arrow</value></data>
+  <data name="Geometry_DrawParallelLines" xml:space="preserve"><value>4 parallel lines</value></data>
+  <data name="Geometry_DrawCenteredSquare" xml:space="preserve"><value>Centered square</value></data>
+  <data name="Geometry_DrawCenteredCircle" xml:space="preserve"><value>Centered circle</value></data>
+  <data name="Geometry_DrawCenteredDashedCircle" xml:space="preserve"><value>Centered dashed circle</value></data>
+  <data name="Geometry_DrawCenteredEllipse" xml:space="preserve"><value>Centered ellipse</value></data>
+  <data name="Geometry_DrawCuboid" xml:space="preserve"><value>Cuboid</value></data>
+  <data name="Geometry_DrawSquare" xml:space="preserve"><value>Square</value></data>
+  <data name="Geometry_DrawCylinder" xml:space="preserve"><value>Cylinder</value></data>
+  <data name="Geometry_DrawCone" xml:space="preserve"><value>Cone</value></data>
+  <data name="Board_Gesture" xml:space="preserve"><value>Gesture</value></data>
+  <data name="Board_GestureOptions" xml:space="preserve"><value>Gesture options</value></data>
 </root>

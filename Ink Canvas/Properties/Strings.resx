@@ -740,4 +740,27 @@
   <data name="Theme_Language_ChineseSimplified" xml:space="preserve"><value>简体中文</value></data>
   <data name="Theme_Language_English" xml:space="preserve"><value>English</value></data>
   <data name="Theme_Language_RestartHint" xml:space="preserve"><value>更改界面语言后需要重启应用程序才能完全生效。</value></data>
+  <data name="FloatingBar_AreaEraser" xml:space="preserve"><value>面积擦</value></data>
+  <data name="FloatingBar_StrokeEraser" xml:space="preserve"><value>线擦</value></data>
+  <data name="FloatingBar_LassoSelect" xml:space="preserve"><value>套索选</value></data>
+  <data name="FloatingBar_Geometry" xml:space="preserve"><value>几何</value></data>
+  <data name="FloatingBar_ClearAndMouse" xml:space="preserve"><value>清并鼠</value></data>
+  <data name="FloatingBar_Whiteboard" xml:space="preserve"><value>白板</value></data>
+  <data name="FloatingBar_Hide" xml:space="preserve"><value>隐藏</value></data>
+  <data name="Geometry_Title" xml:space="preserve"><value>几何绘图</value></data>
+  <data name="Geometry_DrawLine" xml:space="preserve"><value>画直线</value></data>
+  <data name="Geometry_DrawDashedLine" xml:space="preserve"><value>画虚线</value></data>
+  <data name="Geometry_DrawDottedLine" xml:space="preserve"><value>画点线</value></data>
+  <data name="Geometry_DrawArrow" xml:space="preserve"><value>画箭头</value></data>
+  <data name="Geometry_DrawParallelLines" xml:space="preserve"><value>4平行线</value></data>
+  <data name="Geometry_DrawCenteredSquare" xml:space="preserve"><value>中心正方</value></data>
+  <data name="Geometry_DrawCenteredCircle" xml:space="preserve"><value>中心圆</value></data>
+  <data name="Geometry_DrawCenteredDashedCircle" xml:space="preserve"><value>中心虚圆</value></data>
+  <data name="Geometry_DrawCenteredEllipse" xml:space="preserve"><value>中心椭圆</value></data>
+  <data name="Geometry_DrawCuboid" xml:space="preserve"><value>长方体</value></data>
+  <data name="Geometry_DrawSquare" xml:space="preserve"><value>正方形</value></data>
+  <data name="Geometry_DrawCylinder" xml:space="preserve"><value>画圆柱</value></data>
+  <data name="Geometry_DrawCone" xml:space="preserve"><value>画圆锥</value></data>
+  <data name="Board_Gesture" xml:space="preserve"><value>手势</value></data>
+  <data name="Board_GestureOptions" xml:space="preserve"><value>手势选项</value></data>
 </root>

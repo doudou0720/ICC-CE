@@ -5043,7 +5043,7 @@
                                         StrokeLineJoin="Round"
                                         Data="M15 10 L19.553 7.724 C19.7054 7.64783 19.8748 7.61188 20.045 7.61954 C20.2152 7.62721 20.3806 7.67824 20.5256 7.7678 C20.6706 7.85736 20.7902 7.98247 20.8733 8.13127 C20.9563 8.28006 20.9999 8.44761 21 8.618 V15.382 C20.9999 15.5524 20.9563 15.7199 20.8733 15.8687 C20.7902 16.0175 20.6706 16.1426 20.5256 16.2322 C20.3806 16.3218 20.2152 16.3728 20.045 16.3805 C19.8748 16.3881 19.7054 16.3522 19.553 16.276 L15 14 Z M3 8 C3 7.46957 3.21071 6.96086 3.58579 6.58579 C3.96086 6.21071 4.46957 6 5 6 H13 C13.5304 6 14.0391 6.21071 14.4142 6.58579 C14.7893 6.96086 15 7.46957 15 8 V16 C15 16.5304 14.7893 17.0391 14.4142 17.4142 C14.0391 17.7893 13.5304 18 13 18 H5 C4.46957 18 3.96086 17.7893 3.58579 17.4142 C3.21071 17.0391 3 16.5304 3 16 Z" />
                                     <TextBlock
-                                        Text="展台"
+                                        Text="{i18n:I18n Key=Booth_Title}"
                                         Foreground="{DynamicResource FloatBarForeground}"
                                         VerticalAlignment="Bottom"
                                         HorizontalAlignment="Center"
@@ -5084,9 +5084,9 @@
                                                             </DrawingGroup>
                                                         </DrawingImage.Drawing>
                                                     </DrawingImage>
-                                                </Image.Source>
-                                            </Image>
-                                            <TextBlock Text="手势" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
+                                            </Image.Source>
+                                        </Image>
+                                            <TextBlock Text="{i18n:I18n Key=Board_Gesture}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
                                                        Name="BoardGestureLabel"
                                                        HorizontalAlignment="Center" FontSize="12" />
                                         </Grid>
@@ -5103,7 +5103,7 @@
                                                         CornerRadius="8,8,0,0"
                                                         Background="#2563eb" Margin="-1,-1,-1,1">
                                                         <Canvas Height="36" ClipToBounds="True">
-                                                            <TextBlock Text="手势选项" Canvas.Left="12" Foreground="White"
+                                                            <TextBlock Text="{i18n:I18n Key=Board_GestureOptions}" Canvas.Left="12" Foreground="White"
                                                                 Padding="0,7"
                                                                 FontSize="17" FontWeight="Bold"
                                                                 TextAlignment="Center" />
@@ -9190,7 +9190,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="CircleEraserToolbarTextBlock" Text="面积擦" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="CircleEraserToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_AreaEraser}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Name="EraserByStrokes_Icon"
@@ -9213,7 +9213,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="InkEraserToolbarTextBlock" Text="线擦" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="InkEraserToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_StrokeEraser}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Name="SymbolIconSelect"
@@ -9235,7 +9235,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="LassoToolToolbarTextBlock" Text="套索选" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="LassoToolToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_LassoSelect}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
@@ -9259,7 +9259,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="ShapesToolbarTextBlock" Text="几何" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="ShapesToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Geometry}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
 
@@ -9280,7 +9280,7 @@
                                                     <ui:SimpleStackPanel Orientation="Horizontal"
                                                                          HorizontalAlignment="Stretch">
                                                         <Canvas Height="24" Width="315" ClipToBounds="True">
-                                                            <TextBlock Text="几何绘图" Canvas.Left="8" Foreground="White"
+                                                            <TextBlock Text="{i18n:I18n Key=Geometry_Title}" Canvas.Left="8" Foreground="White"
                                                                        Padding="0,5" FontSize="11" FontWeight="Bold"
                                                                        TextAlignment="Center" />
                                                             <Image Margin="295,3.5,0,0"
@@ -9302,7 +9302,7 @@
                                                         <Image Source="{DynamicResource GeoIconLine}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="画直线" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawLine}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel Name="BoardImageDrawDashedLine"
                                                                          MouseDown="Image_MouseDown"
@@ -9312,7 +9312,7 @@
                                                         <Image Source="{DynamicResource GeoIconDashedLine}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="画虚线" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawDashedLine}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel Name="BoardImageDrawDotLine"
                                                                          MouseDown="Image_MouseDown"
@@ -9322,7 +9322,7 @@
                                                         <Image Source="{DynamicResource GeoIconDotLine}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="画点线" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawDottedLine}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel Name="BoardImageDrawArrow"
                                                                          MouseDown="Image_MouseDown"
@@ -9331,7 +9331,7 @@
                                                         <Image Source="{DynamicResource GeoIconArrow}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="画箭头" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawArrow}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel Name="BoardImageDrawParallelLine"
                                                                          MouseDown="Image_MouseDown"
@@ -9342,7 +9342,7 @@
                                                             Source="{DynamicResource GeoIconParallelLine}"
                                                             RenderOptions.BitmapScalingMode="HighQuality"
                                                             Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="4平行线" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawParallelLines}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawRectangleCenter_Click"
                                                                          Margin="0,0,0,0" Height="38" Width="32"
@@ -9351,7 +9351,7 @@
                                                             Source="{DynamicResource GeoIconRectangleCenter}"
                                                             RenderOptions.BitmapScalingMode="HighQuality"
                                                             Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="中心正方" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCenteredSquare}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawCircle_Click" Margin="0,0,0,0"
                                                                          Height="38" Width="32" Orientation="Vertical">
@@ -9359,7 +9359,7 @@
                                                             Source="{DynamicResource GeoIconCircle}"
                                                             RenderOptions.BitmapScalingMode="HighQuality"
                                                             Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="中心圆" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCenteredCircle}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawDashedCircle_Click"
                                                                          Margin="0,0,0,0" Height="38" Width="32"
@@ -9369,7 +9369,7 @@
                                                             RenderOptions.BitmapScalingMode="HighQuality"
                                                             Margin="0,4,0,2"
                                                             Height="19" Width="19" />
-                                                        <Label Content="中心虚圆" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCenteredDashedCircle}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawCenterEllipse_Click"
                                                                          Margin="0,0,0,0" Height="38" Width="32"
@@ -9378,7 +9378,7 @@
                                                             Source="{DynamicResource GeoIconEllipseCenter}"
                                                             RenderOptions.BitmapScalingMode="HighQuality"
                                                             Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="中心椭圆" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCenteredEllipse}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <!--<Image Name="BoardImageDrawLine" Margin="16,12,0,12" MouseDown="Image_MouseDown" MouseUp="BtnDrawLine_Click" Source="{DynamicResource DrawShapeImageSource.Line}"/>-->
                                                     <!--<Image Name="BoardImageDrawDashedLine" Margin="0,12,0,12" MouseDown="Image_MouseDown" MouseUp="BtnDrawDashedLine_Click" Source="{DynamicResource DrawShapeImageSource.DashedLine}"/>-->
@@ -9408,7 +9408,7 @@
                                                         <Image Source="{DynamicResource GeoIconCuboid}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="长方体" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCuboid}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawRectangle_Click"
                                                                          Margin="0,0,0,0"
@@ -9416,7 +9416,7 @@
                                                         <Image Source="{DynamicResource GeoIconRectangle}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="正方形" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawSquare}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawCylinder_Click"
                                                                          Margin="0,0,0,0"
@@ -9424,14 +9424,14 @@
                                                         <Image Source="{DynamicResource GeoIconCylinder}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="画圆柱" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCylinder}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                     <ui:SimpleStackPanel MouseUp="BtnDrawCone_Click" Margin="0,0,0,0"
                                                                          Height="38" Width="32" Orientation="Vertical">
                                                         <Image Source="{DynamicResource GeoIconCone}"
                                                                RenderOptions.BitmapScalingMode="HighQuality"
                                                                Margin="0,4,0,2" Height="19" Width="19" />
-                                                        <Label Content="画圆锥" FontSize="8" HorizontalAlignment="Center" />
+                                                        <Label Content="{i18n:I18n Key=Geometry_DrawCone}" FontSize="8" HorizontalAlignment="Center" />
                                                     </ui:SimpleStackPanel>
                                                 </ui:SimpleStackPanel>
                                                 <ui:SimpleStackPanel Visibility="Collapsed" Height="50" Spacing="10"
@@ -9532,7 +9532,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="UndoToolbarTextBlock" Text="撤销"
+                                        <TextBlock x:Name="UndoToolbarTextBlock" Text="{i18n:I18n Key=Board_Undo}"
                                                    Opacity="{Binding ElementName=BtnUndo, Path=IsEnabled, Converter={StaticResource IsEnabledToOpacityConverter}}"
                                                    Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
                                                    TextAlignment="Center" />
@@ -9560,7 +9560,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="RedoToolbarTextBlock" Text="重做"
+                                        <TextBlock x:Name="RedoToolbarTextBlock" Text="{i18n:I18n Key=Board_Redo}"
                                                    Opacity="{Binding ElementName=BtnRedo, Path=IsEnabled, Converter={StaticResource IsEnabledToOpacityConverter}}"
                                                    Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
                                                    TextAlignment="Center" />
@@ -9585,7 +9585,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="ClearAndMouseToolbarTextBlock" Text="清并鼠" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="ClearAndMouseToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_ClearAndMouse}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
@@ -9601,7 +9601,7 @@
                                                     CornerRadius="6,6,0,0"
                                                     Background="#2563eb" Margin="-1,-1,-1,1">
                                                 <Canvas Height="24" ClipToBounds="True">
-                                                    <TextBlock Text="橡皮选项" Canvas.Left="8" Foreground="White"
+                                                    <TextBlock Text="{i18n:I18n Key=Board_EraserOptions}" Canvas.Left="8" Foreground="White"
                                                                Padding="0,5"
                                                                FontSize="11" FontWeight="Bold" TextAlignment="Center" />
                                                     <Image Margin="100,4,0,0"
@@ -9615,22 +9615,22 @@
                                             <ui:SimpleStackPanel Orientation="Horizontal" Margin="0,8,0,0" Spacing="-2"
                                                                  VerticalAlignment="Center"
                                                                  HorizontalAlignment="Center">
-                                                <Label Margin="0,0,0,0" Content="大小" FontWeight="Bold"
+                                                <Label Margin="0,0,0,0" Content="{i18n:I18n Key=Board_Size}" FontWeight="Bold"
                                                        Foreground="{DynamicResource FloatBarForeground}" FontSize="10"
                                                        VerticalAlignment="Center" />
                                                 <Viewbox Margin="8,0,0,0" Height="20" Width="52">
                                                     <ComboBox Name="ComboBoxEraserSizeFloatingBar"
                                                               FontFamily="Microsoft YaHei UI" SelectedIndex="2"
                                                               SelectionChanged="ComboBoxEraserSizeFloatingBar_SelectionChanged">
-                                                        <ComboBoxItem Content="很小" FontFamily="Microsoft YaHei UI" />
-                                                        <ComboBoxItem Content="较小" FontFamily="Microsoft YaHei UI" />
-                                                        <ComboBoxItem Content="中等" FontFamily="Microsoft YaHei UI" />
-                                                        <ComboBoxItem Content="较大" FontFamily="Microsoft YaHei UI" />
-                                                        <ComboBoxItem Content="很大" FontFamily="Microsoft YaHei UI" />
+                                                        <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_VerySmall}" FontFamily="Microsoft YaHei UI" />
+                                                        <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_Small}" FontFamily="Microsoft YaHei UI" />
+                                                        <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_Medium}" FontFamily="Microsoft YaHei UI" />
+                                                        <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_Large}" FontFamily="Microsoft YaHei UI" />
+                                                        <ComboBoxItem Content="{i18n:I18n Key=Canvas_EraserSize_VeryLarge}" FontFamily="Microsoft YaHei UI" />
                                                     </ComboBox>
                                                 </Viewbox>
                                             </ui:SimpleStackPanel>
-                                            <TextBlock HorizontalAlignment="Center" Margin="0,12,0,6" Text="橡皮形状"
+                                            <TextBlock HorizontalAlignment="Center" Margin="0,12,0,6" Text="{i18n:I18n Key=Board_EraserShape}"
                                                        FontWeight="Bold"
                                                        Foreground="{DynamicResource FloatBarForeground}"
                                                        FontSize="10" VerticalAlignment="Center" />
@@ -9655,7 +9655,7 @@
                                                                 <TextBlock x:Name="CircleEraserTabButtonText"
                                                                            Foreground="{DynamicResource FloatBarForeground}" FontWeight="Medium"
                                                                            FontSize="9" TextAlignment="Center"
-                                                                           Text="圆形擦" />
+                                                                           Text="{i18n:I18n Key=Board_EraserShape_Circle}" />
                                                             </ui:SimpleStackPanel>
                                                         </ui:SimpleStackPanel>
                                                     </Canvas>
@@ -9679,7 +9679,7 @@
                                                                 <TextBlock x:Name="RectangleEraserTabButtonText"
                                                                            Foreground="{DynamicResource FloatBarForeground}" FontWeight="Medium"
                                                                            FontSize="9" TextAlignment="Center"
-                                                                           Text="黑板擦" />
+                                                                           Text="{i18n:I18n Key=Board_EraserShape_Blackboard}" />
                                                             </ui:SimpleStackPanel>
                                                         </ui:SimpleStackPanel>
                                                     </Canvas>
@@ -9715,9 +9715,8 @@
                                                             </Image.Source>
                                                         </Image>
                                                         <TextBlock FontSize="10" VerticalAlignment="Center"
-                                                                   Foreground="White" FontWeight="Bold">
-                                                            清空墨迹
-                                                        </TextBlock>
+                                                                   Foreground="White" FontWeight="Bold"
+                                                                   Text="{i18n:I18n Key=Board_ClearInk}" />
                                                     </ui:SimpleStackPanel>
                                                 </Button.Content>
                                             </Button>
@@ -9747,7 +9746,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="WhiteboardToolbarTextBlock" Text="白板" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="WhiteboardToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Whiteboard}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
@@ -9770,7 +9769,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="ToolsToolbarTextBlock" Text="工具" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="ToolsToolbarTextBlock" Text="{i18n:I18n Key=Board_Tools}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8"
                                                    Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
@@ -9794,7 +9793,7 @@
                                                 </DrawingImage>
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock x:Name="HideToolbarTextBlock" Text="隐藏" Foreground="{DynamicResource FloatBarForeground}"
+                                        <TextBlock x:Name="HideToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Hide}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8"
                                                    Margin="0,1,0,0" TextAlignment="Center" />
                                     </ui:SimpleStackPanel>
