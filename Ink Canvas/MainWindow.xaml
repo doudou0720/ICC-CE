@@ -10,6 +10,7 @@
         xmlns:Windows="clr-namespace:Ink_Canvas.Windows"
         xmlns:props="clr-namespace:Ink_Canvas.Properties"
         xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
+        xmlns:helpers="clr-namespace:Ink_Canvas.Helpers"
         mc:Ignorable="d"
         AllowsTransparency="True"
         WindowStyle="None"
@@ -46,6 +47,34 @@
             <c:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
             <c:IntNumberToString x:Key="IntNumberToString" />
             <c:IntNumberToString2 x:Key="IntNumberToString2" />
+
+            <!-- 浮动栏/白板栏：英文等长文本自动缩小避免截断 -->
+            <Style x:Key="AutoFitFloatBarLabel12" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="7" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="12" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.5" />
+            </Style>
+
+            <Style x:Key="AutoFitFloatBarLabel9" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="6" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="9" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.5" />
+            </Style>
+
+            <Style x:Key="AutoFitFloatBarLabel8" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="5" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="8" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.5" />
+            </Style>
 
             <!-- Navigation Button Style -->
             <Style x:Key="NavButton" TargetType="Button">
@@ -6726,7 +6755,8 @@
                                                     </DrawingImage>
                                                 </Image.Source>
                                             </Image>
-                                            <TextBlock Text="{i18n:I18n Key=Board_Undo}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="12" />
+                                            <TextBlock Text="{i18n:I18n Key=Board_Undo}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom" HorizontalAlignment="Center" FontSize="12"
+                                                       Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                     <Border x:Name="BoardRedo" Width="60" Height="50" CornerRadius="0,5,5,0" MouseDown="Border_MouseDown" MouseUp="SymbolIconRedo_MouseUp" BorderThickness="0,1,1,1" BorderBrush="{DynamicResource BoardFloatBarBorderBrush}" IsEnabled="{Binding ElementName=BtnRedo, Path=IsEnabled}" Background="{DynamicResource BoardFloatBarBackground}" Opacity="1">
@@ -6744,7 +6774,7 @@
                                                 </Image.Source>
                                             </Image>
                                             <TextBlock Text="{i18n:I18n Key=Board_Redo}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
-                                                       HorizontalAlignment="Center" FontSize="12" />
+                                                       HorizontalAlignment="Center" FontSize="12" Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                 </ui:SimpleStackPanel>
@@ -6771,7 +6801,7 @@
                                                 </Image.Source>
                                             </Image>
                                             <TextBlock Text="{i18n:I18n Key=Board_Tools}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
-                                                       HorizontalAlignment="Center" FontSize="12" />
+                                                       HorizontalAlignment="Center" FontSize="12" Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                     <Border>
@@ -7024,7 +7054,7 @@
                                                 </Image.Source>
                                             </Image>
                                             <TextBlock Text="{i18n:I18n Key=Board_Exit}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
-                                                       HorizontalAlignment="Center" FontSize="12" />
+                                                       HorizontalAlignment="Center" FontSize="12" Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                 </ui:SimpleStackPanel>
@@ -7058,7 +7088,7 @@
                                         </Image.Source>
                                     </Image>
                                     <TextBlock Text="{i18n:I18n Key=Board_NewPage}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
-                                               HorizontalAlignment="Center" FontSize="12" />
+                                               HorizontalAlignment="Center" FontSize="12" Style="{StaticResource AutoFitFloatBarLabel12}" />
                                 </Grid>
                             </Border>
                             <Border CornerRadius="5,5,5,5" Background="{DynamicResource BoardFloatBarBackground}" Margin="0,0,0,0">
@@ -7086,7 +7116,8 @@
                                             </Image>
                                             <TextBlock Text="{i18n:I18n Key=Board_PreviousPage}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Center" FontSize="12"
-                                                       Name="BtnRightWhiteBoardSwitchPreviousLabel" />
+                                                       Name="BtnRightWhiteBoardSwitchPreviousLabel"
+                                                       Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                     <Border Width="75" Height="50" MouseUp="BtnWhiteBoardPageIndex_Click"
@@ -7099,7 +7130,7 @@
                                                        Margin="0,-1,0,0" FontSize="17" FontWeight="Bold"
                                                        TextAlignment="Center" />
                                             <TextBlock Text="{i18n:I18n Key=Board_Page}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
-                                                       HorizontalAlignment="Center" FontSize="12" />
+                                                       HorizontalAlignment="Center" FontSize="12" Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                     <Grid Width="0" Margin="0,0,0,5">
@@ -7183,7 +7214,8 @@
                                             </Image>
                                             <TextBlock Text="{i18n:I18n Key=Board_NextPage}" Foreground="{DynamicResource FloatBarForeground}" VerticalAlignment="Bottom"
                                                        HorizontalAlignment="Center" FontSize="12"
-                                                       Name="BtnRightWhiteBoardSwitchNextLabel" />
+                                                       Name="BtnRightWhiteBoardSwitchNextLabel"
+                                                       Style="{StaticResource AutoFitFloatBarLabel12}" />
                                         </Grid>
                                     </Border>
                                 </ui:SimpleStackPanel>
@@ -9540,7 +9572,8 @@
                                         <TextBlock x:Name="UndoToolbarTextBlock" Text="{i18n:I18n Key=Board_Undo}"
                                                    Opacity="{Binding ElementName=BtnUndo, Path=IsEnabled, Converter={StaticResource IsEnabledToOpacityConverter}}"
                                                    Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
-                                                   TextAlignment="Center" />
+                                                   TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="SymbolIconRedo"
@@ -9568,7 +9601,8 @@
                                         <TextBlock x:Name="RedoToolbarTextBlock" Text="{i18n:I18n Key=Board_Redo}"
                                                    Opacity="{Binding ElementName=BtnRedo, Path=IsEnabled, Converter={StaticResource IsEnabledToOpacityConverter}}"
                                                    Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
-                                                   TextAlignment="Center" />
+                                                   TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="CursorWithDelFloatingBarBtn"
@@ -9591,7 +9625,8 @@
                                             </Image.Source>
                                         </Image>
                                         <TextBlock x:Name="ClearAndMouseToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_ClearAndMouse}" Foreground="{DynamicResource FloatBarForeground}"
-                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                                 <Grid Width="0">
@@ -9660,7 +9695,8 @@
                                                                 <TextBlock x:Name="CircleEraserTabButtonText"
                                                                            Foreground="{DynamicResource FloatBarForeground}" FontWeight="Medium"
                                                                            FontSize="9" TextAlignment="Center"
-                                                                           Text="{i18n:I18n Key=Board_EraserShape_Circle}" />
+                                                                           Text="{i18n:I18n Key=Board_EraserShape_Circle}"
+                                                                           Style="{StaticResource AutoFitFloatBarLabel9}" />
                                                             </ui:SimpleStackPanel>
                                                         </ui:SimpleStackPanel>
                                                     </Canvas>
@@ -9684,7 +9720,8 @@
                                                                 <TextBlock x:Name="RectangleEraserTabButtonText"
                                                                            Foreground="{DynamicResource FloatBarForeground}" FontWeight="Medium"
                                                                            FontSize="9" TextAlignment="Center"
-                                                                           Text="{i18n:I18n Key=Board_EraserShape_Blackboard}" />
+                                                                           Text="{i18n:I18n Key=Board_EraserShape_Blackboard}"
+                                                                           Style="{StaticResource AutoFitFloatBarLabel9}" />
                                                             </ui:SimpleStackPanel>
                                                         </ui:SimpleStackPanel>
                                                     </Canvas>
@@ -9752,7 +9789,8 @@
                                             </Image.Source>
                                         </Image>
                                         <TextBlock x:Name="WhiteboardToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Whiteboard}" Foreground="{DynamicResource FloatBarForeground}"
-                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="ToolsFloatingBarBtn"
@@ -9776,7 +9814,8 @@
                                         </Image>
                                         <TextBlock x:Name="ToolsToolbarTextBlock" Text="{i18n:I18n Key=Board_Tools}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8"
-                                                   Margin="0,1,0,0" TextAlignment="Center" />
+                                                   Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         x:Name="Fold_Icon"
@@ -9800,7 +9839,8 @@
                                         </Image>
                                         <TextBlock x:Name="HideToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Hide}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8"
-                                                   Margin="0,1,0,0" TextAlignment="Center" />
+                                                   Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <Grid Width="0">
                                         <Border ClipToBounds="True" Name="BorderTools" Margin="-103,-156,-16,37"
