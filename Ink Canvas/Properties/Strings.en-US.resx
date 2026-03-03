@@ -457,4 +457,267 @@
   <data name="Advanced_AvoidFullScreenHelper" xml:space="preserve"><value>Enable AvoidFullScreenHelper</value></data>
   <data name="Advanced_AvoidFullScreenHelperHint" xml:space="preserve"><value># Avoid canvas fullscreen; may fix taskbar not on top and Win11 taskbar unclickable. Can cause floating bar offset with AppBar on left/top. Restart ICC to apply.</value></data>
   <data name="Advanced_EdgeGestureUtil" xml:space="preserve"><value>Enable EdgeGestureUtil</value></data>
+  <data name="Tools_MoreFeaturesTitle" xml:space="preserve"><value>More features</value></data>
+  <data name="Tools_Timer" xml:space="preserve"><value>Timer</value></data>
+  <data name="Tools_RandomDraw" xml:space="preserve"><value>Random draw</value></data>
+  <data name="Tools_SingleDraw" xml:space="preserve"><value>Single draw</value></data>
+  <data name="Tools_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Tools_Open" xml:space="preserve"><value>Open...</value></data>
+  <data name="Tools_Replay" xml:space="preserve"><value>Replay</value></data>
+  <data name="Tools_Screenshot" xml:space="preserve"><value>Screenshot</value></data>
+  <data name="Tools_Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Tools_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="QuickPanel_SingleDraw" xml:space="preserve"><value>Single draw</value></data>
+  <data name="QuickPanel_RandomDraw" xml:space="preserve"><value>Random draw</value></data>
+  <data name="QuickPanel_Timer" xml:space="preserve"><value>Timer</value></data>
+  <data name="QuickPanel_Whiteboard" xml:space="preserve"><value>Whiteboard</value></data>
+  <data name="QuickPanel_ExitShow" xml:space="preserve"><value>Exit slide show</value></data>
+  <data name="QuickPanel_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="QuickPanel_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Backup_Title" xml:space="preserve"><value>Settings backup &amp; restore</value></data>
+  <data name="Backup_Desc" xml:space="preserve"><value># You can manually back up current settings or restore previous backups; backups are also created automatically before updates.</value></data>
+  <data name="Backup_AutoBeforeUpdate" xml:space="preserve"><value>Backup before update</value></data>
+  <data name="Backup_AutoPeriodic" xml:space="preserve"><value>Periodic auto-backup</value></data>
+  <data name="Backup_Interval" xml:space="preserve"><value>Backup interval</value></data>
+  <data name="Backup_Interval_1Day" xml:space="preserve"><value>1 day</value></data>
+  <data name="Backup_Interval_3Days" xml:space="preserve"><value>3 days</value></data>
+  <data name="Backup_Interval_7Days" xml:space="preserve"><value>7 days</value></data>
+  <data name="Backup_Interval_14Days" xml:space="preserve"><value>14 days</value></data>
+  <data name="Backup_Interval_30Days" xml:space="preserve"><value>30 days</value></data>
+  <data name="Backup_Interval_DefaultHint" xml:space="preserve"><value>(default: 7 days)</value></data>
+  <data name="Backup_Manual" xml:space="preserve"><value>Backup now</value></data>
+  <data name="Backup_Restore" xml:space="preserve"><value>Restore backup</value></data>
+  <data name="ConfigProfiles_Title" xml:space="preserve"><value>Config profiles &amp; hot reload</value></data>
+  <data name="ConfigProfiles_Desc" xml:space="preserve"><value># Selecting a profile switches and hot-reloads it; \"Save as\" saves current settings as a new profile.</value></data>
+  <data name="ConfigProfiles_Label" xml:space="preserve"><value>Profile:</value></data>
+  <data name="ConfigProfiles_Delete" xml:space="preserve"><value>Delete profile</value></data>
+  <data name="ConfigProfiles_SaveAs" xml:space="preserve"><value>Save as profile</value></data>
+  <data name="Automation_Title" xml:space="preserve"><value>Automation</value></data>
+  <data name="Automation_AutoFoldTitle" xml:space="preserve"><value>Auto fold</value></data>
+  <data name="AutoFold_App_SeewoBoard5" xml:space="preserve"><value>Seewo Whiteboard 5</value></data>
+  <data name="AutoFold_App_SeewoCamera" xml:space="preserve"><value>Seewo Visual Presenter</value></data>
+  <data name="AutoFold_App_SeewoBoard3" xml:space="preserve"><value>Seewo Whiteboard 3</value></data>
+  <data name="AutoFold_App_SeewoLightBoard" xml:space="preserve"><value>Seewo Lite Whiteboard</value></data>
+  <data name="AutoFold_App_SeewoLightBoard5C" xml:space="preserve"><value>Seewo Lite Whiteboard 5C</value></data>
+  <data name="AutoFold_App_SeewoPinco" xml:space="preserve"><value>Seewo Pinco</value></data>
+  <data name="AutoFold_App_HiteBoard" xml:space="preserve"><value>HiteBoard</value></data>
+  <data name="AutoFold_App_HiteCamera" xml:space="preserve"><value>Hite visual presenter</value></data>
+  <data name="AutoFold_App_HiteLightBoard" xml:space="preserve"><value>Hite Lite Whiteboard</value></data>
+  <data name="AutoFold_App_WenXiangBoard" xml:space="preserve"><value>WenXiang Whiteboard</value></data>
+  <data name="AutoFold_App_MSWhiteboard" xml:space="preserve"><value>Microsoft Whiteboard</value></data>
+  <data name="AutoFold_App_AdmoxBoard" xml:space="preserve"><value>Admox Whiteboard</value></data>
+  <data name="AutoFold_App_AdmoxBooth" xml:space="preserve"><value>Admox visual presenter</value></data>
+  <data name="AutoFold_App_YiYunBoard" xml:space="preserve"><value>YiYun Whiteboard</value></data>
+  <data name="AutoFold_App_YiYunBooth" xml:space="preserve"><value>YiYun visual presenter</value></data>
+  <data name="AutoFold_App_MaxHubBoard" xml:space="preserve"><value>MaxHub Whiteboard</value></data>
+  <data name="AutoFold_IgnoreEasiNoteDesktopAnno" xml:space="preserve"><value>Ignore EN5 desktop annotation window when auto folding</value></data>
+  <data name="AutoFold_OldZyBoard" xml:space="preserve"><value>Auto fold when entering old ZhongYuan whiteboard</value></data>
+  <data name="Automation_AutoFoldInPPT" xml:space="preserve"><value>Auto fold while playing PPT</value></data>
+  <data name="Automation_KeepFoldAfterExit" xml:space="preserve"><value>Keep folded after app exit</value></data>
+  <data name="Automation_KeepFoldAfterExitHint" xml:space="preserve"><value># When on, apps that trigger auto fold will stay folded even after they exit.</value></data>
+  <data name="AutoKill_Title" xml:space="preserve"><value>Auto kill</value></data>
+  <data name="AutoKill_PptTools" xml:space="preserve"><value>Auto kill Seewo PPT tools</value></data>
+  <data name="AutoKill_PptToolsHint" xml:space="preserve"><value># Killing PPT tools disables Seewo classroom helper. Delete Office.dll in its install folder to stop the PPT toolbar without auto kill.</value></data>
+  <data name="AutoKill_EasiNote5" xml:space="preserve"><value>Auto kill Seewo Whiteboard 5</value></data>
+  <data name="AutoKill_HiteAnnotation" xml:space="preserve"><value>Auto kill Hite screen writing</value></data>
+  <data name="AutoKill_HiteAfterKillEnterAnnotation" xml:space="preserve"><value>Enter annotation after killing Hite screen writing</value></data>
+  <data name="AutoKill_YouJiao" xml:space="preserve"><value>Auto kill YouJiao teacher</value></data>
+  <data name="AutoKill_SeewoDesktop2Anno" xml:space="preserve"><value>Auto kill Seewo Desktop 2.0 annotation</value></data>
+  <data name="AutoKill_SeewoDesktop2AnnoHint" xml:space="preserve"><value># Seewo Desktop 2.0 annotation is 64-bit so ICC (32-bit) cannot inspect it deeply; only process name DesktopAnnotation is matched. If you have another app with the same name, keep this off.</value></data>
+  <data name="AutoKill_SameAppTitle" xml:space="preserve"><value>Kill similar apps</value></data>
+  <data name="AutoKill_InkCanvasIC" xml:space="preserve"><value>Auto kill Ink Canvas and IC+</value></data>
+  <data name="AutoKill_ICA" xml:space="preserve"><value>Auto kill ICA (both new &amp; old)</value></data>
+  <data name="AutoKill_Inkeys" xml:space="preserve"><value>Auto kill Inkeys (new only)</value></data>
+  <data name="FileAssoc_Title" xml:space="preserve"><value>File association</value></data>
+  <data name="FileAssoc_Desc" xml:space="preserve"><value>Manage .icstk file association so double-click opens in Ink Canvas.</value></data>
+  <data name="FileAssoc_Unregister" xml:space="preserve"><value>Remove association</value></data>
+  <data name="FileAssoc_Check" xml:space="preserve"><value>Check status</value></data>
+  <data name="FileAssoc_Register" xml:space="preserve"><value>Register association</value></data>
+  <data name="FloatingInterceptor_Title" xml:space="preserve"><value>Floating window interceptor</value></data>
+  <data name="FloatingInterceptor_Desc" xml:space="preserve"><value>Detect and block floating windows from similar software</value></data>
+  <data name="FloatingInterceptor_Enable" xml:space="preserve"><value>Enable floating window interceptor</value></data>
+  <data name="FloatingInterceptor_StatusNotRunning" xml:space="preserve"><value>Interceptor not running</value></data>
+  <data name="Storage_AutoScreenshotOnClear" xml:space="preserve"><value>Auto screenshot on clear</value></data>
+  <data name="Storage_ScreenshotsByDateFolder" xml:space="preserve"><value>Save screenshots in date folders</value></data>
+  <data name="Storage_AutoSaveInkOnScreenshot" xml:space="preserve"><value>Auto-save ink when screenshotting</value></data>
+  <data name="Storage_AutoSaveInk" xml:space="preserve"><value>Auto-save ink periodically</value></data>
+  <data name="Storage_AutoSaveInterval" xml:space="preserve"><value>Save interval</value></data>
+  <data name="Storage_AutoSaveInterval_1Min" xml:space="preserve"><value>1 minute</value></data>
+  <data name="Storage_AutoSaveInterval_3Min" xml:space="preserve"><value>3 minutes</value></data>
+  <data name="Storage_AutoSaveInterval_5Min" xml:space="preserve"><value>5 minutes</value></data>
+  <data name="Storage_AutoSaveInterval_10Min" xml:space="preserve"><value>10 minutes</value></data>
+  <data name="Storage_AutoSaveInterval_15Min" xml:space="preserve"><value>15 minutes</value></data>
+  <data name="Storage_AutoSaveInterval_30Min" xml:space="preserve"><value>30 minutes</value></data>
+  <data name="Storage_AutoSaveInterval_60Min" xml:space="preserve"><value>60 minutes</value></data>
+  <data name="Storage_AutoSaveHint" xml:space="preserve"><value># When on, strokes are auto-saved at the set interval, only when canvas is visible and has ink.</value></data>
+  <data name="Storage_SaveFullPageStrokes" xml:space="preserve"><value>Save full-page strokes</value></data>
+  <data name="Storage_SaveFullPageHint" xml:space="preserve"><value># When on, auto/manual saves store all pages in fullscreen; multiple pages are packed in one archive (whiteboard strokes open only in whiteboard mode; PPT strokes only in slide show mode).</value></data>
+  <data name="Storage_SaveAsXml" xml:space="preserve"><value>Save as XML format</value></data>
+  <data name="Storage_SaveAsXmlHint" xml:space="preserve"><value># When on, strokes are saved as XML (ISF) for easier inspection and editing.</value></data>
+  <data name="Storage_AutoScreenshotMinInk" xml:space="preserve"><value>Minimum ink for auto screenshot</value></data>
+  <data name="Storage_PathTitle" xml:space="preserve"><value>Stroke and screenshot save path</value></data>
+  <data name="Storage_PathBrowse" xml:space="preserve"><value>Browse</value></data>
+  <data name="Storage_PathSetToD" xml:space="preserve"><value>Set save path to D:\Ink Canvas</value></data>
+  <data name="Storage_PathSetToDocuments" xml:space="preserve"><value>Set save path to Documents</value></data>
+  <data name="Storage_PathPermissionHint" xml:space="preserve"><value># Please ensure the save folder is writable.</value></data>
+  <data name="Storage_AutoDeleteTitle" xml:space="preserve"><value>Auto delete old strokes and screenshots</value></data>
+  <data name="Storage_AutoDeleteHint" xml:space="preserve"><value># When on, all .icstk and .png files in the auto-save folder may be deleted!</value></data>
+  <data name="Storage_RetentionTitle" xml:space="preserve"><value>Retention duration</value></data>
+  <data name="Storage_RetentionUnitDays" xml:space="preserve"><value>days</value></data>
+  <data name="CloudStorage_Manage" xml:space="preserve"><value>Cloud storage management</value></data>
+  <data name="FoldMode_Title" xml:space="preserve"><value>Fold mode</value></data>
+  <data name="FoldMode_ExitToAnnotation" xml:space="preserve"><value>Switch to annotation when exiting fold mode</value></data>
+  <data name="FoldMode_ExitToAnnotationHint" xml:space="preserve"><value># When on, exiting fold mode switches back to annotation for convenience.</value></data>
+  <data name="FoldMode_AutoFoldAfterPPT" xml:space="preserve"><value>Auto fold floating bar after PPT show</value></data>
+  <data name="FoldMode_AutoFoldAfterPPTHint" xml:space="preserve"><value># When on, floating bar is auto-folded after exiting PPT slide show.</value></data>
+  <data name="FoldMode_AutoFoldAfterWhiteboard" xml:space="preserve"><value>Auto fold when exiting whiteboard</value></data>
+  <data name="FoldMode_AutoFoldAfterWhiteboardHint" xml:space="preserve"><value># When on, exiting whiteboard folds back to sidebar.</value></data>
+  <data name="Random_Title" xml:space="preserve"><value>Random roll call</value></data>
+  <data name="Random_ShowEditNamesButton" xml:space="preserve"><value>Show button to edit name list</value></data>
+  <data name="Random_BackgroundSettingsTitle" xml:space="preserve"><value>Roll-call window background (legacy UI only)</value></data>
+  <data name="Random_BackgroundSelectLabel" xml:space="preserve"><value>Background:</value></data>
+  <data name="Random_Background_Default" xml:space="preserve"><value>Default background</value></data>
+  <data name="Random_CustomBackgroundLabel" xml:space="preserve"><value>Custom background:</value></data>
+  <data name="Random_CustomBackground_Upload" xml:space="preserve"><value>Upload</value></data>
+  <data name="Random_CustomBackground_Manage" xml:space="preserve"><value>Manage</value></data>
+  <data name="Random_EnableButtons" xml:space="preserve"><value>Enable random &amp; single-draw buttons</value></data>
+  <data name="Random_EnableQuickButton" xml:space="preserve"><value>Enable quick-draw floating button</value></data>
+  <data name="Random_UseExternal" xml:space="preserve"><value>Use external roll-call app</value></data>
+  <data name="Random_ExternalTypeLabel" xml:space="preserve"><value>Roll-call type</value></data>
+  <data name="Random_ExternalType_ClassIsland" xml:space="preserve"><value>ClassIsland</value></data>
+  <data name="Random_ExternalType_SecRandom" xml:space="preserve"><value>SecRandom</value></data>
+  <data name="Random_ExternalType_NamePicker" xml:space="preserve"><value>NamePicker</value></data>
+  <data name="Random_OnceCloseDelay" xml:space="preserve"><value>Single-draw window close delay</value></data>
+  <data name="Random_OnceMaxStudents" xml:space="preserve"><value>Max students per single draw</value></data>
+  <data name="Random_NewUI_Title" xml:space="preserve"><value>New roll-call UI</value></data>
+  <data name="Random_NewUI_Enable" xml:space="preserve"><value>Enable new roll-call UI</value></data>
+  <data name="Random_ML_AvoidRepeat" xml:space="preserve"><value>Use machine learning to avoid repeats</value></data>
+  <data name="Random_ML_HistoryCount" xml:space="preserve"><value>History count for avoidance</value></data>
+  <data name="Random_ML_Weight" xml:space="preserve"><value>Avoidance weight</value></data>
+  <data name="Random_ML_Hint" xml:space="preserve"><value># ML analyzes recent roll-call history to avoid repeating the same students.</value></data>
+  <data name="Timer_Title" xml:space="preserve"><value>Timer settings</value></data>
+  <data name="Timer_UseLegacyButtons" xml:space="preserve"><value>Use legacy timer button UI</value></data>
+  <data name="Timer_NewUI" xml:space="preserve"><value>New timer UI</value></data>
+  <data name="Timer_EnableCountUp" xml:space="preserve"><value>Enable count-up after timeout</value></data>
+  <data name="Timer_OvertimeHighlight" xml:space="preserve"><value>Highlight numbers when overtime</value></data>
+  <data name="Timer_Volume" xml:space="preserve"><value>Timer alert volume</value></data>
+  <data name="Timer_CustomSoundLabel" xml:space="preserve"><value>Custom alert sound:</value></data>
+  <data name="Timer_SelectFile" xml:space="preserve"><value>Select file</value></data>
+  <data name="Timer_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Timer_Progressive" xml:space="preserve"><value>Progressive reminder</value></data>
+  <data name="Timer_ProgressiveVolume" xml:space="preserve"><value>Progressive reminder volume</value></data>
+  <data name="Timer_ProgressiveCustomLabel" xml:space="preserve"><value>Custom progressive reminder audio:</value></data>
+  <data name="Timer_ProgressiveSelectFile" xml:space="preserve"><value>Select file</value></data>
+  <data name="Timer_ProgressiveReset" xml:space="preserve"><value>Reset</value></data>
+  <data name="About_Title" xml:space="preserve"><value>About</value></data>
+  <data name="About_DeviceInfo" xml:space="preserve"><value>Device information</value></data>
+  <data name="About_DeviceIdLabel" xml:space="preserve"><value>Device ID:</value></data>
+  <data name="About_UsageFrequencyLabel" xml:space="preserve"><value>Usage frequency:</value></data>
+  <data name="About_UpdatePriorityLabel" xml:space="preserve"><value>Update priority:</value></data>
+  <data name="About_LaunchCountLabel" xml:space="preserve"><value>Launch count:</value></data>
+  <data name="About_TotalUsageLabel" xml:space="preserve"><value>Total usage time:</value></data>
+  <data name="About_DeviceInfo_Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="About_RefreshDeviceInfo" xml:space="preserve"><value>Refresh device info</value></data>
+  <data name="About_PrivacyCheckboxPrefix" xml:space="preserve"><value>I have read and agree to the </value></data>
+  <data name="About_PrivacyCheckboxSuffix" xml:space="preserve"><value> privacy statement</value></data>
+  <data name="About_TelemetryLabel" xml:space="preserve"><value>Anonymous usage data upload:</value></data>
+  <data name="About_Telemetry_Off" xml:space="preserve"><value>Off (no upload)</value></data>
+  <data name="About_Telemetry_Basic" xml:space="preserve"><value>Upload basic data</value></data>
+  <data name="About_Telemetry_Optional" xml:space="preserve"><value>Upload basic + optional data</value></data>
+  <data name="About_LicenseHint" xml:space="preserve"><value># Before using or distributing this software, you must be aware of the related open-source licenses. This software is based on https://github.com/WXRIW/Ink-Canvas.</value></data>
+  <data name="About_LicenseTitle" xml:space="preserve"><value>This software, ICA and Ink Canvas are all open sourced under a license</value></data>
+  <data name="About_LicenseBody" xml:space="preserve"><value>The strong copyleft license requires that complete source code and modifications of the licensed work (including large works using it) be provided under the same license. Copyright and license notices must be retained. Contributors explicitly grant patent rights.</value></data>
+  <data name="About_DevelopersLabel" xml:space="preserve"><value>Developers:</value></data>
+  <data name="About_Dev_ICCCE" xml:space="preserve"><value>Developer of ICC CE</value></data>
+  <data name="About_Dev_ICC" xml:space="preserve"><value>Developer of ICC</value></data>
+  <data name="About_Dev_ICA" xml:space="preserve"><value>Developer of ICA</value></data>
+  <data name="About_Dev_InkCanvas" xml:space="preserve"><value>Developer of Ink Canvas</value></data>
+  <data name="About_Source_ICC" xml:space="preserve"><value>ICC repository:</value></data>
+  <data name="About_Source_ICA" xml:space="preserve"><value>ICA repository:</value></data>
+  <data name="About_Source_InkCanvas" xml:space="preserve"><value>Ink Canvas repository:</value></data>
+  <data name="About_ThanksContributors" xml:space="preserve"><value>Thanks to the following contributors:</value></data>
+  <data name="About_Copyright" xml:space="preserve"><value>© 2025-2026 CJK_mkp. All rights reserved.</value></data>
+  <data name="About_OpenSourceSlogan" xml:space="preserve"><value>We love open-source forever!</value></data>
+  <data name="About_VersionLabel" xml:space="preserve"><value>Version:</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Common_On" xml:space="preserve"><value>On</value></data>
+  <data name="Common_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Advanced_UriSchemeName" xml:space="preserve"><value>External URI scheme (icc://)</value></data>
+  <data name="Advanced_NibModeBoundsWidthHeader" xml:space="preserve"><value>Nib mode BoundsWidth</value></data>
+  <data name="Advanced_FingerModeBoundsWidthHeader" xml:space="preserve"><value>Finger mode BoundsWidth</value></data>
+  <data name="Advanced_EdgeGestureUtilHint_Part1" xml:space="preserve"><value># EdgeGestureUtil is newly introduced in ICC to temporarily block edge gestures when using touch (e.g., on Windows 10: swipe from the left edge to Task View, from the right edge to Action Center; on Windows 11: swipe up from the bottom to open Start). It works by using</value></data>
+  <data name="Advanced_EdgeGestureUtilHint_Part2" xml:space="preserve"><value>(When the app window is active and in full-screen mode (or an owned window is active), prevents edge gesture behavior.) If anything is abnormal, turn this option off; it should take effect immediately. (Not available on Windows 7/8.)</value></data>
+  <data name="Advanced_ForceFullScreen" xml:space="preserve"><value>Enable ForceFullScreen</value></data>
+  <data name="Advanced_ForceFullScreenHint" xml:space="preserve"><value># When a window size change is detected, automatically uses Win32 API to set this window size to the primary monitor size (in device pixels). Turn it off if you don't need it; takes effect immediately.</value></data>
+  <data name="Advanced_DPIChangeDetection" xml:space="preserve"><value>Enable DPIChangeDetection</value></data>
+  <data name="Advanced_DPIChangeDetectionHint" xml:space="preserve"><value># When a system DPI change is detected, it tries to keep FloatingBar visible. If it goes off-screen, it will attempt to move it into the visible area. (Increasing DPI may trigger this; decreasing DPI won't auto-move—adjust manually.)</value></data>
+  <data name="Advanced_ResolutionChangeDetection" xml:space="preserve"><value>Enable ResolutionChangeDetection</value></data>
+  <data name="Advanced_ResolutionChangeDetectionHint" xml:space="preserve"><value># When a screen resolution change is detected, it tries to keep FloatingBar visible. If it goes off-screen, it will attempt to move it into the visible area. (Reducing resolution may trigger this; if it's still on-screen it won't auto-adjust—adjust manually.)</value></data>
+  <data name="FloatingInterceptor_App_SeewoBoard3" xml:space="preserve"><value>Seewo Whiteboard 3</value></data>
+  <data name="FloatingInterceptor_App_SeewoBoard5" xml:space="preserve"><value>Seewo Whiteboard 5</value></data>
+  <data name="FloatingInterceptor_App_SeewoBoard5C" xml:space="preserve"><value>Seewo Whiteboard 5C</value></data>
+  <data name="FloatingInterceptor_App_SeewoPinco" xml:space="preserve"><value>Seewo Pinco</value></data>
+  <data name="FloatingInterceptor_App_SeewoPincoDrawing" xml:space="preserve"><value>Seewo Pinco pen</value></data>
+  <data name="FloatingInterceptor_App_SeewoPPTTools" xml:space="preserve"><value>Seewo PPT Tools</value></data>
+  <data name="FloatingInterceptor_App_AiClass" xml:space="preserve"><value>AiClass</value></data>
+  <data name="FloatingInterceptor_App_HiteAnnotation" xml:space="preserve"><value>Hite screen writing</value></data>
+  <data name="FloatingInterceptor_App_ChangYanClass" xml:space="preserve"><value>Changyan smart classroom</value></data>
+  <data name="FloatingInterceptor_App_ChangYanPPT" xml:space="preserve"><value>Changyan PPT</value></data>
+  <data name="FloatingInterceptor_App_IntelligentClass" xml:space="preserve"><value>Tianyu Education Cloud</value></data>
+  <data name="FloatingInterceptor_App_SeewoDesktopAnnotation" xml:space="preserve"><value>Seewo desktop pen</value></data>
+  <data name="FloatingInterceptor_App_SeewoDesktopSideBar" xml:space="preserve"><value>Seewo desktop sidebar</value></data>
+  <data name="Board_MultiTouchWriting" xml:space="preserve"><value>Multi-touch writing</value></data>
+  <data name="Board_TwoFingerMove" xml:space="preserve"><value>Two-finger move</value></data>
+  <data name="Board_TwoFingerZoom" xml:space="preserve"><value>Two-finger zoom</value></data>
+  <data name="Board_TwoFingerRotate" xml:space="preserve"><value>Two-finger rotate</value></data>
+  <data name="Board_Background" xml:space="preserve"><value>Background</value></data>
+  <data name="Board_Select" xml:space="preserve"><value>Select</value></data>
+  <data name="Board_Pen" xml:space="preserve"><value>Pen</value></data>
+  <data name="Board_Highlighter" xml:space="preserve"><value>Highlighter</value></data>
+  <data name="Board_Eraser" xml:space="preserve"><value>Eraser</value></data>
+  <data name="Board_EraserOptions" xml:space="preserve"><value>Eraser options</value></data>
+  <data name="Board_Size" xml:space="preserve"><value>Size</value></data>
+  <data name="Board_EraserShape" xml:space="preserve"><value>Eraser shape</value></data>
+  <data name="Board_EraserShape_Circle" xml:space="preserve"><value>Circle</value></data>
+  <data name="Board_EraserShape_Blackboard" xml:space="preserve"><value>Blackboard</value></data>
+  <data name="Board_ClearInk" xml:space="preserve"><value>Clear ink</value></data>
+  <data name="Board_ClearInkAndHistory" xml:space="preserve"><value>Clear ink &amp; history</value></data>
+  <data name="Board_StrokeEraser" xml:space="preserve"><value>Stroke eraser</value></data>
+  <data name="Board_Shape" xml:space="preserve"><value>Shapes</value></data>
+  <data name="Board_ShapeHintLongPress" xml:space="preserve"><value>(Long-press in first row to keep selected)</value></data>
+  <data name="Board_AutoHide" xml:space="preserve"><value>Auto-hide</value></data>
+  <data name="Board_InsertImage" xml:space="preserve"><value>Insert image</value></data>
+  <data name="Board_SelectImage" xml:space="preserve"><value>Select image</value></data>
+  <data name="Board_Screenshot" xml:space="preserve"><value>Screenshot</value></data>
+  <data name="Board_Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="Board_Redo" xml:space="preserve"><value>Redo</value></data>
+  <data name="Board_Tools" xml:space="preserve"><value>Tools</value></data>
+  <data name="Board_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Board_NewPage" xml:space="preserve"><value>New page</value></data>
+  <data name="Board_PreviousPage" xml:space="preserve"><value>Previous</value></data>
+  <data name="Board_NextPage" xml:space="preserve"><value>Next</value></data>
+  <data name="Board_Page" xml:space="preserve"><value>Page</value></data>
+  <data name="Board_DeleteThisPage" xml:space="preserve"><value>Delete this page</value></data>
+  <data name="Notification_TestText" xml:space="preserve"><value>Test text</value></data>
+  <data name="OldUI_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="OldUI_Thickness" xml:space="preserve"><value>Thickness</value></data>
+  <data name="OldUI_Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="OldUI_Background" xml:space="preserve"><value>Background</value></data>
+  <data name="OldUI_HideCanvas" xml:space="preserve"><value>Hide&#x000A;canvas</value></data>
+  <data name="OldUI_Check" xml:space="preserve"><value>Check</value></data>
+  <data name="OldUI_SlideshowFromStart" xml:space="preserve"><value>From start&#x000A;slideshow</value></data>
+  <data name="OldUI_SlideshowEnd" xml:space="preserve"><value>End&#x000A;slideshow</value></data>
+  <data name="OldUI_SingleFingerDrag" xml:space="preserve"><value>One finger&#x000A;drag</value></data>
+  <data name="OldUI_Restore" xml:space="preserve"><value>Restore</value></data>
+  <data name="OldUI_ClearAndHide" xml:space="preserve"><value>Clear&#x000A;&amp;&#x000A;Hide</value></data>
+  <data name="FloatingBar_Mouse" xml:space="preserve"><value>Mouse</value></data>
+  <data name="FloatingBar_Annotate" xml:space="preserve"><value>Annotate</value></data>
+  <data name="FloatingBar_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Booth_Title" xml:space="preserve"><value>Visual presenter</value></data>
+  <data name="Booth_CapturedPhotos" xml:space="preserve"><value>Captured photos</value></data>
+  <data name="Booth_CameraDevices" xml:space="preserve"><value>Camera devices</value></data>
+  <data name="Booth_Present" xml:space="preserve"><value>Present</value></data>
+  <data name="Booth_Correction" xml:space="preserve"><value>Correct</value></data>
+  <data name="Booth_Capture" xml:space="preserve"><value>Capture</value></data>
+  <data name="Booth_Rotate" xml:space="preserve"><value>Rotate</value></data>
 </root>
