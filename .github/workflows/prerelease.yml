@@ -416,7 +416,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.14'
           
       - name: Sign release artifacts with sigstore-python
         uses: sigstore/gh-action-sigstore-python@v3.2.0
