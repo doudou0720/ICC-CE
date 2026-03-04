@@ -93,6 +93,24 @@
                 <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.1" />
             </Style>
 
+            <Style x:Key="AutoFitSettingsOptionLabel14" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextAlignment" Value="Left" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="8" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="14" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
+            </Style>
+
+            <Style x:Key="AutoFitSettingsHint15" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="10" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="15" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
+            </Style>
+
             <Style x:Key="AutoFitToolPopupLabel8" TargetType="Label">
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
@@ -512,7 +530,8 @@
                                 <ui:SimpleStackPanel VerticalAlignment="Center">
                                     <TextBlock Foreground="#fafafa" HorizontalAlignment="Center"
                                                VerticalAlignment="Center" FontSize="15" Margin="0,0,0,10"
-                                               Text="{i18n:I18n Key=Settings_AutoSaveHint}" />
+                                               Text="{i18n:I18n Key=Settings_AutoSaveHint}" Width="360"
+                                               Style="{StaticResource AutoFitSettingsHint15}" />
                                     <ui:SimpleStackPanel Spacing="5">
                                         <ui:SimpleStackPanel Spacing="5" Orientation="Horizontal"
                                                              HorizontalAlignment="Center">
@@ -1020,7 +1039,8 @@
                                 <ui:SimpleStackPanel Spacing="6">
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_AutoToggleTwoFinger}"
-                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,8,0"
+                                                   Width="320" Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchAutoSwitchTwoFingerGesture" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1032,7 +1052,8 @@
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_AllowRotateScale}"
-                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,8,0"
+                                                   Width="320" Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchEnableTwoFingerRotationOnSelection"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -1044,7 +1065,8 @@
                                           StrokeThickness="1" Margin="0,4,0,4" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Gesture_EnablePalmEraser}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
+                                                   FontSize="14" Margin="0,0,8,0"
+                                                   Width="320" Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchEnablePalmEraser"
                                                          IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchEnablePalmEraser_Toggled" />
@@ -1427,7 +1449,8 @@
                                     <!-- 老版UI切换按钮 -->
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,12">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_UseLegacyFloatingBarUI}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,8,0" />
+                                                   FontSize="14" Margin="0,0,8,0" Width="320"
+                                                   Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <CheckBox Name="CheckBoxUseLegacyFloatingBarUI"
                                                   IsChecked="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                   Checked="CheckBoxUseLegacyFloatingBarUI_Checked" Unchecked="CheckBoxUseLegacyFloatingBarUI_Unchecked" />
@@ -1437,14 +1460,16 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowShapeButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowShapeButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowShapeButton_Checked" Unchecked="CheckBoxShowShapeButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowUndoButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowUndoButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowUndoButton_Checked" Unchecked="CheckBoxShowUndoButton_Unchecked" />
@@ -1455,14 +1480,16 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowRedoButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowRedoButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowRedoButton_Checked" Unchecked="CheckBoxShowRedoButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowClearButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowClearButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowClearButton_Checked" Unchecked="CheckBoxShowClearButton_Unchecked" />
@@ -1473,14 +1500,16 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowWhiteboardButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowWhiteboardButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowWhiteboardButton_Checked" Unchecked="CheckBoxShowWhiteboardButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowHideButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowHideButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowHideButton_Checked" Unchecked="CheckBoxShowHideButton_Unchecked" />
@@ -1491,14 +1520,16 @@
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,8">
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowLassoButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowLassoSelectButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowLassoSelectButton_Checked" Unchecked="CheckBoxShowLassoSelectButton_Unchecked" />
                                         </ui:SimpleStackPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Theme_ShowClearAndMouseButton}" VerticalAlignment="Center"
-                                                       FontSize="14" Margin="0,0,8,0" />
+                                                       FontSize="14" Margin="0,0,8,0" Width="150"
+                                                       Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                             <CheckBox Name="CheckBoxShowClearAndMouseButton"
                                                       IsChecked="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                       Checked="CheckBoxShowClearAndMouseButton_Checked" Unchecked="CheckBoxShowClearAndMouseButton_Unchecked" />
