@@ -94,7 +94,7 @@
             </Style>
 
             <Style x:Key="AutoFitSettingsOptionLabel14" TargetType="TextBlock">
-                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextWrapping" Value="Wrap" />
                 <Setter Property="TextAlignment" Value="Left" />
                 <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
                 <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="8" />
@@ -108,6 +108,15 @@
                 <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
                 <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="10" />
                 <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="15" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
+            </Style>
+
+            <Style x:Key="AutoFitSettingsGridLabel14" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="8" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="14" />
                 <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
             </Style>
 
@@ -729,17 +738,17 @@
                                     
                                     <!-- 手动更新按钮 -->
                                     <Button x:Name="ManualUpdateButton" Content="{i18n:I18n Key=Btn_ManualUpdate}" Margin="0,8,0,0"
-                                            Width="120" HorizontalAlignment="Left" Click="ManualUpdateButton_Click"
+                                            Width="220" HorizontalAlignment="Left" Click="ManualUpdateButton_Click"
                                             Visibility="{Binding ElementName=ToggleSwitchIsAutoUpdate, Path=IsOn, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 <TextBlock Text="{i18n:I18n Key=Startup_ManualUpdateHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa"
                                                Visibility="{Binding ElementName=ToggleSwitchIsAutoUpdate, Path=IsOn, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                                     <!-- 版本修复按钮 -->
                                     <Button x:Name="FixVersionButton" Content="{i18n:I18n Key=Btn_FixVersion}" Margin="0,8,0,0"
-                                            Width="120" HorizontalAlignment="Left" Click="FixVersionButton_Click"/>
+                                            Width="220" HorizontalAlignment="Left" Click="FixVersionButton_Click"/>
 <TextBlock Text="{i18n:I18n Key=Startup_FixVersionHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
-                                    <Button x:Name="HistoryRollbackButton" Content="{i18n:I18n Key=Btn_HistoryRollback}" Width="120" Margin="0,10,0,0" Click="HistoryRollbackButton_Click"/>
+                                    <Button x:Name="HistoryRollbackButton" Content="{i18n:I18n Key=Btn_HistoryRollback}" Width="220" Margin="0,10,0,0" Click="HistoryRollbackButton_Click"/>
                                     <TextBlock Text="{i18n:I18n Key=Startup_HistoryRollbackHint}"
                                                TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Border BorderBrush="White" BorderThickness="1" CornerRadius="5" Padding="12"
@@ -868,7 +877,9 @@
                                                          Toggled="ToggleSwitchClearCanvasAlsoClearImages_Toggled" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_CompressPicturesUploaded}" VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_CompressPicturesUploaded}" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,8,0" Width="320"
+                                                   Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchCompressPicturesUploaded"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
                                                          Toggled="ToggleSwitchCompressPicturesUploaded_Toggled" />
@@ -1019,7 +1030,7 @@
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
-                                    <TextBlock Text="{i18n:I18n Key=Crash_Desc}" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Crash_Desc}" Foreground="#a1a1aa" TextWrapping="Wrap" Width="420" />
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,4,0,0">
                                         <RadioButton x:Name="RadioCrashSilentRestart" GroupName="CrashAction"
                                                      Content="{i18n:I18n Key=Crash_SilentRestart}" FontSize="14" Margin="0,0,24,0"
@@ -1028,7 +1039,7 @@
                                                      Content="{i18n:I18n Key=Crash_NoAction}" FontSize="14"
                                                      Checked="RadioCrashAction_Checked"/>
                                     </StackPanel>
-                                    <TextBlock Text="{i18n:I18n Key=Crash_Hint}" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=Crash_Hint}" Foreground="#a1a1aa" TextWrapping="Wrap" Width="420" />
                                 </ui:SimpleStackPanel>
                             </GroupBox>
                             <GroupBox Name="GroupBoxGesture">
@@ -1622,7 +1633,7 @@
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
-                                    <TextBlock Text="{i18n:I18n Key=PPT_GroupHint}" Foreground="#a1a1aa" />
+                                    <TextBlock Text="{i18n:I18n Key=PPT_GroupHint}" Foreground="#a1a1aa" TextWrapping="Wrap" Width="460" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
@@ -1682,8 +1693,12 @@
                                     <TextBlock Text="{i18n:I18n Key=PPT_WpsHint1}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     <Border BorderBrush="#ef4444"
                                             BorderThickness="2" Padding="8" CornerRadius="6" Background="#991b1b">
-                                        <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4">
-                                            <Image Width="20" Height="20">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="24" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Image Width="20" Height="20" VerticalAlignment="Top" Margin="0,2,0,0">
                                                 <Image.Source>
                                                     <DrawingImage>
                                                         <DrawingImage.Drawing>
@@ -1695,10 +1710,11 @@
                                                     </DrawingImage>
                                                 </Image.Source>
                                             </Image>
-                                            <TextBlock Margin="2,0,0,0" FontSize="13" VerticalAlignment="Center"
+                                            <TextBlock Grid.Column="1" Margin="6,0,0,0" FontSize="13" VerticalAlignment="Center"
+                                                       TextWrapping="Wrap"
                                                        Text="{i18n:I18n Key=PPT_WpsLagWarning}">
                                             </TextBlock>
-                                        </ui:SimpleStackPanel>
+                                        </Grid>
                                     </Border>
                                     <TextBlock
                                         Text="{i18n:I18n Key=PPT_WpsSupportHint}"
@@ -1756,25 +1772,25 @@
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Spacing="6" Name="PPTButtonSettingsPanel"
                                                          Visibility="{Binding ElementName=ToggleSwitchShowPPTButton, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <ui:SimpleStackPanel Margin="0,-4,0,4" Orientation="Horizontal"
-                                                             HorizontalAlignment="Left" Spacing="16">
-                                            <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableLBPPTButton"
+                                        <WrapPanel Margin="0,-4,0,4" Orientation="Horizontal"
+                                                   HorizontalAlignment="Left">
+                                            <CheckBox IsChecked="True" MinWidth="0" Width="180" Margin="0,0,12,4" Name="CheckboxEnableLBPPTButton"
                                                       Checked="CheckboxEnableLBPPTButton_IsCheckChanged"
                                                       Unchecked="CheckboxEnableLBPPTButton_IsCheckChanged"
                                                       Content="{i18n:I18n Key=PPT_Position_LeftBottom}" />
-                                            <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableRBPPTButton"
+                                            <CheckBox IsChecked="True" MinWidth="0" Width="180" Margin="0,0,12,4" Name="CheckboxEnableRBPPTButton"
                                                       Checked="CheckboxEnableRBPPTButton_IsCheckChanged"
                                                       Unchecked="CheckboxEnableRBPPTButton_IsCheckChanged"
                                                       Content="{i18n:I18n Key=PPT_Position_RightBottom}" />
-                                            <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableLSPPTButton"
+                                            <CheckBox IsChecked="True" MinWidth="0" Width="180" Margin="0,0,12,4" Name="CheckboxEnableLSPPTButton"
                                                       Checked="CheckboxEnableLSPPTButton_IsCheckChanged"
                                                       Unchecked="CheckboxEnableLSPPTButton_IsCheckChanged"
                                                       Content="{i18n:I18n Key=PPT_Position_Left}" />
-                                            <CheckBox IsChecked="True" MinWidth="0" Name="CheckboxEnableRSPPTButton"
+                                            <CheckBox IsChecked="True" MinWidth="0" Width="180" Margin="0,0,12,4" Name="CheckboxEnableRSPPTButton"
                                                       Checked="CheckboxEnableRSPPTButton_IsCheckChanged"
                                                       Unchecked="CheckboxEnableRSPPTButton_IsCheckChanged"
                                                       Content="{i18n:I18n Key=PPT_Position_Right}" />
-                                        </ui:SimpleStackPanel>
+                                        </WrapPanel>
                                         <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                             <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_LeftOffset}" VerticalAlignment="Center"
                                                        FontSize="14" Margin="0,0,12,0" />
@@ -2455,7 +2471,8 @@
                                     <ui:SimpleStackPanel Name="SettingsShowCanvasAtNewSlideShowStackPanel"
                                                          Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=PPT_EnterAnnotationOnShow}"
-                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
+                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,8,0"
+                                                   Width="320" Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <ui:ToggleSwitch OnContent="" OffContent=""
                                                          Name="ToggleSwitchShowCanvasAtNewSlideShow" IsOn="True"
                                                          FontFamily="Microsoft YaHei UI" FontWeight="Bold"
@@ -2608,7 +2625,7 @@
                                 </GroupBox.Header>
                                 <ui:SimpleStackPanel Spacing="6">
                                     <TextBlock Text="{i18n:I18n Key=Advanced_TouchMultiplierHint}"
-                                               Foreground="#a1a1aa" />
+                                               Foreground="#a1a1aa" TextWrapping="Wrap" Width="460" />
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Advanced_SpecialScreenMode}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
@@ -2642,8 +2659,10 @@
                                     </StackPanel>
                                     <ui:SimpleStackPanel Spacing="8" Margin="0,4,0,4"
                                                          Visibility="{Binding Visibility,ElementName=TouchMultiplierSlider}">
-                                        <TextBlock FontSize="14" Text="{i18n:I18n Key=Advanced_TouchMultiplierCalibrateHint}" />
-                                        <TextBlock Text="{i18n:I18n Key=Advanced_TouchMultiplierValueHint}" Foreground="#a1a1aa" />
+                                        <TextBlock FontSize="14" Text="{i18n:I18n Key=Advanced_TouchMultiplierCalibrateHint}"
+                                                   TextWrapping="Wrap" MaxWidth="420" />
+                                        <TextBlock Text="{i18n:I18n Key=Advanced_TouchMultiplierValueHint}" Foreground="#a1a1aa"
+                                                   TextWrapping="Wrap" MaxWidth="420" />
                                         <Border Margin="0,0,20,0" CornerRadius="4" Height="48" Background="Transparent"
                                                 BorderBrush="#a1a1aa" BorderThickness="2"
                                                 TouchDown="BorderCalculateMultiplier_TouchDown" />
@@ -2955,7 +2974,8 @@
                                             <ComboBoxItem Content="{i18n:I18n Key=Backup_Interval_14Days}" Tag="14" />
                                             <ComboBoxItem Content="{i18n:I18n Key=Backup_Interval_30Days}" Tag="30" />
                                         </ComboBox>
-                                        <TextBlock Foreground="#a1a1aa" Text="{i18n:I18n Key=Backup_Interval_DefaultHint}" VerticalAlignment="Center" FontSize="12" />
+                                        <TextBlock Foreground="#a1a1aa" Text="{i18n:I18n Key=Backup_Interval_DefaultHint}" VerticalAlignment="Center" FontSize="12"
+                                                   TextWrapping="Wrap" Width="180" />
                                     </ui:SimpleStackPanel>
                                     
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,0,0">
@@ -2995,6 +3015,13 @@
                                     <TextBlock Margin="0,0,0,8" Text="{i18n:I18n Key=Automation_AutoFoldTitle}" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="20" />
                                     <Grid Margin="4,0">
+                                        <Grid.Resources>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource AutoFitSettingsGridLabel14}">
+                                                <Setter Property="Width" Value="88" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="Margin" Value="0,0,0,4" />
+                                            </Style>
+                                        </Grid.Resources>
                                         <Grid.RowDefinitions>
                                             <RowDefinition />
                                             <RowDefinition />
@@ -3230,16 +3257,23 @@
                                         </ui:SimpleStackPanel>
                                     </Grid>
 
-                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <Image Source="/Resources/Icons-png/EasiNote.png" Margin="0,0,6,0" Width="28"
+                                    <Grid Width="390" HorizontalAlignment="Left">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="34" />
+                                            <ColumnDefinition Width="300" />
+                                            <ColumnDefinition Width="56" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image Grid.Column="0" Source="/Resources/Icons-png/EasiNote.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
-                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=AutoFold_IgnoreEasiNoteDesktopAnno}"
-                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,16,0" />
-                                        <ui:ToggleSwitch OnContent="" OffContent="" MinWidth="0"
+                                        <TextBlock Grid.Column="1" Foreground="#fafafa" Text="{i18n:I18n Key=AutoFold_IgnoreEasiNoteDesktopAnno}"
+                                                   VerticalAlignment="Center" FontSize="14" Margin="0,0,8,0"
+                                                   TextWrapping="Wrap" />
+                                        <ui:ToggleSwitch Grid.Column="2" OnContent="" OffContent="" MinWidth="0"
                                                          Name="ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno"
                                                          IsOn="True" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         HorizontalAlignment="Right"
                                                          Toggled="ToggleSwitchAutoFoldInEasiNoteIgnoreDesktopAnno_Toggled" />
-                                    </ui:SimpleStackPanel>
+                                    </Grid>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <Image Source="/Resources/Icons-png/Donview.png" Margin="0,0,6,0" Width="28"
                                                Height="28" VerticalAlignment="Center" />
@@ -3386,14 +3420,14 @@
                                                FontSize="16" Margin="0,8,0,8" />
                                     <TextBlock Text="{i18n:I18n Key=FileAssoc_Desc}" 
                                                TextWrapping="Wrap" Foreground="#a1a1aa" Margin="0,0,0,8" />
-                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="280" Margin="0,0,0,8">
                                         <Button Name="BtnUnregisterFileAssociation" Content="{i18n:I18n Key=FileAssoc_Unregister}" 
-                                                Padding="15,5" Margin="0,0,8,0" Click="BtnUnregisterFileAssociation_Click" />
+                                                Padding="12,5" Width="132" Margin="0,0,8,8" MinWidth="0" Click="BtnUnregisterFileAssociation_Click" />
                                         <Button Name="BtnCheckFileAssociation" Content="{i18n:I18n Key=FileAssoc_Check}" 
-                                                Padding="15,5" Margin="0,0,8,0" Click="BtnCheckFileAssociation_Click" />
+                                                Padding="12,5" Width="132" Margin="0,0,8,8" MinWidth="0" Click="BtnCheckFileAssociation_Click" />
                                         <Button Name="BtnRegisterFileAssociation" Content="{i18n:I18n Key=FileAssoc_Register}" 
-                                                Padding="15,5" Click="BtnRegisterFileAssociation_Click" />
-                                    </ui:SimpleStackPanel>
+                                                Padding="12,5" Width="132" Margin="0,0,0,8" MinWidth="0" Click="BtnRegisterFileAssociation_Click" />
+                                    </WrapPanel>
                                     <TextBlock Name="TextBlockFileAssociationStatus" Text="" 
                                                Foreground="#a1a1aa" FontSize="12" Margin="0,4,0,0" />
                                     
@@ -3417,6 +3451,13 @@
                                     
                                     <!-- 拦截规则网格 -->
                                     <Grid Name="FloatingWindowInterceptorGrid" Margin="4,0" Visibility="Collapsed">
+                                        <Grid.Resources>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource AutoFitSettingsGridLabel14}">
+                                                <Setter Property="Width" Value="88" />
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="Margin" Value="0,0,0,4" />
+                                            </Style>
+                                        </Grid.Resources>
                                         <Grid.RowDefinitions>
                                             <RowDefinition />
                                             <RowDefinition />
@@ -3940,26 +3981,28 @@
                                     
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Random_ML_HistoryCount}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
+                                                   FontSize="14" Margin="0,0,12,0" Width="190"
+                                                   Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <Slider x:Name="MLAvoidanceHistorySlider" Minimum="5"
-                                                Maximum="50" Width="168" FontFamily="Microsoft YaHei UI"
+                                                Maximum="50" Width="180" FontFamily="Microsoft YaHei UI"
                                                 ValueChanged="MLAvoidanceHistorySlider_ValueChanged"
                                                 FontSize="20" IsSnapToTickEnabled="True" Value="50" TickFrequency="5"
                                                 TickPlacement="None" AutoToolTipPlacement="None" />
-                                        <TextBlock VerticalAlignment="Center" Margin="12,0,16,0" FontSize="14"
+                                        <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontSize="14" Width="48"
                                                    FontFamily="Consolas"
                                                    Text="{Binding ElementName=MLAvoidanceHistorySlider, Path=Value, Converter={StaticResource IntNumberToString}}" />
                                     </ui:SimpleStackPanel>
                                     
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Random_ML_Weight}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
+                                                   FontSize="14" Margin="0,0,12,0" Width="190"
+                                                   Style="{StaticResource AutoFitSettingsOptionLabel14}" />
                                         <Slider x:Name="MLAvoidanceWeightSlider" Minimum="0.1"
-                                                Maximum="1.0" Width="168" FontFamily="Microsoft YaHei UI"
+                                                Maximum="1.0" Width="180" FontFamily="Microsoft YaHei UI"
                                                 ValueChanged="MLAvoidanceWeightSlider_ValueChanged"
                                                 FontSize="20" IsSnapToTickEnabled="True" Value="1.0" TickFrequency="0.1"
                                                 TickPlacement="None" AutoToolTipPlacement="None" />
-                                        <TextBlock VerticalAlignment="Center" Margin="12,0,16,0" FontSize="14"
+                                        <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" FontSize="14" Width="48"
                                                    FontFamily="Consolas"
                                                    Text="{Binding ElementName=MLAvoidanceWeightSlider, Path=Value, StringFormat={}{0:P0}}" />
                                     </ui:SimpleStackPanel>
@@ -4019,13 +4062,15 @@
                                                    FontFamily="Consolas"
                                                    Text="{Binding ElementName=TimerVolumeSlider, Path=Value, StringFormat={}{0:P0}}" />
                                     </ui:SimpleStackPanel>
-                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,0">
+                                    <ui:SimpleStackPanel HorizontalAlignment="Left" Margin="0,5,0,0" Width="420">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Timer_CustomSoundLabel}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
-                                        <Button Name="ButtonSelectCustomTimerSound" Content="{i18n:I18n Key=Timer_SelectFile}" FontFamily="Microsoft YaHei UI" 
-                                                Click="ButtonSelectCustomTimerSound_Click" Padding="10,3"/>
-                                        <Button Name="ButtonResetTimerSound" Content="{i18n:I18n Key=Timer_Reset}" FontFamily="Microsoft YaHei UI" 
-                                                Click="ButtonResetTimerSound_Click" Padding="10,3" Margin="5,0,0,0"/>
+                                                   FontSize="14" Margin="0,0,0,4" Style="{StaticResource AutoFitSettingsOptionLabel14}" />
+                                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Button Name="ButtonSelectCustomTimerSound" Content="{i18n:I18n Key=Timer_SelectFile}" FontFamily="Microsoft YaHei UI" 
+                                                    Click="ButtonSelectCustomTimerSound_Click" Padding="10,3" Width="130" Margin="0,0,6,0"/>
+                                            <Button Name="ButtonResetTimerSound" Content="{i18n:I18n Key=Timer_Reset}" FontFamily="Microsoft YaHei UI" 
+                                                    Click="ButtonResetTimerSound_Click" Padding="10,3" Width="90"/>
+                                        </WrapPanel>
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,0">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Timer_Progressive}" VerticalAlignment="Center"
@@ -4048,13 +4093,15 @@
                                                    FontFamily="Consolas"
                                                    Text="{Binding ElementName=ProgressiveReminderVolumeSlider, Path=Value, StringFormat={}{0:P0}}" />
                                     </ui:SimpleStackPanel>
-                                    <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,5,0,0">
+                                    <ui:SimpleStackPanel HorizontalAlignment="Left" Margin="0,5,0,0" Width="420">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Timer_ProgressiveCustomLabel}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
-                                        <Button Name="ButtonSelectCustomProgressiveReminderSound" Content="{i18n:I18n Key=Timer_ProgressiveSelectFile}" FontFamily="Microsoft YaHei UI" 
-                                                Click="ButtonSelectCustomProgressiveReminderSound_Click" Padding="10,3"/>
-                                        <Button Name="ButtonResetProgressiveReminderSound" Content="{i18n:I18n Key=Timer_ProgressiveReset}" FontFamily="Microsoft YaHei UI" 
-                                                Click="ButtonResetProgressiveReminderSound_Click" Padding="10,3" Margin="5,0,0,0"/>
+                                                   FontSize="14" Margin="0,0,0,4" Style="{StaticResource AutoFitSettingsOptionLabel14}" />
+                                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                            <Button Name="ButtonSelectCustomProgressiveReminderSound" Content="{i18n:I18n Key=Timer_ProgressiveSelectFile}" FontFamily="Microsoft YaHei UI" 
+                                                    Click="ButtonSelectCustomProgressiveReminderSound_Click" Padding="10,3" Width="130" Margin="0,0,6,0"/>
+                                            <Button Name="ButtonResetProgressiveReminderSound" Content="{i18n:I18n Key=Timer_ProgressiveReset}" FontFamily="Microsoft YaHei UI" 
+                                                    Click="ButtonResetProgressiveReminderSound_Click" Padding="10,3" Width="90"/>
+                                        </WrapPanel>
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                             </GroupBox>
@@ -4108,7 +4155,7 @@
                                                       FontSize="12"
                                                       Checked="CheckBoxTelemetryPrivacyAccepted_Checked"
                                                       Unchecked="CheckBoxTelemetryPrivacyAccepted_Checked">
-                                                <TextBlock>
+                                                <TextBlock Width="430" TextWrapping="Wrap">
                                                     <Run Text="{i18n:I18n Key=About_PrivacyCheckboxPrefix}" />
                                                     <Run Text="privacy" FontWeight="Bold" />
                                                     <Run Text="{i18n:I18n Key=About_PrivacyCheckboxSuffix}" />
@@ -4117,9 +4164,9 @@
 
                                             <ui:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,0">
                                                 <TextBlock Text="{i18n:I18n Key=About_TelemetryLabel}" Foreground="#a1a1aa" FontSize="12"
-                                                           VerticalAlignment="Center" />
+                                                           VerticalAlignment="Center" Width="150" />
                                                 <ComboBox x:Name="ComboBoxTelemetryUploadLevel"
-                                                          Width="230"
+                                                          Width="260"
                                                           Margin="8,0,0,0"
                                                           SelectionChanged="ComboBoxTelemetryUploadLevel_SelectionChanged">
                                                     <ComboBoxItem Tag="0" Content="{i18n:I18n Key=About_Telemetry_Off}" />
