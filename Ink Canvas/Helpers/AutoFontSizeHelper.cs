@@ -5,22 +5,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-using System.Windows.Markup;
-using System.Windows.Media.TextFormatting;
-using System.Windows.Media.Imaging;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Shapes;
-using System.Windows.Data;
-using System.Windows.Ink;
-using System.Windows.Interop;
-using System.Windows.Media.Animation;
-using System.Windows.Navigation;
 
 namespace Ink_Canvas.Helpers
 {
     /// <summary>
-    /// 让 TextBlock 在可用宽度不足时自动缩小字号（只缩小不放大），用于避免英文等长文本被截断。
+    /// Automatically shrinks text to fit available width.
+    /// Supports TextBlock and Label.
+    /// Only shrinks, never enlarges above MaxFontSize.
     /// </summary>
     public static class AutoFontSizeHelper
     {
@@ -76,170 +67,247 @@ namespace Ink_Canvas.Helpers
 
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var tb = d as TextBlock;
-            if (tb == null) return;
+            if (!(d is FrameworkElement fe)) return;
+            if (!(fe is TextBlock) && !(fe is Label)) return;
 
             if ((bool)e.NewValue)
             {
-                tb.SizeChanged += TextBlock_OnSizeChanged;
-                tb.Loaded += TextBlock_OnLoaded;
-                tb.Unloaded += TextBlock_OnUnloaded;
+                fe.SizeChanged += Element_OnSizeChanged;
+                fe.Loaded += Element_OnLoaded;
+                fe.Unloaded += Element_OnUnloaded;
+                TryHookContentChanged(fe, true);
 
-                try
-                {
-                    var dpd = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
-                    dpd?.AddValueChanged(tb, TextBlock_OnTextChanged);
-                }
-                catch
-                {
-                    // 忽略：极端情况下 descriptor 可能不可用
-                }
-
-                // 让第一次布局完成后再做一次调整（避免 ActualWidth=0）
-                tb.Dispatcher.BeginInvoke(new Action(() => TryAdjust(tb)), DispatcherPriority.Loaded);
+                fe.Dispatcher.BeginInvoke(new Action(() => TryAdjust(fe)), DispatcherPriority.Loaded);
             }
             else
             {
-                tb.SizeChanged -= TextBlock_OnSizeChanged;
-                tb.Loaded -= TextBlock_OnLoaded;
-                tb.Unloaded -= TextBlock_OnUnloaded;
-
-                try
-                {
-                    var dpd = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
-                    dpd?.RemoveValueChanged(tb, TextBlock_OnTextChanged);
-                }
-                catch
-                {
-                }
+                fe.SizeChanged -= Element_OnSizeChanged;
+                fe.Loaded -= Element_OnLoaded;
+                fe.Unloaded -= Element_OnUnloaded;
+                TryHookContentChanged(fe, false);
             }
         }
 
         private static void OnSizingPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is TextBlock tb && GetIsEnabled(tb))
+            if (d is FrameworkElement fe && GetIsEnabled(fe))
             {
-                tb.Dispatcher.BeginInvoke(new Action(() => TryAdjust(tb)), DispatcherPriority.Loaded);
+                fe.Dispatcher.BeginInvoke(new Action(() => TryAdjust(fe)), DispatcherPriority.Loaded);
             }
         }
 
-        private static void TextBlock_OnLoaded(object sender, RoutedEventArgs e)
+        private static void Element_OnLoaded(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBlock tb) tb.Dispatcher.BeginInvoke(new Action(() => TryAdjust(tb)), DispatcherPriority.Loaded);
-        }
-
-        private static void TextBlock_OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            // 这里不做额外处理；事件解绑由 IsEnabled 关闭或对象销毁处理
-        }
-
-        private static void TextBlock_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (sender is TextBlock tb) TryAdjust(tb);
-        }
-
-        private static void TextBlock_OnTextChanged(object sender, EventArgs e)
-        {
-            if (sender is TextBlock tb) tb.Dispatcher.BeginInvoke(new Action(() => TryAdjust(tb)), DispatcherPriority.Loaded);
-        }
-
-        private static void TryAdjust(TextBlock tb)
-        {
-            if (tb == null) return;
-            if (!GetIsEnabled(tb)) return;
-            if (GetIsAdjusting(tb)) return;
-
-            // 没有可用宽度时跳过
-            var availableWidth = tb.ActualWidth;
-            if (double.IsNaN(availableWidth) || availableWidth <= 1) return;
-
-            // 文本为空时不需要调整
-            var text = tb.Text;
-            if (string.IsNullOrEmpty(text)) return;
-
-            var min = GetMinFontSize(tb);
-            if (double.IsNaN(min) || min <= 0) min = 6d;
-
-            var step = GetStep(tb);
-            if (double.IsNaN(step) || step <= 0.01) step = 0.5d;
-
-            var max = GetMaxFontSize(tb);
-            if (double.IsNaN(max) || max <= 0)
+            if (sender is FrameworkElement fe)
             {
-                max = tb.FontSize;
+                fe.Dispatcher.BeginInvoke(new Action(() => TryAdjust(fe)), DispatcherPriority.Loaded);
             }
+        }
 
-            if (double.IsNaN(max) || max <= 0) return;
+        private static void Element_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            // No extra cleanup required here.
+        }
 
-            // 只做“缩小不放大”
-            var startFont = Math.Min(tb.FontSize, max);
-            if (startFont < min) startFont = min;
+        private static void Element_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is FrameworkElement fe) TryAdjust(fe);
+        }
 
-            SetIsAdjusting(tb, true);
+        private static void Element_OnTextChanged(object sender, EventArgs e)
+        {
+            if (sender is FrameworkElement fe)
+            {
+                fe.Dispatcher.BeginInvoke(new Action(() => TryAdjust(fe)), DispatcherPriority.Loaded);
+            }
+        }
+
+        private static void TryHookContentChanged(FrameworkElement fe, bool add)
+        {
             try
             {
-                // 如果当前已合适，直接回到 max（但不超过原本 fontSize），避免之前缩小后再变短不恢复
-                // 注意：恢复也只在不超过 max 的范围内
-                var desiredAtMax = MeasureTextWidth(tb, text, max);
+                DependencyPropertyDescriptor dpd = null;
+                if (fe is TextBlock)
+                {
+                    dpd = DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock));
+                }
+                else if (fe is Label)
+                {
+                    dpd = DependencyPropertyDescriptor.FromProperty(ContentControl.ContentProperty, typeof(ContentControl));
+                }
+
+                if (dpd == null) return;
+                if (add) dpd.AddValueChanged(fe, Element_OnTextChanged);
+                else dpd.RemoveValueChanged(fe, Element_OnTextChanged);
+            }
+            catch
+            {
+                // Ignore descriptor issues in rare runtime cases.
+            }
+        }
+
+        private static void TryAdjust(FrameworkElement fe)
+        {
+            if (fe == null) return;
+            if (!GetIsEnabled(fe)) return;
+            if (GetIsAdjusting(fe)) return;
+
+            var text = GetElementText(fe);
+            if (string.IsNullOrEmpty(text)) return;
+
+            var availableWidth = GetAvailableWidth(fe);
+            if (double.IsNaN(availableWidth) || availableWidth <= 1) return;
+
+            var min = GetMinFontSize(fe);
+            if (double.IsNaN(min) || min <= 0) min = 6d;
+
+            var step = GetStep(fe);
+            if (double.IsNaN(step) || step < 0.1) step = 0.5d;
+
+            var current = GetElementFontSize(fe);
+            if (double.IsNaN(current) || current <= 0) return;
+
+            var max = GetMaxFontSize(fe);
+            if (double.IsNaN(max) || max <= 0) max = current;
+
+            var startFont = Math.Min(current, max);
+            if (startFont < min) startFont = min;
+
+            SetIsAdjusting(fe, true);
+            try
+            {
+                var desiredAtMax = MeasureTextWidth(fe, text, max);
                 if (desiredAtMax > 0 && desiredAtMax <= availableWidth + 0.5)
                 {
-                    if (tb.FontSize != max) tb.FontSize = max;
+                    if (Math.Abs(current - max) > 0.01) SetElementFontSize(fe, max);
                     return;
                 }
 
-                double font = startFont;
-                double desired = MeasureTextWidth(tb, text, font);
+                var font = startFont;
+                var desired = MeasureTextWidth(fe, text, font);
                 if (desired <= 0) return;
 
-                // 逐步减小直到适配或触底
                 while (font > min && desired > availableWidth + 0.5)
                 {
                     font = Math.Max(min, font - step);
-                    desired = MeasureTextWidth(tb, text, font);
+                    desired = MeasureTextWidth(fe, text, font);
                     if (desired <= 0) break;
                 }
 
-                if (!double.IsNaN(font) && font > 0 && Math.Abs(tb.FontSize - font) > 0.01)
+                if (!double.IsNaN(font) && font > 0 && Math.Abs(current - font) > 0.01)
                 {
-                    tb.FontSize = font;
+                    SetElementFontSize(fe, font);
                 }
             }
             finally
             {
-                SetIsAdjusting(tb, false);
+                SetIsAdjusting(fe, false);
             }
         }
 
-        private static double MeasureTextWidth(TextBlock tb, string text, double fontSize)
+        private static string GetElementText(FrameworkElement fe)
+        {
+            if (fe is TextBlock tb) return tb.Text;
+            if (fe is Label label) return label.Content as string ?? label.Content?.ToString();
+            return null;
+        }
+
+        private static double GetElementFontSize(FrameworkElement fe)
+        {
+            if (fe is TextBlock tb) return tb.FontSize;
+            if (fe is Label label) return label.FontSize;
+            return double.NaN;
+        }
+
+        private static void SetElementFontSize(FrameworkElement fe, double value)
+        {
+            if (fe is TextBlock tb) tb.FontSize = value;
+            else if (fe is Label label) label.FontSize = value;
+        }
+
+        private static double GetAvailableWidth(FrameworkElement fe)
+        {
+            double width = double.PositiveInfinity;
+
+            if (fe.ActualWidth > 1) width = Math.Min(width, fe.ActualWidth);
+
+            if (fe.Parent is FrameworkElement parent && parent.ActualWidth > 1)
+            {
+                var parentWidth = parent.ActualWidth - fe.Margin.Left - fe.Margin.Right;
+                if (parentWidth > 1) width = Math.Min(width, parentWidth);
+            }
+
+            if (double.IsInfinity(width) || double.IsNaN(width) || width <= 1) return -1;
+
+            // Keep width as inner text area.
+            if (fe is Control control)
+            {
+                width -= control.Padding.Left + control.Padding.Right;
+                width -= control.BorderThickness.Left + control.BorderThickness.Right;
+            }
+            else if (fe is Border border)
+            {
+                width -= border.Padding.Left + border.Padding.Right;
+                width -= border.BorderThickness.Left + border.BorderThickness.Right;
+            }
+
+            return width;
+        }
+
+        private static double MeasureTextWidth(FrameworkElement fe, string text, double fontSize)
         {
             try
             {
-                var dpi = VisualTreeHelper.GetDpi(tb);
+                var dpi = VisualTreeHelper.GetDpi(fe);
                 var culture = CultureInfo.CurrentUICulture;
 
-                // 使用 TextBlock 自身的语言/流向
-                if (tb.Language != null)
+                if (fe.Language != null)
                 {
                     try
                     {
-                        culture = tb.Language.GetEquivalentCulture();
+                        culture = fe.Language.GetEquivalentCulture();
                     }
                     catch
                     {
                     }
                 }
 
-                var typeface = new Typeface(tb.FontFamily, tb.FontStyle, tb.FontWeight, tb.FontStretch);
+                var fontFamily = SystemFonts.MessageFontFamily;
+                var fontStyle = FontStyles.Normal;
+                var fontWeight = FontWeights.Normal;
+                var fontStretch = FontStretches.Normal;
+                Brush foreground = Brushes.Black;
+                var flowDirection = FlowDirection.LeftToRight;
+
+                if (fe is TextBlock tb)
+                {
+                    fontFamily = tb.FontFamily;
+                    fontStyle = tb.FontStyle;
+                    fontWeight = tb.FontWeight;
+                    fontStretch = tb.FontStretch;
+                    foreground = tb.Foreground;
+                    flowDirection = tb.FlowDirection;
+                }
+                else if (fe is Label label)
+                {
+                    fontFamily = label.FontFamily;
+                    fontStyle = label.FontStyle;
+                    fontWeight = label.FontWeight;
+                    fontStretch = label.FontStretch;
+                    foreground = label.Foreground;
+                    flowDirection = label.FlowDirection;
+                }
+
+                var typeface = new Typeface(fontFamily, fontStyle, fontWeight, fontStretch);
                 var formatted = new FormattedText(
                     text,
                     culture,
-                    tb.FlowDirection,
+                    flowDirection,
                     typeface,
                     fontSize,
-                    tb.Foreground,
+                    foreground,
                     dpi.PixelsPerDip);
 
-                // 这里用包含尾随空白的宽度更接近实际布局
                 return formatted.WidthIncludingTrailingWhitespace;
             }
             catch
@@ -249,4 +317,3 @@ namespace Ink_Canvas.Helpers
         }
     }
 }
-

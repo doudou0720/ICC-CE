@@ -71,9 +71,26 @@
                 <Setter Property="TextWrapping" Value="NoWrap" />
                 <Setter Property="TextAlignment" Value="Center" />
                 <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
-                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="5" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="4" />
                 <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="8" />
-                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.5" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
+            </Style>
+
+            <Style x:Key="AutoFitMainToolbarLabel8" TargetType="TextBlock" BasedOn="{StaticResource AutoFitFloatBarLabel8}">
+                <Setter Property="Height" Value="10" />
+                <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+                <Setter Property="LineHeight" Value="10" />
+            </Style>
+
+            <Style x:Key="AutoFitToolPopupLabel8" TargetType="Label">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Foreground" Value="{DynamicResource FloatBarForeground}" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="3.5" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="8" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
             </Style>
 
             <!-- Navigation Button Style -->
@@ -6840,6 +6857,9 @@
                                                     </Border>
                                                     <!---->
                                                     <ui:SimpleStackPanel Margin="10,3,10,2" Spacing="-2">
+                                                        <ui:SimpleStackPanel.Resources>
+                                                            <Style TargetType="Label" BasedOn="{StaticResource AutoFitToolPopupLabel8}" />
+                                                        </ui:SimpleStackPanel.Resources>
                                                         <ui:SimpleStackPanel Margin="0,0,0,0" Height="40" Spacing="0"
                                                                              Orientation="Horizontal">
                                                             <ui:SimpleStackPanel MouseDown="Border_MouseDown"
@@ -7786,7 +7806,8 @@
                                     </Image>
                                     <TextBlock x:Name="SelectionToolBarTextBlock" Text="{i18n:I18n Key=FloatingBar_Mouse}" Foreground="{DynamicResource FloatBarForeground}"
                                                FontSize="8"
-                                               Margin="0,1,0,0" TextAlignment="Center" />
+                                               Margin="0,1,0,0" TextAlignment="Center"
+                                               Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                 </ui:SimpleStackPanel>
                                 <ui:SimpleStackPanel Name="Pen_Icon"
                                                      MouseDown="FloatingBarToolBtnMouseDownFeedback_Panel"
@@ -7808,7 +7829,8 @@
                                         </Image.Source>
                                     </Image>
                                     <TextBlock x:Name="PenToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Annotate}" Foreground="{DynamicResource FloatBarForeground}" FontSize="8"
-                                               Margin="0,1,0,0" TextAlignment="Center" />
+                                               Margin="0,1,0,0" TextAlignment="Center"
+                                               Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                 </ui:SimpleStackPanel>
                                 
                                 <!-- 快捷调色盘 - 双行显示模式 -->
@@ -8403,7 +8425,8 @@
                                         </Image.Source>
                                     </Image>
                                     <TextBlock x:Name="TrashBinToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Clear}" Foreground="{DynamicResource RedBrush}"
-                                               FontWeight="Bold" FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                               FontWeight="Bold" FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                               Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                 </ui:SimpleStackPanel>
                                 <ui:SimpleStackPanel Name="StackPanelCanvasControls" Visibility="Visible"
                                                      Orientation="{Binding ElementName=StackPanelFloatingBar, Path=Orientation}">
@@ -9228,7 +9251,8 @@
                                             </Image.Source>
                                         </Image>
                                         <TextBlock x:Name="CircleEraserToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_AreaEraser}" Foreground="{DynamicResource FloatBarForeground}"
-                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Name="EraserByStrokes_Icon"
                                                          MouseDown="FloatingBarToolBtnMouseDownFeedback_Panel"
@@ -9251,7 +9275,8 @@
                                             </Image.Source>
                                         </Image>
                                         <TextBlock x:Name="InkEraserToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_StrokeEraser}" Foreground="{DynamicResource FloatBarForeground}"
-                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel Name="SymbolIconSelect"
                                                          MouseDown="FloatingBarToolBtnMouseDownFeedback_Panel"
@@ -9273,7 +9298,8 @@
                                             </Image.Source>
                                         </Image>
                                         <TextBlock x:Name="LassoToolToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_LassoSelect}" Foreground="{DynamicResource FloatBarForeground}"
-                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="ShapeDrawFloatingBarBtn"
@@ -9297,7 +9323,8 @@
                                             </Image.Source>
                                         </Image>
                                         <TextBlock x:Name="ShapesToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Geometry}" Foreground="{DynamicResource FloatBarForeground}"
-                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center" />
+                                                   FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
 
                                     <Grid Width="0">
@@ -9573,7 +9600,7 @@
                                                    Opacity="{Binding ElementName=BtnUndo, Path=IsEnabled, Converter={StaticResource IsEnabledToOpacityConverter}}"
                                                    Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
                                                    TextAlignment="Center"
-                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="SymbolIconRedo"
@@ -9602,7 +9629,7 @@
                                                    Opacity="{Binding ElementName=BtnRedo, Path=IsEnabled, Converter={StaticResource IsEnabledToOpacityConverter}}"
                                                    Foreground="{DynamicResource FloatBarForeground}" FontSize="8" Margin="0,1,0,0"
                                                    TextAlignment="Center"
-                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="CursorWithDelFloatingBarBtn"
@@ -9626,7 +9653,7 @@
                                         </Image>
                                         <TextBlock x:Name="ClearAndMouseToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_ClearAndMouse}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
-                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                 </ui:SimpleStackPanel>
                                 <Grid Width="0">
@@ -9790,7 +9817,7 @@
                                         </Image>
                                         <TextBlock x:Name="WhiteboardToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Whiteboard}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8" Margin="0,1,0,0" TextAlignment="Center"
-                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         Name="ToolsFloatingBarBtn"
@@ -9815,7 +9842,7 @@
                                         <TextBlock x:Name="ToolsToolbarTextBlock" Text="{i18n:I18n Key=Board_Tools}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8"
                                                    Margin="0,1,0,0" TextAlignment="Center"
-                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <ui:SimpleStackPanel
                                         x:Name="Fold_Icon"
@@ -9840,7 +9867,7 @@
                                         <TextBlock x:Name="HideToolbarTextBlock" Text="{i18n:I18n Key=FloatingBar_Hide}" Foreground="{DynamicResource FloatBarForeground}"
                                                    FontSize="8"
                                                    Margin="0,1,0,0" TextAlignment="Center"
-                                                   Style="{StaticResource AutoFitFloatBarLabel8}" />
+                                                   Style="{StaticResource AutoFitMainToolbarLabel8}" />
                                     </ui:SimpleStackPanel>
                                     <Grid Width="0">
                                         <Border ClipToBounds="True" Name="BorderTools" Margin="-103,-156,-16,37"
@@ -9865,6 +9892,9 @@
                                                 </Border>
                                                 <!---->
                                                 <ui:SimpleStackPanel Margin="10,3,10,2" Spacing="-2">
+                                                    <ui:SimpleStackPanel.Resources>
+                                                        <Style TargetType="Label" BasedOn="{StaticResource AutoFitToolPopupLabel8}" />
+                                                    </ui:SimpleStackPanel.Resources>
                                                     <ui:SimpleStackPanel Margin="0,0,0,0" Height="40" Spacing="0"
                                                                          Orientation="Horizontal">
                                                         <ui:SimpleStackPanel MouseDown="Border_MouseDown"
