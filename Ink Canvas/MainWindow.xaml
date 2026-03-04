@@ -1,4 +1,4 @@
-<Window Name="window" x:Class="Ink_Canvas.MainWindow"
+﻿<Window Name="window" x:Class="Ink_Canvas.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6290,7 +6290,7 @@
                                                             CornerRadius="6,6,0,0"
                                                             Background="#2563eb" Margin="-1,-1,-1,1">
                                                         <Canvas Height="24" ClipToBounds="True">
-                                                            <TextBlock Text="{i18n:I18n Key=Board_EraserOptions}" Canvas.Left="8" Foreground="White"
+                                                            <TextBlock Text="{i18n:I18n Key=FloatingBar_GesturePanelTitle}" Canvas.Left="8" Foreground="White"
                                                                        Padding="0,5"
                                                                        FontSize="11" FontWeight="Bold"
                                                                        TextAlignment="Center" />
@@ -9344,7 +9344,7 @@
                                                     <ui:SimpleStackPanel Orientation="Horizontal"
                                                                          HorizontalAlignment="Stretch">
                                                         <Canvas Height="24" Width="315" ClipToBounds="True">
-                                                            <TextBlock Text="{i18n:I18n Key=Geometry_Title}" Canvas.Left="8" Foreground="White"
+                                                            <TextBlock Text="{i18n:I18n Key=FloatingBar_GesturePanelTitle}" Canvas.Left="8" Foreground="White"
                                                                        Padding="0,5" FontSize="11" FontWeight="Bold"
                                                                        TextAlignment="Center" />
                                                             <Image Margin="295,3.5,0,0"
@@ -9668,7 +9668,7 @@
                                                     CornerRadius="6,6,0,0"
                                                     Background="#2563eb" Margin="-1,-1,-1,1">
                                                 <Canvas Height="24" ClipToBounds="True">
-                                                    <TextBlock Text="{i18n:I18n Key=Board_EraserOptions}" Canvas.Left="8" Foreground="White"
+                                                    <TextBlock Text="{i18n:I18n Key=FloatingBar_GesturePanelTitle}" Canvas.Left="8" Foreground="White"
                                                                Padding="0,5"
                                                                FontSize="11" FontWeight="Bold" TextAlignment="Center" />
                                                     <Image Margin="100,4,0,0"
@@ -10105,7 +10105,7 @@
                             <Image x:Name="EnableTwoFingerGestureBtn" Source="{DynamicResource GestureIcon}"
                                    RenderOptions.BitmapScalingMode="HighQuality" Width="28" Height="18"
                                    Margin="0,3,0,0" />
-                            <TextBlock x:Name="gestureiconText" Text="手势" Foreground="{DynamicResource FloatBarForeground}" FontSize="8"
+                            <TextBlock x:Name="gestureiconText" Text="{i18n:I18n Key=FloatingBar_GestureButton}" Foreground="{DynamicResource FloatBarForeground}" FontSize="8"
                                        Margin="0,0,0,0"
                                        TextAlignment="Center" />
                         </ui:SimpleStackPanel>
@@ -10119,7 +10119,7 @@
                                 <Border BorderBrush="#1e3a8a" BorderThickness="0,0,0,1" CornerRadius="6,6,0,0"
                                         Background="#2563eb" Margin="-1,-1,-1,1">
                                     <Canvas Height="24" ClipToBounds="True">
-                                        <TextBlock Text="手势选项" Canvas.Left="8" Foreground="White" Padding="0,5"
+                                        <TextBlock Text="{i18n:I18n Key=FloatingBar_GesturePanelTitle}" Canvas.Left="8" Foreground="White" Padding="0,5"
                                                    FontSize="11" FontWeight="Bold" TextAlignment="Center" />
                                         <Image Margin="98,5,0,0"
                                                                Source="/Resources/new-icons/close-white.png"
@@ -10133,7 +10133,7 @@
                                                      HorizontalAlignment="Center" Margin="0,3,0,0">
                                     <Image Source="{DynamicResource MultiTouchIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
-                                    <Label Content="多指书写" FontSize="10" VerticalAlignment="Center" />
+                                    <Label Content="{i18n:I18n Key=FloatingBar_Gesture_MultiTouchWriting}" FontSize="10" VerticalAlignment="Center" />
                                     <Viewbox Width="36" Height="18" Margin="4,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          Name="ToggleSwitchEnableMultiTouchMode"
@@ -10157,7 +10157,7 @@
                                                      HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource HandMoveIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
-                                    <Label Content="双指移动" FontSize="10" VerticalAlignment="Center" />
+                                    <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerMove}" FontSize="10" VerticalAlignment="Center" />
                                     <Viewbox Width="36" Height="18" Margin="4,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          Name="ToggleSwitchEnableTwoFingerTranslate"
@@ -10182,7 +10182,7 @@
                                     HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource ZoomIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
-                                    <Label Content="双指缩放" FontSize="10" VerticalAlignment="Center" />
+                                    <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerZoom}" FontSize="10" VerticalAlignment="Center" />
                                     <Viewbox Width="36" Height="18" Margin="4,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          FontFamily="Microsoft YaHei UI"
@@ -10207,7 +10207,7 @@
                                     HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource RotateIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
-                                    <Label Content="双指旋转" FontSize="10" VerticalAlignment="Center" />
+                                    <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerRotate}" FontSize="10" VerticalAlignment="Center" />
                                     <Viewbox Width="36" Height="18" Margin="4,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          FontFamily="Microsoft YaHei UI"

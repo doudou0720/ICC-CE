@@ -761,6 +761,12 @@
   <data name="Geometry_DrawSquare" xml:space="preserve"><value>正方形</value></data>
   <data name="Geometry_DrawCylinder" xml:space="preserve"><value>画圆柱</value></data>
   <data name="Geometry_DrawCone" xml:space="preserve"><value>画圆锥</value></data>
+  <data name="FloatingBar_GestureButton" xml:space="preserve"><value>手势</value></data>
+  <data name="FloatingBar_GesturePanelTitle" xml:space="preserve"><value>手势选项</value></data>
+  <data name="FloatingBar_Gesture_MultiTouchWriting" xml:space="preserve"><value>多指书写</value></data>
+  <data name="FloatingBar_Gesture_TwoFingerMove" xml:space="preserve"><value>双指移动</value></data>
+  <data name="FloatingBar_Gesture_TwoFingerZoom" xml:space="preserve"><value>双指缩放</value></data>
+  <data name="FloatingBar_Gesture_TwoFingerRotate" xml:space="preserve"><value>双指旋转</value></data>
   <data name="Board_Gesture" xml:space="preserve"><value>手势</value></data>
   <data name="Board_GestureOptions" xml:space="preserve"><value>手势选项</value></data>
 </root>

@@ -746,6 +746,12 @@
   <data name="Geometry_DrawSquare" xml:space="preserve"><value>Square</value></data>
   <data name="Geometry_DrawCylinder" xml:space="preserve"><value>Cylinder</value></data>
   <data name="Geometry_DrawCone" xml:space="preserve"><value>Cone</value></data>
+  <data name="FloatingBar_GestureButton" xml:space="preserve"><value>Gesture</value></data>
+  <data name="FloatingBar_GesturePanelTitle" xml:space="preserve"><value>Gesture options</value></data>
+  <data name="FloatingBar_Gesture_MultiTouchWriting" xml:space="preserve"><value>Multi-touch writing</value></data>
+  <data name="FloatingBar_Gesture_TwoFingerMove" xml:space="preserve"><value>Two-finger move</value></data>
+  <data name="FloatingBar_Gesture_TwoFingerZoom" xml:space="preserve"><value>Two-finger zoom</value></data>
+  <data name="FloatingBar_Gesture_TwoFingerRotate" xml:space="preserve"><value>Two-finger rotate</value></data>
   <data name="Board_Gesture" xml:space="preserve"><value>Gesture</value></data>
   <data name="Board_GestureOptions" xml:space="preserve"><value>Gesture options</value></data>
 </root>
