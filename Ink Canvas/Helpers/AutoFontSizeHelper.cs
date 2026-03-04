@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -65,6 +66,16 @@ namespace Ink_Canvas.Helpers
         private static void SetIsAdjusting(DependencyObject element, bool value) => element.SetValue(IsAdjustingProperty, value);
         private static bool GetIsAdjusting(DependencyObject element) => (bool)element.GetValue(IsAdjustingProperty);
 
+        private static readonly DependencyProperty OriginalFontSizeProperty =
+            DependencyProperty.RegisterAttached(
+                "OriginalFontSize",
+                typeof(double),
+                typeof(AutoFontSizeHelper),
+                new PropertyMetadata(double.NaN));
+
+        private static void SetOriginalFontSize(DependencyObject element, double value) => element.SetValue(OriginalFontSizeProperty, value);
+        private static double GetOriginalFontSize(DependencyObject element) => (double)element.GetValue(OriginalFontSizeProperty);
+
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is FrameworkElement fe)) return;
@@ -72,6 +83,12 @@ namespace Ink_Canvas.Helpers
 
             if ((bool)e.NewValue)
             {
+                var originalFontSize = GetElementFontSize(fe);
+                if (!double.IsNaN(originalFontSize) && originalFontSize > 0)
+                {
+                    SetOriginalFontSize(fe, originalFontSize);
+                }
+
                 fe.SizeChanged += Element_OnSizeChanged;
                 fe.Loaded += Element_OnLoaded;
                 fe.Unloaded += Element_OnUnloaded;
@@ -155,6 +172,12 @@ namespace Ink_Canvas.Helpers
             var text = GetElementText(fe);
             if (string.IsNullOrEmpty(text)) return;
 
+            if (!ShouldAutoScaleForCurrentCulture(text))
+            {
+                RestoreOriginalFontSize(fe);
+                return;
+            }
+
             var availableWidth = GetAvailableWidth(fe);
             if (double.IsNaN(availableWidth) || availableWidth <= 1) return;
 
@@ -169,6 +192,8 @@ namespace Ink_Canvas.Helpers
 
             var max = GetMaxFontSize(fe);
             if (double.IsNaN(max) || max <= 0) max = current;
+            // Never enlarge: auto-fit should only reduce font size when needed.
+            if (max > current) max = current;
 
             var startFont = Math.Min(current, max);
             if (startFont < min) startFont = min;
@@ -176,13 +201,6 @@ namespace Ink_Canvas.Helpers
             SetIsAdjusting(fe, true);
             try
             {
-                var desiredAtMax = MeasureTextWidth(fe, text, max);
-                if (desiredAtMax > 0 && desiredAtMax <= availableWidth + 0.5)
-                {
-                    if (Math.Abs(current - max) > 0.01) SetElementFontSize(fe, max);
-                    return;
-                }
-
                 var font = startFont;
                 var desired = MeasureTextWidth(fe, text, font);
                 if (desired <= 0) return;
@@ -192,6 +210,22 @@ namespace Ink_Canvas.Helpers
                     font = Math.Max(min, font - step);
                     desired = MeasureTextWidth(fe, text, font);
                     if (desired <= 0) break;
+                }
+
+                // Hard-fit fallback: when very narrow slots (e.g., 28px) still overflow at MinFontSize,
+                // keep shrinking proportionally so text always fits in the available width.
+                if (desired > availableWidth + 0.5)
+                {
+                    var hardFont = font;
+                    for (var i = 0; i < 6 && desired > availableWidth + 0.5; i++)
+                    {
+                        var ratio = availableWidth / Math.Max(1.0, desired);
+                        hardFont = Math.Max(1.0, hardFont * ratio);
+                        desired = MeasureTextWidth(fe, text, hardFont);
+                        if (desired <= 0) break;
+                    }
+
+                    font = hardFont;
                 }
 
                 if (!double.IsNaN(font) && font > 0 && Math.Abs(current - font) > 0.01)
@@ -212,6 +246,44 @@ namespace Ink_Canvas.Helpers
             return null;
         }
 
+        private static bool ShouldAutoScaleForCurrentCulture(string text)
+        {
+            // Requirement: auto-scale for English UI only, keep Chinese font size unchanged.
+            var culture = CultureInfo.CurrentUICulture;
+            var name = culture?.Name ?? string.Empty;
+            if (name.StartsWith("en", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Fallback: if actual rendered text is Latin-heavy, still auto-scale.
+            // This avoids clipping when culture detection is out of sync.
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            foreach (var ch in text)
+            {
+                if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static void RestoreOriginalFontSize(FrameworkElement fe)
+        {
+            var original = GetOriginalFontSize(fe);
+            if (double.IsNaN(original) || original <= 0) return;
+
+            var current = GetElementFontSize(fe);
+            if (double.IsNaN(current) || current <= 0) return;
+
+            if (Math.Abs(current - original) > 0.01)
+            {
+                SetElementFontSize(fe, original);
+            }
+        }
+
         private static double GetElementFontSize(FrameworkElement fe)
         {
             if (fe is TextBlock tb) return tb.FontSize;
@@ -229,12 +301,65 @@ namespace Ink_Canvas.Helpers
         {
             double width = double.PositiveInfinity;
 
+            // Explicit width on the element itself should be a hard cap.
+            if (!double.IsNaN(fe.Width) && !double.IsInfinity(fe.Width) && fe.Width > 1)
+            {
+                width = Math.Min(width, fe.Width - fe.Margin.Left - fe.Margin.Right);
+            }
+
+            if (!double.IsNaN(fe.MaxWidth) && !double.IsInfinity(fe.MaxWidth) && fe.MaxWidth > 1)
+            {
+                width = Math.Min(width, fe.MaxWidth - fe.Margin.Left - fe.Margin.Right);
+            }
+
+            // Prefer the real layout slot first. This is usually the most accurate
+            // "space actually assigned by layout" for the element.
+            var slot = LayoutInformation.GetLayoutSlot(fe);
+            if (!double.IsNaN(slot.Width) && !double.IsInfinity(slot.Width))
+            {
+                var slotWidth = slot.Width - fe.Margin.Left - fe.Margin.Right;
+                if (slotWidth > 1) width = Math.Min(width, slotWidth);
+            }
+
             if (fe.ActualWidth > 1) width = Math.Min(width, fe.ActualWidth);
 
-            if (fe.Parent is FrameworkElement parent && parent.ActualWidth > 1)
+            // Immediate parent may be a StackPanel that does not constrain width.
+            // Walk a few ancestors and take the tightest finite width as fallback.
+            DependencyObject ancestor = fe.Parent ?? VisualTreeHelper.GetParent(fe);
+            var depth = 0;
+            while (ancestor != null && depth < 8)
             {
-                var parentWidth = parent.ActualWidth - fe.Margin.Left - fe.Margin.Right;
-                if (parentWidth > 1) width = Math.Min(width, parentWidth);
+                if (ancestor is FrameworkElement af && af.ActualWidth > 1)
+                {
+                    var candidate = af.ActualWidth;
+
+                    // If ancestor sets explicit width, treat it as a stronger cap.
+                    if (!double.IsNaN(af.Width) && !double.IsInfinity(af.Width) && af.Width > 1)
+                    {
+                        candidate = Math.Min(candidate, af.Width);
+                    }
+
+                    if (!double.IsNaN(af.MaxWidth) && !double.IsInfinity(af.MaxWidth) && af.MaxWidth > 1)
+                    {
+                        candidate = Math.Min(candidate, af.MaxWidth);
+                    }
+
+                    if (ancestor is Control ac)
+                    {
+                        candidate -= ac.Padding.Left + ac.Padding.Right;
+                        candidate -= ac.BorderThickness.Left + ac.BorderThickness.Right;
+                    }
+                    else if (ancestor is Border ab)
+                    {
+                        candidate -= ab.Padding.Left + ab.Padding.Right;
+                        candidate -= ab.BorderThickness.Left + ab.BorderThickness.Right;
+                    }
+
+                    if (candidate > 1) width = Math.Min(width, candidate);
+                }
+
+                ancestor = (ancestor as FrameworkElement)?.Parent ?? VisualTreeHelper.GetParent(ancestor);
+                depth++;
             }
 
             if (double.IsInfinity(width) || double.IsNaN(width) || width <= 1) return -1;

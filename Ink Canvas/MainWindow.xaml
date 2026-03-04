@@ -71,7 +71,7 @@
                 <Setter Property="TextWrapping" Value="NoWrap" />
                 <Setter Property="TextAlignment" Value="Center" />
                 <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
-                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="6" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="3.5" />
                 <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="8" />
                 <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
             </Style>
@@ -80,6 +80,17 @@
                 <Setter Property="Height" Value="10" />
                 <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
                 <Setter Property="LineHeight" Value="10" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="2.5" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.1" />
+            </Style>
+
+            <Style x:Key="AutoFitPenTabLabel9" TargetType="TextBlock">
+                <Setter Property="TextWrapping" Value="NoWrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="helpers:AutoFontSizeHelper.IsEnabled" Value="True" />
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="3.5" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="9" />
+                <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.1" />
             </Style>
 
             <Style x:Key="AutoFitToolPopupLabel8" TargetType="Label">
@@ -5174,7 +5185,7 @@
                                                     </Border>
                                                     <Viewbox Margin="8,0,8,0">
                                                         <ui:SimpleStackPanel Margin="0">
-                                                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4"
+                                                            <ui:SimpleStackPanel Orientation="Horizontal" Spacing="2"
                                                                 VerticalAlignment="Center"
                                                                 HorizontalAlignment="Center"
                                                                 Margin="0,3,0,0">
@@ -5183,9 +5194,9 @@
                                                                     Height="16"
                                                                     Width="16" />
                                                                 <Label Content="{i18n:I18n Key=Board_MultiTouchWriting}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="64"
+                                                                    VerticalAlignment="Center" Width="56"
                                                                     Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         x:Name="BoardToggleSwitchEnableMultiTouchMode"
                                                                         FontFamily="Microsoft YaHei UI"
@@ -5207,7 +5218,7 @@
                                                             </ui:SimpleStackPanel>
                                                             <ui:SimpleStackPanel
                                                                 Opacity="{Binding Opacity, ElementName=TwoFingerGestureSimpleStackPanel}"
-                                                                Orientation="Horizontal" Spacing="4"
+                                                                Orientation="Horizontal" Spacing="2"
                                                                 VerticalAlignment="Center"
                                                                 HorizontalAlignment="Center">
                                                                 <Image Source="{DynamicResource HandMoveIcon}"
@@ -5215,9 +5226,9 @@
                                                                     Height="16"
                                                                     Width="16" />
                                                                 <Label Content="{i18n:I18n Key=Board_TwoFingerMove}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="64"
+                                                                    VerticalAlignment="Center" Width="56"
                                                                     Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         x:Name="BoardToggleSwitchEnableTwoFingerTranslate"
                                                                         FontFamily="Microsoft YaHei UI"
@@ -5239,7 +5250,7 @@
                                                             </ui:SimpleStackPanel>
                                                             <ui:SimpleStackPanel
                                                                 Opacity="{Binding Opacity, ElementName=TwoFingerGestureSimpleStackPanel}"
-                                                                Orientation="Horizontal" Spacing="4"
+                                                                Orientation="Horizontal" Spacing="2"
                                                                 VerticalAlignment="Center"
                                                                 HorizontalAlignment="Center">
                                                                 <Image Source="{DynamicResource ZoomIcon}"
@@ -5247,9 +5258,9 @@
                                                                     Height="16"
                                                                     Width="16" />
                                                                 <Label Content="{i18n:I18n Key=Board_TwoFingerZoom}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="64"
+                                                                    VerticalAlignment="Center" Width="56"
                                                                     Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         FontFamily="Microsoft YaHei UI"
                                                                         IsOn="False" OnContent="" OffContent=""
@@ -5269,7 +5280,7 @@
                                                             </ui:SimpleStackPanel>
                                                             <ui:SimpleStackPanel
                                                                 Opacity="{Binding Opacity, ElementName=TwoFingerGestureSimpleStackPanel}"
-                                                                Orientation="Horizontal" Spacing="4"
+                                                                Orientation="Horizontal" Spacing="2"
                                                                 VerticalAlignment="Center"
                                                                 HorizontalAlignment="Center">
                                                                 <Image Source="{DynamicResource RotateIcon}"
@@ -5277,9 +5288,9 @@
                                                                     Height="16"
                                                                     Width="16" />
                                                                 <Label Content="{i18n:I18n Key=Board_TwoFingerRotate}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="64"
+                                                                    VerticalAlignment="Center" Width="56"
                                                                     Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         FontFamily="Microsoft YaHei UI"
                                                                         IsOn="False" OnContent="" OffContent=""
@@ -5476,7 +5487,9 @@
                                                                                         FontWeight="Medium"
                                                                                         FontSize="9"
                                                                                         TextAlignment="Center"
-                                                                                        Text="{i18n:I18n Key=Board_Highlighter}" Margin="2,1,0,0" />
+                                                                                        Text="{i18n:I18n Key=Board_Highlighter}" Margin="2,1,0,0"
+                                                                                        Width="35"
+                                                                                        Style="{StaticResource AutoFitPenTabLabel9}" />
                                                                                 </ui:SimpleStackPanel>
                                                                             </ui:SimpleStackPanel>
                                                                         </Canvas>
@@ -8524,7 +8537,9 @@
                                                                                     Foreground="White"
                                                                                     FontWeight="Medium"
                                                                                     FontSize="9" TextAlignment="Center"
-                                                                                    Text="{i18n:I18n Key=Board_Highlighter}" Margin="2,1,0,0" />
+                                                                                    Text="{i18n:I18n Key=Board_Highlighter}" Margin="2,1,0,0"
+                                                                                    Width="35"
+                                                                                    Style="{StaticResource AutoFitPenTabLabel9}" />
                                                                             </ui:SimpleStackPanel>
                                                                         </ui:SimpleStackPanel>
                                                                     </Canvas>
@@ -10144,14 +10159,14 @@
                                                                MouseUp="CloseBordertools_MouseUp" />
                                     </Canvas>
                                 </Border>
-                                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                                <ui:SimpleStackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
                                                      HorizontalAlignment="Center" Margin="0,3,0,0">
                                     <Image Source="{DynamicResource MultiTouchIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_MultiTouchWriting}" FontSize="8"
-                                           VerticalAlignment="Center" Width="64"
+                                           VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          Name="ToggleSwitchEnableMultiTouchMode"
                                                          FontFamily="Microsoft YaHei UI" IsOn="False" OnContent=""
@@ -10170,14 +10185,14 @@
                                     </Viewbox>
                                 </ui:SimpleStackPanel>
                                 <ui:SimpleStackPanel Opacity="1" x:Name="TwoFingerGestureSimpleStackPanel"
-                                                     Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                                                     Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
                                                      HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource HandMoveIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerMove}" FontSize="8"
-                                           VerticalAlignment="Center" Width="64"
+                                           VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          Name="ToggleSwitchEnableTwoFingerTranslate"
                                                          FontFamily="Microsoft YaHei UI" IsOn="False" OnContent=""
@@ -10197,14 +10212,14 @@
                                 </ui:SimpleStackPanel>
                                 <ui:SimpleStackPanel
                                     Opacity="{Binding ElementName=TwoFingerGestureSimpleStackPanel, Path=Opacity}"
-                                    Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                                    Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
                                     HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource ZoomIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerZoom}" FontSize="8"
-                                           VerticalAlignment="Center" Width="64"
+                                           VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          FontFamily="Microsoft YaHei UI"
                                                          IsOn="False" OnContent="" OffContent=""
@@ -10224,14 +10239,14 @@
                                 </ui:SimpleStackPanel>
                                 <ui:SimpleStackPanel
                                     Opacity="{Binding ElementName=TwoFingerGestureSimpleStackPanel, Path=Opacity}"
-                                    Orientation="Horizontal" Spacing="4" VerticalAlignment="Center"
+                                    Orientation="Horizontal" Spacing="2" VerticalAlignment="Center"
                                     HorizontalAlignment="Center">
                                     <Image Source="{DynamicResource RotateIcon}"
                                            RenderOptions.BitmapScalingMode="HighQuality" Height="16" Width="16" />
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerRotate}" FontSize="8"
-                                           VerticalAlignment="Center" Width="64"
+                                           VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="4,0,0,0">
+                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          FontFamily="Microsoft YaHei UI"
                                                          IsOn="False" OnContent="" OffContent=""
