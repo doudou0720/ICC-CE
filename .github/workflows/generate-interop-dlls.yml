@@ -1,0 +1,44 @@
+name: Generate Interop DLLs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-interop:
+    name: Generate Interop DLLs
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+
+      - name: Restore NuGet packages
+        run: dotnet restore "Ink Canvas.sln" --locked-mode
+
+      - name: Build project
+        run: msbuild /p:platform="AnyCPU" /p:configuration="Release" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal -maxcpucount /p:RunAnalyzers=false
+
+      - name: Upload obj folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: obj-folder
+          path: "Ink Canvas/obj/**/*"
+          retention-days: 30
+
+      - name: Upload interop DLLs
+        uses: actions/upload-artifact@v4
+        with:
+          name: interop-dlls
+          path: |
+            Ink Canvas/obj/Release/Interop.*.dll
+            Ink Canvas/obj/Release/*Interop*.dll
+          retention-days: 30
