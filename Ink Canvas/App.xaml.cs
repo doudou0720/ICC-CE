@@ -1,10 +1,8 @@
 using Hardcodet.Wpf.TaskbarNotification;
 using Ink_Canvas.Helpers;
-using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using Sentry;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -20,8 +18,10 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
+using Ink_Canvas.Properties;
 using SplashScreen = Ink_Canvas.Windows.SplashScreen;
 using Timer = System.Threading.Timer;
+using Sentry;
 
 namespace Ink_Canvas
 {
@@ -475,7 +475,7 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile("启动画面对象创建成功，准备显示...");
                 _splashScreen.Show();
                 _isSplashScreenShown = true;
-                Interlocked.Exchange(ref splashScreenStartTimeTicksUtc, DateTime.UtcNow.Ticks);
+                splashScreenStartTime = DateTime.Now;
                 LogHelper.WriteLogToFile("启动画面已显示");
             }
             catch (Exception ex)
@@ -694,7 +694,7 @@ namespace Ink_Canvas
         async void App_Startup(object sender, StartupEventArgs e)
         {
             appStartTime = DateTime.Now;
-            Interlocked.Exchange(ref appStartupStartTimeTicksUtc, DateTime.UtcNow.Ticks);
+            appStartupStartTime = DateTime.Now;
 
             // 根据设置决定是否显示启动画面
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
@@ -1078,11 +1078,7 @@ namespace Ink_Canvas
             mainWindow.Loaded += (s, args) =>
             {
                 isStartupComplete = true;
-                var startupCompleteHeartbeat = DateTime.UtcNow;
-                Interlocked.Exchange(ref lastHeartbeatTicksUtc, startupCompleteHeartbeat.Ticks);
-
-                var splashScreenStartTime = ReadUtcTicks(ref splashScreenStartTimeTicksUtc);
-                var appStartupStartTime = ReadUtcTicks(ref appStartupStartTimeTicksUtc);
+                startupCompleteHeartbeat = DateTime.Now;
                 if (_isSplashScreenShown && splashScreenStartTime != DateTime.MinValue)
                 {
                     LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {(startupCompleteHeartbeat - splashScreenStartTime).TotalSeconds:F2}秒");
@@ -1092,7 +1088,7 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile($"启动完成心跳已记录");
                 }
                 LogHelper.WriteLogToFile($"启动时长: {(startupCompleteHeartbeat - appStartupStartTime).TotalSeconds:F2}秒");
-
+                
                 if (_isSplashScreenShown)
                 {
                     SetSplashMessage("完成初始化...");
@@ -1193,17 +1189,12 @@ namespace Ink_Canvas
 
         // 心跳相关
         private static DispatcherTimer heartbeatTimer;
-        private static long lastHeartbeatTicksUtc = DateTime.UtcNow.Ticks;
+        private static DateTime lastHeartbeat = DateTime.Now;
         private static Timer watchdogTimer;
         private static bool isStartupComplete = false;
-        private static long splashScreenStartTimeTicksUtc = DateTime.MinValue.Ticks;
-        private static long appStartupStartTimeTicksUtc = DateTime.MinValue.Ticks;
-
-        private static DateTime ReadUtcTicks(ref long ticks)
-        {
-            long value = Interlocked.Read(ref ticks);
-            return value == DateTime.MinValue.Ticks ? DateTime.MinValue : new DateTime(value, DateTimeKind.Utc);
-        }
+        private static DateTime startupCompleteHeartbeat = DateTime.MinValue;
+        private static DateTime splashScreenStartTime = DateTime.MinValue;
+        private static DateTime appStartupStartTime = DateTime.MinValue;
 
         /// <summary>
         /// 启动并管理应用的心跳与守护检查定时器，监测启动阶段与主线程是否无响应，并在符合配置的情况下尝试静默重启应用。
@@ -1222,7 +1213,7 @@ namespace Ink_Canvas
             {
                 Interval = TimeSpan.FromSeconds(1)
             };
-            heartbeatTimer.Tick += (_, __) => Interlocked.Exchange(ref lastHeartbeatTicksUtc, DateTime.UtcNow.Ticks);
+            heartbeatTimer.Tick += (_, __) => lastHeartbeat = DateTime.Now;
             heartbeatTimer.Start();
 
             watchdogTimer = new Timer(_ =>
@@ -1230,16 +1221,12 @@ namespace Ink_Canvas
                 if (IsOobeShowing)
                     return;
 
-                DateTime now = DateTime.UtcNow;
-                DateTime appStartupStartTime = ReadUtcTicks(ref appStartupStartTimeTicksUtc);
-
                 if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
                 {
-                    DateTime splashScreenStartTime = ReadUtcTicks(ref splashScreenStartTimeTicksUtc);
-                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue
-                        ? splashScreenStartTime
+                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue 
+                        ? splashScreenStartTime 
                         : appStartupStartTime;
-                    TimeSpan elapsedSinceStart = now - startTime;
+                    TimeSpan elapsedSinceStart = DateTime.Now - startTime;
                     if (elapsedSinceStart.TotalMinutes >= 2)
                     {
                         string timeType = _isSplashScreenShown ? "启动画面已显示" : "应用启动开始";
@@ -1265,8 +1252,8 @@ namespace Ink_Canvas
                         return;
                     }
                 }
-                DateTime lastHeartbeat = ReadUtcTicks(ref lastHeartbeatTicksUtc);
-                if (isStartupComplete && (now - lastHeartbeat).TotalSeconds > 10)
+                
+                if (isStartupComplete && (DateTime.Now - lastHeartbeat).TotalSeconds > 10)
                 {
                     LogHelper.NewLog("检测到主线程无响应，自动重启。");
                     SyncCrashActionFromSettings();
@@ -1404,7 +1391,7 @@ namespace Ink_Canvas
 
                 string assemblyLocation = Assembly.GetExecutingAssembly().Location;
                 string currentDir = Path.GetDirectoryName(assemblyLocation);
-
+                
                 for (int i = 0; i < 5; i++)
                 {
                     string dsnFilePath = Path.Combine(currentDir, "telemetry_dsn.txt");
@@ -1416,7 +1403,7 @@ namespace Ink_Canvas
                             return dsn;
                         }
                     }
-
+                    
                     DirectoryInfo parentDir = Directory.GetParent(currentDir);
                     if (parentDir == null)
                     {
