@@ -356,7 +356,7 @@ jobs:
           
       - name: Upload Build Artifacts
         if: steps.check-exe.outputs.build_success == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           path: |
@@ -409,7 +409,7 @@ jobs:
       id-token: write
     steps:
       - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           
@@ -430,7 +430,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Upload Signed Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: signed-files-${{ needs.prepare.outputs.version }}
           path: |
@@ -448,12 +448,12 @@ jobs:
 
     steps:
       - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
           
       - name: Download Signed Artifacts (if exists)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: signed-files-${{ needs.prepare.outputs.version }}
         continue-on-error: true
@@ -539,7 +539,7 @@ jobs:
       contents: write
     steps:
       - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-files-${{ needs.prepare.outputs.version }}
 
