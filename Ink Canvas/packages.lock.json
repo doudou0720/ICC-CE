@@ -54,6 +54,12 @@
         "resolved": "2.0.1",
         "contentHash": "dtxmeZXzV2GzSm91aZ3hqzgoeVoARSkDPVCYfhVUNyyKBWYxMgNC0EcLiSYxD4Uc4alq/2qb3SmV8DgAENLRLQ=="
       },
+      "iNKORE.UI.WPF": {
+        "type": "Direct",
+        "requested": "[1.2.8, )",
+        "resolved": "1.2.8",
+        "contentHash": "7b+z25JFdhGAfyJqlVIF0vLbmgsRvqDZMvhGPTz20gzQigDPMqVUOoCCKB5824GtYsjFCYNilmaowb+4yWATkQ=="
+      },
       "iNKORE.UI.WPF.Modern": {
         "type": "Direct",
         "requested": "[0.10.2.1, )",
@@ -167,11 +173,6 @@
         "type": "Transitive",
         "resolved": "6.8.2",
         "contentHash": "sjGHrtGS1+kcrv99WXCvujOFBTQp4zCH3ZC9wo2LAtVaJkuLpHghQx3y4k1Q8ZKuDAbEw+HE6ZjPUJQK3ejepQ=="
-      },
-      "iNKORE.UI.WPF": {
-        "type": "Transitive",
-        "resolved": "1.2.8",
-        "contentHash": "7b+z25JFdhGAfyJqlVIF0vLbmgsRvqDZMvhGPTz20gzQigDPMqVUOoCCKB5824GtYsjFCYNilmaowb+4yWATkQ=="
       },
       "MdXaml.Plugins": {
         "type": "Transitive",
