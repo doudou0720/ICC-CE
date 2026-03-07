@@ -17,9 +17,6 @@ jobs:
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
-        with:
-          cache: true
-          cache-dependency-path: '**/packages.lock.json'
 
       - name: Restore NuGet packages
         run: dotnet restore "Ink Canvas.sln" --locked-mode
