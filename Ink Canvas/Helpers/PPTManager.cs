@@ -66,8 +66,7 @@ namespace Ink_Canvas.Helpers
         private volatile bool _cachedIsInSlideShow;
         private readonly object _lockObject = new object();
         private bool _disposed;
-        private static bool IsPptBusyHResult(uint hr) => hr == 0x80010001 || hr == 0x8001010A;
-        private static bool IsNoActivePresentationOrWindowHResult(uint hr) => hr == 0x80048240;
+        private static bool IsPptBusyHResult(uint hr) => hr == 0x80010001 || hr == 0x8001010A; 
         #endregion
 
         #region Constructor & Initialization
@@ -142,13 +141,13 @@ namespace Ink_Canvas.Helpers
         private void CheckAndConnectToPPT()
         {
             if (_isModuleUnloading) return;
-
+            
             lock (_lockObject)
             {
                 try
                 {
                     if (_isModuleUnloading) return;
-
+                    
                     // 尝试连接到PowerPoint
                     var pptApp = TryConnectToPowerPoint();
                     if (pptApp == null && IsSupportWPS)
@@ -413,7 +412,7 @@ namespace Ink_Canvas.Helpers
                     SafeReleaseComObject(CurrentSlide, "CurrentSlide");
                     SafeReleaseComObject(CurrentSlides, "CurrentSlides");
                     SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
-
+                    
                     if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
                     {
                         try
@@ -466,13 +465,13 @@ namespace Ink_Canvas.Helpers
                             _isModuleUnloading = false;
                             return;
                         }
-
+                        
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
                         GC.Collect();
-
+                        
                         Thread.Sleep(1000);
-
+                        
                         _isModuleUnloading = false;
 
                         try
@@ -486,7 +485,7 @@ namespace Ink_Canvas.Helpers
                         {
                             LogHelper.WriteLogToFile("PPT联动模块重载时计时器已释放，跳过重启", LogHelper.LogType.Trace);
                         }
-
+                        
                         LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
@@ -538,7 +537,7 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private void UpdateCurrentPresentationInfo(bool preferSlideShowWindow = false, SlideShowWindow knownSlideShowWindow = null)
+        private void UpdateCurrentPresentationInfo()
         {
             object activePresentation = null;
             object slideShowWindows = null;
@@ -554,7 +553,7 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        activePresentation = TryGetActivePresentation(knownSlideShowWindow);
+                        activePresentation = PPTApplication.ActivePresentation;
                         if (activePresentation != null)
                         {
                             SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
@@ -584,30 +583,21 @@ namespace Ink_Canvas.Helpers
                             try
                             {
                                 slideShowWindows = PPTApplication.SlideShowWindows;
-                                var shouldUseSlideShowWindow = preferSlideShowWindow || IsInSlideShow;
-                                if (shouldUseSlideShowWindow && slideShowWindows != null)
+                                if (IsInSlideShow && slideShowWindows != null)
                                 {
-                                    if (knownSlideShowWindow != null)
+                                    dynamic ssw = slideShowWindows;
+                                    if (ssw.Count > 0)
                                     {
-                                        slideShowWindow = knownSlideShowWindow;
-                                    }
-                                    else
-                                    {
-                                        dynamic ssw = slideShowWindows;
-                                        if (ssw.Count > 0)
+                                        slideShowWindow = ssw[1];
+                                        if (slideShowWindow != null)
                                         {
-                                            slideShowWindow = ssw[1];
-                                        }
-                                    }
-
-                                    if (slideShowWindow != null)
-                                    {
-                                        dynamic sswObj = slideShowWindow;
-                                        view = sswObj.View;
-                                        if (view != null)
-                                        {
-                                            dynamic viewObj = view;
+                                            dynamic sswObj = slideShowWindow;
+                                            view = sswObj.View;
+                                            if (view != null)
+                                            {
+                                                dynamic viewObj = view;
                                             CurrentSlide = viewObj.Slide as Slide;
+                                            }
                                         }
                                     }
                                 }
@@ -643,7 +633,7 @@ namespace Ink_Canvas.Helpers
                             catch (COMException comEx)
                             {
                                 var hr = (uint)comEx.HResult;
-                                if (hr != 0x8001010E && hr != 0x80004005 && !IsNoActivePresentationOrWindowHResult(hr))
+                                if (hr != 0x8001010E && hr != 0x80004005)
                                 {
                                     LogHelper.WriteLogToFile($"获取当前幻灯片失败: {comEx.Message}", LogHelper.LogType.Warning);
                                 }
@@ -665,7 +655,7 @@ namespace Ink_Canvas.Helpers
                     catch (COMException comEx)
                     {
                         var hr = (uint)comEx.HResult;
-                        if (hr == 0x8001010E || hr == 0x80004005 || IsNoActivePresentationOrWindowHResult(hr))
+                        if (hr == 0x8001010E || hr == 0x80004005)
                         {
                             CurrentPresentation = null;
                             CurrentSlides = null;
@@ -708,61 +698,6 @@ namespace Ink_Canvas.Helpers
                 }
             }
         }
-
-        private object TryGetActivePresentation(SlideShowWindow knownSlideShowWindow)
-        {
-            try
-            {
-                return PPTApplication.ActivePresentation;
-            }
-            catch (COMException comEx)
-            {
-                var hr = (uint)comEx.HResult;
-                if (!IsNoActivePresentationOrWindowHResult(hr))
-                {
-                    throw;
-                }
-            }
-
-            try
-            {
-                if (knownSlideShowWindow != null)
-                {
-                    return knownSlideShowWindow.Presentation;
-                }
-
-                var slideShowWindows = PPTApplication.SlideShowWindows;
-                if (slideShowWindows == null)
-                {
-                    return null;
-                }
-
-                dynamic ssw = slideShowWindows;
-                if (ssw.Count == 0)
-                {
-                    return null;
-                }
-
-                var slideShowWindow = ssw[1];
-                if (slideShowWindow == null)
-                {
-                    return null;
-                }
-
-                dynamic sswObj = slideShowWindow;
-                return sswObj.Presentation;
-            }
-            catch (COMException comEx)
-            {
-                var hr = (uint)comEx.HResult;
-                if (!IsNoActivePresentationOrWindowHResult(hr))
-                {
-                    throw;
-                }
-            }
-
-            return null;
-        }
         #endregion
 
         #region Event Handlers
@@ -799,7 +734,7 @@ namespace Ink_Canvas.Helpers
             _cachedIsInSlideShow = true;
             try
             {
-                UpdateCurrentPresentationInfo(preferSlideShowWindow: true, knownSlideShowWindow: wn);
+                UpdateCurrentPresentationInfo();
                 SlideShowBegin?.Invoke(wn);
             }
             catch (Exception ex)
@@ -812,7 +747,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                UpdateCurrentPresentationInfo(preferSlideShowWindow: true, knownSlideShowWindow: wn);
+                UpdateCurrentPresentationInfo();
                 SlideShowNextSlide?.Invoke(wn);
             }
             catch (Exception ex)
