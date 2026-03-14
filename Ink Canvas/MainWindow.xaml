@@ -4163,18 +4163,28 @@
                                                 </TextBlock>
                                             </CheckBox>
 
-                                            <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2,0,0">
-                                                <TextBlock Text="{i18n:I18n Key=About_TelemetryLabel}" Foreground="#a1a1aa" FontSize="12"
-                                                           VerticalAlignment="Center" Width="150" />
-                                                <ComboBox x:Name="ComboBoxTelemetryUploadLevel"
-                                                          Width="260"
+                                            <Grid Width="420" HorizontalAlignment="Left" Margin="0,2,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="120" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{i18n:I18n Key=About_TelemetryLabel}"
+                                                           Foreground="#a1a1aa"
+                                                           FontSize="12"
+                                                           VerticalAlignment="Center"
+                                                           TextWrapping="Wrap" />
+                                                <ComboBox Grid.Column="1"
+                                                          x:Name="ComboBoxTelemetryUploadLevel"
                                                           Margin="8,0,0,0"
+                                                          Width="225"
+                                                          HorizontalAlignment="Left"
                                                           SelectionChanged="ComboBoxTelemetryUploadLevel_SelectionChanged">
                                                     <ComboBoxItem Tag="0" Content="{i18n:I18n Key=About_Telemetry_Off}" />
                                                     <ComboBoxItem Tag="1" Content="{i18n:I18n Key=About_Telemetry_Basic}" />
                                                     <ComboBoxItem Tag="2" Content="{i18n:I18n Key=About_Telemetry_Optional}" />
                                                 </ComboBox>
-                                            </ikw:SimpleStackPanel>
+                                            </Grid>
                                         </ikw:SimpleStackPanel>
                                     </Border>
                                     

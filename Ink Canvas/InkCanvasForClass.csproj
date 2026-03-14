@@ -586,8 +586,11 @@
     <Compile Remove="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Strings.en-US.resx">
-      <LogicalName>Ink_Canvas.Properties.Strings.en-US.resources</LogicalName>
+    <EmbeddedResource Remove="Properties\Strings.en-US.resx" />
+    <EmbeddedResource Remove="**\Strings.en-US.resx" />
+    <None Include="Properties\Strings.en-US.resx" />
+    <EmbeddedResource Include="Properties\Strings.enUS.xml">
+      <LogicalName>Ink_Canvas.Properties.Strings.enUS.xml</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

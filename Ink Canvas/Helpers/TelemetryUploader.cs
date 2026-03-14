@@ -94,7 +94,7 @@ namespace Ink_Canvas.Helpers
                         has_runtime_log = runtimeLogFile != null
                     };
 
-                    // 按你的要求保留现有用户字段行为
+                    // 通过 Sentry 上报一个包含遥测信息的事件
                     string userName = Environment.UserName;
                     SentrySdk.ConfigureScope(scope =>
                     {
