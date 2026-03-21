@@ -53,6 +53,8 @@ namespace Ink_Canvas
         public bool RequirePasswordOnEnterSettings { get; set; } = false;
         [JsonProperty("requirePasswordOnResetConfig")]
         public bool RequirePasswordOnResetConfig { get; set; } = false;
+        [JsonProperty("requirePasswordOnModifyOrClearNameList")]
+        public bool RequirePasswordOnModifyOrClearNameList { get; set; } = false;
         [JsonProperty("enableProcessProtection")]
         public bool EnableProcessProtection { get; set; } = true;
     }

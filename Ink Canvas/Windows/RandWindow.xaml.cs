@@ -390,8 +390,18 @@ namespace Ink_Canvas
             }
         }
 
-        private void BorderBtnHelp_MouseUp(object sender, MouseButtonEventArgs e)
+        private async void BorderBtnHelp_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            if (SecurityManager.IsPasswordRequiredForModifyOrClearNameList(MainWindow.Settings))
+            {
+                bool ok = await SecurityManager.PromptAndVerifyAsync(
+                    MainWindow.Settings,
+                    this,
+                    "名单修改验证",
+                    "请输入安全密码以修改点名名单。");
+                if (!ok) return;
+            }
+
             new NamesInputWindow().ShowDialog();
             Window_Loaded(this, null);
         }

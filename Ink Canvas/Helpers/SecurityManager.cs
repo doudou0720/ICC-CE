@@ -58,6 +58,16 @@ namespace Ink_Canvas.Helpers
             => IsPasswordFeatureEnabled(settings) && HasPasswordConfigured(settings) && settings.Security.RequirePasswordOnResetConfig;
 
         /// <summary>
+        /// 指示在修改或清空点名名单前是否需要输入安全密码。
+        /// </summary>
+        /// <param name="settings">应用设置对象。</param>
+        /// <returns>当已启用密码功能、已配置密码且开启了对应开关时返回 true；否则返回 false。</returns>
+        public static bool IsPasswordRequiredForModifyOrClearNameList(Settings settings)
+            => IsPasswordFeatureEnabled(settings)
+               && HasPasswordConfigured(settings)
+               && settings.Security.RequirePasswordOnModifyOrClearNameList;
+
+        /// <summary>
         /// 将提供的明文密码与 Settings 中存储的密码散列进行比对以验证密码是否正确。
         /// </summary>
         /// <param name="settings">包含存储的密码盐和哈希的设置对象（使用 Base64 编码的 PasswordSalt 和 PasswordHash）。</param>

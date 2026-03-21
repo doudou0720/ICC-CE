@@ -1,4 +1,4 @@
-using Ink_Canvas.Helpers;
+﻿using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -1200,10 +1200,19 @@ namespace Ink_Canvas
             UpdateCountDisplay();
         }
 
-        private void ImportList_Click(object sender, RoutedEventArgs e)
+        private async void ImportList_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                if (SecurityManager.IsPasswordRequiredForModifyOrClearNameList(MainWindow.Settings))
+                {
+                    bool ok = await SecurityManager.PromptAndVerifyAsync(
+                        MainWindow.Settings,
+                        this,
+                        "名单修改验证",
+                        "请输入安全密码以修改点名名单。");
+                    if (!ok) return;
+                }
                 // 打开名单导入窗口，与老点名UI保持一致
                 var namesInputWindow = new NamesInputWindow();
                 namesInputWindow.ShowDialog();
@@ -1260,10 +1269,19 @@ namespace Ink_Canvas
             }
         }
 
-        private void ClearList_Click(object sender, RoutedEventArgs e)
+        private async void ClearList_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                if (SecurityManager.IsPasswordRequiredForModifyOrClearNameList(MainWindow.Settings))
+                {
+                    bool ok = await SecurityManager.PromptAndVerifyAsync(
+                        MainWindow.Settings,
+                        this,
+                        "名单清空验证",
+                        "请输入安全密码以清空点名名单。");
+                    if (!ok) return;
+                }
                 // 清空名单
                 nameList.Clear();
                 UpdateListCountDisplay();
