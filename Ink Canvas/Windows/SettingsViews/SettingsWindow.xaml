@@ -781,86 +781,86 @@
                     </Grid>
                 </Border>
                 <!--SecurityPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SecurityPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SecurityPane" IsManipulationEnabled="True">
                     <settingsViews:SecurityPanel x:Name="SecurityPanel"/>
                 </Grid>
 
                 <!--UpdateCenterPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="UpdateCenterPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="UpdateCenterPane" IsManipulationEnabled="True">
                     <settingsViews:UpdateCenterPanel x:Name="UpdateCenterPanel"/>
                 </Grid>
 
                 <!--AboutPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AboutPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AboutPane" IsManipulationEnabled="True">
                     <settingsViews:AboutPanel x:Name="SettingsAboutPanel"/>
                 </Grid>
 
                 <!--CanvasAndInkPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Visible" Name="CanvasAndInkPane">
+                <Grid Margin="250,48,0,0" Visibility="Visible" Name="CanvasAndInkPane" IsManipulationEnabled="True">
                     <settingsViews:CanvasAndInkPanel x:Name="CanvasAndInkPanel"/>
                 </Grid>
                 <!--GesturesPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="GesturesPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="GesturesPane" IsManipulationEnabled="True">
                     <settingsViews:GesturesPanel x:Name="GesturesPanel"/>
                 </Grid>
                 <!--StartupPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StartupPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="StartupPane" IsManipulationEnabled="True">
                     <settingsViews:StartupPanel x:Name="StartupPanel"/>
                 </Grid>
                 <!--AppearancePanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AppearancePane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AppearancePane" IsManipulationEnabled="True">
                     <settingsViews:AppearancePanel x:Name="AppearancePanel"/>
                 </Grid>
                 <!--InkRecognitionPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="InkRecognitionPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="InkRecognitionPane" IsManipulationEnabled="True">
                     <settingsViews:InkRecognitionPanel x:Name="InkRecognitionPanel"/>
                 </Grid>
                 <!--AutomationPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AutomationPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AutomationPane" IsManipulationEnabled="True">
                     <settingsViews:AutomationPanel x:Name="AutomationPanel"/>
                 </Grid>
                 <!--PowerPointPanel-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="PowerPointPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="PowerPointPane" IsManipulationEnabled="True">
                     <settingsViews:PowerPointPanel x:Name="PowerPointPanel"/>
                 </Grid>
                 
                 <!--个性化设置面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ThemePane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ThemePane" IsManipulationEnabled="True">
                     <settingsViews:ThemePanel x:Name="ThemePanel"/>
                 </Grid>
 
                 <!--快捷键设置面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ShortcutsPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="ShortcutsPane" IsManipulationEnabled="True">
                     <settingsViews:ShortcutsPanel x:Name="ShortcutsPanel"/>
                 </Grid>
 
                 <!--崩溃处理面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="CrashActionPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="CrashActionPane" IsManipulationEnabled="True">
                     <settingsViews:CrashActionPanel x:Name="CrashActionPanel"/>
                 </Grid>
 
                 <!--幸运随机面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="LuckyRandomPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="LuckyRandomPane" IsManipulationEnabled="True">
                     <settingsViews:LuckyRandomPanel x:Name="LuckyRandomPanel"/>
                 </Grid>
 
                 <!--高级面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="AdvancedPane" IsManipulationEnabled="True">
                     <settingsViews:AdvancedPanel x:Name="AdvancedPanel"/>
                 </Grid>
 
                 <!--截图面板-->
-                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SnapshotPane">
+                <Grid Margin="250,48,0,0" Visibility="Collapsed" Name="SnapshotPane" IsManipulationEnabled="True">
                     <settingsViews:SnapshotPanel x:Name="SnapshotPanel"/>
                 </Grid>
 
                 <!--SearchPanel-->
-                <Grid Margin="0,0,0,0" Visibility="Collapsed" Name="SearchPane" ZIndex="1000">
+                <Grid Margin="0,0,0,0" Visibility="Collapsed" Name="SearchPane" ZIndex="1000" IsManipulationEnabled="True">
                     <settingsViews:SearchPanel x:Name="SearchPanelControl"/>
                 </Grid>
                 
                 <!--Topbar-->
-                <Grid Height="48" VerticalAlignment="Top" Margin="250,0,0,0">
+                <Grid Height="48" VerticalAlignment="Top" Margin="250,0,0,0" IsManipulationEnabled="True">
                     <Border x:Name="TopBarBorder" Height="48" CornerRadius="0,6,0,0" Background="#fafafa"
                             MouseLeftButtonDown="TopBarBorder_MouseLeftButtonDown">
                         <Border.Clip>
