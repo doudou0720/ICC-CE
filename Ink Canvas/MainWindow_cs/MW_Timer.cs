@@ -1441,7 +1441,6 @@ namespace Ink_Canvas
                 if (_eraserAutoSwitchBackTimer != null)
                 {
                     _eraserAutoSwitchBackTimer.Stop();
-                    LogHelper.WriteLogToFile("橡皮擦自动切换计时器已停止", LogHelper.LogType.Trace);
                 }
             }
             catch (Exception ex)

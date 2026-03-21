@@ -150,13 +150,13 @@ namespace Ink_Canvas.Helpers
         private void CheckAndConnectToPPT()
         {
             if (_isModuleUnloading) return;
-            
+
             lock (_lockObject)
             {
                 try
                 {
                     if (_isModuleUnloading) return;
-                    
+
                     // 尝试连接到PowerPoint
                     var pptApp = TryConnectToPowerPoint();
                     if (pptApp == null && IsSupportWPS)
@@ -421,7 +421,7 @@ namespace Ink_Canvas.Helpers
                     SafeReleaseComObject(CurrentSlide, "CurrentSlide");
                     SafeReleaseComObject(CurrentSlides, "CurrentSlides");
                     SafeReleaseComObject(CurrentPresentation, "CurrentPresentation");
-                    
+
                     if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
                     {
                         try
@@ -474,13 +474,13 @@ namespace Ink_Canvas.Helpers
                             _isModuleUnloading = false;
                             return;
                         }
-                        
+
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
                         GC.Collect();
-                        
+
                         Thread.Sleep(1000);
-                        
+
                         _isModuleUnloading = false;
 
                         try
@@ -494,7 +494,7 @@ namespace Ink_Canvas.Helpers
                         {
                             LogHelper.WriteLogToFile("PPT联动模块重载时计时器已释放，跳过重启", LogHelper.LogType.Trace);
                         }
-                        
+
                         LogHelper.WriteLogToFile("PPT联动模块已重新加载", LogHelper.LogType.Trace);
                     }
                     catch (Exception ex)
@@ -555,7 +555,7 @@ namespace Ink_Canvas.Helpers
             object view = null;
             object selection = null;
             object slideRange = null;
-            
+
             try
             {
                 if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
@@ -605,7 +605,7 @@ namespace Ink_Canvas.Helpers
                                             if (view != null)
                                             {
                                                 dynamic viewObj = view;
-                                            CurrentSlide = viewObj.Slide as Slide;
+                                                CurrentSlide = viewObj.Slide as Slide;
                                             }
                                         }
                                     }
@@ -632,7 +632,7 @@ namespace Ink_Canvas.Helpers
                                             }
                                         }
                                     }
-                                    
+
                                     if (CurrentSlide == null && SlidesCount > 0)
                                     {
                                         CurrentSlide = CurrentSlides[1];
