@@ -1,5 +1,6 @@
 using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -113,9 +114,9 @@ namespace Ink_Canvas
             ToggleSwitchDrawShapeBorderAutoHide.IsOn = !ToggleSwitchDrawShapeBorderAutoHide.IsOn;
 
             if (ToggleSwitchDrawShapeBorderAutoHide.IsOn)
-                ((SymbolIcon)sender).Symbol = Symbol.Pin;
+                ((FontIcon)sender).Icon = SegoeFluentIcons.Pin;
             else
-                ((SymbolIcon)sender).Symbol = Symbol.UnPin;
+                ((FontIcon)sender).Icon = SegoeFluentIcons.Unpin;
         }
 
         /// <summary>
