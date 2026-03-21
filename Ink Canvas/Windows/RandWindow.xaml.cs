@@ -1,5 +1,6 @@
 using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -185,7 +186,7 @@ namespace Ink_Canvas
             if (RandMaxPeopleOneTime != -1 && TotalCount >= RandMaxPeopleOneTime) return;
             TotalCount++;
             LabelNumberCount.Text = TotalCount.ToString();
-            SymbolIconStart.Symbol = Symbol.People;
+            FontIconStart.Icon = SegoeFluentIcons.People;
             BorderBtnAdd.Opacity = 1;
             BorderBtnMinus.Opacity = 1;
         }
@@ -197,7 +198,7 @@ namespace Ink_Canvas
             LabelNumberCount.Text = TotalCount.ToString();
             if (TotalCount == 1)
             {
-                SymbolIconStart.Symbol = Symbol.Contact;
+                FontIconStart.Icon = SegoeFluentIcons.Contact;
             }
         }
 
