@@ -41,16 +41,16 @@ namespace Ink_Canvas
             // 应用当前主题
             ApplyCurrentTheme();
 
-            // 折叠浮动工具栏
-            CollapseFloatingBar();
+            // 隐藏主窗口
+            HideMainWindow();
 
             LoadVersions();
         }
 
         /// <summary>
-        /// 折叠主窗口的浮动工具栏
+        /// 隐藏主窗口
         /// </summary>
-        private async void CollapseFloatingBar()
+        private void HideMainWindow()
         {
             try
             {
@@ -58,13 +58,13 @@ namespace Ink_Canvas
                 var mainWindow = Application.Current.MainWindow as MainWindow;
                 if (mainWindow != null)
                 {
-                    // 调用折叠方法
-                    await mainWindow.FoldFloatingBar(null);
+                    // 隐藏主窗口
+                    mainWindow.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"折叠浮动工具栏时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"隐藏主窗口时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -346,6 +346,22 @@ namespace Ink_Canvas
         protected override void OnClosing(CancelEventArgs e)
         {
             downloadCts?.Cancel();
+            
+            try
+            {
+                // 获取主窗口实例
+                var mainWindow = Application.Current.MainWindow as MainWindow;
+                if (mainWindow != null)
+                {
+                    // 重新显示主窗口
+                    mainWindow.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"显示主窗口时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+            
             base.OnClosing(e);
         }
 
