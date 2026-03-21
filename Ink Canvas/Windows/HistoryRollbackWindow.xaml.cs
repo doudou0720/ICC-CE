@@ -35,19 +35,37 @@ namespace Ink_Canvas
             InitializeComponent();
             this.channel = channel;
 
+            // 设置窗口置顶
+            this.Topmost = true;
+
             // 应用当前主题
             ApplyCurrentTheme();
 
-            LoadVersions();
+            // 折叠浮动工具栏
+            CollapseFloatingBar();
 
-            // 添加窗口拖动功能
-            MouseDown += (sender, e) =>
+            LoadVersions();
+        }
+
+        /// <summary>
+        /// 折叠主窗口的浮动工具栏
+        /// </summary>
+        private async void CollapseFloatingBar()
+        {
+            try
             {
-                if (e.ChangedButton == MouseButton.Left)
+                // 获取主窗口实例
+                var mainWindow = Application.Current.MainWindow as MainWindow;
+                if (mainWindow != null)
                 {
-                    DragMove();
+                    // 调用折叠方法
+                    await mainWindow.FoldFloatingBar(null);
                 }
-            };
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"折叠浮动工具栏时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         /// <summary>
@@ -223,16 +241,16 @@ namespace Ink_Canvas
                 Foreground = (Brush)Resources["TextPrimaryBrush"]
             };
 
-            var daysComboBox = new ComboBox
+            var daysComboBox = new System.Windows.Controls.ComboBox
             {
                 Width = 200,
                 Height = 36,
-                HorizontalAlignment = HorizontalAlignment.Left
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left
             };
 
             for (int i = 0; i <= 7; i++)
             {
-                daysComboBox.Items.Add(new ComboBoxItem
+                daysComboBox.Items.Add(new System.Windows.Controls.ComboBoxItem
                 {
                     Content = $"{i} 天",
                     Tag = i
@@ -250,7 +268,7 @@ namespace Ink_Canvas
             if (dialogResult == ContentDialogResult.Primary)
             {
                 int days = 1;
-                if (daysComboBox.SelectedItem is ComboBoxItem selectedItemCombo &&
+                if (daysComboBox.SelectedItem is System.Windows.Controls.ComboBoxItem selectedItemCombo &&
                     selectedItemCombo.Tag != null &&
                     int.TryParse(selectedItemCombo.Tag.ToString(), out int selectedDays))
                 {
@@ -323,20 +341,14 @@ namespace Ink_Canvas
             }
         }
 
-        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
 
         protected override void OnClosing(CancelEventArgs e)
         {
             downloadCts?.Cancel();
             base.OnClosing(e);
         }
+
+
     }
 }

@@ -7,11 +7,17 @@
         Title="欢迎使用 InkCanvasForClass"
         Height="460"
         Width="780"
+        MinHeight="300"
+        MinWidth="400"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize"
+        ResizeMode="CanResize"
         ShowInTaskbar="False"
         Background="{DynamicResource SettingsPageBackground}"
-        Loaded="OobeWindow_OnLoaded">
+        Loaded="OobeWindow_OnLoaded"
+        IsManipulationEnabled="True"
+        TouchDown="Window_TouchDown"
+        TouchMove="Window_TouchMove"
+        TouchUp="Window_TouchUp">
 
     <Window.Resources>
         <Style x:Key="OobeSecondaryButtonStyle" TargetType="Button">
@@ -20,6 +26,7 @@
             <Setter Property="BorderBrush" Value="{DynamicResource SettingsPageBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="6,0" />
+            <Setter Property="IsManipulationEnabled" Value="True" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -70,7 +77,10 @@
         <ScrollViewer Grid.Row="1"
                       Margin="0,24,0,24"
                       VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled">
+                      HorizontalScrollBarVisibility="Disabled"
+                      PanningMode="VerticalOnly"
+                      PanningRatio="1.0"
+                      IsManipulationEnabled="True">
             <Border Padding="18"
                     Background="{DynamicResource SettingsPageBackground}"
                     CornerRadius="10">
