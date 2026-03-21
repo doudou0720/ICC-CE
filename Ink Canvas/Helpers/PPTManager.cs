@@ -67,6 +67,7 @@ namespace Ink_Canvas.Helpers
         private readonly object _lockObject = new object();
         private bool _disposed;
         private static bool IsPptBusyHResult(uint hr) => hr == 0x80010001 || hr == 0x8001010A;
+        private static bool IsNoActivePresentationHResult(uint hr) => hr == 0x80048240;
         private const int ConnectionCheckIntervalTicks = 3;
         private const int SlideShowCheckIntervalTicks = 2;
         private const int WpsCheckIntervalTicks = 6;
@@ -328,7 +329,7 @@ namespace Ink_Canvas.Helpers
                 _cachedIsConnected = true;
 
                 // 在主线程中注册事件，确保COM对象在正确的线程中
-                Application.Current?.Dispatcher?.Invoke(() =>
+                Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
                 {
                     try
                     {
@@ -343,9 +344,8 @@ namespace Ink_Canvas.Helpers
                     catch (Exception ex)
                     {
                         LogHelper.WriteLogToFile($"PPT事件注册失败: {ex}", LogHelper.LogType.Error);
-                        throw; // 重新抛出异常，让外层处理
                     }
-                }, DispatcherPriority.Normal, CancellationToken.None, TimeSpan.FromSeconds(2));
+                }), DispatcherPriority.Normal);
 
                 // 获取当前演示文稿信息
                 UpdateCurrentPresentationInfo();
@@ -386,7 +386,7 @@ namespace Ink_Canvas.Helpers
                         if (Marshal.IsComObject(PPTApplication))
                         {
                             // 尝试在主线程中取消事件注册
-                            Application.Current?.Dispatcher?.Invoke(() =>
+                            Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
                             {
                                 try
                                 {
@@ -410,7 +410,7 @@ namespace Ink_Canvas.Helpers
                                 {
                                     LogHelper.WriteLogToFile($"取消PPT事件注册时发生异常: {ex}", LogHelper.LogType.Warning);
                                 }
-                            }, DispatcherPriority.Normal, CancellationToken.None, TimeSpan.FromSeconds(1));
+                            }), DispatcherPriority.Normal);
                         }
                     }
                     catch (Exception ex)
@@ -642,7 +642,7 @@ namespace Ink_Canvas.Helpers
                             catch (COMException comEx)
                             {
                                 var hr = (uint)comEx.HResult;
-                                if (hr != 0x8001010E && hr != 0x80004005)
+                                if (hr != 0x8001010E && hr != 0x80004005 && !IsNoActivePresentationHResult(hr))
                                 {
                                     LogHelper.WriteLogToFile($"获取当前幻灯片失败: {comEx.Message}", LogHelper.LogType.Warning);
                                 }
@@ -664,7 +664,7 @@ namespace Ink_Canvas.Helpers
                     catch (COMException comEx)
                     {
                         var hr = (uint)comEx.HResult;
-                        if (hr == 0x8001010E || hr == 0x80004005 || hr == 0x800706B5 || hr == 0x80048240)
+                        if (hr == 0x8001010E || hr == 0x80004005 || hr == 0x800706B5 || IsNoActivePresentationHResult(hr))
                         {
                             CurrentPresentation = null;
                             CurrentSlides = null;
@@ -1076,7 +1076,7 @@ namespace Ink_Canvas.Helpers
                     catch (COMException comEx)
                     {
                         var hr = (uint)comEx.HResult;
-                        if (hr == 0x80048240 || IsPptBusyHResult(hr))
+                        if (IsNoActivePresentationHResult(hr) || IsPptBusyHResult(hr))
                             return null;
                         throw;
                     }
@@ -1094,7 +1094,7 @@ namespace Ink_Canvas.Helpers
                 var hr = (uint)comEx.HResult;
                 if (!IsPptBusyHResult(hr) && (hr == 0x8001010E || hr == 0x80004005))
                     DisconnectFromPPT();
-                if (!IsPptBusyHResult(hr) && hr != 0x80048240)
+                if (!IsPptBusyHResult(hr) && !IsNoActivePresentationHResult(hr))
                     LogHelper.WriteLogToFile($"获取当前活跃演示文稿失败: {comEx.Message}", LogHelper.LogType.Warning);
                 return CurrentPresentation;
             }
