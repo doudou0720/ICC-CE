@@ -1523,28 +1523,27 @@ namespace Ink_Canvas
 
             try
             {
-                string protocol = "";
+                string[] protocols;
                 switch (selectedExternalCaller)
                 {
                     case "ClassIsland":
-                        protocol = "classisland://plugins/IslandCaller/Simple/1";
+                        protocols = ExternalCallerLauncher.GetProtocolsByName("ClassIsland");
                         break;
                     case "SecRandom":
-                        protocol = "secrandom://direct_extraction";
+                        protocols = ExternalCallerLauncher.GetProtocolsByName("SecRandom");
                         break;
                     case "NamePicker":
-                        protocol = "namepicker://";
+                        protocols = ExternalCallerLauncher.GetProtocolsByName("NamePicker");
                         break;
                     default:
-                        protocol = "classisland://plugins/IslandCaller/Simple/1";
+                        protocols = ExternalCallerLauncher.GetProtocolsByName("ClassIsland");
                         break;
                 }
 
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                if (!ExternalCallerLauncher.TryLaunch(protocols, out Exception lastException))
                 {
-                    FileName = protocol,
-                    UseShellExecute = true
-                });
+                    throw lastException ?? new InvalidOperationException("external caller protocols are unavailable");
+                }
 
                 UpdateStatusDisplay($"已启动外部点名: {selectedExternalCaller}");
             }
