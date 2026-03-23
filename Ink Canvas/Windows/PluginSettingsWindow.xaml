@@ -10,6 +10,7 @@
         Title="插件管理" Height="550" Width="800"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
+        Topmost="True"
         ui:ThemeManager.IsThemeAware="True"
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:WindowHelper.SystemBackdropType="Mica"

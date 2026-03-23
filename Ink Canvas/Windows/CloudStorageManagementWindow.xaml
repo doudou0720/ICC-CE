@@ -10,6 +10,7 @@
         Title="云存储管理" Height="600" Width="900"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
+        Topmost="True"
         ui:ThemeManager.IsThemeAware="True"
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:WindowHelper.SystemBackdropType="Mica"

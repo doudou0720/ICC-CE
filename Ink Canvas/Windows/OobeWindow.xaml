@@ -13,13 +13,9 @@
         MinWidth="400"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        ShowInTaskbar="False"
+        Topmost="True"
         Background="{DynamicResource SettingsPageBackground}"
         Loaded="OobeWindow_OnLoaded"
-        IsManipulationEnabled="True"
-        TouchDown="Window_TouchDown"
-        TouchMove="Window_TouchMove"
-        TouchUp="Window_TouchUp"
         ui:ThemeManager.IsThemeAware="True"
         ui:TitleBar.ExtendViewIntoTitleBar="True"
         ui:WindowHelper.SystemBackdropType="Mica"
@@ -28,33 +24,64 @@
 
     <Window.Resources>
         <Style x:Key="OobeSecondaryButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource SettingsPageBackground}" />
+            <Setter Property="Background" Value="#f8f8f8" />
             <Setter Property="Foreground" Value="{DynamicResource SettingsPageForeground}" />
             <Setter Property="BorderBrush" Value="{DynamicResource SettingsPageBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Padding" Value="6,0" />
-            <Setter Property="IsManipulationEnabled" Value="True" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center" />
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#d8d8d8" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#e8e8e8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
         <Style x:Key="OobePrimaryButtonStyle"
-               TargetType="Button"
-               BasedOn="{StaticResource OobeSecondaryButtonStyle}">
-            <Setter Property="Background" Value="{DynamicResource HistoryWindowPrimaryBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource HistoryWindowPrimaryBrush}" />
+               TargetType="Button">
+            <Setter Property="Background" Value="#3b82f6" />
+            <Setter Property="BorderBrush" Value="#3b82f6" />
             <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#1d4ed8" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#2563eb" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 

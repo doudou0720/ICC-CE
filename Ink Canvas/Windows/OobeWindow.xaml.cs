@@ -474,38 +474,7 @@ namespace Ink_Canvas.Windows
             }
         }
 
-        /// <summary>
-        /// 处理触摸事件，确保窗口能够响应触摸屏操作。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">触摸事件参数。</param>
-        private void Window_TouchDown(object sender, System.Windows.Input.TouchEventArgs e)
-        {
-            // 触摸事件处理逻辑
-            e.Handled = false;
-        }
 
-        /// <summary>
-        /// 处理触摸移动事件。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">触摸事件参数。</param>
-        private void Window_TouchMove(object sender, System.Windows.Input.TouchEventArgs e)
-        {
-            // 触摸移动事件处理逻辑
-            e.Handled = false;
-        }
-
-        /// <summary>
-        /// 处理触摸抬起事件。
-        /// </summary>
-        /// <param name="sender">事件发送者。</param>
-        /// <param name="e">触摸事件参数。</param>
-        private void Window_TouchUp(object sender, System.Windows.Input.TouchEventArgs e)
-        {
-            // 触摸抬起事件处理逻辑
-            e.Handled = false;
-        }
 
         /// <summary>
         /// 根据当前步骤索引更新向导界面：显示对应步骤面板，播放切换动画，并刷新步骤指示、标题、子标题和按钮文本/可见性。
