@@ -112,6 +112,17 @@
           "System.ValueTuple": "4.5.0"
         }
       },
+      "Microsoft.Windows.SDK.Contracts": {
+        "type": "Direct",
+        "requested": "[10.0.19041.2, )",
+        "resolved": "10.0.19041.2",
+        "contentHash": "PBPrkDx5BMItV0+cDBRJg6itl2miC9t4igEX+ym0BuN65xu/mTzq8fbVzAME6CXAY4eMcxACLnGu6SWufxwSCQ==",
+        "dependencies": {
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Runtime.WindowsRuntime": "4.6.0",
+          "System.Runtime.WindowsRuntime.UI.Xaml": "4.6.0"
+        }
+      },
       "MicrosoftOfficeCore": {
         "type": "Direct",
         "requested": "[15.0.0, )",
@@ -201,15 +212,6 @@
           "System.Security.Principal.Windows": "5.0.0"
         }
       },
-      "Microsoft.Windows.SDK.Contracts": {
-        "type": "Transitive",
-        "resolved": "10.0.19041.1",
-        "contentHash": "sgDwuoyubbLFNJR/BINbvfSNRiglF91D+Q0uEAkU4ZTO5Hgbnu8+gA4TCc65S56e1kK7gvR1+H4kphkDTr+9bw==",
-        "dependencies": {
-          "System.Runtime.WindowsRuntime": "4.6.0",
-          "System.Runtime.WindowsRuntime.UI.Xaml": "4.6.0"
-        }
-      },
       "NHotkey": {
         "type": "Transitive",
         "resolved": "4.0.0",
@@ -260,6 +262,11 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "cbz4YJMqRDR7oLeMRbdYv7mYzc++17lNhScCX0goO2XpGWdvAt60CGN+FHdePUEHCe/Jy9jUlvNAiNdM+7jsOw=="
+      },
+      "System.Runtime.InteropServices.WindowsRuntime": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "J4GUi3xZQLUBasNwZnjrffN8i5wpHrBtZoLG+OhRyGo/+YunMRWWtwoMDlUAIdmX0uRfpHIBDSV6zyr3yf00TA=="
       },
       "System.Runtime.WindowsRuntime": {
         "type": "Transitive",
