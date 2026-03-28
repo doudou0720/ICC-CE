@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -22,7 +23,19 @@ namespace Ink_Canvas.Helpers
             if (!IsApiAvailable) return;
             try
             {
-                RecognizeShape(new StrokeCollection());
+                var d = Application.Current?.Dispatcher;
+                if (d == null) return;
+                d.BeginInvoke(new Action(async () =>
+                {
+                    try
+                    {
+                        await RecognizeShapeAsync(new StrokeCollection());
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }));
             }
             catch
             {
@@ -30,23 +43,8 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        public static InkShapeRecognitionResult RecognizeShape(StrokeCollection strokes)
-        {
-            if (!IsApiAvailable || strokes == null || strokes.Count == 0)
-                return InkShapeRecognitionResult.Empty;
-
-            try
-            {
-                return RecognizeShapeAsync(strokes).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine(ex);
-                return InkShapeRecognitionResult.Empty;
-            }
-        }
-
-        private static async Task<InkShapeRecognitionResult> RecognizeShapeAsync(StrokeCollection strokes)
+        /// <summary>由 <see cref="ModernInkProcessor"/> / <see cref="InkRecognitionManager"/> 在 UI 上 await（勿在收笔回调中同步阻塞）。</summary>
+        internal static async Task<InkShapeRecognitionResult> RecognizeShapeAsync(StrokeCollection strokes)
         {
             var analyzer = new WinRtInkAnalyzer();
             foreach (Stroke s in strokes)
@@ -61,7 +59,7 @@ namespace Ink_Canvas.Helpers
                     global::Windows.UI.Input.Inking.Analysis.InkAnalysisStrokeKind.Drawing);
             }
 
-            await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(false);
+            await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(true);
 
             var drawing = FindPrimaryDrawing(analyzer);
             if (drawing == null ||

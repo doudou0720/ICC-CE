@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Media;
@@ -56,7 +57,7 @@ namespace Ink_Canvas.Helpers
         public static ShapeRecognizeResult RecognizeShape(StrokeCollection strokes) =>
             RecognizeShapeIACore(strokes);
 
-        /// <summary>按设置选择 WinRT 或 IACore，返回统一识别结果。</summary>
+        /// <summary>按设置选择 WinRT（<see cref="InkRecognitionManager"/>）或 IACore；WinRT 请用 <see cref="RecognizeShapeUnifiedAsync"/>。</summary>
         public static InkShapeRecognitionResult RecognizeShapeUnified(
             StrokeCollection strokes,
             ShapeRecognitionEngineMode mode)
@@ -65,16 +66,28 @@ namespace Ink_Canvas.Helpers
                 return InkShapeRecognitionResult.Empty;
 
             if (ShapeRecognitionRouter.ResolveUseWinRt(mode))
-                return WinRtInkShapeRecognizer.RecognizeShape(strokes);
+                return InkShapeRecognitionResult.Empty;
 
             var legacy = RecognizeShapeIACore(strokes);
             return FromIACoreOrEmpty(legacy);
+        }
+
+        /// <summary>与 CE 反编译版 <c>InkRecognitionManager.RecognizeShapeAsync</c> 对齐的统一入口。</summary>
+        public static Task<InkShapeRecognitionResult> RecognizeShapeUnifiedAsync(
+            StrokeCollection strokes,
+            ShapeRecognitionEngineMode mode)
+        {
+            if (strokes == null || strokes.Count == 0)
+                return Task.FromResult(InkShapeRecognitionResult.Empty);
+
+            return InkRecognitionManager.Instance.RecognizeShapeAsync(strokes, mode);
         }
 
         public static void WarmupShapeRecognition(ShapeRecognitionEngineMode mode)
         {
             try
             {
+                _ = InkRecognitionManager.Instance;
                 if (ShapeRecognitionRouter.ResolveUseWinRt(mode))
                     WinRtInkShapeRecognizer.Warmup();
                 else

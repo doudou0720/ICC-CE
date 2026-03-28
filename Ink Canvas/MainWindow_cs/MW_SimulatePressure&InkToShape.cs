@@ -388,7 +388,7 @@ namespace Ink_Canvas
                         Settings.InkToShape.IsInkToShapeEnabled,
                         ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
                 {
-                    void InkToShapeProcess()
+                    async Task InkToShapeProcessCoreAsync()
                     {
                         try
                         {
@@ -407,11 +407,11 @@ namespace Ink_Canvas
 
                             var shapeMode = ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine);
                             var strokeReco = new StrokeCollection();
-                            var result = InkRecognizeHelper.RecognizeShapeUnified(newStrokes, shapeMode);
+                            var result = await InkRecognizeHelper.RecognizeShapeUnifiedAsync(newStrokes, shapeMode);
                             for (var i = newStrokes.Count - 1; i >= 0; i--)
                             {
                                 strokeReco.Add(newStrokes[i]);
-                                var newResult = InkRecognizeHelper.RecognizeShapeUnified(strokeReco, shapeMode);
+                                var newResult = await InkRecognizeHelper.RecognizeShapeUnifiedAsync(strokeReco, shapeMode);
                                 if (newResult.IsSuccess &&
                                     (newResult.ShapeName == "Circle" || newResult.ShapeName == "Ellipse"))
                                 {
@@ -713,6 +713,28 @@ namespace Ink_Canvas
                             }
                         }
                         catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                    }
+
+                    void InkToShapeProcess()
+                    {
+                        var engineMode = ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine);
+                        if (ShapeRecognitionRouter.ResolveUseWinRt(engineMode))
+                        {
+                            Dispatcher.BeginInvoke(new Action(async () =>
+                            {
+                                try
+                                {
+                                    await InkToShapeProcessCoreAsync();
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine(ex);
+                                }
+                            }), DispatcherPriority.Background);
+                            return;
+                        }
+
+                        InkToShapeProcessCoreAsync().GetAwaiter().GetResult();
                     }
 
                     InkToShapeProcess();
