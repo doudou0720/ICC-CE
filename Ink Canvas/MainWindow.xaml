@@ -1125,23 +1125,6 @@
                                     </ikw:SimpleStackPanel>
                                     <TextBlock Text="{i18n:I18n Key=InkRecog_ShapeEngineHint}" TextWrapping="Wrap"
                                                Foreground="#a1a1aa" MaxWidth="520" HorizontalAlignment="Left" />
-                                    <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=InkRecog_InkStrokePrediction}" VerticalAlignment="Center"
-                                                   FontSize="14" Margin="0,0,16,0" />
-                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchInkStrokePredictionSettings"
-                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
-                                                         Toggled="ToggleSwitchInkStrokePredictionSettings_Toggled" />
-                                        <ComboBox x:Name="ComboBoxInkStrokePredictionLeadSettings" Width="130" Margin="12,0,0,0"
-                                                  FontFamily="Microsoft YaHei UI" VerticalAlignment="Center"
-                                                  Visibility="Collapsed"
-                                                  SelectionChanged="ComboBoxInkStrokePredictionLeadSettings_SelectionChanged">
-                                            <ComboBoxItem Content="自动" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="25ms" FontFamily="Microsoft YaHei UI" />
-                                            <ComboBoxItem Content="50ms" FontFamily="Microsoft YaHei UI" />
-                                        </ComboBox>
-                                    </ikw:SimpleStackPanel>
-                                    <TextBlock Text="{i18n:I18n Key=InkRecog_InkStrokePredictionHint}" TextWrapping="Wrap"
-                                               Foreground="#a1a1aa" MaxWidth="400" HorizontalAlignment="Left" />
                                     <ikw:SimpleStackPanel Spacing="6"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnableInkToShape, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -4635,9 +4618,6 @@
                        PreviewTouchDown="InkCanvas_PreviewTouchDown"
                        PreviewTouchMove="InkCanvas_PreviewTouchMove"
                        PreviewTouchUp="InkCanvas_PreviewTouchUp"
-                       PreviewStylusMove="inkCanvas_PreviewStylusMove"
-                       PreviewMouseMove="inkCanvas_PreviewMouseMoveForPrediction"
-                       LostStylusCapture="inkCanvas_LostStylusCapture"
                        MouseDown="inkCanvas_MouseDown"
                        MouseMove="inkCanvas_MouseMove"
                        MouseUp="inkCanvas_MouseUp"
@@ -4646,12 +4626,6 @@
                        StrokeCollected="inkCanvas_StrokeCollected" 
                        ClipToBounds="False" 
                        Background="Transparent" />
-            
-            <Canvas x:Name="InkPredictionOverlay" Background="Transparent" IsHitTestVisible="False"
-                    Panel.ZIndex="900">
-                <Polyline x:Name="InkPredictionPolyline" Visibility="Collapsed" StrokeLineJoin="Round"
-                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
-            </Canvas>
 
             <Canvas x:Name="EraserOverlayCanvas" 
                     Background="Transparent" 

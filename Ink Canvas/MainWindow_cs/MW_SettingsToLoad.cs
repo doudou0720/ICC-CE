@@ -951,16 +951,6 @@ namespace Ink_Canvas
                 // 初始化直线端点吸附相关设置
                 ToggleSwitchLineEndpointSnapping.IsOn = Settings.Canvas.LineEndpointSnapping;
                 ToggleSwitchCompressPicturesUploaded.IsOn = Settings.Canvas.IsCompressPicturesUploaded;
-
-                int leadMode = Settings.Canvas.InkStrokePredictionLeadMode;
-                if (leadMode < 0 || leadMode > 2) leadMode = 0;
-                Settings.Canvas.InkStrokePredictionLeadMode = leadMode;
-
-                if (ToggleSwitchInkStrokePredictionSettings != null)
-                    ToggleSwitchInkStrokePredictionSettings.IsOn = Settings.Canvas.EnableInkStrokePrediction;
-                if (ComboBoxInkStrokePredictionLeadSettings != null)
-                    ComboBoxInkStrokePredictionLeadSettings.SelectedIndex = leadMode;
-                SyncInkStrokePredictionLeadComboVisibility();
             }
             else
             {

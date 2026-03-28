@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Windows.Ink;
+using System.Windows.Input;
 using System.Windows.Media;
 using OSVersionExtension;
 using WinRtInkAnalyzer = global::Windows.UI.Input.Inking.Analysis.InkAnalyzer;
@@ -103,8 +105,7 @@ namespace Ink_Canvas.Helpers
                     new global::Windows.Foundation.Point((float)pi.X, (float)pi.Y), (float)sp.PressureFactor));
             }
 
-            var transform = global::Windows.Foundation.Numerics.Matrix3x2.Identity;
-            return builder.CreateStrokeFromInkPoints(inkPoints, transform);
+            return builder.CreateStrokeFromInkPoints(inkPoints, Matrix3x2.Identity);
         }
 
         private static global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing FindPrimaryDrawing(

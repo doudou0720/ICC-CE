@@ -2700,28 +2700,6 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void ToggleSwitchInkStrokePredictionSettings_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-
-            bool on = ToggleSwitchInkStrokePredictionSettings != null && ToggleSwitchInkStrokePredictionSettings.IsOn;
-            Settings.Canvas.EnableInkStrokePrediction = on;
-            SyncInkStrokePredictionLeadComboVisibility();
-            if (!on)
-                EndInkPredictionStroke();
-            SaveSettingsToFile();
-        }
-
-        private void ComboBoxInkStrokePredictionLeadSettings_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!isLoaded) return;
-            var cb = sender as ComboBox;
-            if (cb?.SelectedIndex < 0) return;
-
-            Settings.Canvas.InkStrokePredictionLeadMode = cb.SelectedIndex;
-            SaveSettingsToFile();
-        }
-
         private void ToggleSwitchAutoStraightenLine_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;

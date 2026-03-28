@@ -244,8 +244,6 @@
   <data name="InkRecog_ShapeEngineAuto" xml:space="preserve"><value>自动</value></data>
   <data name="InkRecog_ShapeEngineIACore" xml:space="preserve"><value>IACore</value></data>
   <data name="InkRecog_ShapeEngineWinRT" xml:space="preserve"><value>WinRT</value></data>
-  <data name="InkRecog_InkStrokePrediction" xml:space="preserve"><value>墨迹预测</value></data>
-  <data name="InkRecog_InkStrokePredictionHint" xml:space="preserve"><value># 开启后可在书写时显示短暂外推预览线。打开开关后可选择：自动（随速度调整）、固定 25ms 或 50ms 提前量。</value></data>
   <data name="InkRecog_BlockRectFakePressure" xml:space="preserve"><value>阻止矫正后的矩形带有模拟压感值</value></data>
   <data name="InkRecog_BlockTriFakePressure" xml:space="preserve"><value>阻止矫正后的三角形带有模拟压感值</value></data>
   <data name="InkRecog_FixTriangle" xml:space="preserve"><value>矫正手绘三角形</value></data>

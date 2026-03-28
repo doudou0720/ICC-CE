@@ -632,7 +632,6 @@ namespace Ink_Canvas
                             else if (result.ShapeName.Contains("Triangle") &&
                                      Settings.InkToShape.IsInkToShapeTriangle)
                             {
-                                var shape = result.InkDrawingNode.GetShape();
                                 var p = result.HotPoints;
                                 if ((Math.Max(Math.Max(p[0].X, p[1].X), p[2].X) -
                                      Math.Min(Math.Min(p[0].X, p[1].X), p[2].X) >= 100 ||
@@ -671,10 +670,10 @@ namespace Ink_Canvas
                                       result.ShapeName.Contains("Diamond") ||
                                       result.ShapeName.Contains("Parallelogram") ||
                                       result.ShapeName.Contains("Square") ||
-                                      result.ShapeName.Contains("Trapezoid")) &&
+                                      result.ShapeName.Contains("Trapezoid") ||
+                                      result.ShapeName.Contains("Quadrilateral")) &&
                                      Settings.InkToShape.IsInkToShapeRectangle)
                             {
-                                var shape = result.InkDrawingNode.GetShape();
                                 var p = result.HotPoints;
                                 if ((Math.Max(Math.Max(Math.Max(p[0].X, p[1].X), p[2].X), p[3].X) -
                                      Math.Min(Math.Min(Math.Min(p[0].X, p[1].X), p[2].X), p[3].X) >= 100 ||

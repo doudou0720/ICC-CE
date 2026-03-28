@@ -1156,9 +1156,6 @@ namespace Ink_Canvas
                     Trace.WriteLine("Eraser: Overlay disabled in non-eraser mode");
                 }
             }
-
-            if (inkCanvas1.EditingMode != InkCanvasEditingMode.Ink)
-                EndInkPredictionStroke();
         }
 
         #endregion Ink Canvas
@@ -2270,13 +2267,6 @@ namespace Ink_Canvas
                 }
             }
 
-            if (e.LeftButton == MouseButtonState.Pressed
-                && inkCanvas != null
-                && inkCanvas.EditingMode == InkCanvasEditingMode.Ink
-                && penType != 1)
-            {
-                BeginInkPredictionStrokeIfNeeded();
-            }
         }
 
         // 手写笔输入
@@ -2284,13 +2274,11 @@ namespace Ink_Canvas
         {
             // 使用辅助方法设置光标
             SetCursorBasedOnEditingMode(sender as InkCanvas);
-            BeginInkPredictionStrokeIfNeeded();
         }
 
         // 手写笔抬起事件（用于橡皮擦自动切换）
         private void inkCanvas_StylusUp(object sender, StylusEventArgs e)
         {
-            EndInkPredictionStroke();
             HandleEraserOperationEnded();
         }
 

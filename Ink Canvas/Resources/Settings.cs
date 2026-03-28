@@ -146,34 +146,8 @@ namespace Ink_Canvas
         public bool EnableEraserAutoSwitchBack { get; set; } = false;
         [JsonProperty("eraserAutoSwitchBackDelaySeconds")]
         public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
-
-        /// <summary>
-        /// 是否在笔工具中启用墨迹预测预览线（由笔属性面板「墨迹预测」开关控制）。
-        /// </summary>
-        [JsonProperty("enableInkStrokePrediction")]
-        public bool EnableInkStrokePrediction { get; set; } = false;
-
-        /// <summary>
-        /// 墨迹预测提前量模式：0 自动（随书写速度调整），1 固定 25ms，2 固定 50ms。
-        /// </summary>
-        [JsonProperty("inkStrokePredictionLeadMode")]
-        public int InkStrokePredictionLeadMode { get; set; } = 0;
-
-        /// <summary>
-        /// 预测线段基准最大长度（逻辑像素/DIP）；「自动」模式下会随速度在此值基础上略增。
-        /// </summary>
-        [JsonProperty("inkStrokePredictionMaxDistance")]
-        public double InkStrokePredictionMaxDistance { get; set; } = 18.0;
-
-        /// <summary>
-        /// 「实时」笔锋（<see cref="InkStyle"/> = 3）下，速度项与硬件压感的混合比例 0–1。
-        /// </summary>
         [JsonProperty("velocityBrushTipMix")]
         public double VelocityBrushTipMix { get; set; } = 0.22;
-
-        /// <summary>
-        /// 已弃用：请使用 <see cref="InkStyle"/> = 3（笔锋下拉选「实时」）。仅用于反序列化旧版配置。
-        /// </summary>
         [JsonProperty("enableVelocityBrushTip")]
         public bool EnableVelocityBrushTip { get; set; }
 
