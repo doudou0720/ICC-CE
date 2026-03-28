@@ -2565,6 +2565,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            EndInkPredictionStroke();
             HandleEraserOperationEnded(); // 橡皮擦自动切换回批注模式：松手后启动/重置计时
             inkCanvas.ReleaseMouseCapture();
             ViewboxFloatingBar.IsHitTestVisible = true;

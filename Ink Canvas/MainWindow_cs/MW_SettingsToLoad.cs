@@ -941,6 +941,11 @@ namespace Ink_Canvas
                 // 初始化直线端点吸附相关设置
                 ToggleSwitchLineEndpointSnapping.IsOn = Settings.Canvas.LineEndpointSnapping;
                 ToggleSwitchCompressPicturesUploaded.IsOn = Settings.Canvas.IsCompressPicturesUploaded;
+
+                if (ToggleSwitchEnableInkStrokePrediction != null)
+                    ToggleSwitchEnableInkStrokePrediction.IsOn = Settings.Canvas.EnableInkStrokePrediction;
+                if (ToggleSwitchEnableVelocityBrushTip != null)
+                    ToggleSwitchEnableVelocityBrushTip.IsOn = Settings.Canvas.EnableVelocityBrushTip;
             }
             else
             {

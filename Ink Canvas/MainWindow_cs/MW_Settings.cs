@@ -2700,6 +2700,24 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchEnableInkStrokePrediction_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.Canvas.EnableInkStrokePrediction = ToggleSwitchEnableInkStrokePrediction.IsOn;
+            if (!Settings.Canvas.EnableInkStrokePrediction)
+                EndInkPredictionStroke();
+            SaveSettingsToFile();
+        }
+
+        private void ToggleSwitchEnableVelocityBrushTip_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.Canvas.EnableVelocityBrushTip = ToggleSwitchEnableVelocityBrushTip.IsOn;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchAutoStraightenLine_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;

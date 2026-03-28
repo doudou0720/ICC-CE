@@ -204,6 +204,7 @@ namespace Ink_Canvas
             try
             {
                 inkCanvas.Opacity = 1;
+                var touchPressureSimulationApplied = false;
 
                 if (Settings.Canvas.DisablePressure)
                 {
@@ -256,6 +257,7 @@ namespace Ink_Canvas
                                             stylusPoints.Add(point);
                                         }
 
+                                        touchPressureSimulationApplied = true;
                                         e.Stroke.StylusPoints = stylusPoints;
                                     }
                                     catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
@@ -304,12 +306,25 @@ namespace Ink_Canvas
                                             }
                                         }
 
+                                        touchPressureSimulationApplied = true;
                                         e.Stroke.StylusPoints = stylusPoints;
                                     }
                                     catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                                 break;
                         }
                     }
+                }
+
+                if (Settings.Canvas.EnableVelocityBrushTip
+                    && !touchPressureSimulationApplied
+                    && !Settings.Canvas.DisablePressure
+                    && penType != 1
+                    && e.Stroke?.DrawingAttributes != null
+                    && !e.Stroke.DrawingAttributes.IsHighlighter
+                    && !e.Stroke.DrawingAttributes.IgnorePressure
+                    && e.Stroke.StylusPoints.Count >= 3)
+                {
+                    ApplyVelocityBrushTipFromSpeed(e.Stroke);
                 }
 
                 // Apply line straightening and endpoint snapping if ink-to-shape is enabled
@@ -2031,6 +2046,56 @@ namespace Ink_Canvas
                     + Math.Sqrt((point3.X - point2.X) * (point3.X - point2.X) +
                                 (point3.Y - point2.Y) * (point3.Y - point2.Y)))
                    / 20;
+        }
+
+        /// <summary>
+        /// 将沿线速度映射为压感并与硬件压感混合，快写略细、慢写略粗；与 Inkeys 中 RTSSpeed 驱动的笔锋类似，在落笔后统一施加。
+        /// </summary>
+        private void ApplyVelocityBrushTipFromSpeed(Stroke stroke)
+        {
+            try
+            {
+                var mix = Settings.Canvas.VelocityBrushTipMix;
+                if (mix <= 0 || stroke == null) return;
+                if (mix > 1) mix = 1;
+
+                var pts = stroke.StylusPoints;
+                if (pts.Count < 3) return;
+
+                var n = pts.Count - 1;
+                var stylusPoints = new StylusPointCollection();
+
+                for (var i = 0; i <= n; i++)
+                {
+                    var speed = GetPointSpeed(
+                        pts[Math.Max(i - 1, 0)].ToPoint(),
+                        pts[i].ToPoint(),
+                        pts[Math.Min(i + 1, n)].ToPoint());
+
+                    float speedPressure;
+                    if (speed >= 0.25)
+                        speedPressure = (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
+                    else if (speed >= 0.05)
+                        speedPressure = 0.5f;
+                    else
+                        speedPressure = (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
+
+                    speedPressure = (float)Math.Max(0.08, Math.Min(1.0, speedPressure));
+
+                    var basePf = pts[i].PressureFactor;
+                    var blended = (float)((1.0 - mix) * basePf + mix * speedPressure);
+                    blended = (float)Math.Max(0.08, Math.Min(1.0, blended));
+
+                    var p = new StylusPoint(pts[i].X, pts[i].Y, blended);
+                    stylusPoints.Add(p);
+                }
+
+                stroke.StylusPoints = stylusPoints;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         public Point[] FixPointsDirection(Point p1, Point p2)

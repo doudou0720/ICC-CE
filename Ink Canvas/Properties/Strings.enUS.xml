@@ -374,6 +374,10 @@
   <data name="Canvas_EnablePressureTouchHint" xml:space="preserve"><value># When on, touch screens that support pressure will show pressure; for devices not recognized by the system.</value></data>
   <data name="Canvas_DisablePressure" xml:space="preserve"><value>Ignore pressure</value></data>
   <data name="Canvas_DisablePressureHint" xml:space="preserve"><value># When on, all strokes use uniform thickness; mutually exclusive with pressure-sensitive touch.</value></data>
+  <data name="Canvas_InkStrokePrediction" xml:space="preserve"><value>Ink stroke prediction (latency hint)</value></data>
+  <data name="Canvas_InkStrokePredictionHint" xml:space="preserve"><value># While inking, draws a short semi-transparent segment ahead along motion to reduce perceived latency (similar idea to Inkeys).</value></data>
+  <data name="Canvas_VelocityBrushTip" xml:space="preserve"><value>Velocity brush tip (pressure blend)</value></data>
+  <data name="Canvas_VelocityBrushTipHint" xml:space="preserve"><value># For pen pressure, blends speed with hardware pressure: faster strokes thinner, slower thicker. Touch simulated pressure is unchanged.</value></data>
   <data name="Canvas_EraserSize" xml:space="preserve"><value>Eraser size</value></data>
   <data name="Canvas_EraserSize_VerySmall" xml:space="preserve"><value>Very small</value></data>
   <data name="Canvas_EraserSize_Small" xml:space="preserve"><value>Small</value></data>

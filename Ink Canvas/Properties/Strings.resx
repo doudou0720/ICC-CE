@@ -389,6 +389,10 @@
   <data name="Canvas_EnablePressureTouchHint" xml:space="preserve"><value># 开启后，触屏设备也将支持压感效果，适用于部分支持压感但无法被系统识别的触屏设备。</value></data>
   <data name="Canvas_DisablePressure" xml:space="preserve"><value>屏蔽压感</value></data>
   <data name="Canvas_DisablePressureHint" xml:space="preserve"><value># 开启后，将忽略所有设备的压感信息，使所有笔画具有统一的粗细。与压感触屏模式互斥。</value></data>
+  <data name="Canvas_InkStrokePrediction" xml:space="preserve"><value>墨迹预测（低延迟预览线）</value></data>
+  <data name="Canvas_InkStrokePredictionHint" xml:space="preserve"><value># 书写时沿运动方向外推一小段半透明预览线，减轻显示与采样延迟；思路类似智绘教 Inkeys 的流畅笔迹。</value></data>
+  <data name="Canvas_VelocityBrushTip" xml:space="preserve"><value>速度笔锋（压感混合）</value></data>
+  <data name="Canvas_VelocityBrushTipHint" xml:space="preserve"><value># 对触控笔等真实压感，按运笔速度与硬件压感混合：快画略细、慢画略粗；触屏模拟压感路径仍单独处理，避免重复叠加。</value></data>
   <data name="Canvas_EraserSize" xml:space="preserve"><value>橡皮大小</value></data>
   <data name="Canvas_EraserSize_VerySmall" xml:space="preserve"><value>很小</value></data>
   <data name="Canvas_EraserSize_Small" xml:space="preserve"><value>较小</value></data>

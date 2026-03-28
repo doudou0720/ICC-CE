@@ -146,6 +146,30 @@ namespace Ink_Canvas
         [JsonProperty("eraserAutoSwitchBackDelaySeconds")]
         public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
 
+        /// <summary>
+        /// 书写时根据速度外推一小段预览线，补偿显示/采样延迟（类似智绘教 Inkeys 的低延迟手感）。
+        /// </summary>
+        [JsonProperty("enableInkStrokePrediction")]
+        public bool EnableInkStrokePrediction { get; set; } = true;
+
+        /// <summary>
+        /// 预测线段最大长度（与设备无关的逻辑像素/DIP），过大易飘，过小不明显。
+        /// </summary>
+        [JsonProperty("inkStrokePredictionMaxDistance")]
+        public double InkStrokePredictionMaxDistance { get; set; } = 18.0;
+
+        /// <summary>
+        /// 用笔等真实压感设备时，将速度与硬件压感按 <see cref="VelocityBrushTipMix"/> 混合，使快画偏细、慢画偏粗（参考 Inkeys RTSSpeed 思路）。
+        /// </summary>
+        [JsonProperty("enableVelocityBrushTip")]
+        public bool EnableVelocityBrushTip { get; set; } = true;
+
+        /// <summary>
+        /// 速度笔锋混合比例 0–1，越大速度对粗细影响越明显。
+        /// </summary>
+        [JsonProperty("velocityBrushTipMix")]
+        public double VelocityBrushTipMix { get; set; } = 0.22;
+
     }
 
     public enum OptionalOperation
