@@ -833,8 +833,9 @@ namespace Ink_Canvas
                 if (Settings.Canvas.InkStyle < 0 || Settings.Canvas.InkStyle > 3)
                     Settings.Canvas.InkStyle = 0;
 
-                ComboBoxPenStyle.SelectedIndex = Settings.Canvas.InkStyle;
-                BoardComboBoxPenStyle.SelectedIndex = Settings.Canvas.InkStyle;
+                int penStyleUi = PenStyleUiIndexFromInkStyle(Settings.Canvas.InkStyle);
+                ComboBoxPenStyle.SelectedIndex = penStyleUi;
+                BoardComboBoxPenStyle.SelectedIndex = penStyleUi;
 
                 ComboBoxEraserSize.SelectedIndex = Settings.Canvas.EraserSize;
                 ComboBoxEraserSizeFloatingBar.SelectedIndex = Settings.Canvas.EraserSize;

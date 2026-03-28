@@ -1128,7 +1128,7 @@
                                         </ComboBox>
                                     </ikw:SimpleStackPanel>
                                     <TextBlock Text="{i18n:I18n Key=InkRecog_InkStrokePredictionHint}" TextWrapping="Wrap"
-                                               Foreground="#a1a1aa" Width="520" />
+                                               Foreground="#a1a1aa" HorizontalAlignment="Stretch" />
                                     <ikw:SimpleStackPanel Spacing="6"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnableInkToShape, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -5634,15 +5634,15 @@
                                                                         VerticalAlignment="Center"
                                                                         Name="BoardComboBoxPenStyle"
                                                                         FontFamily="Microsoft YaHei UI"
-                                                                        SelectedIndex="0"
+                                                                        SelectedIndex="1"
                                                                         SelectionChanged="ComboBoxPenStyle_SelectionChanged">
+                                                                        <ComboBoxItem Content="实时笔锋"
+                                                                            FontFamily="Microsoft YaHei UI" />
                                                                         <ComboBoxItem Content="基于点集"
                                                                             FontFamily="Microsoft YaHei UI" />
                                                                         <ComboBoxItem Content="基于速率"
                                                                             FontFamily="Microsoft YaHei UI" />
                                                                         <ComboBoxItem Content="关闭笔锋"
-                                                                            FontFamily="Microsoft YaHei UI" />
-                                                                        <ComboBoxItem Content="实时"
                                                                             FontFamily="Microsoft YaHei UI" />
                                                                     </ComboBox>
                                                                 </ikw:SimpleStackPanel>
@@ -8683,15 +8683,15 @@
                                                                 <ComboBox Height="30" VerticalAlignment="Center"
                                                                           Name="ComboBoxPenStyle"
                                                                           FontFamily="Microsoft YaHei UI"
-                                                                          SelectedIndex="0"
+                                                                          SelectedIndex="1"
                                                                           SelectionChanged="ComboBoxPenStyle_SelectionChanged">
+                                                                    <ComboBoxItem Content="实时笔锋"
+                                                                        FontFamily="Microsoft YaHei UI" />
                                                                     <ComboBoxItem Content="基于点集"
                                                                         FontFamily="Microsoft YaHei UI" />
                                                                     <ComboBoxItem Content="基于速率"
                                                                         FontFamily="Microsoft YaHei UI" />
                                                                     <ComboBoxItem Content="关闭笔锋"
-                                                                        FontFamily="Microsoft YaHei UI" />
-                                                                    <ComboBoxItem Content="实时"
                                                                         FontFamily="Microsoft YaHei UI" />
                                                                 </ComboBox>
                                                             </ikw:SimpleStackPanel>

@@ -2784,19 +2784,44 @@ namespace Ink_Canvas
 
         #region Canvas
 
+        /// <summary>笔锋下拉 UI 顺序：0 实时笔锋，1 基于点集，2 基于速率，3 关闭。与存储值 InkStyle：3,0,1,2 对应。</summary>
+        private static int PenStyleUiIndexFromInkStyle(int inkStyle)
+        {
+            switch (inkStyle)
+            {
+                case 3: return 0;
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 3;
+                default: return 1;
+            }
+        }
+
+        private static int InkStyleFromPenStyleUiIndex(int uiIndex)
+        {
+            switch (uiIndex)
+            {
+                case 0: return 3;
+                case 1: return 0;
+                case 2: return 1;
+                case 3: return 2;
+                default: return 0;
+            }
+        }
+
         private void ComboBoxPenStyle_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
+            int uiIndex = sender == ComboBoxPenStyle
+                ? ComboBoxPenStyle.SelectedIndex
+                : BoardComboBoxPenStyle.SelectedIndex;
+            if (uiIndex < 0) return;
+
+            Settings.Canvas.InkStyle = InkStyleFromPenStyleUiIndex(uiIndex);
             if (sender == ComboBoxPenStyle)
-            {
-                Settings.Canvas.InkStyle = ComboBoxPenStyle.SelectedIndex;
-                BoardComboBoxPenStyle.SelectedIndex = ComboBoxPenStyle.SelectedIndex;
-            }
+                BoardComboBoxPenStyle.SelectedIndex = uiIndex;
             else
-            {
-                Settings.Canvas.InkStyle = BoardComboBoxPenStyle.SelectedIndex;
-                ComboBoxPenStyle.SelectedIndex = BoardComboBoxPenStyle.SelectedIndex;
-            }
+                ComboBoxPenStyle.SelectedIndex = uiIndex;
 
             SaveSettingsToFile();
         }
