@@ -374,6 +374,10 @@
   <data name="Update_Release" xml:space="preserve"><value>稳定版 (Release)</value></data>
   <data name="Update_Preview" xml:space="preserve"><value>预览版 (Preview)</value></data>
   <data name="Update_Beta" xml:space="preserve"><value>测试版 (Beta)</value></data>
+  <data name="Startup_UpdatePackageArchitecture" xml:space="preserve"><value>软件架构</value></data>
+  <data name="Update_PackageArch_X86" xml:space="preserve"><value>32 位 (x86)</value></data>
+  <data name="Update_PackageArch_X64" xml:space="preserve"><value>64 位 (x64)</value></data>
+  <data name="Startup_UpdatePackageArchitectureHint" xml:space="preserve"><value># 选择要下载架构</value></data>
   <data name="Startup_UpdateChannelHint" xml:space="preserve"><value># 稳定版提供可靠更新，预览版提供新功能体验同时拥有相较Beta版更强的稳定性，测试版提供新功能抢先体验</value></data>
   <data name="Btn_ManualUpdate" xml:space="preserve"><value>手动更新</value></data>
   <data name="Startup_ManualUpdateHint" xml:space="preserve"><value># 点击后立即检查并下载最新版本</value></data>

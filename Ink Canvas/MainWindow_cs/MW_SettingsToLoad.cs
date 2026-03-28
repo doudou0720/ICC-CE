@@ -301,6 +301,29 @@ namespace Ink_Canvas
                     }
                 }
 
+                // 初始化更新包架构
+                if (UpdatePackageArchitectureSelector != null)
+                {
+                    _isChangingUpdatePackageArchInternally = true;
+                    try
+                    {
+                        string wantTag = Settings.Startup.UpdatePackageArchitecture == UpdatePackageArchitecture.X64 ? "X64" : "X86";
+                        foreach (var item in UpdatePackageArchitectureSelector.Items)
+                        {
+                            if (item is RadioButton rb && rb.Tag != null &&
+                                string.Equals(rb.Tag.ToString(), wantTag, StringComparison.OrdinalIgnoreCase))
+                            {
+                                rb.IsChecked = true;
+                                break;
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _isChangingUpdatePackageArchInternally = false;
+                    }
+                }
+
                 AutoUpdateTimePeriodBlock.Visibility = Settings.Startup.IsAutoUpdateWithSilence
                     ? Visibility.Visible
                     : Visibility.Collapsed;

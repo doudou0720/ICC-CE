@@ -38,6 +38,8 @@ namespace Ink_Canvas
         /// 内部标记：是否正在内部更改更新通道
         /// </summary>
         private bool _isChangingUpdateChannelInternally;
+        /// <summary>内部标记：是否正在内部更改「更新包架构」（32/64 位 ZIP）</summary>
+        private bool _isChangingUpdatePackageArchInternally;
         /// <summary>
         /// 内部标记：是否正在内部更改遥测设置
         /// </summary>
@@ -5169,6 +5171,24 @@ namespace Ink_Canvas
         {
             Process.Start("https://github.com/WXRIW/Ink-Canvas");
             HideSubPanels();
+        }
+
+        private void UpdatePackageArchitectureSelector_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            if (_isChangingUpdatePackageArchInternally) return;
+            if (!(sender is RadioButton radioButton) || radioButton.Tag == null) return;
+
+            var newArch = string.Equals(radioButton.Tag.ToString(), "X64", StringComparison.OrdinalIgnoreCase)
+                ? UpdatePackageArchitecture.X64
+                : UpdatePackageArchitecture.X86;
+
+            if (Settings.Startup.UpdatePackageArchitecture == newArch)
+                return;
+
+            Settings.Startup.UpdatePackageArchitecture = newArch;
+            SaveSettingsToFile();
+            LogHelper.WriteLogToFile($"Settings | Update package architecture: {newArch}");
         }
 
         private async void UpdateChannelSelector_Checked(object sender, RoutedEventArgs e)

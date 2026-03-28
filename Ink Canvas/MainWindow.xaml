@@ -723,6 +723,18 @@
                                                      Toggled="ToggleSwitchIsAutoUpdateWithSilence_Toggled" />
                                     <TextBlock Text="{i18n:I18n Key=Startup_SilentUpdateHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
                                     
+                                    <!-- 更新包架构 -->
+                                    <ikw:SimpleStackPanel Spacing="8" Margin="0,8,0,0">
+                                        <TextBlock Text="{i18n:I18n Key=Startup_UpdatePackageArchitecture}" FontSize="15" FontWeight="Bold" Foreground="#fafafa"/>
+                                        <ui:RadioButtons x:Name="UpdatePackageArchitectureSelector" Margin="0,4,0,0">
+                                            <RadioButton Content="{i18n:I18n Key=Update_PackageArch_X86}" GroupName="UpdatePackageArchitecture"
+                                                         Tag="X86" Checked="UpdatePackageArchitectureSelector_Checked"/>
+                                            <RadioButton Content="{i18n:I18n Key=Update_PackageArch_X64}" GroupName="UpdatePackageArchitecture"
+                                                         Tag="X64" Checked="UpdatePackageArchitectureSelector_Checked"/>
+                                        </ui:RadioButtons>
+                                        <TextBlock Text="{i18n:I18n Key=Startup_UpdatePackageArchitectureHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
+                                    </ikw:SimpleStackPanel>
+                                    
                                     <!-- 更新通道选择 -->
                                     <ikw:SimpleStackPanel Spacing="8" Margin="0,8,0,0">
 <TextBlock Text="{i18n:I18n Key=Startup_UpdateChannel}" FontSize="15" FontWeight="Bold" Foreground="#fafafa"/>
