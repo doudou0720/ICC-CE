@@ -225,7 +225,7 @@
   <data name="InkRecog_Title" xml:space="preserve"><value>Ink correction</value></data>
   <data name="InkRecog_EnableInkRecognition" xml:space="preserve"><value>Enable ink recognition</value></data>
   <data name="InkRecog_ShapeEngine" xml:space="preserve"><value>Recognition engine</value></data>
-  <data name="InkRecog_ShapeEngineHint" xml:space="preserve"><value># Auto: WinRT on 64-bit (Windows 10+), IACore on 32-bit. You can force IACore or WinRT.</value></data>
+  <data name="InkRecog_ShapeEngineHint" xml:space="preserve"><value># Auto: WinRT on 64-bit Windows (Windows 10+); IACore on 32-bit Windows. Prefer32Bit/WOW64 still counts as 64-bit OS for this choice. You can force IACore or WinRT.</value></data>
   <data name="InkRecog_ShapeEngineAuto" xml:space="preserve"><value>Auto</value></data>
   <data name="InkRecog_ShapeEngineIACore" xml:space="preserve"><value>IACore</value></data>
   <data name="InkRecog_ShapeEngineWinRT" xml:space="preserve"><value>WinRT</value></data>

@@ -240,7 +240,7 @@
   <data name="InkRecog_Title" xml:space="preserve"><value>墨迹纠正</value></data>
   <data name="InkRecog_EnableInkRecognition" xml:space="preserve"><value>启用墨迹识别</value></data>
   <data name="InkRecog_ShapeEngine" xml:space="preserve"><value>识别引擎</value></data>
-  <data name="InkRecog_ShapeEngineHint" xml:space="preserve"><value># 自动：64 位进程使用 WinRT（Windows 10+），32 位使用 IACore。可强制指定 IACore 或 WinRT。</value></data>
+  <data name="InkRecog_ShapeEngineHint" xml:space="preserve"><value># 自动：64 位 Windows 使用 WinRT（Windows 10+）；32 位 Windows 使用 IACore。工程若启用「首选 32 位」仍以 WOW64 运行，但自动仍按系统为 64 位选 WinRT。可强制 IACore 或 WinRT。</value></data>
   <data name="InkRecog_ShapeEngineAuto" xml:space="preserve"><value>自动</value></data>
   <data name="InkRecog_ShapeEngineIACore" xml:space="preserve"><value>IACore</value></data>
   <data name="InkRecog_ShapeEngineWinRT" xml:space="preserve"><value>WinRT</value></data>
