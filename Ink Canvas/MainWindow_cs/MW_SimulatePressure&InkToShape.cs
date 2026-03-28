@@ -315,7 +315,7 @@ namespace Ink_Canvas
                     }
                 }
 
-                if (Settings.Canvas.EnableVelocityBrushTip
+                if (Settings.Canvas.InkStyle == 3
                     && !touchPressureSimulationApplied
                     && !Settings.Canvas.DisablePressure
                     && penType != 1
@@ -825,6 +825,8 @@ namespace Ink_Canvas
                             }
                             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
+                        break;
+                    case 3:
                         break;
                 }
             }

@@ -69,6 +69,7 @@ namespace Ink_Canvas
         public double InkAlpha { get; set; } = 255;
         [JsonProperty("isShowCursor")]
         public bool IsShowCursor { get; set; }
+        /// <summary>笔锋：0 基于点集，1 基于速率，2 关闭，3 实时（速度与压感混合）。</summary>
         [JsonProperty("inkStyle")]
         public int InkStyle { get; set; }
         [JsonProperty("eraserSize")]
@@ -147,28 +148,34 @@ namespace Ink_Canvas
         public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
 
         /// <summary>
-        /// 书写时根据速度外推一小段预览线，补偿显示/采样延迟（类似智绘教 Inkeys 的低延迟手感）。
+        /// 是否在笔工具中启用墨迹预测预览线（由笔属性面板「墨迹预测」开关控制）。
         /// </summary>
         [JsonProperty("enableInkStrokePrediction")]
-        public bool EnableInkStrokePrediction { get; set; } = true;
+        public bool EnableInkStrokePrediction { get; set; } = false;
 
         /// <summary>
-        /// 预测线段最大长度（与设备无关的逻辑像素/DIP），过大易飘，过小不明显。
+        /// 墨迹预测提前量模式：0 自动（随书写速度调整），1 固定 25ms，2 固定 50ms。
+        /// </summary>
+        [JsonProperty("inkStrokePredictionLeadMode")]
+        public int InkStrokePredictionLeadMode { get; set; } = 0;
+
+        /// <summary>
+        /// 预测线段基准最大长度（逻辑像素/DIP）；「自动」模式下会随速度在此值基础上略增。
         /// </summary>
         [JsonProperty("inkStrokePredictionMaxDistance")]
         public double InkStrokePredictionMaxDistance { get; set; } = 18.0;
 
         /// <summary>
-        /// 用笔等真实压感设备时，将速度与硬件压感按 <see cref="VelocityBrushTipMix"/> 混合，使快画偏细、慢画偏粗（参考 Inkeys RTSSpeed 思路）。
-        /// </summary>
-        [JsonProperty("enableVelocityBrushTip")]
-        public bool EnableVelocityBrushTip { get; set; } = true;
-
-        /// <summary>
-        /// 速度笔锋混合比例 0–1，越大速度对粗细影响越明显。
+        /// 「实时」笔锋（<see cref="InkStyle"/> = 3）下，速度项与硬件压感的混合比例 0–1。
         /// </summary>
         [JsonProperty("velocityBrushTipMix")]
         public double VelocityBrushTipMix { get; set; } = 0.22;
+
+        /// <summary>
+        /// 已弃用：请使用 <see cref="InkStyle"/> = 3（笔锋下拉选「实时」）。仅用于反序列化旧版配置。
+        /// </summary>
+        [JsonProperty("enableVelocityBrushTip")]
+        public bool EnableVelocityBrushTip { get; set; }
 
     }
 

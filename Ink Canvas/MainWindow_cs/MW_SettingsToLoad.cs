@@ -824,6 +824,15 @@ namespace Ink_Canvas
                 ToggleSwitchDisablePressure.IsOn = Settings.Canvas.DisablePressure;
                 inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
 
+                if (Settings.Canvas.EnableVelocityBrushTip)
+                {
+                    Settings.Canvas.InkStyle = 3;
+                    Settings.Canvas.EnableVelocityBrushTip = false;
+                }
+
+                if (Settings.Canvas.InkStyle < 0 || Settings.Canvas.InkStyle > 3)
+                    Settings.Canvas.InkStyle = 0;
+
                 ComboBoxPenStyle.SelectedIndex = Settings.Canvas.InkStyle;
                 BoardComboBoxPenStyle.SelectedIndex = Settings.Canvas.InkStyle;
 
@@ -942,10 +951,19 @@ namespace Ink_Canvas
                 ToggleSwitchLineEndpointSnapping.IsOn = Settings.Canvas.LineEndpointSnapping;
                 ToggleSwitchCompressPicturesUploaded.IsOn = Settings.Canvas.IsCompressPicturesUploaded;
 
-                if (ToggleSwitchEnableInkStrokePrediction != null)
-                    ToggleSwitchEnableInkStrokePrediction.IsOn = Settings.Canvas.EnableInkStrokePrediction;
-                if (ToggleSwitchEnableVelocityBrushTip != null)
-                    ToggleSwitchEnableVelocityBrushTip.IsOn = Settings.Canvas.EnableVelocityBrushTip;
+                int leadMode = Settings.Canvas.InkStrokePredictionLeadMode;
+                if (leadMode < 0 || leadMode > 2) leadMode = 0;
+                Settings.Canvas.InkStrokePredictionLeadMode = leadMode;
+
+                if (ToggleSwitchInkStrokePredictionPanel != null)
+                    ToggleSwitchInkStrokePredictionPanel.IsOn = Settings.Canvas.EnableInkStrokePrediction;
+                if (BoardToggleSwitchInkStrokePredictionPanel != null)
+                    BoardToggleSwitchInkStrokePredictionPanel.IsOn = Settings.Canvas.EnableInkStrokePrediction;
+                if (ComboBoxInkStrokePredictionLead != null)
+                    ComboBoxInkStrokePredictionLead.SelectedIndex = leadMode;
+                if (BoardComboBoxInkStrokePredictionLead != null)
+                    BoardComboBoxInkStrokePredictionLead.SelectedIndex = leadMode;
+                SyncInkStrokePredictionLeadComboVisibility();
             }
             else
             {

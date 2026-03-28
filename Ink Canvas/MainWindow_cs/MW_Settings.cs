@@ -2700,21 +2700,40 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void ToggleSwitchEnableInkStrokePrediction_Toggled(object sender, RoutedEventArgs e)
+        private void ToggleSwitchInkStrokePredictionPanel_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
 
-            Settings.Canvas.EnableInkStrokePrediction = ToggleSwitchEnableInkStrokePrediction.IsOn;
-            if (!Settings.Canvas.EnableInkStrokePrediction)
+            bool on = ReferenceEquals(sender, BoardToggleSwitchInkStrokePredictionPanel)
+                ? BoardToggleSwitchInkStrokePredictionPanel.IsOn
+                : ToggleSwitchInkStrokePredictionPanel.IsOn;
+
+            if (ReferenceEquals(sender, ToggleSwitchInkStrokePredictionPanel) && BoardToggleSwitchInkStrokePredictionPanel != null)
+                BoardToggleSwitchInkStrokePredictionPanel.IsOn = on;
+            else if (ReferenceEquals(sender, BoardToggleSwitchInkStrokePredictionPanel) && ToggleSwitchInkStrokePredictionPanel != null)
+                ToggleSwitchInkStrokePredictionPanel.IsOn = on;
+
+            Settings.Canvas.EnableInkStrokePrediction = on;
+            SyncInkStrokePredictionLeadComboVisibility();
+            if (!on)
                 EndInkPredictionStroke();
             SaveSettingsToFile();
         }
 
-        private void ToggleSwitchEnableVelocityBrushTip_Toggled(object sender, RoutedEventArgs e)
+        private void ComboBoxInkStrokePredictionLead_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
+            var cb = sender as ComboBox;
+            if (cb?.SelectedIndex < 0) return;
 
-            Settings.Canvas.EnableVelocityBrushTip = ToggleSwitchEnableVelocityBrushTip.IsOn;
+            int idx = cb.SelectedIndex;
+            Settings.Canvas.InkStrokePredictionLeadMode = idx;
+
+            if (ReferenceEquals(cb, ComboBoxInkStrokePredictionLead) && BoardComboBoxInkStrokePredictionLead != null)
+                BoardComboBoxInkStrokePredictionLead.SelectedIndex = idx;
+            else if (ReferenceEquals(cb, BoardComboBoxInkStrokePredictionLead) && ComboBoxInkStrokePredictionLead != null)
+                ComboBoxInkStrokePredictionLead.SelectedIndex = idx;
+
             SaveSettingsToFile();
         }
 

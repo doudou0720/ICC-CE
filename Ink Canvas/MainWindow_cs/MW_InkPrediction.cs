@@ -4,12 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace Ink_Canvas
 {
     /// <summary>
-    /// 墨迹预测（书写中速度外推预览线）与笔锋相关输入状态，思路参考智绘教 Inkeys 的 RTS 速度与低延迟手感。
+    /// 墨迹预测：书写过程中根据速度与选项外推一小段预览线，减轻感知延迟。
     /// </summary>
     public partial class MainWindow
     {
@@ -21,12 +20,21 @@ namespace Ink_Canvas
         private double _inkPredictionVx;
         private double _inkPredictionVy;
 
-        private void ResetInkPredictionState()
+        private void SyncInkStrokePredictionLeadComboVisibility()
         {
-            _inkPredictionStrokeActive = false;
-            _inkPredictionHasSample = false;
-            _inkPredictionHasVelocity = false;
-            ClearInkPredictionOverlay();
+            try
+            {
+                bool on = Settings?.Canvas != null && Settings.Canvas.EnableInkStrokePrediction;
+                var v = on ? Visibility.Visible : Visibility.Collapsed;
+                if (ComboBoxInkStrokePredictionLead != null)
+                    ComboBoxInkStrokePredictionLead.Visibility = v;
+                if (BoardComboBoxInkStrokePredictionLead != null)
+                    BoardComboBoxInkStrokePredictionLead.Visibility = v;
+            }
+            catch
+            {
+                // ignore
+            }
         }
 
         private void ClearInkPredictionOverlay()
@@ -73,6 +81,30 @@ namespace Ink_Canvas
             _inkPredictionHasSample = false;
             _inkPredictionHasVelocity = false;
             ClearInkPredictionOverlay();
+        }
+
+        private double GetInkPredictionLeadMs()
+        {
+            int mode = Settings?.Canvas?.InkStrokePredictionLeadMode ?? 0;
+            if (mode == 1) return 25.0;
+            if (mode == 2) return 50.0;
+
+            double speed = Math.Sqrt(_inkPredictionVx * _inkPredictionVx + _inkPredictionVy * _inkPredictionVy);
+            double norm = Math.Min(1.0, speed / 2600.0);
+            double lead = 16.0 + norm * 34.0;
+            return Math.Max(14.0, Math.Min(52.0, lead));
+        }
+
+        private double GetInkPredictionMaxDistance(double leadMs)
+        {
+            double baseD = Math.Max(4.0, Settings?.Canvas?.InkStrokePredictionMaxDistance ?? 18.0);
+            int mode = Settings?.Canvas?.InkStrokePredictionLeadMode ?? 0;
+            if (mode != 0)
+                return Math.Max(6.0, Math.Min(42.0, baseD * (leadMs / 24.0)));
+
+            double speed = Math.Sqrt(_inkPredictionVx * _inkPredictionVx + _inkPredictionVy * _inkPredictionVy);
+            double norm = Math.Min(1.0, speed / 2200.0);
+            return Math.Max(6.0, Math.Min(48.0, baseD + norm * baseD * 0.9));
         }
 
         private void inkCanvas_PreviewStylusMove(object sender, StylusEventArgs e)
@@ -155,11 +187,11 @@ namespace Ink_Canvas
                 _inkPredictionVy = velocitySmooth * _inkPredictionVy + (1.0 - velocitySmooth) * vy;
             }
 
-            const double leadMs = 24.0;
+            double leadMs = GetInkPredictionLeadMs();
             double predX = pos.X + _inkPredictionVx * (leadMs / 1000.0);
             double predY = pos.Y + _inkPredictionVy * (leadMs / 1000.0);
 
-            double maxDist = Math.Max(4.0, Settings.Canvas.InkStrokePredictionMaxDistance);
+            double maxDist = GetInkPredictionMaxDistance(leadMs);
             double dx = predX - pos.X;
             double dy = predY - pos.Y;
             double len = Math.Sqrt(dx * dx + dy * dy);
