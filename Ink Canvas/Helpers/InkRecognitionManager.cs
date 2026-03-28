@@ -40,8 +40,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                var tryModern = WinRtInkShapeRecognizer.IsApiAvailable
-                                && (Environment.Is64BitProcess || Environment.Is64BitOperatingSystem);
+                var tryModern = WinRtInkShapeRecognizer.IsApiAvailable && Environment.Is64BitProcess;
 
                 _isModernSystemAvailable = false;
                 if (tryModern)

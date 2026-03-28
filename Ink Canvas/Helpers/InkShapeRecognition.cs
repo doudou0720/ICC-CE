@@ -17,14 +17,13 @@ namespace Ink_Canvas.Helpers
     public static class ShapeRecognitionRouter
     {
         /// <summary>
-        /// 自动模式：在 64 位 Windows 上优先 WinRT（即使当前进程因 Prefer32Bit 以 WOW64 运行）；
-        /// 32 位系统上走 IACore。与「仅看进程是否 64 位」相比，更符合用户在 x64 系统上的预期。
+        /// 自动模式：按当前进程位数选择——<c>64</c> 位进程用 WinRT，<c>32</c> 位进程（含 x86 目标在 WOW64 下运行）用 IACore。
         /// </summary>
         public static bool ResolveUseWinRt(ShapeRecognitionEngineMode mode)
         {
             if (mode == ShapeRecognitionEngineMode.WinRT) return true;
             if (mode == ShapeRecognitionEngineMode.IACore) return false;
-            return Environment.Is64BitOperatingSystem;
+            return Environment.Is64BitProcess;
         }
 
         public static bool ShouldRunShapeRecognition(bool inkToShapeEnabled, ShapeRecognitionEngineMode mode)
