@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Windows.Ink;
@@ -53,8 +52,13 @@ namespace Ink_Canvas.Helpers
             foreach (Stroke s in strokes)
             {
                 var inkStroke = CreateInkStrokeFromWpf(s);
-                if (inkStroke != null)
-                    analyzer.AddDataForStroke(inkStroke);
+                if (inkStroke == null)
+                    continue;
+
+                analyzer.AddDataForStroke(inkStroke);
+                analyzer.SetStrokeDataKind(
+                    inkStroke.Id,
+                    global::Windows.UI.Input.Inking.Analysis.InkAnalysisStrokeKind.Drawing);
             }
 
             await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(false);
@@ -97,15 +101,17 @@ namespace Ink_Canvas.Helpers
             var builder = new global::Windows.UI.Input.Inking.InkStrokeBuilder();
             builder.SetDefaultDrawingAttributes(wda);
 
-            var inkPoints = new List<global::Windows.UI.Input.Inking.InkPoint>(stroke.StylusPoints.Count);
+            var points = new List<global::Windows.Foundation.Point>(stroke.StylusPoints.Count);
             foreach (StylusPoint sp in stroke.StylusPoints)
             {
                 var pi = sp.ToPoint();
-                inkPoints.Add(new global::Windows.UI.Input.Inking.InkPoint(
-                    new global::Windows.Foundation.Point((float)pi.X, (float)pi.Y), (float)sp.PressureFactor));
+                points.Add(new global::Windows.Foundation.Point((float)pi.X, (float)pi.Y));
             }
 
-            return builder.CreateStrokeFromInkPoints(inkPoints, Matrix3x2.Identity);
+            if (points.Count == 0)
+                return null;
+
+            return builder.CreateStroke(points);
         }
 
         private static global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing FindPrimaryDrawing(
