@@ -46,7 +46,7 @@ jobs:
       - name: Check if exe file is generated
         id: check-exe
         run: |
-          $exePath = "Ink Canvas\bin\Debug\net472\InkCanvasForClass.exe"
+          $exePath = "Ink Canvas\bin\Debug\${{ matrix.architecture }}\net472\InkCanvasForClass.exe"
           
           if (Test-Path $exePath) {
             echo "build_success=true" >> $env:GITHUB_OUTPUT
@@ -69,19 +69,12 @@ jobs:
           $version = "debug-$shortSha-$env:GITHUB_RUN_NUMBER"
           echo "archive_name=$version" >> $env:GITHUB_OUTPUT
       
-      - name: Upload Artifact(AnyCPU) (if build succeeded)
-        if: steps.check-exe.outputs.build_success == 'true' && matrix.architecture == 'AnyCPU'
+      - name: Upload Artifact (if build succeeded)
+        if: steps.check-exe.outputs.build_success == 'true'
         uses: actions/upload-artifact@v7
         with:
-          name: InkCanvasForClass.CE.debug
-          path: "Ink Canvas/bin/Debug/net472/*"
-        
-      - name: Upload Artifact(x86) (if build succeeded)
-        if: steps.check-exe.outputs.build_success == 'true' && matrix.architecture == 'x86'
-        uses: actions/upload-artifact@v7
-        with:
-          name: InkCanvasForClass.CE.debug.x86
-          path: "Ink Canvas/bin/x86 Debug/net472/*"
+          name: InkCanvasForClass.CE.debug.${{ matrix.architecture }}
+          path: "Ink Canvas/bin/Debug/${{ matrix.architecture }}/net472/*"
 
       - name: Create Summary
         if: always()
