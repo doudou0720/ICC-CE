@@ -1863,8 +1863,7 @@ namespace Ink_Canvas
                 if (AvailableLatestVersion != null && Settings.Startup.IsAutoUpdate)
                 {
                     // 检查更新文件是否已下载
-                    string updatesFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "AutoUpdate");
-                    string statusFilePath = Path.Combine(updatesFolderPath, $"DownloadV{AvailableLatestVersion}Status.txt");
+                    string statusFilePath = AutoUpdateHelper.GetUpdateDownloadStatusFilePath(AvailableLatestVersion);
 
                     if (File.Exists(statusFilePath) && File.ReadAllText(statusFilePath).Trim().ToLower() == "true")
                     {

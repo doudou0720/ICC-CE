@@ -1,4 +1,4 @@
-﻿using Ink_Canvas.Helpers;
+using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using MdXaml;
@@ -500,8 +500,7 @@ namespace Ink_Canvas
             if (string.IsNullOrEmpty(downloadUrl))
             {
                 // 自动更新场景下，downloadUrl为null，直接用主下载目录
-                string updatesFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "AutoUpdate");
-                downloadUrl = Path.Combine(updatesFolderPath, $"InkCanvasForClass.CE.{version}.zip");
+                downloadUrl = AutoUpdateHelper.GetLocalUpdateZipFilePath(version);
             }
             LogHelper.WriteLogToFile($"AutoUpdate | 开始安装版本: {version}");
             AutoUpdateHelper.InstallNewVersionApp(version, true);

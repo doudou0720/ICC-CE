@@ -157,6 +157,25 @@
                                 </StackPanel>
                             </Border>
                             
+                            <Grid Height="54" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Vertical" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="0" MaxWidth="350">
+                                    <TextBlock Foreground="#2e3436" FontSize="14.5" Text="软件架构" HorizontalAlignment="Left"/>
+                                    <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="选择更新架构" HorizontalAlignment="Left" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Grid.Column="1">
+                                    <Border x:Name="UpdateArchX86Border" Padding="13,7" CornerRadius="8" Background="#e1e1e1" Cursor="Hand" Tag="UpdateArch_X86" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                                        <TextBlock Foreground="#2e3436" FontSize="14" FontWeight="Bold" Text="32 位 (x86)"/>
+                                    </Border>
+                                    <Border x:Name="UpdateArchX64Border" Padding="13,7" CornerRadius="8" Cursor="Hand" Tag="UpdateArch_X64" Margin="0,0,8,8" MouseLeftButtonDown="OptionButton_Click">
+                                        <TextBlock Foreground="#2e3436" FontSize="14" Text="64 位 (x64)"/>
+                                    </Border>
+                                </WrapPanel>
+                            </Grid>
+                            
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
