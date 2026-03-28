@@ -50,20 +50,15 @@ namespace Ink_Canvas.Helpers
                         _modernProcessor = new ModernInkProcessor();
                         _modernAnalyzer = new ModernInkAnalyzer();
                         _isModernSystemAvailable = true;
-                        LogHelper.WriteLogToFile(
-                            $"墨迹识别管理器：使用现代化墨迹识别系统 (WinRT) - 进程64位: {Environment.Is64BitProcess}, OS64位: {Environment.Is64BitOperatingSystem}");
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.WriteLogToFile("WinRT API不可用，回退到IACore: " + ex.Message, LogHelper.LogType.Warning);
+                        LogHelper.WriteLogToFile("WinRT 墨迹初始化失败: " + ex.Message, LogHelper.LogType.Warning);
                         _isModernSystemAvailable = false;
                         _modernProcessor = null;
                         _modernAnalyzer = null;
                     }
                 }
-
-                if (!_isModernSystemAvailable)
-                    LogHelper.WriteLogToFile("墨迹识别管理器：使用IACore墨迹识别系统");
 
                 _isInitialized = true;
             }
@@ -86,7 +81,7 @@ namespace Ink_Canvas.Helpers
                 if (ShapeRecognitionRouter.ResolveUseWinRt(mode)
                     && WinRtInkShapeRecognizer.IsApiAvailable)
                 {
-                    return RunWinRtOrLogAsync(strokes);
+                    return RecognizeShapeWinRtOnDispatcherContext(strokes);
                 }
 
                 var legacy = InkRecognizeHelper.RecognizeShapeIACore(strokes);
@@ -99,17 +94,10 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private static async Task<InkShapeRecognitionResult> RunWinRtOrLogAsync(StrokeCollection strokes)
+        private static async Task<InkShapeRecognitionResult> RecognizeShapeWinRtOnDispatcherContext(
+            StrokeCollection strokes)
         {
-            try
-            {
-                return await WinRtInkShapeRecognizer.RecognizeShapeAsync(strokes).ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile("WinRT 墨迹形状识别异常: " + ex, LogHelper.LogType.Error);
-                return InkShapeRecognitionResult.Empty;
-            }
+            return await WinRtInkShapeRecognizer.RecognizeShapeAsync(strokes).ConfigureAwait(true);
         }
 
         public Task<StrokeCollection> CorrectInkAsync(

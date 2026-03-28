@@ -67,27 +67,16 @@ namespace Ink_Canvas.Helpers
                 }
 
                 if (added == 0)
-                {
-                    LogHelper.WriteLogToFile(
-                        "WinRT 形状识别：未能从 WPF 笔迹生成 InkStroke（检查 StylusPoints/DrawingAttributes）。",
-                        LogHelper.LogType.Warning);
                     return InkShapeRecognitionResult.Empty;
-                }
 
                 await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(true);
 
                 var drawing = FindPrimaryDrawing(analyzer);
                 if (drawing == null)
-                {
-                    LogHelper.WriteLogToFile("WinRT 形状识别：分析完成但未找到 InkAnalysisInkDrawing 节点。", LogHelper.LogType.Trace);
                     return InkShapeRecognitionResult.Empty;
-                }
 
                 if (drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
-                {
-                    LogHelper.WriteLogToFile("WinRT 形状识别：结果为 Drawing（未识别为规则形状）。", LogHelper.LogType.Trace);
                     return InkShapeRecognitionResult.Empty;
-                }
 
                 var name = MapDrawingKindToShapeName(drawing.DrawingKind);
                 if (string.IsNullOrEmpty(name) || name == "Drawing")
@@ -105,9 +94,8 @@ namespace Ink_Canvas.Helpers
 
                 return new InkShapeRecognitionResult(name, centroid, hot, w, h, toRemove);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogHelper.WriteLogToFile("WinRtInkShapeRecognizer 异常: " + ex, LogHelper.LogType.Error);
                 return InkShapeRecognitionResult.Empty;
             }
         }
