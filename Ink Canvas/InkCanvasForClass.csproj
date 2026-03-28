@@ -26,6 +26,7 @@
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU;x86;x64;ARM64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>embedded</DebugType>
@@ -59,11 +60,11 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Title>InkCanvasForClass</Title>
-    <Version>5.0.4</Version>
-    <Authors>Dubi906w</Authors>
+    <Version>1.7.X</Version>
+    <Authors>CJK_mkp</Authors>
     <Product>InkCanvasForClass</Product>
-    <Copyright>© Copyright HARKOTEK Studio 2024-now</Copyright>
-    <PackageProjectUrl>https://icc.bliemhax.com</PackageProjectUrl>
+    <Copyright>© Copyright  CJK_mkp 2025-now</Copyright>
+    <PackageProjectUrl>https://inkcanvasforclass.github.io</PackageProjectUrl>
     <FileVersion>bundled</FileVersion>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
