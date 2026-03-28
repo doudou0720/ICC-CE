@@ -60,7 +60,7 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Title>InkCanvasForClass</Title>
-    <Version>1.7.X</Version>
+    <Version>1.7</Version>
     <Authors>CJK_mkp</Authors>
     <Product>InkCanvasForClass</Product>
     <Copyright>© Copyright  CJK_mkp 2025-now</Copyright>
