@@ -1128,7 +1128,7 @@
                                         </ComboBox>
                                     </ikw:SimpleStackPanel>
                                     <TextBlock Text="{i18n:I18n Key=InkRecog_InkStrokePredictionHint}" TextWrapping="Wrap"
-                                               Foreground="#a1a1aa" HorizontalAlignment="Stretch" />
+                                               Foreground="#a1a1aa" MaxWidth="400" HorizontalAlignment="Left" />
                                     <ikw:SimpleStackPanel Spacing="6"
                                                          Visibility="{Binding ElementName=ToggleSwitchEnableInkToShape, Path=IsOn, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
