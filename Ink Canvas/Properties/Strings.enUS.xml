@@ -224,6 +224,8 @@
   <data name="Gesture_PalmHint" xml:space="preserve"><value># Low: larger area/more touches required (less false positive); High: easier to trigger but may mis-detect fingers.</value></data>
   <data name="InkRecog_Title" xml:space="preserve"><value>Ink correction</value></data>
   <data name="InkRecog_EnableInkRecognition" xml:space="preserve"><value>Enable ink recognition</value></data>
+  <data name="InkRecog_InkStrokePrediction" xml:space="preserve"><value>Ink stroke prediction</value></data>
+  <data name="InkRecog_InkStrokePredictionHint" xml:space="preserve"><value># When on, shows a short ahead-of-stroke hint while inking. Choose Auto (speed-based), 25 ms, or 50 ms lead.</value></data>
   <data name="InkRecog_BlockRectFakePressure" xml:space="preserve"><value>Block fake pressure on corrected rectangles</value></data>
   <data name="InkRecog_BlockTriFakePressure" xml:space="preserve"><value>Block fake pressure on corrected triangles</value></data>
   <data name="InkRecog_FixTriangle" xml:space="preserve"><value>Correct freehand triangles</value></data>

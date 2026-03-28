@@ -26,10 +26,8 @@ namespace Ink_Canvas
             {
                 bool on = Settings?.Canvas != null && Settings.Canvas.EnableInkStrokePrediction;
                 var v = on ? Visibility.Visible : Visibility.Collapsed;
-                if (ComboBoxInkStrokePredictionLead != null)
-                    ComboBoxInkStrokePredictionLead.Visibility = v;
-                if (BoardComboBoxInkStrokePredictionLead != null)
-                    BoardComboBoxInkStrokePredictionLead.Visibility = v;
+                if (ComboBoxInkStrokePredictionLeadSettings != null)
+                    ComboBoxInkStrokePredictionLeadSettings.Visibility = v;
             }
             catch
             {

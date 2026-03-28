@@ -955,14 +955,10 @@ namespace Ink_Canvas
                 if (leadMode < 0 || leadMode > 2) leadMode = 0;
                 Settings.Canvas.InkStrokePredictionLeadMode = leadMode;
 
-                if (ToggleSwitchInkStrokePredictionPanel != null)
-                    ToggleSwitchInkStrokePredictionPanel.IsOn = Settings.Canvas.EnableInkStrokePrediction;
-                if (BoardToggleSwitchInkStrokePredictionPanel != null)
-                    BoardToggleSwitchInkStrokePredictionPanel.IsOn = Settings.Canvas.EnableInkStrokePrediction;
-                if (ComboBoxInkStrokePredictionLead != null)
-                    ComboBoxInkStrokePredictionLead.SelectedIndex = leadMode;
-                if (BoardComboBoxInkStrokePredictionLead != null)
-                    BoardComboBoxInkStrokePredictionLead.SelectedIndex = leadMode;
+                if (ToggleSwitchInkStrokePredictionSettings != null)
+                    ToggleSwitchInkStrokePredictionSettings.IsOn = Settings.Canvas.EnableInkStrokePrediction;
+                if (ComboBoxInkStrokePredictionLeadSettings != null)
+                    ComboBoxInkStrokePredictionLeadSettings.SelectedIndex = leadMode;
                 SyncInkStrokePredictionLeadComboVisibility();
             }
             else
