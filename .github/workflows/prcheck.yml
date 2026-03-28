@@ -1,9 +1,11 @@
 name: .NET Build & Package
 
 on:
-  push:
+  pull_request:
+    types: [opened, synchronize]
     branches: [ main, beta ]
-  workflow_dispatch:
+    paths-ignore:
+      - '**/*.md'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ github.head_ref || github.sha }}
@@ -31,16 +33,11 @@ jobs:
       
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
-        with:
-          cache: true
-          cache-dependency-path: '**/packages.lock.json'
       
       - name: Restore Package 
         run: dotnet restore "Ink Canvas.sln" --locked-mode
       
       - name: Build the Solution
-        env:
-          DLASS_SENTRY_DSN: ${{ secrets.DLASS_SENTRY_DSN }}
         run: msbuild /p:platform="${{ matrix.architecture }}" /p:configuration="Debug" /p:GitFlow="$GITFLOW" "Ink Canvas/InkCanvasForClass.csproj" /m /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /verbosity:minimal -maxcpucount /p:RunAnalyzers=false
 
       - name: Check if exe file is generated
