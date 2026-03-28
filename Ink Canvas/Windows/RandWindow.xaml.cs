@@ -1,10 +1,8 @@
 using Ink_Canvas.Helpers;
-using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;

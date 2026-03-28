@@ -346,7 +346,7 @@ namespace Ink_Canvas
         protected override void OnClosing(CancelEventArgs e)
         {
             downloadCts?.Cancel();
-            
+
             try
             {
                 // 获取主窗口实例
@@ -361,7 +361,7 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"显示主窗口时出错: {ex.Message}", LogHelper.LogType.Error);
             }
-            
+
             base.OnClosing(e);
         }
 

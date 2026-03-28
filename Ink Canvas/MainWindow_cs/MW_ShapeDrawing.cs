@@ -1,6 +1,6 @@
 using Ink_Canvas.Helpers;
-using iNKORE.UI.WPF.Modern.Controls;
 using iNKORE.UI.WPF.Modern.Common.IconKeys;
+using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -2565,7 +2565,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            HandleEraserOperationEnded(); 
+            HandleEraserOperationEnded();
             inkCanvas.ReleaseMouseCapture();
             ViewboxFloatingBar.IsHitTestVisible = true;
             BlackboardUIGridForInkReplay.IsHitTestVisible = true;

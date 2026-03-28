@@ -1,14 +1,13 @@
+using OSVersionExtension;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
-using OSVersionExtension;
-using WinRtInkAnalyzer = global::Windows.UI.Input.Inking.Analysis.InkAnalyzer;
 using SysPoint = System.Windows.Point;
+using WinRtInkAnalyzer = global::Windows.UI.Input.Inking.Analysis.InkAnalyzer;
 
 namespace Ink_Canvas.Helpers
 {
