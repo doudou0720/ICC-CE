@@ -14,6 +14,8 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
+        private bool _isAreaScreenshotInProgress;
+
         /// <summary>
         /// 在切页/加页场景下使用：先捕获当前画面到内存并克隆墨迹，然后立即返回；截图与墨迹保存在后台异步执行，不阻塞切页。
         /// 调用方应在调用本方法后立即执行 SaveStrokes、ClearStrokes、切页、RestoreStrokes 等逻辑。
@@ -157,13 +159,98 @@ namespace Ink_Canvas
                 SaveInkCanvasStrokes(false);
         }
 
+        private struct AnnotationSuspendState
+        {
+            public bool WasInAnnotationMode;
+            public int OriginalMode;
+            public System.Windows.Media.Brush OriginalFakeBackground;
+            public double OriginalFakeBackgroundOpacity;
+            public Visibility OriginalBackgroundCoverHolderVisibility;
+            public Visibility OriginalCanvasControlsVisibility;
+            public object OriginalHideInkCanvasContent;
+        }
+
+        private AnnotationSuspendState SuspendAnnotationForAreaScreenshotIfNeeded()
+        {
+            var state = new AnnotationSuspendState
+            {
+                WasInAnnotationMode = GridTransparencyFakeBackground.Background != System.Windows.Media.Brushes.Transparent,
+                OriginalMode = currentMode,
+                OriginalFakeBackground = GridTransparencyFakeBackground.Background,
+                OriginalFakeBackgroundOpacity = GridTransparencyFakeBackground.Opacity,
+                OriginalBackgroundCoverHolderVisibility = GridBackgroundCoverHolder.Visibility,
+                OriginalCanvasControlsVisibility = StackPanelCanvasControls.Visibility,
+                OriginalHideInkCanvasContent = BtnHideInkCanvas.Content
+            };
+
+            if (!state.WasInAnnotationMode)
+            {
+                return state;
+            }
+
+            // 仅暂停批注视觉态，避免调用 BtnHideInkCanvas_Click 触发自动截图/上传及白板状态读写。
+            GridTransparencyFakeBackground.Opacity = 0;
+            GridTransparencyFakeBackground.Background = System.Windows.Media.Brushes.Transparent;
+            GridBackgroundCoverHolder.Visibility = Visibility.Collapsed;
+            StackPanelCanvasControls.Visibility = Visibility.Collapsed;
+            CheckEnableTwoFingerGestureBtnVisibility(false);
+            HideSubPanels("cursor");
+            BtnHideInkCanvas.Content = "显示\n画板";
+
+            return state;
+        }
+
+        private void RestoreAnnotationAfterAreaScreenshot(AnnotationSuspendState state)
+        {
+            if (!state.WasInAnnotationMode || currentMode != state.OriginalMode)
+            {
+                return;
+            }
+
+            GridTransparencyFakeBackground.Opacity = state.OriginalFakeBackgroundOpacity;
+            GridTransparencyFakeBackground.Background = state.OriginalFakeBackground;
+            GridBackgroundCoverHolder.Visibility = state.OriginalBackgroundCoverHolderVisibility;
+            StackPanelCanvasControls.Visibility = state.OriginalCanvasControlsVisibility;
+            CheckEnableTwoFingerGestureBtnVisibility(state.OriginalCanvasControlsVisibility == Visibility.Visible);
+            BtnHideInkCanvas.Content = state.OriginalHideInkCanvasContent;
+        }
+
         internal async Task SaveAreaScreenShotToDesktop()
         {
-            var originalVisibility = Visibility;
+            if (_isAreaScreenshotInProgress)
+            {
+                ShowNotification("截图进行中，请先完成当前截图");
+                return;
+            }
+
+            _isAreaScreenshotInProgress = true;
+
+            var annotationState = SuspendAnnotationForAreaScreenshotIfNeeded();
+            var originalFloatingBarVisibility = ViewboxFloatingBar.Visibility;
+            var shouldRestoreFloatingBarVisibility = true;
             try
             {
-                Visibility = Visibility.Hidden;
-                await Task.Delay(200);
+                if (annotationState.WasInAnnotationMode)
+                {
+                    // 等待一次 UI 刷新，确保批注暂停状态已完成。
+                    await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Render);
+                }
+
+                // 从浮动栏触发选区截图时，临时隐藏浮动栏，避免遮挡选区与误入截图。
+                if (originalFloatingBarVisibility == Visibility.Visible)
+                {
+                    ViewboxFloatingBar.Visibility = Visibility.Collapsed;
+                    await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Render);
+                }
+
+                // 选区截图时确保墨迹层可见，避免从浮动栏触发时出现“先隐藏再截图”。
+                if (inkCanvas.Visibility != Visibility.Visible)
+                {
+                    inkCanvas.Visibility = Visibility.Visible;
+                }
+
+                // 等待一次 UI 刷新，确保可见性状态已生效。
+                await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Render);
 
                 var screenshotResult = await ShowScreenshotSelector();
 
@@ -175,7 +262,12 @@ namespace Ink_Canvas
 
                 if (screenshotResult.Value.AddToWhiteboard)
                 {
-                    await AddScreenshotToNewWhiteboardPage(screenshotResult.Value);
+                    // 仅在白板接管流程已确认完成时，才跳过本方法对浮动栏可见性的恢复。
+                    var whiteboardHandoffCompleted = await AddScreenshotToNewWhiteboardPage(screenshotResult.Value);
+                    if (whiteboardHandoffCompleted)
+                    {
+                        shouldRestoreFloatingBarVisibility = false;
+                    }
                     return;
                 }
 
@@ -189,7 +281,7 @@ namespace Ink_Canvas
                     Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
                     $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
 
-                using (var originalBitmap = CaptureScreenArea(screenshotResult.Value.Area))
+                using (var originalBitmap = CaptureScreenAreaWithOptionalInk(screenshotResult.Value.Area, screenshotResult.Value.IncludeInk))
                 {
                     if (originalBitmap == null)
                     {
@@ -235,11 +327,16 @@ namespace Ink_Canvas
             }
             finally
             {
-                Visibility = originalVisibility;
+                _isAreaScreenshotInProgress = false;
+                if (shouldRestoreFloatingBarVisibility)
+                {
+                    ViewboxFloatingBar.Visibility = originalFloatingBarVisibility;
+                }
+                RestoreAnnotationAfterAreaScreenshot(annotationState);
             }
         }
 
-        private async Task AddScreenshotToNewWhiteboardPage(ScreenshotResult screenshotResult)
+        private async Task<bool> AddScreenshotToNewWhiteboardPage(ScreenshotResult screenshotResult)
         {
             // 先在当前场景准备截图数据，再进白板，避免误截到白板页面
             BitmapSource bitmapSourceForClipboard = null;
@@ -259,15 +356,15 @@ namespace Ink_Canvas
                 if (screenshotResult.Area.Width <= 0 || screenshotResult.Area.Height <= 0)
                 {
                     ShowNotification("未选择有效截图区域");
-                    return;
+                    return false;
                 }
 
-                using (var originalBitmap = CaptureScreenArea(screenshotResult.Area))
+                using (var originalBitmap = CaptureScreenAreaWithOptionalInk(screenshotResult.Area, screenshotResult.IncludeInk))
                 {
                     if (originalBitmap == null)
                     {
                         ShowNotification("截图失败");
-                        return;
+                        return false;
                     }
 
                     Bitmap finalBitmap = originalBitmap;
@@ -296,7 +393,7 @@ namespace Ink_Canvas
             if (bitmapSourceForClipboard == null)
             {
                 ShowNotification("截图转换失败");
-                return;
+                return false;
             }
 
             // 图像已拷贝到内存后再进入白板
@@ -311,6 +408,7 @@ namespace Ink_Canvas
             BtnWhiteBoardAdd_Click(null, EventArgs.Empty);
 
             await InsertBitmapSourceToCanvas(bitmapSourceForClipboard);
+            return true;
         }
 
         /// <summary>
