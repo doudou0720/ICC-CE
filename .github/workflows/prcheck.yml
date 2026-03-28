@@ -67,14 +67,14 @@ jobs:
           echo "archive_name=$version" >> $env:GITHUB_OUTPUT
       
       - name: Upload Artifact(AnyCPU) (if build succeeded)
-        if: steps.check-exe.outputs.build_success == 'true' and matrix.architecture == 'AnyCPU'
+        if: steps.check-exe.outputs.build_success == 'true' && matrix.architecture == 'AnyCPU'
         uses: actions/upload-artifact@v7
         with:
           name: InkCanvasForClass.CE.debug
           path: "Ink Canvas/bin/Debug/net472/*"
         
       - name: Upload Artifact(x86) (if build succeeded)
-        if: steps.check-exe.outputs.build_success == 'true' and matrix.architecture == 'x86'
+        if: steps.check-exe.outputs.build_success == 'true' && matrix.architecture == 'x86'
         uses: actions/upload-artifact@v7
         with:
           name: InkCanvasForClass.CE.debug.x86
