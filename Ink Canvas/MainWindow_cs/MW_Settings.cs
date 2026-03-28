@@ -3952,6 +3952,16 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ComboBoxShapeRecognitionEngine_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!isLoaded || ComboBoxShapeRecognitionEngine == null) return;
+            int idx = ComboBoxShapeRecognitionEngine.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx > 2) idx = 2;
+            Settings.InkToShape.ShapeRecognitionEngine = idx;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchEnableInkToShapeNoFakePressureTriangle_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;

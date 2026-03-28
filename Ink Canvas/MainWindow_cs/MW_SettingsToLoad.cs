@@ -1040,6 +1040,13 @@ namespace Ink_Canvas
             {
                 ToggleSwitchEnableInkToShape.IsOn = Settings.InkToShape.IsInkToShapeEnabled;
 
+                if (ComboBoxShapeRecognitionEngine != null)
+                {
+                    int eng = Settings.InkToShape.ShapeRecognitionEngine;
+                    if (eng < 0 || eng > 2) eng = 0;
+                    ComboBoxShapeRecognitionEngine.SelectedIndex = eng;
+                }
+
                 ToggleSwitchEnableInkToShapeNoFakePressureRectangle.IsOn =
                     Settings.InkToShape.IsInkToShapeNoFakePressureRectangle;
 

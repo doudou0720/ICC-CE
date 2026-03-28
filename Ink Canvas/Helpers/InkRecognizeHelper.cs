@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Media;
@@ -7,8 +7,8 @@ namespace Ink_Canvas.Helpers
 {
     public class InkRecognizeHelper
     {
-        //识别形状
-        public static ShapeRecognizeResult RecognizeShape(StrokeCollection strokes)
+        /// <summary>IACore / IAWinFX 形状识别（典型用于 32 位进程）。</summary>
+        public static ShapeRecognizeResult RecognizeShapeIACore(StrokeCollection strokes)
         {
             if (strokes == null || strokes.Count == 0)
                 return default;
@@ -50,6 +50,66 @@ namespace Ink_Canvas.Helpers
             }
 
             return default;
+        }
+
+        /// <summary>兼容旧调用：等价于 <see cref="RecognizeShapeIACore"/>。</summary>
+        public static ShapeRecognizeResult RecognizeShape(StrokeCollection strokes) =>
+            RecognizeShapeIACore(strokes);
+
+        /// <summary>按设置选择 WinRT 或 IACore，返回统一识别结果。</summary>
+        public static InkShapeRecognitionResult RecognizeShapeUnified(
+            StrokeCollection strokes,
+            ShapeRecognitionEngineMode mode)
+        {
+            if (strokes == null || strokes.Count == 0)
+                return InkShapeRecognitionResult.Empty;
+
+            if (ShapeRecognitionRouter.ResolveUseWinRt(mode))
+                return WinRtInkShapeRecognizer.RecognizeShape(strokes);
+
+            var legacy = RecognizeShapeIACore(strokes);
+            return FromIACoreOrEmpty(legacy);
+        }
+
+        public static void WarmupShapeRecognition(ShapeRecognitionEngineMode mode)
+        {
+            try
+            {
+                if (ShapeRecognitionRouter.ResolveUseWinRt(mode))
+                    WinRtInkShapeRecognizer.Warmup();
+                else
+                    RecognizeShapeIACore(new StrokeCollection());
+            }
+            catch
+            {
+                // 预热失败不影响启动
+            }
+        }
+
+        internal static InkShapeRecognitionResult FromIACoreOrEmpty(ShapeRecognizeResult legacy)
+        {
+            if (legacy?.InkDrawingNode == null)
+                return InkShapeRecognitionResult.Empty;
+
+            var node = legacy.InkDrawingNode;
+            var shape = node.GetShape();
+            var hot = ClonePointCollection(node.HotPoints);
+            return new InkShapeRecognitionResult(
+                node.GetShapeName(),
+                legacy.Centroid,
+                hot,
+                shape.Width,
+                shape.Height,
+                node.Strokes);
+        }
+
+        private static PointCollection ClonePointCollection(PointCollection src)
+        {
+            var dst = new PointCollection();
+            if (src == null) return dst;
+            foreach (System.Windows.Point p in src)
+                dst.Add(p);
+            return dst;
         }
 
         public static bool IsContainShapeType(string name)
