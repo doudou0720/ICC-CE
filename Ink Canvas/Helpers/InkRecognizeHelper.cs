@@ -26,19 +26,29 @@ namespace Ink_Canvas.Helpers
                 var alternates = analyzer.GetAlternates();
                 if (alternates.Count > 0)
                 {
-                    while ((!alternates[0].Strokes.Contains(strokes.Last()) ||
-                        !IsContainShapeType(((InkDrawingNode)alternates[0].AlternateNodes[0]).GetShapeName()))
-                        && strokesCount >= 2)
+                    while (strokesCount >= 2)
                     {
+                        var alt0 = alternates[0];
+                        if (alt0?.AlternateNodes == null || alt0.AlternateNodes.Count == 0)
+                            break;
+                        var drawNode = alt0.AlternateNodes[0] as InkDrawingNode;
+                        if (drawNode == null)
+                            break;
+                        var shapeOk = IsContainShapeType(drawNode.GetShapeName());
+                        if (alt0.Strokes.Contains(strokes.Last()) && shapeOk)
+                            break;
                         analyzer.RemoveStroke(strokes[strokes.Count - strokesCount]);
                         strokesCount--;
                         sfsaf = analyzer.Analyze();
                         if (sfsaf.Successful)
-                        {
                             alternates = analyzer.GetAlternates();
-                        }
+                        else
+                            break;
+                        if (alternates.Count == 0)
+                            break;
                     }
-                    analysisAlternate = alternates[0];
+                    if (alternates.Count > 0)
+                        analysisAlternate = alternates[0];
                 }
             }
 
@@ -47,6 +57,8 @@ namespace Ink_Canvas.Helpers
             if (analysisAlternate != null && analysisAlternate.AlternateNodes.Count > 0)
             {
                 var node = analysisAlternate.AlternateNodes[0] as InkDrawingNode;
+                if (node == null)
+                    return default;
                 return new ShapeRecognizeResult(node.Centroid, node.HotPoints, analysisAlternate, node);
             }
 

@@ -30,17 +30,17 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>embedded</DebugType>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Prefer32Bit>True</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='x86 Debug|AnyCPU'">
     <DebugType>embedded</DebugType>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Prefer32Bit>True</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>embedded</DebugType>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Prefer32Bit>True</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\icc.ico</ApplicationIcon>

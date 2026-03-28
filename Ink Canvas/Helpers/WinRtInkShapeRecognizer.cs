@@ -46,41 +46,70 @@ namespace Ink_Canvas.Helpers
         /// <summary>由 <see cref="ModernInkProcessor"/> / <see cref="InkRecognitionManager"/> 在 UI 上 await（勿在收笔回调中同步阻塞）。</summary>
         internal static async Task<InkShapeRecognitionResult> RecognizeShapeAsync(StrokeCollection strokes)
         {
-            var analyzer = new WinRtInkAnalyzer();
-            foreach (Stroke s in strokes)
+            if (!IsApiAvailable || strokes == null || strokes.Count == 0)
+                return InkShapeRecognitionResult.Empty;
+
+            try
             {
-                var inkStroke = CreateInkStrokeFromWpf(s);
-                if (inkStroke == null)
-                    continue;
+                var analyzer = new WinRtInkAnalyzer();
+                var added = 0;
+                foreach (Stroke s in strokes)
+                {
+                    var inkStroke = CreateInkStrokeFromWpf(s);
+                    if (inkStroke == null)
+                        continue;
 
-                analyzer.AddDataForStroke(inkStroke);
-                analyzer.SetStrokeDataKind(
-                    inkStroke.Id,
-                    global::Windows.UI.Input.Inking.Analysis.InkAnalysisStrokeKind.Drawing);
+                    analyzer.AddDataForStroke(inkStroke);
+                    analyzer.SetStrokeDataKind(
+                        inkStroke.Id,
+                        global::Windows.UI.Input.Inking.Analysis.InkAnalysisStrokeKind.Drawing);
+                    added++;
+                }
+
+                if (added == 0)
+                {
+                    LogHelper.WriteLogToFile(
+                        "WinRT 形状识别：未能从 WPF 笔迹生成 InkStroke（检查 StylusPoints/DrawingAttributes）。",
+                        LogHelper.LogType.Warning);
+                    return InkShapeRecognitionResult.Empty;
+                }
+
+                await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(true);
+
+                var drawing = FindPrimaryDrawing(analyzer);
+                if (drawing == null)
+                {
+                    LogHelper.WriteLogToFile("WinRT 形状识别：分析完成但未找到 InkAnalysisInkDrawing 节点。", LogHelper.LogType.Trace);
+                    return InkShapeRecognitionResult.Empty;
+                }
+
+                if (drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
+                {
+                    LogHelper.WriteLogToFile("WinRT 形状识别：结果为 Drawing（未识别为规则形状）。", LogHelper.LogType.Trace);
+                    return InkShapeRecognitionResult.Empty;
+                }
+
+                var name = MapDrawingKindToShapeName(drawing.DrawingKind);
+                if (string.IsNullOrEmpty(name) || name == "Drawing")
+                    return InkShapeRecognitionResult.Empty;
+
+                var winPts = CopyWinRtPoints(drawing);
+                var hot = ToWpfPointCollection(winPts);
+                var c = drawing.Center;
+                var centroid = new SysPoint(c.X, c.Y);
+                BoundsFromPoints(winPts, out double w, out double h);
+
+                var toRemove = new StrokeCollection();
+                foreach (Stroke s in strokes)
+                    toRemove.Add(s);
+
+                return new InkShapeRecognitionResult(name, centroid, hot, w, h, toRemove);
             }
-
-            await analyzer.AnalyzeAsync().AsTask().ConfigureAwait(true);
-
-            var drawing = FindPrimaryDrawing(analyzer);
-            if (drawing == null ||
-                drawing.DrawingKind == global::Windows.UI.Input.Inking.Analysis.InkAnalysisDrawingKind.Drawing)
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile("WinRtInkShapeRecognizer 异常: " + ex, LogHelper.LogType.Error);
                 return InkShapeRecognitionResult.Empty;
-
-            var name = MapDrawingKindToShapeName(drawing.DrawingKind);
-            if (string.IsNullOrEmpty(name) || name == "Drawing")
-                return InkShapeRecognitionResult.Empty;
-
-            var winPts = CopyWinRtPoints(drawing);
-            var hot = ToWpfPointCollection(winPts);
-            var c = drawing.Center;
-            var centroid = new SysPoint(c.X, c.Y);
-            BoundsFromPoints(winPts, out double w, out double h);
-
-            var toRemove = new StrokeCollection();
-            foreach (Stroke s in strokes)
-                toRemove.Add(s);
-
-            return new InkShapeRecognitionResult(name, centroid, hot, w, h, toRemove);
+            }
         }
 
         private static global::Windows.UI.Input.Inking.InkStroke CreateInkStrokeFromWpf(Stroke stroke)
@@ -117,7 +146,8 @@ namespace Ink_Canvas.Helpers
         {
             global::Windows.UI.Input.Inking.Analysis.InkAnalysisInkDrawing best = null;
             double bestArea = -1;
-            Visit(analyzer.AnalysisRoot);
+            if (analyzer?.AnalysisRoot != null)
+                Visit(analyzer.AnalysisRoot);
             return best;
 
             void Visit(global::Windows.UI.Input.Inking.Analysis.IInkAnalysisNode node)
@@ -135,7 +165,11 @@ namespace Ink_Canvas.Helpers
                     }
                 }
 
-                foreach (var child in node.Children)
+                // WinRT IInkAnalysisNode.Children 可能为 null，不可直接 foreach。
+                var children = node.Children;
+                if (children == null) return;
+
+                foreach (var child in children)
                     Visit(child);
             }
         }

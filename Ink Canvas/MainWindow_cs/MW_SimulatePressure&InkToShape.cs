@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,6 +39,9 @@ namespace Ink_Canvas
         /// 存储圆形形状的列表
         /// </summary>
         private List<Circle> circles = new List<Circle>();
+
+        /// <summary>串行执行墨迹转形状（尤其 WinRT 异步延后），避免多笔 BeginInvoke 交错修改 newStrokes。</summary>
+        private static readonly SemaphoreSlim InkToShapeSerial = new SemaphoreSlim(1, 1);
 
 
 
@@ -390,6 +394,7 @@ namespace Ink_Canvas
                 {
                     async Task InkToShapeProcessCoreAsync()
                     {
+                        await InkToShapeSerial.WaitAsync().ConfigureAwait(true);
                         try
                         {
                             newStrokes.Add(e.Stroke);
@@ -713,6 +718,10 @@ namespace Ink_Canvas
                             }
                         }
                         catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                        finally
+                        {
+                            InkToShapeSerial.Release();
+                        }
                     }
 
                     void InkToShapeProcess()
@@ -730,7 +739,7 @@ namespace Ink_Canvas
                                 {
                                     System.Diagnostics.Debug.WriteLine(ex);
                                 }
-                            }), DispatcherPriority.Background);
+                            }), DispatcherPriority.Normal);
                             return;
                         }
 
