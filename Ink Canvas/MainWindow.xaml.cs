@@ -1331,6 +1331,7 @@ namespace Ink_Canvas
             if (Settings.Startup.IsFoldAtStartup && !App.StartWithBoardMode && !App.StartWithShowMode)
             {
                 FoldFloatingBar_MouseUp(new object(), null);
+                ScheduleStartupFoldAbsenceVerification();
             }
 
             // 恢复崩溃后操作设置
