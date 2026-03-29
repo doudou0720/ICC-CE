@@ -35,6 +35,8 @@
             SelectionChanged="OnNavigationViewSelectionChanged"
             BackRequested="OnNavigationViewBackRequested"
             IsSettingsVisible="True"
+            IsBackButtonVisible="Visible"
+            IsBackEnabled="True"
             PaneDisplayMode="Auto"
             ScrollViewer.VerticalScrollBarVisibility="Hidden"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled">

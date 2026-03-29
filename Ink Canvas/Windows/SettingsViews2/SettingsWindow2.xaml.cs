@@ -25,7 +25,9 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 { "Typography", typeof(Typography) },
                 { "Theme", typeof(Theme) },
                 { "Colors", typeof(Colors) },
-                { "Fonts", typeof(Fonts) }
+                { "Fonts", typeof(Fonts) },
+                { "About", typeof(About) },
+                { "Settings", typeof(SettingsPage) }
             };
 
             // 默认选中第一个项目
@@ -39,8 +41,8 @@ namespace Ink_Canvas.Windows.SettingsViews2
         {
             if (args.IsSettingsSelected)
             {
-                // 暂时导航到 Page1 作为设置页示例
-                NavigateToPage("Page1");
+                // 导航到设置页面
+                NavigateToPage("Settings");
             }
             else if (args.SelectedItem is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem item)
             {
@@ -48,7 +50,7 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 if (item.MenuItems.Count == 0)
                 {
                     // 如果是子导航项，直接导航
-                    var tag = item.Tag as string;
+                    string tag = item.Tag as string;
                     if (!string.IsNullOrEmpty(tag))
                     {
                         NavigateToPage(tag);
@@ -81,16 +83,16 @@ namespace Ink_Canvas.Windows.SettingsViews2
 
         private void OnControlsSearchBoxQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            var query = args.QueryText.ToLower();
-            var allItems = new List<object>();
-            foreach (var item in NavigationViewControl.MenuItems) allItems.Add(item);
-            foreach (var item in NavigationViewControl.FooterMenuItems) allItems.Add(item);
+            string query = args.QueryText.ToLower();
+            List<object> allItems = new List<object>();
+            foreach (object item in NavigationViewControl.MenuItems) allItems.Add(item);
+            foreach (object item in NavigationViewControl.FooterMenuItems) allItems.Add(item);
 
-            foreach (var item in allItems)
+            foreach (object item in allItems)
             {
                 if (item is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem navItem)
                 {
-                    var content = navItem.Content?.ToString().ToLower();
+                    string content = navItem.Content?.ToString().ToLower();
                     if (content != null && content.Contains(query))
                     {
                         NavigationViewControl.SelectedItem = navItem;
@@ -104,18 +106,18 @@ namespace Ink_Canvas.Windows.SettingsViews2
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                var query = sender.Text.ToLower();
-                var suggestions = new List<string>();
+                string query = sender.Text.ToLower();
+                List<string> suggestions = new List<string>();
 
-                var allItems = new List<object>();
-                foreach (var item in NavigationViewControl.MenuItems) allItems.Add(item);
-                foreach (var item in NavigationViewControl.FooterMenuItems) allItems.Add(item);
+                List<object> allItems = new List<object>();
+                foreach (object item in NavigationViewControl.MenuItems) allItems.Add(item);
+                foreach (object item in NavigationViewControl.FooterMenuItems) allItems.Add(item);
 
-                foreach (var item in allItems)
+                foreach (object item in allItems)
                 {
                     if (item is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem navItem)
                     {
-                        var content = navItem.Content?.ToString();
+                        string content = navItem.Content?.ToString();
                         if (content != null && content.ToLower().Contains(query))
                         {
                             suggestions.Add(content);
@@ -138,13 +140,13 @@ namespace Ink_Canvas.Windows.SettingsViews2
         private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
         {
             // 更新NavigationView的选中状态
-            var pageType = e.SourcePageType;
-            foreach (var kvp in _pageTypes)
+            Type pageType = rootFrame.SourcePageType;
+            foreach (KeyValuePair<string, Type> kvp in _pageTypes)
             {
                 if (kvp.Value == pageType)
                 {
                     // 找到对应的NavigationViewItem
-                    var item = FindNavigationViewItemByTag(kvp.Key);
+                    NavigationViewItem item = FindNavigationViewItemByTag(kvp.Key);
                     if (item != null)
                     {
                         NavigationViewControl.SelectedItem = item;
@@ -157,8 +159,8 @@ namespace Ink_Canvas.Windows.SettingsViews2
 
         private NavigationViewItem FindNavigationViewItemByTag(string tag)
         {
-            // 遍历所有菜单项
-            foreach (var item in NavigationViewControl.MenuItems)
+            // 遍历所有主菜单项
+            foreach (object item in NavigationViewControl.MenuItems)
             {
                 if (item is NavigationViewItem navItem)
                 {
@@ -167,7 +169,7 @@ namespace Ink_Canvas.Windows.SettingsViews2
                         return navItem;
                     }
                     // 检查子菜单项
-                    foreach (var child in navItem.MenuItems)
+                    foreach (object child in navItem.MenuItems)
                     {
                         if (child is NavigationViewItem childNavItem)
                         {
@@ -178,6 +180,17 @@ namespace Ink_Canvas.Windows.SettingsViews2
                                 return childNavItem;
                             }
                         }
+                    }
+                }
+            }
+            // 遍历页脚菜单项
+            foreach (object item in NavigationViewControl.FooterMenuItems)
+            {
+                if (item is NavigationViewItem navItem)
+                {
+                    if (navItem.Tag as string == tag)
+                    {
+                        return navItem;
                     }
                 }
             }
