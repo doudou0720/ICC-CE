@@ -1,3 +1,4 @@
+using Ink_Canvas;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -101,7 +102,10 @@ namespace Ink_Canvas.Helpers
             {
                 _ = InkRecognitionManager.Instance;
                 if (ShapeRecognitionRouter.ResolveUseWinRt(mode))
+                {
                     WinRtInkShapeRecognizer.Warmup();
+                    WinRtHandwritingRecognizer.Warmup();
+                }
                 else
                     RecognizeShapeIACore(new StrokeCollection());
             }
@@ -110,6 +114,33 @@ namespace Ink_Canvas.Helpers
                 // 预热失败不影响启动
             }
         }
+
+        /// <summary>WinRT 手写识别（64 位 + Windows 10+）。</summary>
+        public static Task<HandwritingRecognitionResult> RecognizeHandwritingUnifiedAsync(
+            StrokeCollection strokes,
+            ShapeRecognitionEngineMode mode) =>
+            InkRecognitionManager.Instance.RecognizeHandwritingAsync(strokes, mode);
+
+        /// <summary>WinRT 下将识别成功的词替换为手写体字形墨迹；是否应用由设置「WinRT 识别转手写体字形」控制。</summary>
+        public static Task<StrokeCollection> CorrectHandwritingStrokesUnifiedAsync(
+            StrokeCollection strokes,
+            ShapeRecognitionEngineMode mode) =>
+            InkRecognitionManager.Instance.CorrectInkAsync(
+                strokes,
+                mode,
+                MainWindow.Settings?.InkToShape?.EnableWinRtHandwritingStrokeBeautify ?? false,
+                MainWindow.Settings?.InkToShape?.HandwritingCorrectionFontFamily);
+
+        /// <summary>显式指定是否应用手写体字形替换（忽略开关）；字体仍从设置读取。</summary>
+        public static Task<StrokeCollection> CorrectHandwritingStrokesUnifiedAsync(
+            StrokeCollection strokes,
+            ShapeRecognitionEngineMode mode,
+            bool applyHandwritingBeautify) =>
+            InkRecognitionManager.Instance.CorrectInkAsync(
+                strokes,
+                mode,
+                applyHandwritingBeautify,
+                MainWindow.Settings?.InkToShape?.HandwritingCorrectionFontFamily);
 
         internal static InkShapeRecognitionResult FromIACoreOrEmpty(ShapeRecognizeResult legacy)
         {

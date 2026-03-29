@@ -43,7 +43,20 @@ namespace Ink_Canvas
         /// <summary>串行执行墨迹转形状（尤其 WinRT 异步延后），避免多笔 BeginInvoke 交错修改 newStrokes。</summary>
         private static readonly SemaphoreSlim InkToShapeSerial = new SemaphoreSlim(1, 1);
 
+        /// <summary>
+        /// 收笔后待参与「手写体字形替换」的最近笔迹（多笔一字/一词时由 WinRT InkAnalyzer 合并为 InkWord）。
+        /// </summary>
+        private readonly StrokeCollection _handwritingRecentStrokesForBeautify = new StrokeCollection();
 
+        private const int HandwritingBeautifyMaxRecentStrokes = 20;
+
+        /// <summary>手写体矫正：停笔后延迟执行（毫秒），多笔一字时等用户写完再识别。</summary>
+        private const int HandwritingBeautifyDebounceMs = 1000;
+
+        private DispatcherTimer _handwritingBeautifyDebounceTimer;
+
+        /// <summary>每次收笔并入批次时递增；防抖 Tick 携带快照，识别过程中若又有新笔则放弃本轮替换。</summary>
+        private ulong _handwritingBeautifyScheduleRevision;
 
         /// <summary>
         /// 矩形参考线的列表
@@ -387,6 +400,10 @@ namespace Ink_Canvas
                         }
                     }
                 }
+
+                Stroke strokeForHandwritingBeautify = e.Stroke;
+                if (wasStraightened && inkCanvas.Strokes.Count > 0)
+                    strokeForHandwritingBeautify = inkCanvas.Strokes[inkCanvas.Strokes.Count - 1];
 
                 if (ShapeRecognitionRouter.ShouldRunShapeRecognition(
                         Settings.InkToShape.IsInkToShapeEnabled,
@@ -734,6 +751,8 @@ namespace Ink_Canvas
                                 try
                                 {
                                     await InkToShapeProcessCoreAsync();
+                                    if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                                        ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke);
                                 }
                                 catch (Exception ex)
                                 {
@@ -744,9 +763,15 @@ namespace Ink_Canvas
                         }
 
                         InkToShapeProcessCoreAsync().GetAwaiter().GetResult();
+                        if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                            ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke);
                     }
 
                     InkToShapeProcess();
+                }
+                else if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                {
+                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke);
                 }
 
                 foreach (var stylusPoint in e.Stroke.StylusPoints)
@@ -2666,6 +2691,155 @@ namespace Ink_Canvas
 
             // 按角度排序
             return corners.OrderBy(p => Math.Atan2(p.Y - center.Y, p.X - center.X)).ToList();
+        }
+
+        /// <summary>
+        /// 收笔后：在墨迹转形状（若启用）完成之后，将笔画并入批次并启动/重置停笔防抖计时器，再于延迟后多笔合并矫正。
+        /// </summary>
+        private void PruneHandwritingBeautifyBatch()
+        {
+            for (var i = _handwritingRecentStrokesForBeautify.Count - 1; i >= 0; i--)
+            {
+                if (!inkCanvas.Strokes.Contains(_handwritingRecentStrokesForBeautify[i]))
+                    _handwritingRecentStrokesForBeautify.RemoveAt(i);
+            }
+        }
+
+        private void EnsureHandwritingBeautifyDebounceTimer()
+        {
+            if (_handwritingBeautifyDebounceTimer != null)
+                return;
+            _handwritingBeautifyDebounceTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
+            {
+                Interval = TimeSpan.FromMilliseconds(HandwritingBeautifyDebounceMs)
+            };
+            _handwritingBeautifyDebounceTimer.Tick += HandwritingBeautifyDebounceTimer_Tick;
+        }
+
+        /// <summary>并入批次并重置 1s 计时器（多笔需停笔满延迟后才矫正）。</summary>
+        private void ScheduleHandwritingGlyphReplaceAfterStrokeCollected(Stroke strokeForBeautify, bool isBoardBrushStroke)
+        {
+            if (!Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                return;
+            if (isBoardBrushStroke)
+                return;
+            if (strokeForBeautify == null || strokeForBeautify.DrawingAttributes?.IsHighlighter == true)
+                return;
+            if (!inkCanvas.Strokes.Contains(strokeForBeautify))
+                return;
+
+            _handwritingBeautifyScheduleRevision++;
+
+            var alreadyInBatch = false;
+            foreach (Stroke x in _handwritingRecentStrokesForBeautify)
+            {
+                if (ReferenceEquals(x, strokeForBeautify))
+                {
+                    alreadyInBatch = true;
+                    break;
+                }
+            }
+
+            if (!alreadyInBatch)
+                _handwritingRecentStrokesForBeautify.Add(strokeForBeautify);
+
+            PruneHandwritingBeautifyBatch();
+            while (_handwritingRecentStrokesForBeautify.Count > HandwritingBeautifyMaxRecentStrokes)
+                _handwritingRecentStrokesForBeautify.RemoveAt(0);
+
+            EnsureHandwritingBeautifyDebounceTimer();
+            _handwritingBeautifyDebounceTimer.Stop();
+            _handwritingBeautifyDebounceTimer.Interval = TimeSpan.FromMilliseconds(HandwritingBeautifyDebounceMs);
+            _handwritingBeautifyDebounceTimer.Start();
+        }
+
+        private async void HandwritingBeautifyDebounceTimer_Tick(object sender, EventArgs e)
+        {
+            if (_handwritingBeautifyDebounceTimer != null)
+                _handwritingBeautifyDebounceTimer.Stop();
+
+            var revisionWhenIdle = _handwritingBeautifyScheduleRevision;
+            try
+            {
+                await HandwritingGlyphReplaceFromBatchCoreAsync(revisionWhenIdle).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile("[手写体] 停笔防抖矫正异常: " + ex.Message, LogHelper.LogType.Warning);
+                Debug.WriteLine(ex);
+            }
+        }
+
+        private async Task HandwritingGlyphReplaceFromBatchCoreAsync(ulong revisionWhenIdle)
+        {
+            await InkToShapeSerial.WaitAsync().ConfigureAwait(true);
+            try
+            {
+                if (_handwritingBeautifyScheduleRevision != revisionWhenIdle)
+                    return;
+
+                PruneHandwritingBeautifyBatch();
+
+                var input = new StrokeCollection();
+                foreach (Stroke s in _handwritingRecentStrokesForBeautify)
+                {
+                    if (inkCanvas.Strokes.Contains(s))
+                        input.Add(s);
+                }
+
+                if (input.Count == 0)
+                    return;
+                if (_handwritingBeautifyScheduleRevision != revisionWhenIdle)
+                    return;
+
+                var shapeMode = ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine);
+                var result = await InkRecognizeHelper.CorrectHandwritingStrokesUnifiedAsync(input, shapeMode).ConfigureAwait(true);
+
+                if (_handwritingBeautifyScheduleRevision != revisionWhenIdle)
+                    return;
+                if (result == null || result.Count == 0)
+                    return;
+                if (ReferenceEquals(result, input))
+                    return;
+
+                var anyInputStillPresent = false;
+                foreach (Stroke s in input)
+                {
+                    if (inkCanvas.Strokes.Contains(s))
+                    {
+                        anyInputStillPresent = true;
+                        break;
+                    }
+                }
+
+                if (!anyInputStillPresent)
+                    return;
+
+                SetNewBackupOfStroke();
+                _currentCommitType = CommitReason.ShapeRecognition;
+                foreach (Stroke s in input)
+                {
+                    if (inkCanvas.Strokes.Contains(s))
+                        inkCanvas.Strokes.Remove(s);
+                }
+
+                foreach (Stroke s in result)
+                    inkCanvas.Strokes.Add(s);
+                _currentCommitType = CommitReason.UserInput;
+
+                foreach (Stroke s in input)
+                    _handwritingRecentStrokesForBeautify.Remove(s);
+
+                PruneHandwritingBeautifyBatch();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile("[手写体] 收笔替换异常: " + ex.Message, LogHelper.LogType.Warning);
+            }
+            finally
+            {
+                InkToShapeSerial.Release();
+            }
         }
 
         #endregion

@@ -244,6 +244,8 @@
   <data name="InkRecog_ShapeEngineAuto" xml:space="preserve"><value>自动</value></data>
   <data name="InkRecog_ShapeEngineIACore" xml:space="preserve"><value>IACore</value></data>
   <data name="InkRecog_ShapeEngineWinRT" xml:space="preserve"><value>WinRT</value></data>
+  <data name="InkRecog_HandwritingBeautify" xml:space="preserve"><value>WinRT 识别转手写体字形</value></data>
+  <data name="InkRecog_HandwritingBeautifyHint" xml:space="preserve"><value># 开启后，调用墨迹纠正 API 时：先 WinRT 识别手写词，再将识别成功的文字用手写风格字体（默认 Ink Free / 楷体 等，可在设置 JSON 的 handwritingCorrectionFontFamily 调整）转成字形轮廓墨迹替换原笔画。需 64 位与 WinRT。</value></data>
   <data name="InkRecog_BlockRectFakePressure" xml:space="preserve"><value>阻止矫正后的矩形带有模拟压感值</value></data>
   <data name="InkRecog_BlockTriFakePressure" xml:space="preserve"><value>阻止矫正后的三角形带有模拟压感值</value></data>
   <data name="InkRecog_FixTriangle" xml:space="preserve"><value>矫正手绘三角形</value></data>

@@ -747,12 +747,12 @@ namespace Ink_Canvas
         public double LineStraightenSensitivity { get; set; } = 0.20;
         [JsonProperty("lineNormalizationThreshold")]
         public double LineNormalizationThreshold { get; set; } = 0.5;
-
-        /// <summary>
-        /// 形状识别后端：0=自动（x64 用 WinRT，x86 用 IACore），1=IACore，2=WinRT。
-        /// </summary>
         [JsonProperty("shapeRecognitionEngine")]
         public int ShapeRecognitionEngine { get; set; }
+        [JsonProperty("enableWinRtHandwritingStrokeBeautify")]
+        public bool EnableWinRtHandwritingStrokeBeautify { get; set; }
+        [JsonProperty("handwritingCorrectionFontFamily")]
+        public string HandwritingCorrectionFontFamily { get; set; } = "Ink Free,KaiTi,Segoe Script";
     }
 
     public class RandSettings

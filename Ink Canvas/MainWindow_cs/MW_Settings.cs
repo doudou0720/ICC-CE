@@ -3859,7 +3859,8 @@ namespace Ink_Canvas
             Settings.InkToShape.IsInkToShapeTriangle = true;
             Settings.InkToShape.IsInkToShapeRectangle = true;
             Settings.InkToShape.IsInkToShapeRounded = true;
-
+            Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify = false;
+            Settings.InkToShape.HandwritingCorrectionFontFamily = "Ink Free,KaiTi,Segoe Script";
 
             Settings.Startup.IsEnableNibMode = false;
             Settings.Startup.IsAutoUpdate = true;
@@ -3939,6 +3940,15 @@ namespace Ink_Canvas
             if (idx < 0) idx = 0;
             if (idx > 2) idx = 2;
             Settings.InkToShape.ShapeRecognitionEngine = idx;
+            SaveSettingsToFile();
+        }
+
+        private void ToggleSwitchEnableWinRtHandwritingStrokeBeautify_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify =
+                ToggleSwitchEnableWinRtHandwritingStrokeBeautify != null &&
+                ToggleSwitchEnableWinRtHandwritingStrokeBeautify.IsOn;
             SaveSettingsToFile();
         }
 

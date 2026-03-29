@@ -1060,6 +1060,10 @@ namespace Ink_Canvas
                     ComboBoxShapeRecognitionEngine.SelectedIndex = eng;
                 }
 
+                if (ToggleSwitchEnableWinRtHandwritingStrokeBeautify != null)
+                    ToggleSwitchEnableWinRtHandwritingStrokeBeautify.IsOn =
+                        Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify;
+
                 ToggleSwitchEnableInkToShapeNoFakePressureRectangle.IsOn =
                     Settings.InkToShape.IsInkToShapeNoFakePressureRectangle;
 

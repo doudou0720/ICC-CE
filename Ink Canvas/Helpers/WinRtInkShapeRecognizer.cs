@@ -99,7 +99,8 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private static global::Windows.UI.Input.Inking.InkStroke CreateInkStrokeFromWpf(Stroke stroke)
+        /// <summary>供 WinRT 手写等模块复用：将 WPF <see cref="Stroke"/> 转为 WinRT <see cref="global::Windows.UI.Input.Inking.InkStroke"/>。</summary>
+        internal static global::Windows.UI.Input.Inking.InkStroke CreateInkStrokeFromWpf(Stroke stroke)
         {
             if (stroke?.StylusPoints == null || stroke.StylusPoints.Count == 0)
                 return null;

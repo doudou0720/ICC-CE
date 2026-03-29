@@ -229,6 +229,8 @@
   <data name="InkRecog_ShapeEngineAuto" xml:space="preserve"><value>Auto</value></data>
   <data name="InkRecog_ShapeEngineIACore" xml:space="preserve"><value>IACore</value></data>
   <data name="InkRecog_ShapeEngineWinRT" xml:space="preserve"><value>WinRT</value></data>
+  <data name="InkRecog_HandwritingBeautify" xml:space="preserve"><value>WinRT: recognized text to handwriting glyphs</value></data>
+  <data name="InkRecog_HandwritingBeautifyHint" xml:space="preserve"><value># When the ink correction API runs: WinRT recognizes ink words, then replaces recognized text with outline strokes from a handwriting-style font (default Ink Free / KaiTi / Segoe Script; set handwritingCorrectionFontFamily in Settings JSON). 64-bit + WinRT.</value></data>
   <data name="InkRecog_BlockRectFakePressure" xml:space="preserve"><value>Block fake pressure on corrected rectangles</value></data>
   <data name="InkRecog_BlockTriFakePressure" xml:space="preserve"><value>Block fake pressure on corrected triangles</value></data>
   <data name="InkRecog_FixTriangle" xml:space="preserve"><value>Correct freehand triangles</value></data>
