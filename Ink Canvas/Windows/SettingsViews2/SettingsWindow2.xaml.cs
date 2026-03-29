@@ -20,7 +20,12 @@ namespace Ink_Canvas.Windows.SettingsViews2
             _pageTypes = new Dictionary<string, Type>
             {
                 { "Page1", typeof(Page1) },
-                { "Page2", typeof(Page2) }
+                { "Page2", typeof(Page2) },
+                { "Iconography", typeof(Iconography) },
+                { "Typography", typeof(Typography) },
+                { "Theme", typeof(Theme) },
+                { "Colors", typeof(Colors) },
+                { "Fonts", typeof(Fonts) }
             };
 
             // 默认选中第一个项目
@@ -39,11 +44,17 @@ namespace Ink_Canvas.Windows.SettingsViews2
             }
             else if (args.SelectedItem is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem item)
             {
-                var tag = item.Tag as string;
-                if (!string.IsNullOrEmpty(tag))
+                // 检查是否是子导航项（没有子菜单）
+                if (item.MenuItems.Count == 0)
                 {
-                    NavigateToPage(tag);
+                    // 如果是子导航项，直接导航
+                    var tag = item.Tag as string;
+                    if (!string.IsNullOrEmpty(tag))
+                    {
+                        NavigateToPage(tag);
+                    }
                 }
+                // 父级导航项（有子菜单）会自动展开，不需要额外处理
             }
         }
 
@@ -53,20 +64,12 @@ namespace Ink_Canvas.Windows.SettingsViews2
             {
                 try
                 {
-                    if (!_pages.TryGetValue(pageTag, out object page))
+                    // 使用Type参数导航，这样可以正确记录导航历史
+                    rootFrame.Navigate(pageType);
+                    // 更新标题
+                    if (NavigationViewControl.SelectedItem is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem selectedItem)
                     {
-                        page = Activator.CreateInstance(pageType);
-                        _pages[pageTag] = page;
-                    }
-
-                    if (page != null)
-                    {
-                        rootFrame.Navigate(page);
-                        // 更新标题
-                        if (NavigationViewControl.SelectedItem is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem selectedItem)
-                        {
-                            NavigationViewControl.Header = selectedItem.Content;
-                        }
+                        NavigationViewControl.Header = selectedItem.Content;
                     }
                 }
                 catch (Exception ex)
@@ -122,6 +125,63 @@ namespace Ink_Canvas.Windows.SettingsViews2
 
                 sender.ItemsSource = suggestions;
             }
+        }
+
+        private void OnNavigationViewBackRequested(NavigationView sender, NavigationViewBackRequestedEventArgs args)
+        {
+            if (rootFrame.CanGoBack)
+            {
+                rootFrame.GoBack();
+            }
+        }
+
+        private void OnRootFrameNavigated(object sender, NavigationEventArgs e)
+        {
+            // 更新NavigationView的选中状态
+            var pageType = e.SourcePageType;
+            foreach (var kvp in _pageTypes)
+            {
+                if (kvp.Value == pageType)
+                {
+                    // 找到对应的NavigationViewItem
+                    var item = FindNavigationViewItemByTag(kvp.Key);
+                    if (item != null)
+                    {
+                        NavigationViewControl.SelectedItem = item;
+                        NavigationViewControl.Header = item.Content;
+                    }
+                    break;
+                }
+            }
+        }
+
+        private NavigationViewItem FindNavigationViewItemByTag(string tag)
+        {
+            // 遍历所有菜单项
+            foreach (var item in NavigationViewControl.MenuItems)
+            {
+                if (item is NavigationViewItem navItem)
+                {
+                    if (navItem.Tag as string == tag)
+                    {
+                        return navItem;
+                    }
+                    // 检查子菜单项
+                    foreach (var child in navItem.MenuItems)
+                    {
+                        if (child is NavigationViewItem childNavItem)
+                        {
+                            if (childNavItem.Tag as string == tag)
+                            {
+                                // 展开父项
+                                navItem.IsExpanded = true;
+                                return childNavItem;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

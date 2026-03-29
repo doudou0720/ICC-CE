@@ -20,13 +20,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemeResources />
             </ResourceDictionary.MergedDictionaries>
-            <Thickness x:Key="NavigationViewItemOnLeftPresenterMargin">4,2,4,2</Thickness>
-            <Style TargetType="ui:NavigationViewItem">
-                <Setter Property="Height" Value="40" />
-                <Setter Property="MinWidth" Value="48" />
-                <Setter Property="HorizontalContentAlignment" Value="Left" />
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-            </Style>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
@@ -40,7 +33,9 @@
             IsTabStop="False"
             IsTitleBarAutoPaddingEnabled="False"
             SelectionChanged="OnNavigationViewSelectionChanged"
+            BackRequested="OnNavigationViewBackRequested"
             IsSettingsVisible="True"
+            PaneDisplayMode="Auto"
             ScrollViewer.VerticalScrollBarVisibility="Hidden"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ui:NavigationView.HeaderTemplate>
@@ -86,27 +81,61 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem
-                            Content="Account"
-                            Tag="SamplePage2"
-                            ToolTipService.ToolTip="Account">
+                    x:Name="DesignItem"
+                    Content="设计"
+                    Tag="Design">
                     <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Contact}"/>
+                        <ui:SymbolIcon Symbol="Home" />
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
-                                    Content="Mail"
-                                    Tag="SamplePage3"
-                                    ToolTipService.ToolTip="Mail">
+                            x:Name="IconographyItem"
+                            Content="图标"
+                            Tag="Iconography">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Mail}"/>
+                                <ui:SymbolIcon Symbol="Home" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
-                                    Content="Calendar"
-                                    Tag="SamplePage4"
-                                    ToolTipService.ToolTip="Calendar">
+                            x:Name="TypographyItem"
+                            Content="排版"
+                            Tag="Typography">
                             <ui:NavigationViewItem.Icon>
-                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Calendar}"/>
+                                <ui:SymbolIcon Symbol="Home" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem
+                    x:Name="AppearanceItem"
+                    Content="外观"
+                    Tag="Appearance">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Home" />
+                    </ui:NavigationViewItem.Icon>
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem
+                            x:Name="ThemeItem"
+                            Content="主题"
+                            Tag="Theme">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="Home" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            x:Name="ColorsItem"
+                            Content="颜色"
+                            Tag="Colors">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="Home" />
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            x:Name="FontsItem"
+                            Content="字体"
+                            Tag="Fonts">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:SymbolIcon Symbol="Home" />
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
@@ -123,8 +152,8 @@
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.FooterMenuItems>
-            
-            <ui:Frame x:Name="rootFrame" />
+
+            <ui:Frame x:Name="rootFrame" Navigated="OnRootFrameNavigated" />
         </ui:NavigationView>
     </Grid>
 </Window>
