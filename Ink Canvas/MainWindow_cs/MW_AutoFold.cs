@@ -593,7 +593,7 @@ namespace Ink_Canvas
                 await UnFoldFloatingBar(null);
                 await WaitUntilFloatingBarHideModeIdleAsync(TimeSpan.FromSeconds(15)).ConfigureAwait(false);
                 await Task.Delay(200).ConfigureAwait(false);
-                await FoldFloatingBar(null).ConfigureAwait(false);
+                await FoldFloatingBar(new object()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
