@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
     /// <summary>
-    /// Page1.xaml 的交互逻辑
+    /// Startup.xaml 的交互逻辑
     /// </summary>
-    public partial class Page1 : Page
+    public partial class Startup : Page
     {
-        public Page1()
+        public Startup()
         {
             InitializeComponent();
         }

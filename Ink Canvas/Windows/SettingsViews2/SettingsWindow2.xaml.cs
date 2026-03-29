@@ -19,13 +19,16 @@ namespace Ink_Canvas.Windows.SettingsViews2
             // 初始化页面类型映射
             _pageTypes = new Dictionary<string, Type>
             {
-                { "Page1", typeof(Page1) },
+                { "Basic", typeof(Basic) },
                 { "Page2", typeof(Page2) },
+                { "Design", typeof(Design) },
+                { "Appearance", typeof(Appearance) },
                 { "Iconography", typeof(Iconography) },
                 { "Typography", typeof(Typography) },
                 { "Theme", typeof(Theme) },
                 { "Colors", typeof(Colors) },
                 { "Fonts", typeof(Fonts) },
+                { "Startup", typeof(Startup) },
                 { "About", typeof(About) },
                 { "Settings", typeof(SettingsPage) }
             };
@@ -46,21 +49,17 @@ namespace Ink_Canvas.Windows.SettingsViews2
             }
             else if (args.SelectedItem is iNKORE.UI.WPF.Modern.Controls.NavigationViewItem item)
             {
-                // 检查是否是子导航项（没有子菜单）
-                if (item.MenuItems.Count == 0)
+                // 检查是否有Tag，如果有则导航
+                string tag = item.Tag as string;
+                if (!string.IsNullOrEmpty(tag))
                 {
-                    // 如果是子导航项，直接导航
-                    string tag = item.Tag as string;
-                    if (!string.IsNullOrEmpty(tag))
-                    {
-                        NavigateToPage(tag);
-                    }
+                    NavigateToPage(tag);
                 }
                 // 父级导航项（有子菜单）会自动展开，不需要额外处理
             }
         }
 
-        private void NavigateToPage(string pageTag)
+        public void NavigateToPage(string pageTag)
         {
             if (_pageTypes.TryGetValue(pageTag, out Type pageType))
             {
