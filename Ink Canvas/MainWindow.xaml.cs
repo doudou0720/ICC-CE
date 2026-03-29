@@ -2907,6 +2907,18 @@ namespace Ink_Canvas
             }
         }
 
+
+        private async void BtnOpenNewNewSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (isOpeningOrHidingSettingsPane) return;
+            HideSubPanels();
+            {
+                var settingsWindow = new Windows.SettingsViews2.SettingsWindow2();
+                settingsWindow.Owner = this;
+                settingsWindow.ShowDialog();
+            }
+        }
+        
         #endregion 新设置窗口
 
         // 在MainWindow类中添加：
