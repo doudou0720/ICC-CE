@@ -28,7 +28,7 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 { "Theme", typeof(Theme) },
                 { "Colors", typeof(Colors) },
                 { "Fonts", typeof(Fonts) },
-                { "Startup", typeof(Startup) },
+                { "Startupa", typeof(Startupa) },
                 { "About", typeof(About) },
                 { "Settings", typeof(SettingsPage) }
             };

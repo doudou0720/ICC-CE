@@ -18,9 +18,9 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
     /// <summary>
     /// Startup.xaml 的交互逻辑
     /// </summary>
-    public partial class Startup : Page
+    public partial class Startupa : Page
     {
-        public Startup()
+        public Startupa()
         {
             InitializeComponent();
         }
