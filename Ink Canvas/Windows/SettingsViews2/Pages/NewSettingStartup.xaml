@@ -4,14 +4,42 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews2.Pages"
+      xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+      xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+      xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="启动">
 
-    <Grid>
-        <StackPanel Margin="24">
-            <TextBlock Text="启动设置" Style="{DynamicResource TitleTextBlockStyle}" Margin="0,0,0,16" />
-            <TextBlock Text="这里是启动设置页面" Style="{DynamicResource BodyTextBlockStyle}" />
-        </StackPanel>
-    </Grid>
+    <ScrollViewer Padding="20,0">
+        <!--  These styles can be referenced to create a consistent SettingsPage layout  -->
+        <FrameworkElement.Resources>
+            <!--  Spacing between cards  -->
+            <sys:Double x:Key="SettingsCardSpacing">4</sys:Double>
+            <!--  Style (inc. the correct spacing) of a section header  -->
+            <Style x:Key="SettingsSectionHeaderTextBlockStyle"
+                BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+                TargetType="TextBlock">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="1,30,0,6" />
+                </Style.Setters>
+            </Style>
+        </FrameworkElement.Resources>
+        <Grid>
+            <ikw:SimpleStackPanel MaxWidth="1000"
+                HorizontalAlignment="Stretch"
+                Spacing="{StaticResource SettingsCardSpacing}">
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    Text="启动设置" />
+                <ui:SettingsCard Description="系统启动时自动运行软件"
+                        Header="开机时运行">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Glyph="&#xE768;" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:ToggleSwitch Name="ToggleSwitchRunAtStartup" Toggled="ToggleSwitchRunAtStartup_Toggled" />
+                </ui:SettingsCard>
+            </ikw:SimpleStackPanel>
+        </Grid>
+    </ScrollViewer>
 </Page>
