@@ -32,7 +32,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             if (settingsWindow != null)
             {
                 // 调用NavigateToPage方法导航到启动页面
-                settingsWindow.NavigateToPage("Startupa");
+                settingsWindow.NavigateToPage("NewSettingStartup");
             }
         }
     }

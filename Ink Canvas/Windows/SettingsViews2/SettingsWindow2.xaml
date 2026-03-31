@@ -77,9 +77,9 @@
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
-                            x:Name="StartupaItem"
+                            x:Name="NewSettingStartupItem"
                             Content="启动"
-                            Tag="Startupa"
+                            Tag="NewSettingStartup"
                             ToolTipService.ToolTip="启动设置">
                             <ui:NavigationViewItem.Icon>
                                 <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}"/>

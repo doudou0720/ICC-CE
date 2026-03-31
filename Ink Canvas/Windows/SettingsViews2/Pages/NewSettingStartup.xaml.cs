@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
     /// <summary>
-    /// Startup.xaml 的交互逻辑
+    /// NewSettingStartup.xaml 的交互逻辑
     /// </summary>
-    public partial class Startupa : Page
+    public partial class NewSettingStartup : Page
     {
-        public Startupa()
+        public NewSettingStartup()
         {
             InitializeComponent();
         }
