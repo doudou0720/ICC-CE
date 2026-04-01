@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Navigation;
+using System.Windows.Forms;
 
 namespace Ink_Canvas.Windows.SettingsViews2
 {
@@ -38,6 +39,36 @@ namespace Ink_Canvas.Windows.SettingsViews2
             {
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
             }
+
+            // 窗口加载完成后设置最大尺寸，确保能正确获取 DPI 缩放因子
+            this.Loaded += (sender, e) =>
+            {
+                SetMaxWindowSize();
+            };
+        }
+
+        private void SetMaxWindowSize()
+        {
+            // 设置最大高度和宽度为工作区的高度和宽度，分别减去 40 和 10，并考虑 DPI 缩放
+            var workingArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+            
+            // 获取 DPI 缩放因子
+            double dpiScaleX = 1.0;
+            double dpiScaleY = 1.0;
+            var source = System.Windows.PresentationSource.FromVisual(this);
+            if (source != null)
+            {
+                dpiScaleX = source.CompositionTarget.TransformToDevice.M11;
+                dpiScaleY = source.CompositionTarget.TransformToDevice.M22;
+            }
+            
+            // 先将物理像素转换为逻辑像素，再减去边距
+            this.MaxWidth = (workingArea.Width / dpiScaleX) - 10;
+            this.MaxHeight = (workingArea.Height / dpiScaleY) - 40;
+            
+            // 确保窗口居中显示
+            this.Left = (workingArea.Width / dpiScaleX - this.Width) / 2;
+            this.Top = (workingArea.Height / dpiScaleY - this.Height) / 2;
         }
 
         private void OnNavigationViewSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -53,7 +84,11 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 string tag = item.Tag as string;
                 if (!string.IsNullOrEmpty(tag))
                 {
-                    NavigateToPage(tag);
+                    // 检查当前页面是否已经是目标页面，避免重复导航
+                    if (rootFrame.SourcePageType != _pageTypes[tag])
+                    {
+                        NavigateToPage(tag);
+                    }
                 }
                 // 父级导航项（有子菜单）会自动展开，不需要额外处理
             }
@@ -146,7 +181,7 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 {
                     // 找到对应的NavigationViewItem
                     NavigationViewItem item = FindNavigationViewItemByTag(kvp.Key);
-                    if (item != null)
+                    if (item != null && NavigationViewControl.SelectedItem != item)
                     {
                         NavigationViewControl.SelectedItem = item;
                         NavigationViewControl.Header = item.Content;
