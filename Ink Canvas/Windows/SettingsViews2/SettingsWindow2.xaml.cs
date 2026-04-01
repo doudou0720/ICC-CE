@@ -71,12 +71,6 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 RegisterDpiChangedListener();
             };
 
-            // 窗口拖动到其他屏幕时自动适配
-            this.LocationChanged += (sender, e) =>
-            {
-                SetMaxSizeAndCenter();
-            };
-
             // 窗口关闭时释放资源
             this.Closed += (sender, e) =>
             {
@@ -194,8 +188,8 @@ namespace Ink_Canvas.Windows.SettingsViews2
             double screenTopDip = screenBounds.Top / dpiScaleY;
 
             // 4. 设置窗口最大尺寸（保留你原有的边距）
-            this.MaxWidth = workAreaWidthDip - 10;
-            this.MaxHeight = workAreaHeightDip - 40;
+            this.MaxWidth = workAreaWidthDip;
+            this.MaxHeight = workAreaHeightDip;
 
             // 5. 窗口在当前屏幕居中（解决副屏居中跑偏问题）
             this.Left = screenLeftDip + (workAreaWidthDip - this.ActualWidth) / 2;
