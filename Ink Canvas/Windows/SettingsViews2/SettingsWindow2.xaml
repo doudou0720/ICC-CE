@@ -8,6 +8,7 @@
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     Title="InkCanvasForClass 设置"
     Width="1138" Height="750"
+    MinWidth="800" MinHeight="600"
     WindowStartupLocation="CenterScreen"
     ui:ThemeManager.IsThemeAware="True"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
@@ -15,6 +16,7 @@
     ui:WindowHelper.UseModernWindowStyle="True"
     ui:TitleBar.Height="48"
     mc:Ignorable="d">
+    
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -22,6 +24,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
+    
     <Grid>
         <ui:NavigationView
             x:Name="NavigationViewControl"
@@ -38,34 +41,39 @@
             IsBackButtonVisible="Visible"
             IsBackEnabled="True"
             PaneDisplayMode="Auto"
-            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+            OpenPaneLength="240"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            
             <ui:NavigationView.HeaderTemplate>
                 <DataTemplate>
-                    <Grid>
+                    <Grid Margin="0,8,0,12">
                         <TextBlock
                             Text="{Binding}"
                             Style="{DynamicResource TitleTextBlockStyle}"
-                            Margin="0,8,0,0" />
+                            FontSize="20"
+                            FontWeight="SemiBold"/>
                     </Grid>
                 </DataTemplate>
             </ui:NavigationView.HeaderTemplate>
+            
             <ui:NavigationView.AutoSuggestBox>
                 <ui:AutoSuggestBox
                     x:Name="controlsSearchBox"
-                    MinWidth="200"
+                    MinWidth="220"
                     VerticalAlignment="Center"
                     x:FieldModifier="public"
                     PlaceholderText="查找设置"
                     QuerySubmitted="OnControlsSearchBoxQuerySubmitted"
-                    TextChanged="OnControlsSearchBoxTextChanged" >
+                    TextChanged="OnControlsSearchBoxTextChanged">
                     <ui:AutoSuggestBox.QueryIcon>
-                        <ui:SymbolIcon Symbol="Find" FontSize="12" />
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Search}" FontSize="12"/>
                     </ui:AutoSuggestBox.QueryIcon>
                 </ui:AutoSuggestBox>
             </ui:NavigationView.AutoSuggestBox>
 
             <ui:NavigationView.MenuItems>
+                <!-- 基本设置 -->
                 <ui:NavigationViewItem
                     x:Name="BasicItem"
                     Content="基本"
@@ -87,6 +95,8 @@
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
+
+                <!-- 页面2 -->
                 <ui:NavigationViewItem
                     x:Name="Page2Item"
                     Content="页面 2"
@@ -95,6 +105,8 @@
                         <ui:SymbolIcon Symbol="Document" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+
+                <!-- 设计设置 -->
                 <ui:NavigationViewItem
                     x:Name="DesignItem"
                     Content="设计"
@@ -107,21 +119,25 @@
                         <ui:NavigationViewItem
                             x:Name="IconographyItem"
                             Content="图标"
-                            Tag="Iconography">
+                            Tag="Iconography"
+                            ToolTipService.ToolTip="图标设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="Home" />
-                            </ui:NavigationViewItem.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AllApps}"/>
+                        </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="TypographyItem"
                             Content="排版"
-                            Tag="Typography">
+                            Tag="Typography"
+                            ToolTipService.ToolTip="排版设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="Home" />
-                            </ui:NavigationViewItem.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
+                        </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
+
+                <!-- 外观设置 -->
                 <ui:NavigationViewItem
                     x:Name="AppearanceItem"
                     Content="外观"
@@ -134,25 +150,28 @@
                         <ui:NavigationViewItem
                             x:Name="ThemeItem"
                             Content="主题"
-                            Tag="Theme">
+                            Tag="Theme"
+                            ToolTipService.ToolTip="主题设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="Home" />
-                            </ui:NavigationViewItem.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DarkTheme_24_Regular}"/>
+                        </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="ColorsItem"
                             Content="颜色"
-                            Tag="Colors">
+                            Tag="Colors"
+                            ToolTipService.ToolTip="颜色设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="Home" />
-                            </ui:NavigationViewItem.Icon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Highlight}"/>
+                        </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="FontsItem"
                             Content="字体"
-                            Tag="Fonts">
+                            Tag="Fonts"
+                            ToolTipService.ToolTip="字体设置">
                             <ui:NavigationViewItem.Icon>
-                                <ui:SymbolIcon Symbol="Home" />
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
@@ -170,7 +189,7 @@
                 </ui:NavigationViewItem>
             </ui:NavigationView.FooterMenuItems>
 
-            <ui:Frame x:Name="rootFrame" Navigated="OnRootFrameNavigated" />
+            <ui:Frame x:Name="rootFrame" Navigated="OnRootFrameNavigated" NavigationUIVisibility="Hidden" />
         </ui:NavigationView>
     </Grid>
 </Window>
