@@ -1,4 +1,4 @@
-<UserControl x:Class="Ink_Canvas.Windows.SettingsViews.AutomationPanel"
+<UserControl xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions" x:Class="Ink_Canvas.Windows.SettingsViews.AutomationPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -238,7 +238,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="软件退出后保持收纳模式" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，执行自动收纳的软件在软件退出后不退出收纳模式，保持收纳状态" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=AutomationPanel_Hint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchKeepFoldAfterSoftwareExit" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -330,7 +330,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="鸿合屏幕书写查杀后自动进入批注" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="查杀鸿合屏幕书写后自动进入批注模式" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=AutomationPanel_Hint_1}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchAutoEnterAnnotationAfterKillHite" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">

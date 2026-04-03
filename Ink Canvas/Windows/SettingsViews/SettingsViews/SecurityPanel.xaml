@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews"
+             xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
              mc:Ignorable="d"
              d:DesignHeight="950" d:DesignWidth="640">
     <UserControl.Resources>
@@ -43,7 +44,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用安全密码" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后需要设置密码" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel_Hint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchPasswordEnabled"
                                 Style="{StaticResource ToggleSwitchStyle}"
@@ -63,7 +64,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="密码管理" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="设置或修改安全密码" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel_Hint_1}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0">
                             <Button x:Name="BtnSetOrChangePassword" Width="120" Height="32" Click="BtnSetOrChangePassword_Click" Content="设置/修改密码"/>
@@ -75,7 +76,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="退出软件需要密码" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="关闭 InkCanvasForClass 时进行密码验证" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel__InkCanvasForClass_Hint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchRequirePasswordOnExit" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="RequirePasswordOnExit" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -91,7 +92,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入设置需要密码" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="打开设置面板/新设置窗口时进行验证" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel_Hint_2}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchRequirePasswordOnEnterSettings" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="RequirePasswordOnEnterSettings" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -107,7 +108,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="重置配置需要密码" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="重置 Settings.json 前进行二次验证" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel__Settingsjson_Hint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchRequirePasswordOnResetConfig" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="RequirePasswordOnResetConfig" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -121,7 +122,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="修改/清空点名名单需要密码" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="在修改名单或清空名单前进行密码验证" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel_Hint_3}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchRequirePasswordOnModifyOrClearNameList" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="RequirePasswordOnModifyOrClearNameList" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -144,7 +145,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进程保护" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后关键文件会被只读占用" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=SecurityPanel_Hint_4}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchEnableProcessProtection" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="EnableProcessProtection" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">

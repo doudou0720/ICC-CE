@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews"
              xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+             xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
              mc:Ignorable="d" 
              d:DesignHeight="950" d:DesignWidth="640">
     <UserControl.Resources>
@@ -33,7 +34,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="窗口无焦点模式" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="窗口失去焦点时仍可接收输入" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_NoFocusModeHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchNoFocusMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="NoFocusMode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -47,7 +48,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="窗口无边框模式" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="隐藏窗口边框，提供更沉浸的体验" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_NoBorderModeHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchWindowMode" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="WindowMode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -61,7 +62,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="窗口置顶" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="窗口始终显示在其他窗口之上" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_TopMostHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchAlwaysOnTop" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="AlwaysOnTop" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -75,7 +76,7 @@
                     <Grid Height="54" x:Name="UIAccessTopMostPanel" Visibility="Collapsed">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="UIA置顶" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="使用UIA方式实现置顶，需要管理员权限" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_UIAccessTopMostHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchUIAccessTopMost" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="UIAccessTopMost" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -94,7 +95,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="开机时运行" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="系统启动时自动运行软件" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_RunAtStartupHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchRunAtStartup" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="RunAtStartup" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -108,7 +109,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="开机运行后收纳到侧边栏" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开机启动后自动收纳到侧边栏" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_FoldAtStartupHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchFoldAtStartup" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="FoldAtStartup" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -129,7 +130,7 @@
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="仅PPT模式" HorizontalAlignment="Left"/>
-                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="启用后，软件将完全隐藏，仅在PPT放映时出现" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="{i18n:I18n Key=Startup_PPTOnlyModeHint}" HorizontalAlignment="Left"/>
                         </StackPanel>
                         <Border x:Name="ToggleSwitchMode" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="Mode" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">

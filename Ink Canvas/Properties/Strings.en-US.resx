@@ -754,4 +754,161 @@
   <data name="FloatingBar_Gesture_TwoFingerRotate" xml:space="preserve"><value>Two-finger rotate</value></data>
   <data name="Board_Gesture" xml:space="preserve"><value>Gesture</value></data>
   <data name="Board_GestureOptions" xml:space="preserve"><value>Gesture options</value></data>
+  <data name="Startup_NoFocusModeHint" xml:space="preserve"><value>Still receive input when window loses focus</value></data>
+  <data name="Startup_NoBorderModeHint" xml:space="preserve"><value>Hide window border for a more immersive experience</value></data>
+  <data name="Startup_TopMostHint" xml:space="preserve"><value>Window always stays on top of other windows</value></data>
+  <data name="Startup_RunAtStartupHint" xml:space="preserve"><value>Automatically run the software when system starts</value></data>
+  <data name="Startup_FoldAtStartupHint" xml:space="preserve"><value>Automatically dock to sidebar after startup</value></data>
+  <data name="Startup_PPTOnlyModeHint" xml:space="preserve"><value>When enabled, the software will be completely hidden and only appear during PPT slideshow</value></data>
+  <data name="Startup_UIAccessTopMostHint" xml:space="preserve"><value>Use UIA method to achieve topmost, requires administrator privileges</value></data>
+
+  <data name="AdvancedPanel_Hint" xml:space="preserve"><value>Enable special screen mode to optimize touch experience</value></data>
+  <data name="AdvancedPanel_Hint_1" xml:space="preserve"><value>Adjust touch size multiplier</value></data>
+  <data name="AdvancedPanel_Hint_2" xml:space="preserve"><value>Bind eraser size to touch size multiplier</value></data>
+  <data name="AdvancedPanel_Hint_3" xml:space="preserve"><value>Nib mode contact area threshold</value></data>
+  <data name="AdvancedPanel_Hint_4" xml:space="preserve"><value>Finger mode contact area threshold</value></data>
+  <data name="AdvancedPanel_Hint_5" xml:space="preserve"><value>Enable quad IR touch screen mode</value></data>
+  <data name="AdvancedPanel_Hint_6" xml:space="preserve"><value>Enable logging function</value></data>
+  <data name="AdvancedPanel_Hint_7" xml:space="preserve"><value>Show confirmation dialog when closing software</value></data>
+  <data name="AdvancedPanel_Hint_8" xml:space="preserve"><value>Auto backup current settings before auto update</value></data>
+  <data name="AdvancedPanel_Hint_9" xml:space="preserve"><value>Regularly auto backup settings file</value></data>
+  <data name="AdvancedPanel_Hint_10" xml:space="preserve"><value>Set interval for regular backup</value></data>
+  <data name="AdvancedPanel__iccfold___iccunfold__Hint" xml:space="preserve"><value>After enabling, can be controlled via commands like icc://fold or icc://unfold</value></data>
+  <data name="AdvancedPanel_Hint_11" xml:space="preserve"><value>After enabling, automatically detect and intercept floating windows of similar software</value></data>
+  <data name="AppearancePanel_Hint" xml:space="preserve"><value>Select application theme style</value></data>
+  <data name="AppearancePanel_Hint_1" xml:space="preserve"><value>Show animation effect at startup</value></data>
+  <data name="AppearancePanel_Hint_2" xml:space="preserve"><value>Select startup animation style</value></data>
+  <data name="AppearancePanel_Hint_3" xml:space="preserve"><value>Select floating toolbar icon style</value></data>
+  <data name="AppearancePanel_Hint_4" xml:space="preserve"><value>Adjust floating toolbar size</value></data>
+  <data name="AppearancePanel_Hint_5" xml:space="preserve"><value>Adjust floating toolbar opacity</value></data>
+  <data name="AppearancePanel_PPTPPTHint" xml:space="preserve"><value>Floating toolbar opacity in PPT mode (effective after re-entering PPT slideshow)</value></data>
+  <data name="AppearancePanel_Hint_6" xml:space="preserve"><value>Show nib mode toggle button in color palette window</value></data>
+  <data name="AppearancePanel_Hint_7" xml:space="preserve"><value>Use legacy floating bar button UI style</value></data>
+  <data name="AppearancePanel_Hint_8" xml:space="preserve"><value>Show shape button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_9" xml:space="preserve"><value>Show undo button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_10" xml:space="preserve"><value>Show redo button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_11" xml:space="preserve"><value>Show clear button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_12" xml:space="preserve"><value>Show whiteboard button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_13" xml:space="preserve"><value>Show hide button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_14" xml:space="preserve"><value>Show lasso select button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_15" xml:space="preserve"><value>Show clear and mouse button in floating bar</value></data>
+  <data name="AppearancePanel_Hint_16" xml:space="preserve"><value>Show quick color palette in floating bar</value></data>
+  <data name="AppearancePanel_Hint_17" xml:space="preserve"><value>Select quick color palette display mode</value></data>
+  <data name="AppearancePanel_Hint_18" xml:space="preserve"><value>Show icon in taskbar system tray</value></data>
+  <data name="AppearancePanel_80Hint" xml:space="preserve"><value>Scale whiteboard interface to 80%</value></data>
+  <data name="AppearancePanel_Hint_19" xml:space="preserve"><value>Show current time and date in whiteboard interface</value></data>
+  <data name="AppearancePanel_Hint_20" xml:space="preserve"><value>Show inspirational quotes in whiteboard interface</value></data>
+  <data name="AppearancePanel_Hint_21" xml:space="preserve"><value>Show quick operation panel in folded mode</value></data>
+  <data name="AppearancePanel_Hint_22" xml:space="preserve"><value>Select unfold button icon style</value></data>
+  <data name="AppearancePanel_Hint_23" xml:space="preserve"><value>When enabled, automatically switch to annotation mode when exiting fold mode for quick annotation</value></data>
+  <data name="AppearancePanel_PPTHint" xml:space="preserve"><value>When enabled, the floating bar will automatically fold after exiting PPT slideshow</value></data>
+  <data name="AppearancePanel_Hint_24" xml:space="preserve"><value>When enabled, will automatically dock to sidebar when exiting whiteboard mode</value></data>
+  <data name="AutomationPanel_Hint" xml:space="preserve"><value>When enabled, software with auto fold will remain folded after software exit</value></data>
+  <data name="AutomationPanel_Hint_1" xml:space="preserve"><value>Auto enter annotation mode after killing Hite screen writing</value></data>
+  <data name="CanvasAndInkPanel_Hint" xml:space="preserve"><value>Show pen cursor when drawing</value></data>
+  <data name="CanvasAndInkPanel_Hint_1" xml:space="preserve"><value>When enabled, touch screen devices will also support pressure sensitivity, suitable for some touch screens that support pressure but cannot be recognized by the system</value></data>
+  <data name="CanvasAndInkPanel_Hint_2" xml:space="preserve"><value>When enabled, will ignore pressure information from all devices, making all strokes uniform thickness. Mutually exclusive with pressure touch mode</value></data>
+  <data name="CanvasAndInkPanel__PPT_Hint" xml:space="preserve"><value>When enabled, ink will not be displayed when entering PPT mode without being in annotation mode</value></data>
+  <data name="CanvasAndInkPanel_quotquotHint" xml:space="preserve"><value>When enabled, cleared ink cannot be restored via undo function</value></data>
+  <data name="CanvasAndInkPanel_Hint_3" xml:space="preserve"><value>Delete all inserted images when clearing canvas</value></data>
+  <data name="CanvasAndInkPanel_1920x1080Hint" xml:space="preserve"><value>Auto compress images larger than 1920x1080 to save memory</value></data>
+  <data name="CanvasAndInkPanel_Hint_4" xml:space="preserve"><value>Show circle center mark when drawing circles</value></data>
+  <data name="CanvasAndInkPanel_WPFHint" xml:space="preserve"><value>Use WPF built-in curve smoothing algorithm</value></data>
+  <data name="CanvasAndInkPanel_Hint_5" xml:space="preserve"><value>Use improved Bezier curve smoothing algorithm for better drawing effect</value></data>
+  <data name="CanvasAndInkPanel_Hint_6" xml:space="preserve"><value>When enabled, ink will not be drawn on canvas but remain in wet ink state, disappearing automatically based on fade time</value></data>
+  <data name="CanvasAndInkPanel_Hint_7" xml:space="preserve"><value>Set time for ink to disappear completely after drawing</value></data>
+  <data name="CanvasAndInkPanel_Hint_8" xml:space="preserve"><value>When enabled, ink fade control switch will not be shown in context menu after clicking pen tool in main toolbar</value></data>
+  <data name="CanvasAndInkPanel_Hint_9" xml:space="preserve"><value>When enabled, will auto save ink at set intervals, only when canvas is visible and has ink</value></data>
+  <data name="CanvasAndInkPanel_XMLISFHint" xml:space="preserve"><value>When enabled, will use XML format (ISF format) when saving ink, for easy viewing and editing of ink data</value></data>
+  <data name="GesturesPanel_Hint" xml:space="preserve"><value>When enabled, automatically disable two-finger move gesture when exiting whiteboard mode, enable when entering whiteboard mode</value></data>
+  <data name="GesturesPanel_Hint_1" xml:space="preserve"><value>Allow two-finger or multi-finger zoom operations on selected ink</value></data>
+  <data name="GesturesPanel_Hint_2" xml:space="preserve"><value>When enabled, automatically switch to eraser when two or more touch points with large area, restore original mode after release</value></data>
+  <data name="InkRecognitionPanel_Hint" xml:space="preserve"><value>Automatically recognize hand-drawn shapes and convert to standard shapes</value></data>
+  <data name="InkRecognitionPanel_Hint_1" xml:space="preserve"><value>Corrected rectangles do not contain simulated pressure information</value></data>
+  <data name="InkRecognitionPanel_Hint_2" xml:space="preserve"><value>Corrected triangles do not contain simulated pressure information</value></data>
+  <data name="InkRecognitionPanel_Hint_3" xml:space="preserve"><value>When drawn line exceeds set length threshold, will automatically adjust to perfect straight line</value></data>
+  <data name="InkRecognitionPanel_10Hint" xml:space="preserve"><value>In high-precision mode, take a count point every 10 pixels for more accurate average calculation</value></data>
+  <data name="InkRecognitionPanel_Hint_4" xml:space="preserve"><value>When drawn line endpoint is close to other line endpoints, will automatically snap and connect</value></data>
+  <data name="LuckyRandomPanel_Hint" xml:space="preserve"><value>Show button to modify name list in random roll call window</value></data>
+  <data name="LuckyRandomPanel_Hint_1" xml:space="preserve"><value>Show random draw and single draw buttons in random roll call window</value></data>
+  <data name="LuckyRandomPanel_Hint_2" xml:space="preserve"><value>Enable quick draw floating button</value></data>
+  <data name="LuckyRandomPanel_Hint_3" xml:space="preserve"><value>Use external roll call tool instead of built-in function</value></data>
+  <data name="LuckyRandomPanel_Hint_4" xml:space="preserve"><value>Set delay time for single draw window to auto close</value></data>
+  <data name="LuckyRandomPanel_Hint_5" xml:space="preserve"><value>Set maximum number of people for single random roll call</value></data>
+  <data name="LuckyRandomPanel_Hint_6" xml:space="preserve"><value>Use new roll call interface design</value></data>
+  <data name="LuckyRandomPanel_Hint_7" xml:space="preserve"><value>Use machine learning algorithm to avoid drawing same person repeatedly</value></data>
+  <data name="LuckyRandomPanel_Hint_8" xml:space="preserve"><value>Set history record count for avoiding repetition</value></data>
+  <data name="LuckyRandomPanel_Hint_9" xml:space="preserve"><value>Set weight for machine learning algorithm to avoid repetition</value></data>
+  <data name="LuckyRandomPanel_Hint_10" xml:space="preserve"><value>Select background for roll call window</value></data>
+  <data name="PowerPointPanel_PPTHint" xml:space="preserve"><value>Show page turn control buttons in PPT slideshow mode</value></data>
+  <data name="PowerPointPanel_0Hint" xml:space="preserve"><value>Increase for upward offset, decrease for downward offset, set to 0 for no offset and center placement</value></data>
+  <data name="PowerPointPanel_0Hint_1" xml:space="preserve"><value>Increase for rightward offset, decrease for leftward offset, set to 0 for no offset and center placement</value></data>
+  <data name="PowerPointPanel_Hint" xml:space="preserve"><value>Adjust position of left bottom button</value></data>
+  <data name="PowerPointPanel_Hint_1" xml:space="preserve"><value>Adjust position of right bottom button</value></data>
+  <data name="PowerPointPanel_Hint_2" xml:space="preserve"><value>Adjust transparency of left page turn button</value></data>
+  <data name="PowerPointPanel_Hint_3" xml:space="preserve"><value>Adjust transparency of right page turn button</value></data>
+  <data name="PowerPointPanel_Hint_4" xml:space="preserve"><value>Adjust transparency of left bottom page turn button</value></data>
+  <data name="PowerPointPanel_Hint_5" xml:space="preserve"><value>Adjust transparency of right bottom page turn button</value></data>
+  <data name="PowerPointPanel_PPTHint_1" xml:space="preserve"><value>Auto switch to annotation mode when entering PPT slideshow</value></data>
+  <data name="PowerPointPanel_Hint_6" xml:space="preserve"><value>Allow two-finger gestures in slideshow mode</value></data>
+  <data name="PowerPointPanel__PPT_Hint" xml:space="preserve"><value>When enabled, also show gesture button in PPT slideshow mode</value></data>
+  <data name="PowerPointPanel_Hint_7" xml:space="preserve"><value>Select display position of time capsule on screen</value></data>
+  <data name="PowerPointPanel_quotquotHint" xml:space="preserve"><value>When enabled, will record last played page number and auto jump when clicking Yes</value></data>
+  <data name="PowerPointPanel_PPTHint_2" xml:space="preserve"><value>Auto jump to first page when entering PPT slideshow</value></data>
+  <data name="PowerPointPanel_Hint_8" xml:space="preserve"><value>Show tip when playing hidden slides</value></data>
+  <data name="PowerPointPanel_PPTHint_3" xml:space="preserve"><value>Show tip when PPT auto plays</value></data>
+  <data name="SecurityPanel_Hint" xml:space="preserve"><value>Need to set password when enabled</value></data>
+  <data name="SecurityPanel_Hint_1" xml:space="preserve"><value>Set or modify security password</value></data>
+  <data name="SecurityPanel__InkCanvasForClass_Hint" xml:space="preserve"><value>Password verification when closing InkCanvasForClass</value></data>
+  <data name="SecurityPanel_Hint_2" xml:space="preserve"><value>Verification when opening settings panel/new settings window</value></data>
+  <data name="SecurityPanel__Settingsjson_Hint" xml:space="preserve"><value>Secondary verification before resetting Settings.json</value></data>
+  <data name="SecurityPanel_Hint_3" xml:space="preserve"><value>Password verification before modifying or clearing name list</value></data>
+  <data name="SecurityPanel_Hint_4" xml:space="preserve"><value>When enabled, key files will be occupied as read-only</value></data>
+  <data name="SettingsBaseView_Binding_DescriptionHint" xml:space="preserve"><value>{Binding Description}</value></data>
+  <data name="SnapshotPanel_Hint" xml:space="preserve"><value>Auto save current canvas screenshot when clearing canvas</value></data>
+  <data name="SnapshotPanel_Hint_1" xml:space="preserve"><value>Save screenshots to different folders by date</value></data>
+  <data name="SnapshotPanel_Hint_2" xml:space="preserve"><value>Save current canvas ink data when taking screenshots</value></data>
+  <data name="SnapshotPanel_Hint_3" xml:space="preserve"><value>When enabled, will auto screenshot when turning pages if slide has ink</value></data>
+  <data name="SnapshotPanel_Hint_4" xml:space="preserve"><value>Set minimum ink amount required for auto screenshot</value></data>
+  <data name="SnapshotPanel__icstk__png_Hint" xml:space="preserve"><value>When enabled, will delete all files with .icstk and .png extensions in auto save directory</value></data>
+  <data name="ThemePanel_Hint" xml:space="preserve"><value>Select application theme style</value></data>
+  <data name="ThemePanel_Hint_1" xml:space="preserve"><value>Show animation effect at startup</value></data>
+  <data name="ThemePanel_Hint_2" xml:space="preserve"><value>Select startup animation style</value></data>
+  <data name="ThemePanel_Hint_3" xml:space="preserve"><value>Select floating toolbar icon style</value></data>
+  <data name="ThemePanel_Hint_4" xml:space="preserve"><value>Adjust floating toolbar size</value></data>
+  <data name="ThemePanel_Hint_5" xml:space="preserve"><value>Adjust floating toolbar opacity</value></data>
+  <data name="ThemePanel_PPTPPTHint" xml:space="preserve"><value>Floating toolbar opacity in PPT mode (effective after re-entering PPT slideshow)</value></data>
+  <data name="ThemePanel_Hint_6" xml:space="preserve"><value>Show nib mode toggle button in color palette window</value></data>
+  <data name="ThemePanel_Hint_7" xml:space="preserve"><value>Use legacy floating bar button UI style</value></data>
+  <data name="ThemePanel_Hint_8" xml:space="preserve"><value>Show shape button in floating bar</value></data>
+  <data name="ThemePanel_Hint_9" xml:space="preserve"><value>Show undo button in floating bar</value></data>
+  <data name="ThemePanel_Hint_10" xml:space="preserve"><value>Show redo button in floating bar</value></data>
+  <data name="ThemePanel_Hint_11" xml:space="preserve"><value>Show clear button in floating bar</value></data>
+  <data name="ThemePanel_Hint_12" xml:space="preserve"><value>Show whiteboard button in floating bar</value></data>
+  <data name="ThemePanel_Hint_13" xml:space="preserve"><value>Show hide button in floating bar</value></data>
+  <data name="ThemePanel_Hint_14" xml:space="preserve"><value>Show lasso select button in floating bar</value></data>
+  <data name="ThemePanel_Hint_15" xml:space="preserve"><value>Show clear and mouse button in floating bar</value></data>
+  <data name="ThemePanel_Hint_16" xml:space="preserve"><value>Show quick color palette in floating bar</value></data>
+  <data name="ThemePanel_Hint_17" xml:space="preserve"><value>Select quick color palette display mode</value></data>
+  <data name="ThemePanel_Hint_18" xml:space="preserve"><value>Show icon in taskbar system tray</value></data>
+  <data name="ThemePanel_80Hint" xml:space="preserve"><value>Scale whiteboard interface to 80%</value></data>
+  <data name="ThemePanel_Hint_19" xml:space="preserve"><value>Show current time and date in whiteboard interface</value></data>
+  <data name="ThemePanel_Hint_20" xml:space="preserve"><value>Show inspirational quotes in whiteboard interface</value></data>
+  <data name="ThemePanel_Hint_21" xml:space="preserve"><value>Show quick operation panel in folded mode</value></data>
+  <data name="ThemePanel_Hint_22" xml:space="preserve"><value>Select unfold button icon style</value></data>
+  <data name="ThemePanel_Hint_23" xml:space="preserve"><value>When enabled, automatically switch to annotation mode when exiting fold mode for quick annotation</value></data>
+  <data name="ThemePanel_PPTHint" xml:space="preserve"><value>When enabled, the floating bar will automatically fold after exiting PPT slideshow</value></data>
+  <data name="ThemePanel_Hint_24" xml:space="preserve"><value>When enabled, will automatically dock to sidebar when exiting whiteboard mode</value></data>
+  <data name="TimerPanel_Hint" xml:space="preserve"><value>Use the old version of the timer button interface</value></data>
+  <data name="TimerPanel_Hint_1" xml:space="preserve"><value>Use the new style timer interface</value></data>
+  <data name="TimerPanel_Hint_2" xml:space="preserve"><value>Continue counting up after timer timeout</value></data>
+  <data name="TimerPanel_Hint_3" xml:space="preserve"><value>Display numbers in red after timer timeout</value></data>
+  <data name="TimerPanel_Hint_4" xml:space="preserve"><value>Set the volume of the timer reminder sound</value></data>
+  <data name="TimerPanel_Hint_5" xml:space="preserve"><value>Enable progressive reminder function</value></data>
+  <data name="TimerPanel_Hint_6" xml:space="preserve"><value>Set the volume of the progressive reminder sound</value></data>
+  <data name="UpdateCenterPanel_Hint" xml:space="preserve"><value>Select the historical version to rollback to</value></data>
+  <data name="UpdateCenterPanel_Hint_1" xml:space="preserve"><value>Rollback to the version selected in the dropdown</value></data>
+  <data name="UpdateCenterPanel_Hint_2" xml:space="preserve"><value>Download and install the latest version based on the selected channel, can be used to fix corrupted installations</value></data>
+  <data name="UpdateCenterPanel_Hint_3" xml:space="preserve"><value>Regularly check if new versions are available</value></data>
+  <data name="UpdateCenterPanel_Hint_4" xml:space="preserve"><value>Automatically install updates when software is not in use, no manual operation required</value></data>
 </root>
