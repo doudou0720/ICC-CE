@@ -22,6 +22,11 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemeResources />
             </ResourceDictionary.MergedDictionaries>
+            <!--  L-Pattern Overwriting resources  -->
+            <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
+            <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
+            <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
+            <Thickness x:Key="NavigationViewHeaderMargin">56,34,0,0</Thickness>
         </ResourceDictionary>
     </Window.Resources>
     
