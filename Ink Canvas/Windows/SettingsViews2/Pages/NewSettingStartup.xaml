@@ -12,7 +12,7 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="启动">
 
-    <ScrollViewer Padding="20,0">
+    <ScrollViewer Padding="59,0,59,0">
         <!--  These styles can be referenced to create a consistent SettingsPage layout  -->
         <FrameworkElement.Resources>
             <!--  Spacing between cards  -->
@@ -31,9 +31,10 @@
                 HorizontalAlignment="Stretch"
                 Spacing="{StaticResource SettingsCardSpacing}">
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                    Text="启动设置" />
-                <ui:SettingsCard Description="系统启动时自动运行软件"
-                        Header="开机时运行">
+                    Text="启动时行为" />
+                <!--  开机时运行 - 开关  -->
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_RunAtStartupHint}"
+                        Header="{i18n:I18n Key=Startup_RunAtStartup}">
                     <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Glyph="&#xE768;" />
                     </ui:SettingsCard.HeaderIcon>

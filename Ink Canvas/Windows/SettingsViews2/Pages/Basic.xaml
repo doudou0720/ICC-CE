@@ -5,23 +5,44 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Ink_Canvas.Windows.SettingsViews2.Pages"
       xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+      xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+      xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="基本">
 
-    <Grid Margin="24">
-        <StackPanel>
-            <TextBlock Text="基本设置" Style="{DynamicResource TitleTextBlockStyle}" Margin="0,0,0,16" />
-            
-            <ui:SettingsCard
-                Header="启动设置"
-                Description="点击跳转到启动设置页面"
-                IsClickEnabled="True"
-                Click="SettingsCard_Click">
-                <ui:SettingsCard.ActionIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}"/>
-                </ui:SettingsCard.ActionIcon>
-            </ui:SettingsCard>
-        </StackPanel>
-    </Grid>
+    <ScrollViewer Padding="59,0,59,0">
+        <!--  These styles can be referenced to create a consistent SettingsPage layout  -->
+        <FrameworkElement.Resources>
+            <!--  Spacing between cards  -->
+            <sys:Double x:Key="SettingsCardSpacing">4</sys:Double>
+            <!--  Style (inc. the correct spacing) of a section header  -->
+            <Style x:Key="SettingsSectionHeaderTextBlockStyle"
+                BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+                TargetType="TextBlock">
+                <Style.Setters>
+                    <Setter Property="Margin" Value="1,30,0,6" />
+                </Style.Setters>
+            </Style>
+        </FrameworkElement.Resources>
+        <Grid>
+            <ikw:SimpleStackPanel MaxWidth="800"
+                HorizontalAlignment="Stretch"
+                Spacing="{StaticResource SettingsCardSpacing}">
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    Text="启动时行为" />
+
+                <ui:SettingsCard
+                    Header="启动设置"
+                    Description="点击跳转到启动设置页面"
+                    IsClickEnabled="True"
+                    Click="SettingsCard_Click">
+                    <ui:SettingsCard.ActionIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}"/>
+                    </ui:SettingsCard.ActionIcon>
+                </ui:SettingsCard>
+            </ikw:SimpleStackPanel>
+        </Grid>
+    </ScrollViewer>
 </Page>
