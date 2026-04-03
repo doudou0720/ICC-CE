@@ -21,7 +21,7 @@ namespace Ink_Canvas.Windows
         /// 初始化设置窗口的 UI、事件和面板并加载初始状态与主题。
         /// </summary>
         /// <remarks>
-        /// 构造函数完成以下工作：获取主窗口引用，注册搜索与菜单事件，构建并绑定侧栏条目，挂接各设置面板的滚动/阴影事件，初始化面板数组、滚动容器、标题与名称映射，设置初始选中项与主题状态，为自定义滑块添加触摸支持，预加载所有面板设置，并多次应用主题以确保视觉元素正确呈现（包含延迟再应用以修正标题栏等）。
+        /// 构造函数完成以下工作：获取主窗口引用，注册搜索与菜单事件，构建并绑定侧栏条目，挂接各设置面板的滚动/阴影事件，初始化面板配置，设置初始选中项与主题状态，为自定义滑块添加触摸支持，预加载所有面板设置，并多次应用主题以确保视觉元素正确呈现（包含延迟再应用以修正标题栏等）。
         /// </remarks>
         public SettingsWindow()
         {
@@ -30,282 +30,12 @@ namespace Ink_Canvas.Windows
             // 获取 MainWindow 实例
             _mainWindow = Application.Current.MainWindow as MainWindow;
 
-            // 初始化搜索面板事件
-            SearchPanelControl.NavigateToItem += SearchPanel_NavigateToItem;
-            SearchPanelControl.CloseSearch += SearchPanel_CloseSearch;
-
-            // 订阅菜单关闭事件，确保状态同步
-            if (MenuButtonContextMenu != null)
-            {
-                MenuButtonContextMenu.Closed += (s, e) =>
-                {
-                    // 菜单关闭时的处理
-                };
-            }
-
-            // 初始化侧边栏项目
-            SidebarItemsControl.ItemsSource = SidebarItems;
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "启动时行为",
-                Name = "StartupItem",
-                IconSource = FindResource("StartupIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "画板和墨迹",
-                Name = "CanvasAndInkItem",
-                IconSource = FindResource("CanvasAndInkIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "手势操作",
-                Name = "GesturesItem",
-                IconSource = FindResource("GesturesIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "墨迹纠正",
-                Name = "InkRecognitionItem",
-                IconSource = FindResource("InkRecognitionIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Separator
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "个性化设置",
-                Name = "ThemeItem",
-                IconSource = FindResource("AppearanceIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "快捷键设置",
-                Name = "ShortcutsItem",
-                IconSource = FindResource("ShortcutsIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "崩溃处理",
-                Name = "CrashActionItem",
-                IconSource = FindResource("CrashActionIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Separator
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "PowerPoint 支持",
-                Name = "PowerPointItem",
-                IconSource = FindResource("PowerPointIcon") as DrawingImage,
-                Selected = false,
-            });
-
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "自动化行为",
-                Name = "AutomationItem",
-                IconSource = FindResource("AutomationIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "随机点名",
-                Name = "LuckyRandomItem",
-                IconSource = FindResource("LuckyRandomIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Separator
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "高级选项",
-                Name = "AdvancedItem",
-                IconSource = FindResource("AdvancedIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "截图和屏幕捕捉",
-                Name = "SnapshotItem",
-                IconSource = FindResource("SnapshotIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Separator
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "安全",
-                Name = "SecurityItem",
-                IconSource = FindResource("SecurityIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "更新中心",
-                Name = "UpdateCenterItem",
-                IconSource = FindResource("UpdateCenterIcon") as DrawingImage,
-                Selected = false,
-            });
-            SidebarItems.Add(new SidebarItem()
-            {
-                Type = SidebarItemType.Item,
-                Title = "关于 InkCanvasForClass",
-                Name = "AboutItem",
-                IconSource = FindResource("AboutIcon") as DrawingImage,
-                Selected = false,
-            });
-            SettingsPanes = new Grid[] {
-                SecurityPane,
-                UpdateCenterPane,
-                AboutPane,
-                CanvasAndInkPane,
-                GesturesPane,
-                StartupPane,
-                ThemePane,
-                ShortcutsPane,
-                CrashActionPane,
-                InkRecognitionPane,
-                AutomationPane,
-                PowerPointPane,
-                LuckyRandomPane,
-                AdvancedPane,
-                SnapshotPane
-            };
-
-            SettingsPaneScrollViewers = new ScrollViewer[] {
-                SecurityPanel.ScrollViewerEx,
-                UpdateCenterPanel.UpdateCenterScrollViewerEx,
-                SettingsAboutPanel.AboutScrollViewerEx,
-                CanvasAndInkPanel.ScrollViewerEx,
-                GesturesPanel.ScrollViewerEx,
-                StartupPanel.ScrollViewerEx,
-                ThemePanel.ScrollViewerEx,
-                ShortcutsPanel.ScrollViewerEx,
-                CrashActionPanel.ScrollViewerEx,
-                InkRecognitionPanel.ScrollViewerEx,
-                AutomationPanel.ScrollViewerEx,
-                PowerPointPanel.ScrollViewerEx,
-                LuckyRandomPanel.ScrollViewerEx,
-                AdvancedPanel.ScrollViewerEx,
-                SnapshotPanel.ScrollViewerEx
-            };
-
-            SettingsPaneTitles = new string[] {
-                "安全",
-                "更新中心",
-                "关于",
-                "画板和墨迹",
-                "手势操作",
-                "启动时行为",
-                "个性化设置",
-                "快捷键设置",
-                "崩溃处理",
-                "墨迹识别",
-                "自动化",
-                "PowerPoint",
-                "幸运随机",
-                "高级",
-                "截图"
-            };
-
-            SettingsPaneNames = new string[] {
-                "SecurityItem",
-                "UpdateCenterItem",
-                "AboutItem",
-                "CanvasAndInkItem",
-                "GesturesItem",
-                "StartupItem",
-                "ThemeItem",
-                "ShortcutsItem",
-                "CrashActionItem",
-                "InkRecognitionItem",
-                "AutomationItem",
-                "PowerPointItem",
-                "LuckyRandomItem",
-                "AdvancedItem",
-                "SnapshotItem"
-            };
-
-            SettingsAboutPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            SettingsAboutPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-
-            // 订阅所有UserControl的滚动事件
-            CanvasAndInkPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            CanvasAndInkPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            GesturesPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            GesturesPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            StartupPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            StartupPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            InkRecognitionPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            InkRecognitionPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            AutomationPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            AutomationPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            PowerPointPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            PowerPointPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            ThemePanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            ThemePanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-
-            // 监听主题变化
-            ThemePanel.ThemeChanged += (o, s) =>
-            {
-                ApplyTheme();
-                ApplyThemeToAllPanels();
-            };
-            ShortcutsPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            ShortcutsPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            CrashActionPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            CrashActionPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            LuckyRandomPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            LuckyRandomPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            AdvancedPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            AdvancedPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            SnapshotPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            SnapshotPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            SecurityPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            SecurityPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-            UpdateCenterPanel.IsTopBarNeedShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0.25;
-            UpdateCenterPanel.IsTopBarNeedNoShadowEffect += (o, s) => DropShadowEffectTopBar.Opacity = 0;
-
-            _selectedSidebarItemName = "StartupItem";
-
-            // 初始化侧边栏项目的主题状态
-            bool isDarkTheme = MainWindow.Settings?.Appearance != null &&
-                              (MainWindow.Settings.Appearance.Theme == 1 ||
-                               (MainWindow.Settings.Appearance.Theme == 2 && !IsSystemThemeLight()));
-            foreach (var item in SidebarItems)
-            {
-                item.IsDarkTheme = isDarkTheme;
-            }
-
-            UpdateSidebarItemsSelection();
+            // 初始化各个组件
+            InitializeSearchPanelEvents();
+            InitializeMenuEvents();
+            InitializeSidebarItems();
+            SubscribePanelEvents();
+            InitializeThemeState();
 
             // 为自定义滑块控件添加触摸支持
             AddTouchSupportToCustomSliders();
@@ -946,10 +676,319 @@ namespace Ink_Canvas.Windows
         public string _selectedSidebarItemName = "";
         public ObservableCollection<SidebarItem> SidebarItems = new ObservableCollection<SidebarItem>();
 
-        public Grid[] SettingsPanes;
-        public ScrollViewer[] SettingsPaneScrollViewers;
-        public string[] SettingsPaneTitles;
-        public string[] SettingsPaneNames;
+        /// <summary>
+        /// 面板配置类，统一管理面板的配置信息
+        /// </summary>
+        public class PanelConfiguration
+        {
+            public string Title { get; set; }
+            public string Name { get; set; }
+            public string IconResourceKey { get; set; }
+            public Grid Panel { get; set; }
+            public ScrollViewer ScrollViewer { get; set; }
+            public UserControl UserControl { get; set; }
+        }
+
+        /// <summary>
+        /// 面板配置列表
+        /// </summary>
+        private List<PanelConfiguration> _panelConfigurations;
+
+        /// <summary>
+        /// 初始化侧边栏项
+        /// </summary>
+        private void InitializeSidebarItems()
+        {
+            // 初始化面板配置
+            _panelConfigurations = new List<PanelConfiguration>
+            {
+                new PanelConfiguration
+                {
+                    Title = "启动时行为",
+                    Name = "StartupItem",
+                    IconResourceKey = "StartupIcon",
+                    Panel = StartupPane,
+                    ScrollViewer = StartupPanel.ScrollViewerEx,
+                    UserControl = StartupPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "画板和墨迹",
+                    Name = "CanvasAndInkItem",
+                    IconResourceKey = "CanvasAndInkIcon",
+                    Panel = CanvasAndInkPane,
+                    ScrollViewer = CanvasAndInkPanel.ScrollViewerEx,
+                    UserControl = CanvasAndInkPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "手势操作",
+                    Name = "GesturesItem",
+                    IconResourceKey = "GesturesIcon",
+                    Panel = GesturesPane,
+                    ScrollViewer = GesturesPanel.ScrollViewerEx,
+                    UserControl = GesturesPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "墨迹纠正",
+                    Name = "InkRecognitionItem",
+                    IconResourceKey = "InkRecognitionIcon",
+                    Panel = InkRecognitionPane,
+                    ScrollViewer = InkRecognitionPanel.ScrollViewerEx,
+                    UserControl = InkRecognitionPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "个性化设置",
+                    Name = "ThemeItem",
+                    IconResourceKey = "AppearanceIcon",
+                    Panel = ThemePane,
+                    ScrollViewer = ThemePanel.ScrollViewerEx,
+                    UserControl = ThemePanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "快捷键设置",
+                    Name = "ShortcutsItem",
+                    IconResourceKey = "ShortcutsIcon",
+                    Panel = ShortcutsPane,
+                    ScrollViewer = ShortcutsPanel.ScrollViewerEx,
+                    UserControl = ShortcutsPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "崩溃处理",
+                    Name = "CrashActionItem",
+                    IconResourceKey = "CrashActionIcon",
+                    Panel = CrashActionPane,
+                    ScrollViewer = CrashActionPanel.ScrollViewerEx,
+                    UserControl = CrashActionPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "PowerPoint 支持",
+                    Name = "PowerPointItem",
+                    IconResourceKey = "PowerPointIcon",
+                    Panel = PowerPointPane,
+                    ScrollViewer = PowerPointPanel.ScrollViewerEx,
+                    UserControl = PowerPointPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "自动化行为",
+                    Name = "AutomationItem",
+                    IconResourceKey = "AutomationIcon",
+                    Panel = AutomationPane,
+                    ScrollViewer = AutomationPanel.ScrollViewerEx,
+                    UserControl = AutomationPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "随机点名",
+                    Name = "LuckyRandomItem",
+                    IconResourceKey = "LuckyRandomIcon",
+                    Panel = LuckyRandomPane,
+                    ScrollViewer = LuckyRandomPanel.ScrollViewerEx,
+                    UserControl = LuckyRandomPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "高级选项",
+                    Name = "AdvancedItem",
+                    IconResourceKey = "AdvancedIcon",
+                    Panel = AdvancedPane,
+                    ScrollViewer = AdvancedPanel.ScrollViewerEx,
+                    UserControl = AdvancedPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "截图和屏幕捕捉",
+                    Name = "SnapshotItem",
+                    IconResourceKey = "SnapshotIcon",
+                    Panel = SnapshotPane,
+                    ScrollViewer = SnapshotPanel.ScrollViewerEx,
+                    UserControl = SnapshotPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "安全",
+                    Name = "SecurityItem",
+                    IconResourceKey = "SecurityIcon",
+                    Panel = SecurityPane,
+                    ScrollViewer = SecurityPanel.ScrollViewerEx,
+                    UserControl = SecurityPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "更新中心",
+                    Name = "UpdateCenterItem",
+                    IconResourceKey = "UpdateCenterIcon",
+                    Panel = UpdateCenterPane,
+                    ScrollViewer = UpdateCenterPanel.UpdateCenterScrollViewerEx,
+                    UserControl = UpdateCenterPanel
+                },
+                new PanelConfiguration
+                {
+                    Title = "关于 InkCanvasForClass",
+                    Name = "AboutItem",
+                    IconResourceKey = "AboutIcon",
+                    Panel = AboutPane,
+                    ScrollViewer = SettingsAboutPanel.AboutScrollViewerEx,
+                    UserControl = SettingsAboutPanel
+                }
+            };
+
+            SidebarItemsControl.ItemsSource = SidebarItems;
+
+            // 创建侧边栏项
+            foreach (var config in _panelConfigurations)
+            {
+                SidebarItems.Add(new SidebarItem
+                {
+                    Type = SidebarItemType.Item,
+                    Title = config.Title,
+                    Name = config.Name,
+                    IconSource = FindResource(config.IconResourceKey) as DrawingImage,
+                    Selected = false
+                });
+            }
+
+            // 添加分隔符
+            AddSidebarSeparator(4);  // 在第 4 个项后添加
+            AddSidebarSeparator(7);   // 在第 7 个项后添加
+            AddSidebarSeparator(11);  // 在第 11 个项后添加
+            AddSidebarSeparator(14);  // 在第 14 个项后添加
+            AddSidebarSeparator(16);  // 在第 16 个项后添加
+        }
+
+        /// <summary>
+        /// 在指定位置添加侧边栏分隔符
+        /// </summary>
+        /// <param name="index">添加位置</param>
+        private void AddSidebarSeparator(int index)
+        {
+            if (index >= 0 && index <= SidebarItems.Count)
+            {
+                SidebarItems.Insert(index, new SidebarItem
+                {
+                    Type = SidebarItemType.Separator
+                });
+            }
+        }
+
+        /// <summary>
+        /// 订阅面板事件
+        /// </summary>
+        private void SubscribePanelEvents()
+        {
+            // 订阅所有面板的滚动和阴影事件
+            foreach (var config in _panelConfigurations)
+            {
+                if (config.UserControl != null)
+                {
+                    // 检查 UserControl 是否有这些事件
+                    var type = config.UserControl.GetType();
+                    var shadowEvent = type.GetEvent("IsTopBarNeedShadowEffect");
+                    var noShadowEvent = type.GetEvent("IsTopBarNeedNoShadowEffect");
+
+                    if (shadowEvent != null)
+                    {
+                        // 创建与事件类型匹配的委托
+                        var eventHandlerType = shadowEvent.EventHandlerType;
+                        var handlerMethod = GetType().GetMethod("HandleShadowEffect", 
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (handlerMethod != null)
+                        {
+                            var handler = System.Delegate.CreateDelegate(eventHandlerType, this, handlerMethod);
+                            shadowEvent.AddEventHandler(config.UserControl, handler);
+                        }
+                    }
+
+                    if (noShadowEvent != null)
+                    {
+                        // 创建与事件类型匹配的委托
+                        var eventHandlerType = noShadowEvent.EventHandlerType;
+                        var handlerMethod = GetType().GetMethod("HandleNoShadowEffect", 
+                            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (handlerMethod != null)
+                        {
+                            var handler = System.Delegate.CreateDelegate(eventHandlerType, this, handlerMethod);
+                            noShadowEvent.AddEventHandler(config.UserControl, handler);
+                        }
+                    }
+                }
+            }
+
+            // 订阅主题变化事件
+            if (ThemePanel != null)
+            {
+                ThemePanel.ThemeChanged += (o, s) =>
+                {
+                    ApplyTheme();
+                    ApplyThemeToAllPanels();
+                };
+            }
+        }
+
+        /// <summary>
+        /// 处理阴影效果事件
+        /// </summary>
+        private void HandleShadowEffect(object sender, EventArgs e)
+        {
+            DropShadowEffectTopBar.Opacity = 0.25;
+        }
+
+        /// <summary>
+        /// 处理无阴影效果事件
+        /// </summary>
+        private void HandleNoShadowEffect(object sender, EventArgs e)
+        {
+            DropShadowEffectTopBar.Opacity = 0;
+        }
+
+        /// <summary>
+        /// 初始化搜索面板事件
+        /// </summary>
+        private void InitializeSearchPanelEvents()
+        {
+            SearchPanelControl.NavigateToItem += SearchPanel_NavigateToItem;
+            SearchPanelControl.CloseSearch += SearchPanel_CloseSearch;
+        }
+
+        /// <summary>
+        /// 初始化菜单事件
+        /// </summary>
+        private void InitializeMenuEvents()
+        {
+            // 订阅菜单关闭事件，确保状态同步
+            if (MenuButtonContextMenu != null)
+            {
+                MenuButtonContextMenu.Closed += (s, e) =>
+                {
+                    // 菜单关闭时的处理
+                };
+            }
+        }
+
+        /// <summary>
+        /// 初始化主题状态
+        /// </summary>
+        private void InitializeThemeState()
+        {
+            // 初始化侧边栏项目的主题状态
+            bool isDarkTheme = MainWindow.Settings?.Appearance != null &&
+                              (MainWindow.Settings.Appearance.Theme == 1 ||
+                               (MainWindow.Settings.Appearance.Theme == 2 && !IsSystemThemeLight()));
+            foreach (var item in SidebarItems)
+            {
+                item.IsDarkTheme = isDarkTheme;
+            }
+
+            UpdateSidebarItemsSelection();
+        }
+
+
 
         /// <summary>
         /// 根据当前选中的侧边栏项更新侧边栏条目状态、面板可见性与主题并将视图滚动到顶部。
@@ -963,13 +1002,10 @@ namespace Ink_Canvas.Windows
         /// </remarks>
         public void UpdateSidebarItemsSelection()
         {
+            // 更新侧边栏项的选中状态
             foreach (var si in SidebarItems)
             {
                 si.Selected = si.Name == _selectedSidebarItemName;
-                if (si.Selected && SettingsWindowTitle != null)
-                {
-                    SettingsWindowTitle.Text = si.Title;
-                }
             }
             CollectionViewSource.GetDefaultView(SidebarItems).Refresh();
 
@@ -982,77 +1018,54 @@ namespace Ink_Canvas.Windows
                 si.IsDarkTheme = isDarkTheme;
             }
 
-            // 定义面板映射
-            var panelMappings = new Dictionary<string, UserControl>
+            // 切换面板可见性并获取选中的面板
+            UserControl selectedPanel = null;
+            if (_panelConfigurations != null)
             {
-                { "AboutItem", SettingsAboutPanel },
-                { "CanvasAndInkItem", CanvasAndInkPanel },
-                { "GesturesItem", GesturesPanel },
-                { "StartupItem", StartupPanel },
-                { "ThemeItem", ThemePanel },
-                { "ShortcutsItem", ShortcutsPanel },
-                { "CrashActionItem", CrashActionPanel },
-                { "InkRecognitionItem", InkRecognitionPanel },
-                { "AutomationItem", AutomationPanel },
-                { "PowerPointItem", PowerPointPanel },
-                { "LuckyRandomItem", LuckyRandomPanel },
-                { "AdvancedItem", AdvancedPanel },
-                { "SnapshotItem", SnapshotPanel },
-                { "SecurityItem", SecurityPanel },
-                { "UpdateCenterItem", UpdateCenterPanel },
-                { "AppearanceItem", AppearancePanel }
-            };
-
-            // 设置面板可见性并应用主题
-            if (AboutPane != null) AboutPane.Visibility = _selectedSidebarItemName == "AboutItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (CanvasAndInkPane != null) CanvasAndInkPane.Visibility = _selectedSidebarItemName == "CanvasAndInkItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (GesturesPane != null) GesturesPane.Visibility = _selectedSidebarItemName == "GesturesItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (StartupPane != null) StartupPane.Visibility = _selectedSidebarItemName == "StartupItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (ThemePane != null) ThemePane.Visibility = _selectedSidebarItemName == "ThemeItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (ShortcutsPane != null) ShortcutsPane.Visibility = _selectedSidebarItemName == "ShortcutsItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (CrashActionPane != null) CrashActionPane.Visibility = _selectedSidebarItemName == "CrashActionItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (InkRecognitionPane != null) InkRecognitionPane.Visibility = _selectedSidebarItemName == "InkRecognitionItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (AutomationPane != null) AutomationPane.Visibility = _selectedSidebarItemName == "AutomationItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (PowerPointPane != null) PowerPointPane.Visibility = _selectedSidebarItemName == "PowerPointItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (LuckyRandomPane != null) LuckyRandomPane.Visibility = _selectedSidebarItemName == "LuckyRandomItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (AdvancedPane != null) AdvancedPane.Visibility = _selectedSidebarItemName == "AdvancedItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (SnapshotPane != null) SnapshotPane.Visibility = _selectedSidebarItemName == "SnapshotItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (SecurityPane != null) SecurityPane.Visibility = _selectedSidebarItemName == "SecurityItem" ? Visibility.Visible : Visibility.Collapsed;
-            if (UpdateCenterPane != null) UpdateCenterPane.Visibility = _selectedSidebarItemName == "UpdateCenterItem" ? Visibility.Visible : Visibility.Collapsed;
-
-            // 为新显示的面板应用主题（延迟执行，确保面板已完全显示）
-            if (panelMappings.ContainsKey(_selectedSidebarItemName))
-            {
-                var selectedPanel = panelMappings[_selectedSidebarItemName];
-                if (selectedPanel != null)
+                foreach (var config in _panelConfigurations)
                 {
-                    Dispatcher.BeginInvoke(new Action(() =>
+                    // 更新窗口标题
+                    if (config.Name == _selectedSidebarItemName && SettingsWindowTitle != null)
                     {
-                        try
-                        {
-                            var applyThemeMethod = selectedPanel.GetType().GetMethod("ApplyTheme",
-                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                            if (applyThemeMethod != null)
-                            {
-                                applyThemeMethod.Invoke(selectedPanel, null);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"切换面板时应用主题到 {selectedPanel.GetType().Name} 时出错: {ex.Message}");
-                        }
-                    }), System.Windows.Threading.DispatcherPriority.Loaded);
-                }
-            }
-            if (SettingsPaneScrollViewers != null)
-            {
-                foreach (var sv in SettingsPaneScrollViewers)
-                {
-                    if (sv != null)
+                        SettingsWindowTitle.Text = config.Title;
+                        selectedPanel = config.UserControl;
+                    }
+
+                    // 切换面板可见性
+                    if (config.Panel != null)
                     {
-                        sv.ScrollToTop();
+                        config.Panel.Visibility = config.Name == _selectedSidebarItemName 
+                            ? Visibility.Visible 
+                            : Visibility.Collapsed;
+                    }
+
+                    // 滚动到顶部
+                    if (config.ScrollViewer != null)
+                    {
+                        config.ScrollViewer.ScrollToTop();
                     }
                 }
+            }
+
+            // 为新显示的面板应用主题（延迟执行，确保面板已完全显示）
+            if (selectedPanel != null)
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try
+                    {
+                        var applyThemeMethod = selectedPanel.GetType().GetMethod("ApplyTheme",
+                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (applyThemeMethod != null)
+                        {
+                            applyThemeMethod.Invoke(selectedPanel, null);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"切换面板时应用主题到 {selectedPanel.GetType().Name} 时出错: {ex.Message}");
+                    }
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
             }
         }
 
