@@ -31,6 +31,12 @@ namespace Ink_Canvas.Windows.SettingsViews2
         
         [ImportMany(typeof(IPluginSettingsPage))]
         private IEnumerable<IPluginSettingsPage> _pluginPages; // 自动导入所有插件页面
+        
+        // 保存窗口原始位置和大小
+        private double _originalLeft;
+        private double _originalTop;
+        private double _originalWidth;
+        private double _originalHeight;
 
         public SettingsWindow2()
         {
@@ -81,6 +87,34 @@ namespace Ink_Canvas.Windows.SettingsViews2
 
             // 修复触摸屏操作后鼠标指针消失的问题
             FixTouchScreenCursorIssue();
+
+            // 窗口状态改变时调整大小限制
+            this.StateChanged += (sender, e) =>
+            {
+                if (this.WindowState == WindowState.Maximized)
+                {
+                    // 保存窗口原始位置和大小
+                    _originalLeft = this.Left;
+                    _originalTop = this.Top;
+                    _originalWidth = this.Width;
+                    _originalHeight = this.Height;
+                    
+                    // 最大化时清除最大尺寸限制
+                    this.MaxWidth = double.PositiveInfinity;
+                    this.MaxHeight = double.PositiveInfinity;
+                }
+                else
+                {
+                    // 非最大化时恢复窗口原始位置和大小
+                    this.Left = _originalLeft;
+                    this.Top = _originalTop;
+                    this.Width = _originalWidth;
+                    this.Height = _originalHeight;
+                    
+                    // 只设置最大尺寸，不改变窗口位置
+                    SetMaxSizeOnly();
+                }
+            };
         }
 
         #region 修复触摸屏鼠标指针消失问题
@@ -160,11 +194,13 @@ namespace Ink_Canvas.Windows.SettingsViews2
         #endregion
 
         #region 高DPI/多屏自适应窗口控制
-        private void SetMaxSizeAndCenter()
+        
+        /// <summary>
+        /// 获取当前窗口所在屏幕的工作区尺寸（DIP单位）
+        /// </summary>
+        private void GetWorkAreaSize(out double workAreaWidthDip, out double workAreaHeightDip, out double screenLeftDip, out double screenTopDip)
         {
-            if (!this.IsLoaded) return;
-
-            // 1. 获取窗口当前所在屏幕（而非固定主屏，彻底解决多屏问题）
+            // 1. 获取窗口当前所在屏幕
             var windowHandle = new WindowInteropHelper(this).Handle;
             var currentScreen = Screen.FromHandle(windowHandle);
             var workingArea = currentScreen.WorkingArea;
@@ -182,18 +218,36 @@ namespace Ink_Canvas.Windows.SettingsViews2
             }
 
             // 3. 物理像素 → WPF设备无关像素(DIP)转换
-            double workAreaWidthDip = workingArea.Width / dpiScaleX;
-            double workAreaHeightDip = workingArea.Height / dpiScaleY;
-            double screenLeftDip = screenBounds.Left / dpiScaleX;
-            double screenTopDip = screenBounds.Top / dpiScaleY;
+            workAreaWidthDip = workingArea.Width / dpiScaleX;
+            workAreaHeightDip = workingArea.Height / dpiScaleY;
+            screenLeftDip = screenBounds.Left / dpiScaleX;
+            screenTopDip = screenBounds.Top / dpiScaleY;
+        }
 
-            // 4. 设置窗口最大尺寸（保留你原有的边距）
+        private void SetMaxSizeAndCenter()
+        {
+            if (!this.IsLoaded) return;
+
+            GetWorkAreaSize(out double workAreaWidthDip, out double workAreaHeightDip, out double screenLeftDip, out double screenTopDip);
+
+            // 设置窗口最大尺寸
             this.MaxWidth = workAreaWidthDip;
             this.MaxHeight = workAreaHeightDip;
 
-            // 5. 窗口在当前屏幕居中（解决副屏居中跑偏问题）
+            // 窗口在当前屏幕居中（解决副屏居中跑偏问题）
             this.Left = screenLeftDip + (workAreaWidthDip - this.ActualWidth) / 2;
             this.Top = screenTopDip + (workAreaHeightDip - this.ActualHeight) / 2;
+        }
+
+        private void SetMaxSizeOnly()
+        {
+            if (!this.IsLoaded) return;
+
+            GetWorkAreaSize(out double workAreaWidthDip, out double workAreaHeightDip, out _, out _);
+
+            // 只设置窗口最大尺寸，不改变窗口位置
+            this.MaxWidth = workAreaWidthDip;
+            this.MaxHeight = workAreaHeightDip;
         }
 
         #region DPI/系统缩放变化监听
