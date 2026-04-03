@@ -32,6 +32,7 @@
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="此部分的设置项将会在幻灯片播放时使用，优先级高于其他设置项" 
                                Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
+                    <!-- Description = 在PPT放映模式下显示翻页控制按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
@@ -175,6 +176,7 @@
                             <CheckBox x:Name="CheckboxEnableLSPPTButton" IsChecked="True" Content="左侧" Margin="0,0,16,0" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                             <CheckBox x:Name="CheckboxEnableRSPPTButton" IsChecked="True" Content="右侧" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                         </StackPanel>
+                        <!-- Description = 调大往上偏移，调小往下偏移，修改为0为不偏移，居中放置 -->
                         <Grid Height="54">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -194,6 +196,7 @@
                             </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                        <!-- Description = 调大往右偏移，调小往左偏移，修改为0为不偏移，居中放置 -->
                         <Grid Height="54">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -213,6 +216,7 @@
                             </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                        <!-- Description = 调整左下按钮的位置 -->
                         <Grid Height="54">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -232,6 +236,7 @@
                             </Grid>
                         </Grid>
                         <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                        <!-- Description = 调整右下按钮的位置 -->
                         <Grid Height="54">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -258,6 +263,7 @@
                             <CheckBox x:Name="CheckboxSPPTBlackBackground" IsChecked="True" Content="黑色背景" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                         </StackPanel>
                         <StackPanel x:Name="PPTLSButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
+                            <!-- Description = 调整左侧翻页按钮的透明度 -->
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -278,6 +284,7 @@
                             </Grid>
                         </StackPanel>
                         <StackPanel x:Name="PPTRSButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
+                            <!-- Description = 调整右侧翻页按钮的透明度 -->
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -305,6 +312,7 @@
                             <CheckBox x:Name="CheckboxBPPTBlackBackground" IsChecked="True" Content="黑色背景" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                         </StackPanel>
                         <StackPanel x:Name="PPTLBButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
+                            <!-- Description = 调整左下翻页按钮的透明度 -->
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -325,6 +333,7 @@
                             </Grid>
                         </StackPanel>
                         <StackPanel x:Name="PPTRBButtonOpacityPanel" Margin="0,8,0,8" Visibility="Visible">
+                            <!-- Description = 调整右下翻页按钮的透明度 -->
                             <Grid Height="54">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -405,6 +414,7 @@
             <!-- PPT放映模式设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <!-- Description = 进入PPT放映时自动切换到批注模式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入 PPT 放映时自动进入批注模式" HorizontalAlignment="Left"/>
@@ -437,6 +447,7 @@
                         </StackPanel>
                     </Border>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在幻灯片模式下允许使用双指手势 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="允许幻灯片模式下的双指手势" HorizontalAlignment="Left"/>
@@ -451,6 +462,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 开启后在 PPT 放映模式下也显示手势按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="允许使用手指手势进行幻灯片翻页" HorizontalAlignment="Left"/>
@@ -484,6 +496,7 @@
             <!-- PPT时间胶囊设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <!-- Description = 选择时间胶囊在屏幕上的显示位置 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="PPT时间显示胶囊" HorizontalAlignment="Left"/>
@@ -521,6 +534,7 @@
             <!-- PPT提示设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <!-- Description = 开启后会记录上次播放的页数，点击"是"后会自动跳转 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="记忆并提示上次播放位置" HorizontalAlignment="Left"/>
@@ -535,6 +549,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 进入PPT放映时自动跳转到第一页 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入放映时回到首页" HorizontalAlignment="Left"/>
@@ -549,6 +564,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在播放隐藏幻灯片时显示提示 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="提示隐藏幻灯片" HorizontalAlignment="Left"/>
@@ -563,6 +579,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在PPT自动播放时显示提示 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="提示是否已启用自动播放" HorizontalAlignment="Left"/>

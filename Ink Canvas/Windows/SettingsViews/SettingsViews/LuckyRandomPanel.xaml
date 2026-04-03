@@ -30,6 +30,7 @@
             <!-- 基本设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <!-- Description = 在随机点名窗口中显示修改名单的按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示修改随机点名名单的按钮" HorizontalAlignment="Left"/>
@@ -44,6 +45,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在随机点名窗口中显示随机抽和单次抽按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用随机抽和单次抽按钮" HorizontalAlignment="Left"/>
@@ -58,6 +60,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 启用快速抽人的悬浮按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用快抽悬浮按钮" HorizontalAlignment="Left"/>
@@ -72,6 +75,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 使用外部点名工具代替内置点名功能 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="直接调用外部点名" HorizontalAlignment="Left"/>
@@ -109,6 +113,7 @@
             <!-- 窗口设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <!-- Description = 设置单次抽人窗口自动关闭的延迟时间 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="单次抽人窗口关闭延迟" HorizontalAlignment="Left"/>
@@ -120,6 +125,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 设置单次随机点名最多抽取的人数 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="单次随机点名人数上限" HorizontalAlignment="Left"/>
@@ -137,6 +143,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="新点名UI设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 使用新的点名界面设计 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用新点名UI" HorizontalAlignment="Left"/>
@@ -151,6 +158,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 使用机器学习算法避免重复抽取相同的人 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用机器学习避免重复" HorizontalAlignment="Left"/>
@@ -165,6 +173,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 设置用于避免重复的历史记录数量 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="避免重复历史记录数量" HorizontalAlignment="Left"/>
@@ -176,6 +185,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 设置机器学习算法避免重复的权重 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="避免重复权重" HorizontalAlignment="Left"/>

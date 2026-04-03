@@ -30,6 +30,7 @@
             <!-- 主题设置 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
+                    <!-- Description = 选择应用程序的主题样式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="主题" HorizontalAlignment="Left"/>
@@ -53,6 +54,7 @@
             <!-- 启动动画设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
+                    <!-- Description = 启动时显示动画效果 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用启动动画" HorizontalAlignment="Left"/>
@@ -147,6 +149,7 @@
                         </WrapPanel>
                     </StackPanel>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 调整浮动工具栏的大小 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Horizontal" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自定义浮动栏图标" HorizontalAlignment="Left" Margin="0,0,12,0"/>
@@ -166,6 +169,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 调整浮动工具栏的透明度 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="浮动工具栏透明度" HorizontalAlignment="Left"/>
@@ -177,6 +181,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 在PPT模式下浮动工具栏的透明度（重新进入PPT放映后生效） -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="浮栏在PPT下透明度" HorizontalAlignment="Left"/>
@@ -188,6 +193,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 在调色盘窗口中显示笔尖模式切换按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="在调色盘窗口中显示 笔尖模式 按钮" HorizontalAlignment="Left"/>
@@ -202,6 +208,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 使用旧版浮动栏按钮的界面样式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="使用老版浮动栏按钮UI" HorizontalAlignment="Left"/>
@@ -216,6 +223,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="浮动栏按钮显示" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 在浮动栏中显示形状按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示形状按钮" HorizontalAlignment="Left"/>
@@ -224,6 +232,7 @@
                         <CheckBox x:Name="CheckBoxShowShapeButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示撤销按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示撤销按钮" HorizontalAlignment="Left"/>
@@ -232,6 +241,7 @@
                         <CheckBox x:Name="CheckBoxShowUndoButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示重做按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示重做按钮" HorizontalAlignment="Left"/>
@@ -240,6 +250,7 @@
                         <CheckBox x:Name="CheckBoxShowRedoButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示清空按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示清空按钮" HorizontalAlignment="Left"/>
@@ -248,6 +259,7 @@
                         <CheckBox x:Name="CheckBoxShowClearButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示白板按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示白板按钮" HorizontalAlignment="Left"/>
@@ -256,6 +268,7 @@
                         <CheckBox x:Name="CheckBoxShowWhiteboardButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示隐藏按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示隐藏按钮" HorizontalAlignment="Left"/>
@@ -264,6 +277,7 @@
                         <CheckBox x:Name="CheckBoxShowHideButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示套索选择按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示套索选择按钮" HorizontalAlignment="Left"/>
@@ -272,6 +286,7 @@
                         <CheckBox x:Name="CheckBoxShowLassoSelectButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示清并鼠按钮 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示清并鼠按钮" HorizontalAlignment="Left"/>
@@ -280,6 +295,7 @@
                         <CheckBox x:Name="CheckBoxShowClearAndMouseButton" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" IsChecked="True"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在浮动栏中显示快捷调色盘 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="显示快捷调色盘" HorizontalAlignment="Left"/>
@@ -288,6 +304,7 @@
                         <CheckBox x:Name="CheckBoxShowQuickColorPalette" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0"/>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 选择快捷调色盘的显示模式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="快捷调色盘显示模式" HorizontalAlignment="Left"/>
@@ -330,6 +347,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="任务栏托盘图标" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 在任务栏系统托盘显示图标 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用托盘图标" HorizontalAlignment="Left"/>
@@ -349,6 +367,7 @@
             <!-- 白板设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
+                    <!-- Description = 将白板界面缩放至80% -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="白板 UI 80% 缩放" HorizontalAlignment="Left"/>
@@ -363,6 +382,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 在白板界面显示当前时间和日期 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="在白板中显示当前时间和日期" HorizontalAlignment="Left"/>
@@ -377,6 +397,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 在白板界面显示励志语句 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="在白板中显示信仰の源1（好喝的/毒的鸡汤）" HorizontalAlignment="Left"/>
@@ -417,6 +438,7 @@
             <!-- 收纳模式设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
+                    <!-- Description = 在收纳模式下显示快速操作面板 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="在收纳模式下启用快速面板" HorizontalAlignment="Left"/>
@@ -431,6 +453,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 选择取消收纳按钮的图标样式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="取消收纳按钮图标" HorizontalAlignment="Left"/>
@@ -446,6 +469,7 @@
                         </WrapPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 开启后，退出收纳模式时将自动切换至批注模式，便于快速批注 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="退出收纳模式时自动切换至批注模式" HorizontalAlignment="Left"/>
@@ -460,6 +484,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 开启后，退出PPT放映后会自动收纳浮动栏 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="退出PPT放映后自动收纳浮动栏" HorizontalAlignment="Left"/>
@@ -474,6 +499,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 开启后，退出白板模式时会自动收纳到侧边栏 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="退出白板时自动收纳" HorizontalAlignment="Left"/>

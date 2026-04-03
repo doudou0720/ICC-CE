@@ -25,6 +25,7 @@
             <!-- 墨迹识别主开关 -->
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical">
+                    <!-- Description = 自动将手绘图形识别并转换为标准形状 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用墨迹识别" HorizontalAlignment="Left"/>
@@ -44,6 +45,7 @@
             <!-- 形状识别选项 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8" x:Name="InkRecognitionOptionsPanel">
                 <StackPanel Orientation="Vertical">
+                    <!-- Description = 矫正后的矩形不包含模拟压感信息 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="阻止矫正后的矩形带有模拟压感值" HorizontalAlignment="Left"/>
@@ -58,6 +60,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 矫正后的三角形不包含模拟压感信息 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="阻止矫正后的三角形带有模拟压感值" HorizontalAlignment="Left"/>
@@ -72,6 +75,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb"/>
+                    <!-- Description = 当绘制的直线超过设定长度阈值时，将自动调整为完美直线 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Horizontal" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <CheckBox x:Name="ToggleCheckboxEnableInkToShapeTriangle" IsChecked="True">
@@ -145,6 +149,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 高精度模式下，每隔10像素取一个计数点，获取更准确的平均值用于判断 -->
                     <Grid Height="54" x:Name="HighPrecisionLineStraightenPanel">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="高精度直线拉直" HorizontalAlignment="Left"/>
@@ -159,6 +164,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 当绘制的直线端点靠近其他直线端点时，将自动吸附连接 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="直线端点吸附" HorizontalAlignment="Left"/>

@@ -26,6 +26,7 @@
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="计时器UI设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 使用旧版本的计时器按钮界面 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="使用老版计时器按钮UI" HorizontalAlignment="Left"/>
@@ -40,6 +41,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 使用新样式的计时器界面 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="新计时器UI" HorizontalAlignment="Left"/>
@@ -54,6 +56,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 计时器超时后继续正向计时 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用正计时" HorizontalAlignment="Left"/>
@@ -68,6 +71,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 计时器超时后数字显示为红色 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="超时醒目数字" HorizontalAlignment="Left"/>
@@ -88,6 +92,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="提醒设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 设置计时器提醒音的音量 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="计时器提醒音量" HorizontalAlignment="Left"/>
@@ -105,6 +110,7 @@
                         <Button x:Name="ButtonResetTimerSound" Content="重置" Padding="10,3" Background="#2563eb" Foreground="White"/>
                     </StackPanel>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 启用渐进式提醒功能 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="渐进提醒" HorizontalAlignment="Left"/>
@@ -119,6 +125,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 设置渐进提醒音的音量 -->
                     <Grid Height="54" x:Name="ProgressiveReminderVolumePanel" Visibility="Collapsed">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="渐进提醒音量" HorizontalAlignment="Left"/>

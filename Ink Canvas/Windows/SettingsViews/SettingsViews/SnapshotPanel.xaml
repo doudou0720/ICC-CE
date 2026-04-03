@@ -31,6 +31,7 @@
             <Border BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="截图设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 清空画布时自动保存当前画布截图 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="清屏时自动截图" HorizontalAlignment="Left"/>
@@ -45,6 +46,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 截图按日期分类保存到不同文件夹 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="截图分日期文件夹保存" HorizontalAlignment="Left"/>
@@ -59,6 +61,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 截图时同时保存当前画布的墨迹数据 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="截图时自动保存墨迹" HorizontalAlignment="Left"/>
@@ -73,6 +76,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 开启后，在幻灯片有墨迹时翻页会自动截屏 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动幻灯片截屏" HorizontalAlignment="Left"/>
@@ -87,6 +91,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 设置自动截图时所需的最小墨迹量 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动截图最小墨迹量" HorizontalAlignment="Left"/>
@@ -123,6 +128,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="自动清理设置" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 开启后将会删除自动保存目录下所有后缀名为 .icstk 和 .png 的文件 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="定期自动删除超过保存时间的墨迹、截图文件" HorizontalAlignment="Left"/>

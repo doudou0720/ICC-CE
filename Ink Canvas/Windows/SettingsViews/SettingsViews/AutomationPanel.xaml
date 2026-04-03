@@ -221,6 +221,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 开启后，执行自动收纳的软件在软件退出后不退出收纳模式，保持收纳状态 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <Image Source="/Resources/Icons-png/Powerpoint.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>
@@ -249,6 +250,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 查杀鸿合屏幕书写后自动进入批注模式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <Image Source="/Resources/Icons-png/EasiNote.png" Margin="0,0,6,0" Width="28" Height="28" VerticalAlignment="Center"/>

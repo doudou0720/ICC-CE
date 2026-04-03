@@ -157,6 +157,8 @@
                                 </StackPanel>
                             </Border>
                             
+                            <!-- Description = 选择要回滚到的历史版本 -->
+                            
                             <Grid Height="54" Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -224,6 +226,8 @@
                                           SelectionChanged="RollbackVersionComboBox_SelectionChanged"/>
                             </Grid>
                             
+                            <!-- Description = 回滚到下拉框中选择的版本 -->
+                            
                             <Grid Height="54" Margin="0,0,0,20">
                                 <StackPanel Orientation="Vertical" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="回滚到选中版本" HorizontalAlignment="Left"/>
@@ -231,6 +235,8 @@
                                 </StackPanel>
                                 <Button x:Name="RollbackButton" Content="回滚" Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="12,6" Click="RollbackButton_Click"/>
                             </Grid>
+                            
+                            <!-- Description = 根据当前选择的通道下载最新版本并执行安装，可用于修复损坏的安装 -->
                             
                             <Grid Height="54">
                                 <StackPanel Orientation="Vertical" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
@@ -242,6 +248,7 @@
                         </StackPanel>
                         
                         <StackPanel x:Name="SettingsTabContent" Visibility="Collapsed" Margin="18,18,18,18">
+                            <!-- Description = 定期检查是否有新版本可用 -->
                             <Grid Height="54">
                                 <StackPanel Orientation="Vertical" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="自动检查更新" HorizontalAlignment="Left"/>
@@ -256,6 +263,7 @@
                                 </Border>
                             </Grid>
                             <Border Height="1" Background="#ebebeb" Margin="0,0,0,0"/>
+                            <!-- Description = 在软件不使用时自动安装更新，无需手动操作 -->
                             <Grid Height="54" x:Name="AutoUpdateWithSilencePanel">
                                 <StackPanel Orientation="Vertical" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                                     <TextBlock Foreground="#2e3436" FontSize="14.5" Text="静默更新" HorizontalAlignment="Left"/>

@@ -41,6 +41,8 @@
                                FontSize="11"
                                Margin="0,0,0,12"/>
 
+                    <!-- Description = 开启后需要设置密码 -->
+
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用安全密码" HorizontalAlignment="Left"/>
@@ -61,6 +63,8 @@
 
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
 
+                    <!-- Description = 设置或修改安全密码 -->
+
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="密码管理" HorizontalAlignment="Left"/>
@@ -72,6 +76,8 @@
                     </Grid>
 
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+
+                    <!-- Description = 关闭 InkCanvasForClass 时进行密码验证 -->
 
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
@@ -89,6 +95,8 @@
 
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
 
+                    <!-- Description = 打开设置面板/新设置窗口时进行验证 -->
+
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进入设置需要密码" HorizontalAlignment="Left"/>
@@ -105,6 +113,8 @@
 
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
 
+                    <!-- Description = 重置 Settings.json 前进行二次验证 -->
+
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="重置配置需要密码" HorizontalAlignment="Left"/>
@@ -119,6 +129,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 在修改名单或清空名单前进行密码验证 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="修改/清空点名名单需要密码" HorizontalAlignment="Left"/>
@@ -142,6 +153,7 @@
                                Foreground="#9a9996"
                                FontSize="11"
                                Margin="0,0,0,12"/>
+                    <!-- Description = 开启后关键文件会被只读占用 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="进程保护" HorizontalAlignment="Left"/>

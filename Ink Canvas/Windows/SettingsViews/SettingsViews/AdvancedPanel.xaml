@@ -32,6 +32,7 @@
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="可在手指触摸画板时显示圆形橡皮或手掌触摸画板时显示的橡皮比手掌大很多时调整" 
                                TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
+                    <!-- Description = 启用特殊屏幕模式以优化触摸体验 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="特殊屏幕模式" HorizontalAlignment="Left"/>
@@ -46,6 +47,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 调整触摸大小的倍数 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="触摸倍数" HorizontalAlignment="Left"/>
@@ -57,6 +59,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 橡皮擦大小与触摸大小倍数绑定 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="橡皮擦绑定触摸大小倍数" HorizontalAlignment="Left"/>
@@ -71,6 +74,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 笔尖模式的接触面积区分界限 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="笔尖模式 BoundsWidth" HorizontalAlignment="Left"/>
@@ -82,6 +86,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 手指模式的接触面积区分界限 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="手指模式 BoundsWidth" HorizontalAlignment="Left"/>
@@ -93,6 +98,7 @@
                         </StackPanel>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 启用四边红外触摸屏模式 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="四边红外模式" HorizontalAlignment="Left"/>
@@ -112,6 +118,7 @@
             <!-- 日志和系统设置 -->
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
+                    <!-- Description = 启用日志记录功能 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="记录日志" HorizontalAlignment="Left"/>
@@ -144,6 +151,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 关闭软件时显示确认对话框 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="关闭软件时二次弹窗确认" HorizontalAlignment="Left"/>
@@ -164,6 +172,7 @@
             <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
                 <StackPanel Orientation="Vertical" Margin="18,18,18,18">
                     <TextBlock Text="实验性选项" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
+                    <!-- Description = 在自动更新前自动备份当前设置 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <Border Height="20" CornerRadius="3" Background="#7f1d1d" Padding="4,0" Margin="0,0,12,0">
@@ -378,6 +387,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 定期自动备份设置文件 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="定期自动备份" HorizontalAlignment="Left"/>
@@ -392,6 +402,7 @@
                         </Border>
                     </Grid>
                     <Border Height="1" Background="#ebebeb" Margin="0,8,0,8"/>
+                    <!-- Description = 设置定期备份的时间间隔 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="备份间隔" HorizontalAlignment="Left"/>
@@ -443,6 +454,7 @@
                     <TextBlock Text="外部协议调用" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
                     <TextBlock Text="允许通过 icc:// 协议调用软件，支持从浏览器或其他应用快速控制软件" 
                                TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
+                    <!-- Description = 开启后可通过 icc://fold (收纳) 或 icc://unfold (展开) 等命令控制 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用外部协议 (icc://)" HorizontalAlignment="Left"/>
@@ -468,6 +480,7 @@
                     <TextBlock Text="悬浮窗拦截" FontWeight="Bold" Foreground="#2e3436" FontSize="18" Margin="0,0,0,12"/>
                     <TextBlock Text="自动检测并拦截同类软件的悬浮窗" 
                                TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
+                    <!-- Description = 开启后自动检测并拦截同类软件的悬浮窗 -->
                     <Grid Height="54">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left">
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="启用悬浮窗拦截" HorizontalAlignment="Left"/>
