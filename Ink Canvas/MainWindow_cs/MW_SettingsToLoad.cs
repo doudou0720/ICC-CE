@@ -633,14 +633,12 @@ namespace Ink_Canvas
                 }
                 else
                 {
-                    int prev = Settings.PowerPointSettings.PPTButtonsDisplayOption;
                     Settings.PowerPointSettings.PPTButtonsDisplayOption = 2222;
                     CheckboxEnableLBPPTButton.IsChecked = true;
                     CheckboxEnableRBPPTButton.IsChecked = true;
                     CheckboxEnableLSPPTButton.IsChecked = true;
                     CheckboxEnableRSPPTButton.IsChecked = true;
-                    if (prev != 2222)
-                        SaveSettingsToFile();
+                    SaveSettingsToFile();
                 }
 
                 var sops = Settings.PowerPointSettings.PPTSButtonsOption.ToString();
@@ -654,13 +652,11 @@ namespace Ink_Canvas
                 }
                 else
                 {
-                    int prev = Settings.PowerPointSettings.PPTSButtonsOption;
                     Settings.PowerPointSettings.PPTSButtonsOption = 221;
                     CheckboxSPPTDisplayPage.IsChecked = true;
                     CheckboxSPPTHalfOpacity.IsChecked = true;
                     CheckboxSPPTBlackBackground.IsChecked = false;
-                    if (prev != 221)
-                        SaveSettingsToFile();
+                    SaveSettingsToFile();
                 }
 
                 var bops = Settings.PowerPointSettings.PPTBButtonsOption.ToString();
@@ -674,13 +670,11 @@ namespace Ink_Canvas
                 }
                 else
                 {
-                    int prev = Settings.PowerPointSettings.PPTBButtonsOption;
                     Settings.PowerPointSettings.PPTBButtonsOption = 121;
                     CheckboxBPPTDisplayPage.IsChecked = false;
                     CheckboxBPPTHalfOpacity.IsChecked = true;
                     CheckboxBPPTBlackBackground.IsChecked = false;
-                    if (prev != 121)
-                        SaveSettingsToFile();
+                    SaveSettingsToFile();
                 }
 
                 PPTButtonLeftPositionValueSlider.Value = Settings.PowerPointSettings.PPTLSButtonPosition;
@@ -1325,9 +1319,6 @@ namespace Ink_Canvas
 
             // 刷新配置文件列表
             try { RefreshConfigProfileList(); } catch (Exception ex) { LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Warning); }
-
-            // 一言分类数组固定为 a–l 顺序并去重，避免仅顺序/重复导致配置反复变化
-            StabilizeAppearanceHitokotoCategories();
             }
             finally
             {
