@@ -528,13 +528,13 @@ jobs:
       - name: Create enhanced changelog with file table
         id: enhanced_changelog
         run: |
-          version="${{ needs.prepare.outputs.version }}"
+          version='${{ needs.prepare.outputs.version }}'
           
           # 读取git-cliff生成的changelog内容
-          originalChangelog="${{ needs.prepare.outputs.changelog }}"
+          originalChangelog='${{ needs.prepare.outputs.changelog }}'
           
           # 检查是否为预发布版本，如果是则添加警告提示
-          if [ "${{ needs.prepare.outputs.is_prerelease }}" = "true" ]; then
+          if [ '${{ needs.prepare.outputs.is_prerelease }}' = "true" ]; then
             warningText=$'\n> [!CAUTION]\n'
             warningText+=$'> **注意：此版本为预览或测试版**\n'
             warningText+=$'> \n'
