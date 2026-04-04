@@ -178,7 +178,6 @@
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="AskEachTime" xml:space="preserve"><value>Ask each time</value></data>
   <data name="Canvas_AsymptoteHint" xml:space="preserve"><value># Disabling may cause undo bugs.</value></data>
-  <data name="Canvas_ShowCircleCenter" xml:space="preserve"><value>Show circle center</value></data>
   <data name="Canvas_WPFBezier" xml:space="preserve"><value>WPF default Bezier smoothing</value></data>
   <data name="Canvas_AdvancedSmoothing" xml:space="preserve"><value>Advanced curve smoothing (recommended)</value></data>
   <data name="Canvas_InkFade" xml:space="preserve"><value>Ink fade</value></data>
@@ -353,14 +352,12 @@
   <data name="PPT_LongPressPageTurn" xml:space="preserve"><value>PPT long-press to turn page</value></data>
   <data name="PPT_LongPressPageTurnHint" xml:space="preserve"><value># When enabled, long-press on PPT page button to turn pages continuously.</value></data>
   <data name="Startup_UIAccessTopMostHint" xml:space="preserve"><value># With UIA topmost on, app needs admin to stay on top. To turn off, fully quit then start again; restart will not disable it.</value></data>
-  <data name="Header_SilentUpdate" xml:space="preserve"><value>Silent update</value></data>
   <data name="Startup_SilentUpdateHint" xml:space="preserve"><value># Silent update installs when the app is idle; no manual action needed.</value></data>
   <data name="Startup_UpdateChannel" xml:space="preserve"><value>Update channel</value></data>
   <data name="Update_Release" xml:space="preserve"><value>Stable (Release)</value></data>
   <data name="Update_Preview" xml:space="preserve"><value>Preview</value></data>
   <data name="Update_Beta" xml:space="preserve"><value>Beta</value></data>
   <data name="Startup_UpdateChannelHint" xml:space="preserve"><value># Stable: reliable updates. Preview: new features with better stability than Beta. Beta: earliest new features.</value></data>
-  <data name="Btn_ManualUpdate" xml:space="preserve"><value>Check for updates</value></data>
   <data name="Startup_ManualUpdateHint" xml:space="preserve"><value># Check and download the latest version now.</value></data>
   <data name="Btn_FixVersion" xml:space="preserve"><value>Repair installation</value></data>
   <data name="Startup_FixVersionHint" xml:space="preserve"><value># Repair downloads the latest build for the selected channel and reinstalls; use to fix broken installs.</value></data>
@@ -379,7 +376,6 @@
   <data name="Canvas_EnablePressureTouchHint" xml:space="preserve"><value># When on, touch screens that support pressure will show pressure; for devices not recognized by the system.</value></data>
   <data name="Canvas_DisablePressure" xml:space="preserve"><value>Ignore pressure</value></data>
   <data name="Canvas_DisablePressureHint" xml:space="preserve"><value># When on, all strokes use uniform thickness; mutually exclusive with pressure-sensitive touch.</value></data>
-  <data name="Canvas_EraserSize" xml:space="preserve"><value>Eraser size</value></data>
   <data name="Canvas_EraserSize_VerySmall" xml:space="preserve"><value>Very small</value></data>
   <data name="Canvas_EraserSize_Small" xml:space="preserve"><value>Small</value></data>
   <data name="Canvas_EraserSize_Medium" xml:space="preserve"><value>Medium</value></data>
@@ -396,7 +392,6 @@
   <data name="Canvas_AdvancedBezierSmoothing" xml:space="preserve"><value>Use advanced curve smoothing (recommended)</value></data>
   <data name="Canvas_EnableInkFade" xml:space="preserve"><value>Enable ink fade</value></data>
   <data name="Canvas_EnableInkFadeHint" xml:space="preserve"><value># When on, ink is not committed to canvas; it fades after the set time.</value></data>
-  <data name="Canvas_InkFadeTime" xml:space="preserve"><value>Ink fade time</value></data>
   <data name="Canvas_HideInkFadeInPenMenu" xml:space="preserve"><value>Hide ink fade control in pen menu</value></data>
   <data name="Canvas_HideInkFadeInPenMenuHint" xml:space="preserve"><value># When on, the pen context menu will not show the ink fade control.</value></data>
   <data name="Canvas_BrushAutoRestore" xml:space="preserve"><value>Enable brush auto-restore</value></data>
@@ -765,8 +760,7 @@
   <data name="Startup_RunAtStartupHint" xml:space="preserve"><value>Automatically run the software when system starts</value></data>
   <data name="Startup_FoldAtStartupHint" xml:space="preserve"><value>Automatically dock to sidebar after startup</value></data>
   <data name="Startup_PPTOnlyModeHint" xml:space="preserve"><value>When enabled, the software will be completely hidden and only appear during PPT slideshow</value></data>
-  <data name="Startup_UIAccessTopMostHint" xml:space="preserve"><value>Use UIA method to achieve topmost, requires administrator privileges</value></data>
-
+  <data name="Startup_UIAccessTopMostHint_1" xml:space="preserve"><value>Use UIA method to achieve topmost, requires administrator privileges</value></data>
   <data name="AdvancedPanel_Hint" xml:space="preserve"><value>Enable special screen mode to optimize touch experience</value></data>
   <data name="AdvancedPanel_Hint_1" xml:space="preserve"><value>Adjust touch size multiplier</value></data>
   <data name="AdvancedPanel_Hint_2" xml:space="preserve"><value>Bind eraser size to touch size multiplier</value></data>

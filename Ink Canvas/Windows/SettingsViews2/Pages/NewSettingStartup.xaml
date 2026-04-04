@@ -36,7 +36,7 @@
                 
                 <!-- 窗口无焦点模式 -->
                 <ui:SettingsCard Description="{i18n:I18n Key=Startup_NoFocusModeHint}"
-                        Header="窗口无焦点模式">
+                        Header="{i18n:I18n Key=Startup_NoFocusMode}">
                     <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.View}" />
                     </ui:SettingsCard.HeaderIcon>
@@ -45,7 +45,7 @@
                 
                 <!-- 窗口无边框模式 -->
                 <ui:SettingsCard Description="{i18n:I18n Key=Startup_NoBorderModeHint}"
-                        Header="窗口无边框模式">
+                        Header="{i18n:I18n Key=Startup_NoBorderMode}">
                     <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
                     </ui:SettingsCard.HeaderIcon>
@@ -54,7 +54,7 @@
                 
                 <!-- 窗口置顶 -->
                 <ui:SettingsCard Description="{i18n:I18n Key=Startup_TopMostHint}"
-                        Header="窗口置顶">
+                        Header="{i18n:I18n Key=Startup_TopMost}">
                     <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
                     </ui:SettingsCard.HeaderIcon>
@@ -62,8 +62,8 @@
                 </ui:SettingsCard>
                 
                 <!-- UIA置顶 -->
-                <ui:SettingsCard Description="{i18n:I18n Key=Startup_UIAccessTopMostHint}"
-                        Header="UIA置顶">
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_UIAccessTopMostHint_1}"
+                        Header="{i18n:I18n Key=Startup_UIATopMost}">
                     <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}" />
                     </ui:SettingsCard.HeaderIcon>
@@ -95,9 +95,9 @@
                 <!-- 模式设置 -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                     Text="模式设置" />
-                
-                <ui:SettingsExpander Description="选择软件运行模式。仅PPT模式下，软件将完全隐藏，仅在PPT放映时出现。（实验性功能，可能不稳定。）"
-                        Header="运行模式">
+
+                <ui:SettingsExpander Description="{i18n:I18n Key=Settings_ModeDesc}"
+                        Header="{i18n:I18n Key=Settings_ModeDesc_1}">
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
                     </ui:SettingsExpander.HeaderIcon>
