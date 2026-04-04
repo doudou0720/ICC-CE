@@ -732,6 +732,7 @@ jobs:
             InkCanvasForClass.CE.${{ needs.prepare.outputs.version }}.zip
           fail_on_unmatched_files: false
           repository: "InkCanvasForClass/community-beta"
+          token: ${{ steps.octo-sts-beta.outputs.token }}
         env:
           GITHUB_TOKEN: ${{ steps.octo-sts-beta.outputs.token }}
 
