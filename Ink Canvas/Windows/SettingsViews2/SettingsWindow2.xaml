@@ -20,7 +20,10 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources />
+                <ui:ThemeResources CanBeAccessedAcrossThreads="True">
+                    <ui:ThemeResources.ThemeDictionaries>
+                    </ui:ThemeResources.ThemeDictionaries>
+                </ui:ThemeResources>
             </ResourceDictionary.MergedDictionaries>
             <!--  L-Pattern Overwriting resources  -->
             <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
@@ -31,21 +34,59 @@
     </Window.Resources>
     
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Rectangle
+            x:Name="XboxContentSafeRect"
+            Width="48"
+            Canvas.ZIndex="0"
+            Visibility="Collapsed" />
+
+        <Border
+            x:Name="AppTitleBar"
+            Grid.Column="1"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            IsHitTestVisible="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="137"/>
+                </Grid.ColumnDefinitions>
+                <ikw:SimpleStackPanel x:Name="AppTitle" Orientation="Horizontal" Spacing="12">
+                    <Image Source="\Resources\icc.ico" Width="20" RenderOptions.BitmapScalingMode="HighQuality" Margin="57,0,0,0"/>
+                    <TextBlock x:Name="AppTitleText"
+                        VerticalAlignment="Center"
+                        Text="应用设置" Margin="0,1,20,0" TextWrapping="NoWrap"/>
+                </ikw:SimpleStackPanel>
+            </Grid>
+        </Border>
+
+
+
+
+
         <ui:NavigationView
             x:Name="NavigationViewControl"
+            Grid.Column="1"
             AlwaysShowHeader="True"
-            CompactPaneLength="48"
-            Header="设置"
+            Canvas.ZIndex="0"
+            Header=" " 
             IsFooterSeparatorVisible="True"
             PaneTitle="设置"
             IsTabStop="False"
             IsTitleBarAutoPaddingEnabled="False"
+            PaneDisplayMode="Auto"
             SelectionChanged="OnNavigationViewSelectionChanged"
             BackRequested="OnNavigationViewBackRequested"
             IsSettingsVisible="True"
             IsBackButtonVisible="Visible"
             IsBackEnabled="True"
-            PaneDisplayMode="Auto"
             OpenPaneLength="240"
             ScrollViewer.VerticalScrollBarVisibility="Auto"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -55,7 +96,6 @@
                     <Grid Margin="0,8,0,12">
                         <TextBlock
                             Text="{Binding}"
-                            Style="{DynamicResource TitleTextBlockStyle}"
                             FontSize="20"
                             FontWeight="SemiBold"/>
                     </Grid>
@@ -78,7 +118,7 @@
             </ui:NavigationView.AutoSuggestBox>
 
             <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItemHeader Content="ICC CE 设置" Foreground="Black"/>
+                <ui:NavigationViewItemHeader Content="ICC CE 设置"/>
                 <!-- 基本设置 -->
                 <ui:NavigationViewItem
                     x:Name="BasicItem"
@@ -182,7 +222,7 @@
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItemHeader Content="插件设置"  Foreground="Black"/>
+                <ui:NavigationViewItemHeader Content="插件设置"/>
             </ui:NavigationView.MenuItems>
 
             <ui:NavigationView.FooterMenuItems>
