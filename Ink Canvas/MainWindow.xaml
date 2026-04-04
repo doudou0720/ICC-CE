@@ -134,6 +134,7 @@
 
             <Style x:Key="AutoFitGestureOptionLabel10" TargetType="Label">
                 <Setter Property="Foreground" Value="{DynamicResource FloatBarForeground}" />
+                <Setter Property="FontWeight" Value="Normal" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
                 <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -141,6 +142,12 @@
                 <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="4" />
                 <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="8" />
                 <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
+            </Style>
+
+            <!-- 白板浮动栏手势面板：去掉外层 Viewbox 后略增字号，接近原先缩放观感，字重仍与非白板栏一致 -->
+            <Style x:Key="AutoFitBoardGestureOptionLabel10" TargetType="Label" BasedOn="{StaticResource AutoFitGestureOptionLabel10}">
+                <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="5" />
+                <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="10" />
             </Style>
 
             <!-- Navigation Button Style -->
@@ -5294,7 +5301,7 @@
                                                     <Border BorderBrush="#1e3a8a" BorderThickness="0,0,0,1"
                                                         CornerRadius="8,8,0,0"
                                                         Background="#2563eb" Margin="-1,-1,-1,1">
-                                                        <Canvas Height="36" ClipToBounds="True">
+                                                        <Canvas Height="38" ClipToBounds="True">
                                                             <TextBlock Text="{i18n:I18n Key=Board_GestureOptions}" Canvas.Left="12" Foreground="White"
                                                                 Padding="0,7"
                                                                 FontSize="17" FontWeight="Bold"
@@ -5317,10 +5324,10 @@
                                                                     RenderOptions.BitmapScalingMode="HighQuality"
                                                                     Height="16"
                                                                     Width="16" />
-                                                                <Label Content="{i18n:I18n Key=Board_MultiTouchWriting}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="56"
-                                                                    Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                                                <Label Content="{i18n:I18n Key=Board_MultiTouchWriting}" FontSize="10"
+                                                                    VerticalAlignment="Center" Width="62"
+                                                                    Style="{StaticResource AutoFitBoardGestureOptionLabel10}" />
+                                                                <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         x:Name="BoardToggleSwitchEnableMultiTouchMode"
                                                                         FontFamily="Microsoft YaHei UI"
@@ -5349,10 +5356,10 @@
                                                                     RenderOptions.BitmapScalingMode="HighQuality"
                                                                     Height="16"
                                                                     Width="16" />
-                                                                <Label Content="{i18n:I18n Key=Board_TwoFingerMove}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="56"
-                                                                    Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                                                <Label Content="{i18n:I18n Key=Board_TwoFingerMove}" FontSize="10"
+                                                                    VerticalAlignment="Center" Width="62"
+                                                                    Style="{StaticResource AutoFitBoardGestureOptionLabel10}" />
+                                                                <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         x:Name="BoardToggleSwitchEnableTwoFingerTranslate"
                                                                         FontFamily="Microsoft YaHei UI"
@@ -5381,10 +5388,10 @@
                                                                     RenderOptions.BitmapScalingMode="HighQuality"
                                                                     Height="16"
                                                                     Width="16" />
-                                                                <Label Content="{i18n:I18n Key=Board_TwoFingerZoom}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="56"
-                                                                    Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                                                <Label Content="{i18n:I18n Key=Board_TwoFingerZoom}" FontSize="10"
+                                                                    VerticalAlignment="Center" Width="62"
+                                                                    Style="{StaticResource AutoFitBoardGestureOptionLabel10}" />
+                                                                <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         FontFamily="Microsoft YaHei UI"
                                                                         IsOn="False" OnContent="" OffContent=""
@@ -5411,10 +5418,10 @@
                                                                     RenderOptions.BitmapScalingMode="HighQuality"
                                                                     Height="16"
                                                                     Width="16" />
-                                                                <Label Content="{i18n:I18n Key=Board_TwoFingerRotate}" FontSize="8"
-                                                                    VerticalAlignment="Center" Width="56"
-                                                                    Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                                                <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                                                <Label Content="{i18n:I18n Key=Board_TwoFingerRotate}" FontSize="10"
+                                                                    VerticalAlignment="Center" Width="62"
+                                                                    Style="{StaticResource AutoFitBoardGestureOptionLabel10}" />
+                                                                <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                                                     <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                                         FontFamily="Microsoft YaHei UI"
                                                                         IsOn="False" OnContent="" OffContent=""
@@ -10292,7 +10299,7 @@
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_MultiTouchWriting}" FontSize="8"
                                            VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                    <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          Name="ToggleSwitchEnableMultiTouchMode"
                                                          FontFamily="Microsoft YaHei UI" IsOn="False" OnContent=""
@@ -10318,7 +10325,7 @@
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerMove}" FontSize="8"
                                            VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                    <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          Name="ToggleSwitchEnableTwoFingerTranslate"
                                                          FontFamily="Microsoft YaHei UI" IsOn="False" OnContent=""
@@ -10345,7 +10352,7 @@
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerZoom}" FontSize="8"
                                            VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                    <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          FontFamily="Microsoft YaHei UI"
                                                          IsOn="False" OnContent="" OffContent=""
@@ -10372,7 +10379,7 @@
                                     <Label Content="{i18n:I18n Key=FloatingBar_Gesture_TwoFingerRotate}" FontSize="8"
                                            VerticalAlignment="Center" Width="56"
                                            Style="{StaticResource AutoFitGestureOptionLabel10}" />
-                                    <Viewbox Width="36" Height="18" Margin="2,0,0,0">
+                                    <Viewbox Width="36" Height="20" Margin="2,0,0,0">
                                         <ui:ToggleSwitch MinWidth="0" Margin="0,-6,0,-6"
                                                          FontFamily="Microsoft YaHei UI"
                                                          IsOn="False" OnContent="" OffContent=""
