@@ -483,7 +483,7 @@ jobs:
           python-version: '3.14'
           
       - name: Sign release artifacts with sigstore-python
-        uses: sigstore/gh-action-sigstore-python@v3.2.0
+        uses: sigstore/gh-action-sigstore-python@v3.3.0
         with:
           inputs: |
             build-files-${{ needs.prepare.outputs.version }}-AnyCPU/*.zip
@@ -528,13 +528,13 @@ jobs:
       - name: Create enhanced changelog with file table
         id: enhanced_changelog
         run: |
-          version="${{ needs.prepare.outputs.version }}"
+          version='${{ needs.prepare.outputs.version }}'
           
           # 读取git-cliff生成的changelog内容
-          originalChangelog="${{ needs.prepare.outputs.changelog }}"
+          originalChangelog='${{ needs.prepare.outputs.changelog }}'
           
           # 检查是否为预发布版本，如果是则添加警告提示
-          if [ "${{ needs.prepare.outputs.is_prerelease }}" = "true" ]; then
+          if [ '${{ needs.prepare.outputs.is_prerelease }}' = "true" ]; then
             warningText=$'\n> [!CAUTION]\n'
             warningText+=$'> **注意：此版本为预览或测试版**\n'
             warningText+=$'> \n'
@@ -549,43 +549,43 @@ jobs:
           
           # AnyCPU (x64) 架构文件
           if [ -f "InkCanvasForClass.CE.$version-x64.zip" ]; then
-            zipSize=$(stat -c%s "InkCanvasForClass.CE.$version-x64.zip")
+            zipSize=$(wc -c < "InkCanvasForClass.CE.$version-x64.zip")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'-x64.zip | '"$zipSize"' bytes |\n'
           fi
           
           if [ -f "InkCanvasForClass.CE.$version-x64.Setup.exe" ]; then
-            installerSize=$(stat -c%s "InkCanvasForClass.CE.$version-x64.Setup.exe")
+            installerSize=$(wc -c < "InkCanvasForClass.CE.$version-x64.Setup.exe")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'-x64.Setup.exe | '"$installerSize"' bytes |\n'
           fi
           
           if [ -f "InkCanvasForClass.CE.$version-x64.zip.sigstore.json" ]; then
-            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version-x64.zip.sigstore.json")
+            sigstoreSize=$(wc -c < "InkCanvasForClass.CE.$version-x64.zip.sigstore.json")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'-x64.zip.sigstore.json | '"$sigstoreSize"' bytes |\n'
           fi
           
           if [ -f "InkCanvasForClass.CE.$version-x64.Setup.exe.sigstore.json" ]; then
-            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version-x64.Setup.exe.sigstore.json")
+            sigstoreSize=$(wc -c < "InkCanvasForClass.CE.$version-x64.Setup.exe.sigstore.json")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'-x64.Setup.exe.sigstore.json | '"$sigstoreSize"' bytes |\n'
           fi
           
           # x86 架构文件
           if [ -f "InkCanvasForClass.CE.$version.zip" ]; then
-            zipSize=$(stat -c%s "InkCanvasForClass.CE.$version.zip")
+            zipSize=$(wc -c < "InkCanvasForClass.CE.$version.zip")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'.zip | '"$zipSize"' bytes |\n'
           fi
           
           if [ -f "InkCanvasForClass.CE.$version.Setup.exe" ]; then
-            installerSize=$(stat -c%s "InkCanvasForClass.CE.$version.Setup.exe")
+            installerSize=$(wc -c < "InkCanvasForClass.CE.$version.Setup.exe")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'.Setup.exe | '"$installerSize"' bytes |\n'
           fi
           
           if [ -f "InkCanvasForClass.CE.$version.zip.sigstore.json" ]; then
-            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.zip.sigstore.json")
+            sigstoreSize=$(wc -c < "InkCanvasForClass.CE.$version.zip.sigstore.json")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'.zip.sigstore.json | '"$sigstoreSize"' bytes |\n'
           fi
           
           if [ -f "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json" ]; then
-            sigstoreSize=$(stat -c%s "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json")
+            sigstoreSize=$(wc -c < "InkCanvasForClass.CE.$version.Setup.exe.sigstore.json")
             fileTable+=$'| InkCanvasForClass.CE.'"$version"'.Setup.exe.sigstore.json | '"$sigstoreSize"' bytes |\n'
           fi
           
