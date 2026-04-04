@@ -180,16 +180,12 @@ namespace Ink_Canvas
                                     var speed = GetPointSpeed(e.Stroke.StylusPoints[Math.Max(i - 1, 0)].ToPoint(),
                                         e.Stroke.StylusPoints[i].ToPoint(),
                                         e.Stroke.StylusPoints[Math.Min(i + 1, n)].ToPoint());
-                                    var point = new StylusPoint();
-                                    if (speed >= 0.25)
-                                        point.PressureFactor = (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
-                                    else if (speed >= 0.05)
-                                        point.PressureFactor = (float)0.5;
-                                    else
-                                        point.PressureFactor = (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
-
-                                    point.X = e.Stroke.StylusPoints[i].X;
-                                    point.Y = e.Stroke.StylusPoints[i].Y;
+                                    var point = new StylusPoint
+                                    {
+                                        PressureFactor = RateBasedPressureFactorFromPointSpeed(speed),
+                                        X = e.Stroke.StylusPoints[i].X,
+                                        Y = e.Stroke.StylusPoints[i].Y
+                                    };
                                     stylusPoints.Add(point);
                                 }
 
@@ -423,16 +419,12 @@ namespace Ink_Canvas
                                             var speed = GetPointSpeed(e.Stroke.StylusPoints[Math.Max(i - 1, 0)].ToPoint(),
                                                 e.Stroke.StylusPoints[i].ToPoint(),
                                                 e.Stroke.StylusPoints[Math.Min(i + 1, n)].ToPoint());
-                                            var point = new StylusPoint();
-                                            if (speed >= 0.25)
-                                                point.PressureFactor = (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
-                                            else if (speed >= 0.05)
-                                                point.PressureFactor = (float)0.5;
-                                            else
-                                                point.PressureFactor = (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
-
-                                            point.X = e.Stroke.StylusPoints[i].X;
-                                            point.Y = e.Stroke.StylusPoints[i].Y;
+                                            var point = new StylusPoint
+                                            {
+                                                PressureFactor = RateBasedPressureFactorFromPointSpeed(speed),
+                                                X = e.Stroke.StylusPoints[i].X,
+                                                Y = e.Stroke.StylusPoints[i].Y
+                                            };
                                             stylusPoints.Add(point);
                                         }
 
@@ -498,7 +490,6 @@ namespace Ink_Canvas
                 // 会导致不进入逻辑或进入后渲染仍忽略 PressureFactor；具体在 ApplyVelocityBrushTipFromSpeed 内关闭。
                 if (Settings.Canvas.InkStyle == 3
                     && !touchPressureSimulationApplied
-                    && !Settings.Canvas.DisablePressure
                     && penType != 1
                     && e.Stroke?.DrawingAttributes != null
                     && !e.Stroke.DrawingAttributes.IsHighlighter
@@ -2124,8 +2115,49 @@ namespace Ink_Canvas
                    / 20;
         }
 
+        private static float RateBasedPressureFactorFromPointSpeed(double speed)
+        {
+            if (speed >= 0.25)
+                return (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
+            if (speed >= 0.05)
+                return 0.5f;
+            return (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
+        }
+
+        private static float RealtimeBrushTipMixRatePressureFromSpeed(double speed)
+        {
+            if (speed < 0) speed = 0;
+            const double slowRef = 0.012;
+            const double fastRef = 0.5;
+            var t = (speed - slowRef) / (fastRef - slowRef);
+            if (t < 0) t = 0;
+            else if (t > 1) t = 1;
+            t = t * t * (3.0 - 2.0 * t);
+            const double pThick = 0.9;
+            const double pThin = 0.22;
+            var p = pThick + (pThin - pThick) * t;
+            return (float)Math.Max(0.08, Math.Min(1.0, p));
+        }
+
+        private static bool IsStrokePressureApproximatelyConstant(StylusPointCollection pts, out float meanPf)
+        {
+            meanPf = 0.5f;
+            if (pts == null || pts.Count == 0) return true;
+            double sum = 0;
+            foreach (StylusPoint p in pts) sum += p.PressureFactor;
+            meanPf = (float)(sum / pts.Count);
+            const float tol = 0.04f;
+            foreach (StylusPoint p in pts)
+            {
+                if (Math.Abs(p.PressureFactor - meanPf) > tol)
+                    return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
-        /// 将沿线速度映射为压感并与硬件压感混合，快写略细、慢写略粗；与 Inkeys 中 RTSSpeed 驱动的笔锋类似，在落笔后统一施加。
+        /// 将沿线速度映射为压感并与硬件压感混合，快写略细、慢写略粗；在落笔时（及手写笔移动时由调用方）统一施加。
         /// 无压感设备上系统可能将 <see cref="DrawingAttributes.IgnorePressure"/> 置为 true，此处强制关闭以便粗细随合成压感变化（与「屏蔽压感」无关：调用方已保证未屏蔽）。
         /// </summary>
         private void ApplyVelocityBrushTipFromSpeed(Stroke stroke)
@@ -2142,6 +2174,10 @@ namespace Ink_Canvas
                 var pts = stroke.StylusPoints;
                 if (pts.Count < 3) return;
 
+                var effectiveMix = (float)mix;
+                if (IsStrokePressureApproximatelyConstant(pts, out _))
+                    effectiveMix = Math.Max(effectiveMix, 0.78f);
+
                 var n = pts.Count - 1;
                 var stylusPoints = new StylusPointCollection();
 
@@ -2152,18 +2188,10 @@ namespace Ink_Canvas
                         pts[i].ToPoint(),
                         pts[Math.Min(i + 1, n)].ToPoint());
 
-                    float speedPressure;
-                    if (speed >= 0.25)
-                        speedPressure = (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
-                    else if (speed >= 0.05)
-                        speedPressure = 0.5f;
-                    else
-                        speedPressure = (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
-
-                    speedPressure = (float)Math.Max(0.08, Math.Min(1.0, speedPressure));
+                    var speedPressure = RealtimeBrushTipMixRatePressureFromSpeed(speed);
 
                     var basePf = pts[i].PressureFactor;
-                    var blended = (float)((1.0 - mix) * basePf + mix * speedPressure);
+                    var blended = (1.0f - effectiveMix) * basePf + effectiveMix * speedPressure;
                     blended = (float)Math.Max(0.08, Math.Min(1.0, blended));
 
                     var p = new StylusPoint(pts[i].X, pts[i].Y, blended);
