@@ -1,4 +1,4 @@
-<Page x:Class="Ink_Canvas.Windows.SettingsViews2.Pages.Appearance"
+<Page x:Class="Ink_Canvas.Windows.SettingsViews2.Pages.AppearancePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -18,9 +18,9 @@
                 Description="点击跳转到主题设置页面"
                 IsClickEnabled="True"
                 Click="SettingsCard_Click">
-                <ui:SettingsCard.ActionIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
-                </ui:SettingsCard.ActionIcon>
+                <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
+                    </ui:SettingsCard.HeaderIcon>
             </ui:SettingsCard>
             
             <ui:SettingsCard
@@ -29,9 +29,9 @@
                 IsClickEnabled="True"
                 Click="SettingsCard_Click_1"
                 Margin="0,8,0,0">
-                <ui:SettingsCard.ActionIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
-                </ui:SettingsCard.ActionIcon>
+                <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
+                    </ui:SettingsCard.HeaderIcon>
             </ui:SettingsCard>
             
             <ui:SettingsCard
@@ -40,9 +40,9 @@
                 IsClickEnabled="True"
                 Click="SettingsCard_Click_2"
                 Margin="0,8,0,0">
-                <ui:SettingsCard.ActionIcon>
-                    <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
-                </ui:SettingsCard.ActionIcon>
+                <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
+                    </ui:SettingsCard.HeaderIcon>
             </ui:SettingsCard>
         </StackPanel>
     </Grid>

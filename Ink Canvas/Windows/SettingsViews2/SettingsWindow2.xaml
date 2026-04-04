@@ -8,7 +8,7 @@
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
     Title="InkCanvasForClass 设置"
     Width="1138" Height="750"
-    MinWidth="200" MinHeight="150"
+    MinWidth="270" MinHeight="220"
     WindowStartupLocation="CenterScreen"
     ui:ThemeManager.IsThemeAware="True"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
@@ -16,7 +16,7 @@
     ui:WindowHelper.UseModernWindowStyle="True"
     ui:TitleBar.Height="48"
     mc:Ignorable="d">
-    
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -32,18 +32,16 @@
             <Thickness x:Key="NavigationViewHeaderMargin">56,34,0,0</Thickness>
         </ResourceDictionary>
     </Window.Resources>
-    
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="13*"/>
+            <RowDefinition Height="134*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-
-        <Rectangle
-            x:Name="XboxContentSafeRect"
-            Width="48"
-            Canvas.ZIndex="0"
-            Visibility="Collapsed" />
 
         <Border
             x:Name="AppTitleBar"
@@ -51,25 +49,22 @@
             Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
             VerticalAlignment="Top"
             Background="Transparent"
-            IsHitTestVisible="True">
+            IsHitTestVisible="True"
+            Canvas.ZIndex="10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="137"/>
                 </Grid.ColumnDefinitions>
-                <ikw:SimpleStackPanel x:Name="AppTitle" Orientation="Horizontal" Spacing="12">
-                    <Image Source="\Resources\icc.ico" Width="20" RenderOptions.BitmapScalingMode="HighQuality" Margin="57,0,0,0"/>
+                <ikw:SimpleStackPanel x:Name="AppTitle" Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Image Source="\Resources\icc.ico" Width="20" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock x:Name="AppTitleText"
                         VerticalAlignment="Center"
-                        Text="应用设置" Margin="0,1,20,0" TextWrapping="NoWrap"/>
+                        Text="应用设置" TextWrapping="NoWrap"/>
                 </ikw:SimpleStackPanel>
             </Grid>
         </Border>
-
-
-
-
 
         <ui:NavigationView
             x:Name="NavigationViewControl"
@@ -78,19 +73,20 @@
             Canvas.ZIndex="0"
             Header=" " 
             IsFooterSeparatorVisible="True"
-            PaneTitle="设置"
+            PaneTitle=""
             IsTabStop="False"
             IsTitleBarAutoPaddingEnabled="False"
             PaneDisplayMode="Auto"
             SelectionChanged="OnNavigationViewSelectionChanged"
             BackRequested="OnNavigationViewBackRequested"
-            IsSettingsVisible="True"
+            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
+            IsSettingsVisible="False"
             IsBackButtonVisible="Visible"
             IsBackEnabled="True"
             OpenPaneLength="240"
             ScrollViewer.VerticalScrollBarVisibility="Auto"
-            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.RowSpan="2">
+
             <ui:NavigationView.HeaderTemplate>
                 <DataTemplate>
                     <Grid Margin="0,8,0,12">
@@ -101,7 +97,7 @@
                     </Grid>
                 </DataTemplate>
             </ui:NavigationView.HeaderTemplate>
-            
+
             <ui:NavigationView.AutoSuggestBox>
                 <ui:AutoSuggestBox
                     x:Name="controlsSearchBox"
@@ -118,12 +114,21 @@
             </ui:NavigationView.AutoSuggestBox>
 
             <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem
+                    x:Name="HomeItem"
+                    Content="首页"
+                    Tag="HomePage"
+                    ToolTipService.ToolTip="首页">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Home}"/>
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItemHeader Content="ICC CE 设置"/>
                 <!-- 基本设置 -->
                 <ui:NavigationViewItem
                     x:Name="BasicItem"
                     Content="基本"
-                    Tag="Basic"
+                    Tag="BasicPage"
                     SelectsOnInvoked="True"
                     ToolTipService.ToolTip="基本设置">
                     <ui:NavigationViewItem.Icon>
@@ -133,7 +138,7 @@
                         <ui:NavigationViewItem
                             x:Name="NewSettingStartupItem"
                             Content="启动"
-                            Tag="NewSettingStartup"
+                            Tag="StartupPage"
                             ToolTipService.ToolTip="启动设置">
                             <ui:NavigationViewItem.Icon>
                                 <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}"/>
@@ -146,7 +151,7 @@
                 <ui:NavigationViewItem
                     x:Name="Page2Item"
                     Content="页面 2"
-                    Tag="Page2">
+                    Tag="Page2Page">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Document" />
                     </ui:NavigationViewItem.Icon>
@@ -156,7 +161,7 @@
                 <ui:NavigationViewItem
                     x:Name="DesignItem"
                     Content="设计"
-                    Tag="Design"
+                    Tag="DesignPage"
                     SelectsOnInvoked="True">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Design}"/>
@@ -165,20 +170,20 @@
                         <ui:NavigationViewItem
                             x:Name="IconographyItem"
                             Content="图标"
-                            Tag="Iconography"
+                            Tag="IconographyPage"
                             ToolTipService.ToolTip="图标设置">
                             <ui:NavigationViewItem.Icon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AllApps}"/>
-                        </ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AllApps}"/>
+                            </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="TypographyItem"
                             Content="排版"
-                            Tag="Typography"
+                            Tag="TypographyPage"
                             ToolTipService.ToolTip="排版设置">
                             <ui:NavigationViewItem.Icon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
-                        </ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
+                            </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
@@ -187,7 +192,7 @@
                 <ui:NavigationViewItem
                     x:Name="AppearanceItem"
                     Content="外观"
-                    Tag="Appearance"
+                    Tag="AppearancePage"
                     SelectsOnInvoked="True">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Color}"/>
@@ -196,25 +201,25 @@
                         <ui:NavigationViewItem
                             x:Name="ThemeItem"
                             Content="主题"
-                            Tag="Theme"
+                            Tag="ThemePage"
                             ToolTipService.ToolTip="主题设置">
                             <ui:NavigationViewItem.Icon>
-                            <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DarkTheme_24_Regular}"/>
-                        </ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:FluentSystemIcons.DarkTheme_24_Regular}"/>
+                            </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="ColorsItem"
                             Content="颜色"
-                            Tag="Colors"
+                            Tag="ColorsPage"
                             ToolTipService.ToolTip="颜色设置">
                             <ui:NavigationViewItem.Icon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Highlight}"/>
-                        </ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Highlight}"/>
+                            </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="FontsItem"
                             Content="字体"
-                            Tag="Fonts"
+                            Tag="FontsPage"
                             ToolTipService.ToolTip="字体设置">
                             <ui:NavigationViewItem.Icon>
                                 <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Font}"/>
@@ -229,7 +234,7 @@
                 <ui:NavigationViewItem
                     x:Name="AboutItem"
                     Content="关于 InkCanvasForClass"
-                    Tag="About">
+                    Tag="AboutPage">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Help" />
                     </ui:NavigationViewItem.Icon>

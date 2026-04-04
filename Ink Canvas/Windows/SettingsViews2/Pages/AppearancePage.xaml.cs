@@ -15,9 +15,9 @@ using System.Windows.Shapes;
 
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
-    public partial class Design : Page
+    public partial class AppearancePage : Page
     {
-        public Design()
+        public AppearancePage()
         {
             InitializeComponent();
         }
@@ -27,7 +27,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             SettingsWindow2 settingsWindow = Window.GetWindow(this) as SettingsWindow2;
             if (settingsWindow != null)
             {
-                settingsWindow.NavigateToPage("Iconography");
+                settingsWindow.NavigateToPage("ThemePage");
             }
         }
 
@@ -36,7 +36,16 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             SettingsWindow2 settingsWindow = Window.GetWindow(this) as SettingsWindow2;
             if (settingsWindow != null)
             {
-                settingsWindow.NavigateToPage("Typography");
+                settingsWindow.NavigateToPage("ColorsPage");
+            }
+        }
+
+        private void SettingsCard_Click_2(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow2 settingsWindow = Window.GetWindow(this) as SettingsWindow2;
+            if (settingsWindow != null)
+            {
+                settingsWindow.NavigateToPage("FontsPage");
             }
         }
     }

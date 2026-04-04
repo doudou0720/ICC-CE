@@ -15,24 +15,28 @@ using System.Windows.Shapes;
 
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
-    /// <summary>
-    /// Basic.xaml 的交互逻辑
-    /// </summary>
-    public partial class Basic : Page
+    public partial class DesignPage : Page
     {
-        public Basic()
+        public DesignPage()
         {
             InitializeComponent();
         }
 
         private void SettingsCard_Click(object sender, RoutedEventArgs e)
         {
-            // 找到SettingsWindow2窗口
             SettingsWindow2 settingsWindow = Window.GetWindow(this) as SettingsWindow2;
             if (settingsWindow != null)
             {
-                // 调用NavigateToPage方法导航到启动页面
-                settingsWindow.NavigateToPage("NewSettingStartup");
+                settingsWindow.NavigateToPage("IconographyPage");
+            }
+        }
+
+        private void SettingsCard_Click_1(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow2 settingsWindow = Window.GetWindow(this) as SettingsWindow2;
+            if (settingsWindow != null)
+            {
+                settingsWindow.NavigateToPage("TypographyPage");
             }
         }
     }

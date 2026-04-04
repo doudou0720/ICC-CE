@@ -2,9 +2,9 @@ using iNKORE.UI.WPF.Modern.Controls;
 
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
-    public partial class Theme : Page
+    public partial class AboutPage : Page
     {
-        public Theme()
+        public AboutPage()
         {
             InitializeComponent();
         }

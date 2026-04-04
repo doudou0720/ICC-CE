@@ -1,4 +1,4 @@
-<Page x:Class="Ink_Canvas.Windows.SettingsViews2.Pages.Basic"
+<Page x:Class="Ink_Canvas.Windows.SettingsViews2.Pages.BasicPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -38,9 +38,9 @@
                     Description="点击跳转到启动设置页面"
                     IsClickEnabled="True"
                     Click="SettingsCard_Click">
-                    <ui:SettingsCard.ActionIcon>
+                    <ui:SettingsCard.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}"/>
-                    </ui:SettingsCard.ActionIcon>
+                    </ui:SettingsCard.HeaderIcon>
                 </ui:SettingsCard>
             </ikw:SimpleStackPanel>
         </Grid>

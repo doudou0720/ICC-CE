@@ -48,17 +48,18 @@ namespace Ink_Canvas.Windows.SettingsViews2
             // 初始化内置页面映射
             _pageTypes = new Dictionary<string, Type>
             {
-                { "Basic", typeof(Basic) },
-                { "Page2", typeof(Page2) },
-                { "Design", typeof(Design) },
-                { "Appearance", typeof(Appearance) },
-                { "Iconography", typeof(Iconography) },
-                { "Typography", typeof(Typography) },
-                { "Theme", typeof(Theme) },
-                { "Colors", typeof(Colors) },
-                { "Fonts", typeof(Fonts) },
-                { "NewSettingStartup", typeof(NewSettingStartup) },
-                { "About", typeof(About) },
+                { "HomePage", typeof(HomePage) },
+                { "BasicPage", typeof(BasicPage) },
+                { "Page2Page", typeof(Page2Page) },
+                { "DesignPage", typeof(DesignPage) },
+                { "AppearancePage", typeof(AppearancePage) },
+                { "IconographyPage", typeof(IconographyPage) },
+                { "TypographyPage", typeof(TypographyPage) },
+                { "ThemePage", typeof(ThemePage) },
+                { "ColorsPage", typeof(ColorsPage) },
+                { "FontsPage", typeof(FontsPage) },
+                { "StartupPage", typeof(StartupPage) },
+                { "AboutPage", typeof(AboutPage) },
                 { "Settings", typeof(SettingsPage) }
             };
 
@@ -67,11 +68,18 @@ namespace Ink_Canvas.Windows.SettingsViews2
             // 初始化导航菜单（内置+插件）
             InitializeNavigationMenu();
 
-            // 默认选中第一个菜单项
+            // 默认选中首页
             if (NavigationViewControl.MenuItems.Count > 0)
             {
+                // 首先导航到首页
+                NavigateToPage("HomePage");
+                // 然后选中首页菜单项
                 NavigationViewControl.SelectedItem = NavigationViewControl.MenuItems[0];
+                NavigationViewControl.Header = "首页";
             }
+
+            // 初始化标题栏边距
+            UpdateAppTitleBarMargin();
 
             // 窗口生命周期事件注册
             this.Loaded += (sender, e) =>
@@ -127,6 +135,18 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 {
                     // 正常状态下只设置最大尺寸限制
                     SetMaxSizeOnly();
+                }
+                
+                // 窗口状态改变时更新标题栏显示
+                UpdateAppTitleBarMargin();
+            };
+            
+            // 窗口大小改变时更新标题栏显示
+            this.SizeChanged += (sender, e) =>
+            {
+                if (NavigationViewControl.DisplayMode == NavigationViewDisplayMode.Minimal)
+                {
+                    UpdateAppTitleBarMargin();
                 }
             };
         }
@@ -373,6 +393,41 @@ namespace Ink_Canvas.Windows.SettingsViews2
                     break;
                 }
             }
+        }
+
+        private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+        {
+            UpdateAppTitleBarMargin(sender);
+        }
+
+        private void UpdateAppTitleBarMargin()
+        {
+            UpdateAppTitleBarMargin(NavigationViewControl);
+        }
+
+        private void UpdateAppTitleBarMargin(NavigationView sender)
+        {
+            Thickness currMargin = AppTitleBar.Margin;
+            if (sender.DisplayMode == NavigationViewDisplayMode.Minimal)
+            {
+                AppTitleBar.Margin = new Thickness((sender.CompactPaneLength * 2), currMargin.Top, currMargin.Right, currMargin.Bottom);
+                
+                // 当窗口宽度非常小时，隐藏图标和应用设置文字
+                if (this.ActualWidth < 400)
+                {
+                    AppTitle.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    AppTitle.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                AppTitleBar.Margin = new Thickness(sender.CompactPaneLength, currMargin.Top, currMargin.Right, currMargin.Bottom);
+                AppTitle.Visibility = Visibility.Visible;
+            }
+            AppTitleBar.Visibility = sender.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private NavigationViewItem FindNavigationViewItemByTag(string tag)
