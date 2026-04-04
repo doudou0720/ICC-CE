@@ -900,41 +900,28 @@ namespace Ink_Canvas
 
                     bool InkToShapeProcess()
                     {
-                        var engineMode = ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine);
-                        if (ShapeRecognitionRouter.ResolveUseWinRt(engineMode))
+                        // WinRT 与非 WinRT 均延后到 Dispatcher 上异步执行：在 StrokeCollected 内对
+                        // InkToShapeProcessCoreAsync 同步 GetResult() 会长时间阻塞 UI 线程（抬笔卡顿）；
+                        // WinRT 路径若同步等待还可能与贴回 UI 的延续死锁（见类注释 InkToShapeSerial）。
+                        var strokeHw = strokeForHandwritingBeautify;
+                        var preBrushHwPts = preBrushHandwritingPoints;
+                        var wsTail = wasStraightened;
+                        // ApplicationIdle：在更高优先级（布局/输入/本帧渲染）之后执行，减轻抬笔瞬间主线程“顶死”感。
+                        Dispatcher.BeginInvoke(new Action(async () =>
                         {
-                            var strokeHw = strokeForHandwritingBeautify;
-                            var preBrushHwPts = preBrushHandwritingPoints;
-                            var wsTail = wasStraightened;
-                            Dispatcher.BeginInvoke(new Action(async () =>
+                            try
                             {
-                                try
-                                {
-                                    await InkToShapeProcessCoreAsync();
-                                    if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
-                                        ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeHw, isBoardBrushStroke, preBrushHwPts);
-                                    RunStrokeCollectedPostShapeRecognitionTail(e, wsTail);
-                                }
-                                catch (Exception ex)
-                                {
-                                    System.Diagnostics.Debug.WriteLine(ex);
-                                }
-                            }), DispatcherPriority.Normal);
-                            return true;
-                        }
-
-                        try
-                        {
-                            InkToShapeProcessCoreAsync().GetAwaiter().GetResult();
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine(ex);
-                        }
-
-                        if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
-                            ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke, preBrushHandwritingPoints);
-                        return false;
+                                await InkToShapeProcessCoreAsync();
+                                if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeHw, isBoardBrushStroke, preBrushHwPts);
+                                RunStrokeCollectedPostShapeRecognitionTail(e, wsTail);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine(ex);
+                            }
+                        }), DispatcherPriority.ApplicationIdle);
+                        return true;
                     }
 
                     if (InkToShapeProcess())
