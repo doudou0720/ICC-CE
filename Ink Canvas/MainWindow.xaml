@@ -144,7 +144,6 @@
                 <Setter Property="helpers:AutoFontSizeHelper.Step" Value="0.25" />
             </Style>
 
-            <!-- 白板浮动栏手势面板：去掉外层 Viewbox 后略增字号，接近原先缩放观感，字重仍与非白板栏一致 -->
             <Style x:Key="AutoFitBoardGestureOptionLabel10" TargetType="Label" BasedOn="{StaticResource AutoFitGestureOptionLabel10}">
                 <Setter Property="helpers:AutoFontSizeHelper.MinFontSize" Value="5" />
                 <Setter Property="helpers:AutoFontSizeHelper.MaxFontSize" Value="10" />
