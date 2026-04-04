@@ -40,7 +40,7 @@ namespace Ink_Canvas
         /// </summary>
         private List<Circle> circles = new List<Circle>();
 
-        /// <summary>串行执行墨迹转形状（尤其 WinRT 异步延后），避免多笔 BeginInvoke 交错修改 newStrokes。</summary>
+        /// <summary>串行执行墨迹转形状。WinRT 必须在 Dispatcher 上延后执行：若在 StrokeCollected（UI 线程）内对 WinRT 路径同步 GetResult()，AnalyzeAsync 延续再贴回 UI 时会死锁。</summary>
         private static readonly SemaphoreSlim InkToShapeSerial = new SemaphoreSlim(1, 1);
 
         /// <summary>
@@ -57,6 +57,10 @@ namespace Ink_Canvas
 
         /// <summary>每次收笔并入批次时递增；防抖 Tick 携带快照，识别过程中若又有新笔则放弃本轮替换。</summary>
         private ulong _handwritingBeautifyScheduleRevision;
+
+        /// <summary>画布笔画 → 手写纠正的识别输入（收笔时、笔锋/首段压感合成前的点集副本；替换墨迹时仍移除画布上的原笔画）。</summary>
+        private readonly Dictionary<Stroke, Stroke> _handwritingBeautifyInkInputByCanvasStroke =
+            new Dictionary<Stroke, Stroke>();
 
         /// <summary>
         /// 矩形参考线的列表
@@ -135,6 +139,163 @@ namespace Ink_Canvas
                 double angleDegrees = Math.Abs(Angle * 180.0 / Math.PI);
                 IsHorizontal = angleDegrees < RECTANGLE_ANGLE_THRESHOLD || angleDegrees > (180 - RECTANGLE_ANGLE_THRESHOLD);
                 IsVertical = Math.Abs(angleDegrees - 90) < RECTANGLE_ANGLE_THRESHOLD;
+            }
+        }
+
+        private void RunStrokeCollectedPostShapeRecognitionTail(InkCanvasStrokeCollectedEventArgs e, bool wasStraightened)
+        {
+            try
+            {
+                foreach (var stylusPoint in e.Stroke.StylusPoints)
+                    if ((stylusPoint.PressureFactor > 0.501 || stylusPoint.PressureFactor < 0.5) &&
+                        stylusPoint.PressureFactor != 0)
+                        return;
+
+                try
+                {
+                    if (e.Stroke.StylusPoints.Count > 3)
+                    {
+                        var random = new Random();
+                        var _speed = GetPointSpeed(
+                            e.Stroke.StylusPoints[random.Next(0, e.Stroke.StylusPoints.Count - 1)].ToPoint(),
+                            e.Stroke.StylusPoints[random.Next(0, e.Stroke.StylusPoints.Count - 1)].ToPoint(),
+                            e.Stroke.StylusPoints[random.Next(0, e.Stroke.StylusPoints.Count - 1)].ToPoint());
+
+                        RandWindow.randSeed = (int)(_speed * 100000 * 1000);
+                    }
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+                switch (Settings.Canvas.InkStyle)
+                {
+                    case 1:
+                        if (penType == 0)
+                            try
+                            {
+                                var stylusPoints = new StylusPointCollection();
+                                var n = e.Stroke.StylusPoints.Count - 1;
+
+                                for (var i = 0; i <= n; i++)
+                                {
+                                    var speed = GetPointSpeed(e.Stroke.StylusPoints[Math.Max(i - 1, 0)].ToPoint(),
+                                        e.Stroke.StylusPoints[i].ToPoint(),
+                                        e.Stroke.StylusPoints[Math.Min(i + 1, n)].ToPoint());
+                                    var point = new StylusPoint();
+                                    if (speed >= 0.25)
+                                        point.PressureFactor = (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
+                                    else if (speed >= 0.05)
+                                        point.PressureFactor = (float)0.5;
+                                    else
+                                        point.PressureFactor = (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
+
+                                    point.X = e.Stroke.StylusPoints[i].X;
+                                    point.Y = e.Stroke.StylusPoints[i].Y;
+                                    stylusPoints.Add(point);
+                                }
+
+                                e.Stroke.StylusPoints = stylusPoints;
+                            }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+                        break;
+                    case 0:
+                        if (penType == 0)
+                            try
+                            {
+                                var stylusPoints = new StylusPointCollection();
+                                var n = e.Stroke.StylusPoints.Count - 1;
+                                var pressure = 0.1;
+                                var x = 10;
+                                if (n == 1) return;
+                                if (n >= x)
+                                {
+                                    for (var i = 0; i < n - x; i++)
+                                    {
+                                        var point = new StylusPoint();
+
+                                        point.PressureFactor = (float)0.5;
+                                        point.X = e.Stroke.StylusPoints[i].X;
+                                        point.Y = e.Stroke.StylusPoints[i].Y;
+                                        stylusPoints.Add(point);
+                                    }
+
+                                    for (var i = n - x; i <= n; i++)
+                                    {
+                                        var point = new StylusPoint();
+
+                                        point.PressureFactor = (float)((0.5 - pressure) * (n - i) / x + pressure);
+                                        point.X = e.Stroke.StylusPoints[i].X;
+                                        point.Y = e.Stroke.StylusPoints[i].Y;
+                                        stylusPoints.Add(point);
+                                    }
+                                }
+                                else
+                                {
+                                    for (var i = 0; i <= n; i++)
+                                    {
+                                        var point = new StylusPoint();
+
+                                        point.PressureFactor = (float)(0.4 * (n - i) / n + pressure);
+                                        point.X = e.Stroke.StylusPoints[i].X;
+                                        point.Y = e.Stroke.StylusPoints[i].Y;
+                                        stylusPoints.Add(point);
+                                    }
+                                }
+
+                                e.Stroke.StylusPoints = stylusPoints;
+                            }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+                        break;
+                    case 3:
+                        break;
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+            Debug.WriteLine($"墨迹平滑检查: UseAdvancedBezierSmoothing={Settings.Canvas.UseAdvancedBezierSmoothing}, wasStraightened={wasStraightened}");
+            Debug.WriteLine($"异步平滑设置: UseAsyncInkSmoothing={Settings.Canvas.UseAsyncInkSmoothing}, _inkSmoothingManager={_inkSmoothingManager != null}");
+
+            if (Settings.Canvas.UseAdvancedBezierSmoothing && !wasStraightened)
+            {
+                try
+                {
+                    Debug.WriteLine($"开始墨迹平滑处理: 原始点数={e.Stroke.StylusPoints.Count}, 直线拉直={wasStraightened}");
+
+                    if (inkCanvas.Strokes.Contains(e.Stroke))
+                    {
+                        if (Settings.Canvas.UseAsyncInkSmoothing && _inkSmoothingManager != null)
+                        {
+                            Debug.WriteLine("使用异步墨迹平滑");
+                            _ = ProcessStrokeAsync(e.Stroke);
+                        }
+                        else
+                        {
+                            var smoothedStroke = _inkSmoothingManager?.SmoothStroke(e.Stroke) ?? e.Stroke;
+
+                            if (smoothedStroke != e.Stroke)
+                            {
+                                SetNewBackupOfStroke();
+                                _currentCommitType = CommitReason.ShapeRecognition;
+                                inkCanvas.Strokes.Remove(e.Stroke);
+                                inkCanvas.Strokes.Add(smoothedStroke);
+                                _currentCommitType = CommitReason.UserInput;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine("原始笔画不在画布中，跳过平滑处理");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"高级贝塞尔曲线平滑失败: {ex.Message}");
+                }
+            }
+            else if (Settings.Canvas.FitToCurve && !wasStraightened)
+            {
+                drawingAttributes.FitToCurve = true;
             }
         }
 
@@ -222,6 +383,7 @@ namespace Ink_Canvas
             {
                 inkCanvas.Opacity = 1;
                 var touchPressureSimulationApplied = false;
+                var preBrushHandwritingPoints = CloneStylusPointCollectionForHandwritingInput(e.Stroke?.StylusPoints);
 
                 if (Settings.Canvas.DisablePressure)
                 {
@@ -332,13 +494,14 @@ namespace Ink_Canvas
                     }
                 }
 
+                // 实时笔锋：勿依赖 DrawingAttributes.IgnorePressure。无压感触摸/鼠标等设备上，运行时仍可能为 true，
+                // 会导致不进入逻辑或进入后渲染仍忽略 PressureFactor；具体在 ApplyVelocityBrushTipFromSpeed 内关闭。
                 if (Settings.Canvas.InkStyle == 3
                     && !touchPressureSimulationApplied
                     && !Settings.Canvas.DisablePressure
                     && penType != 1
                     && e.Stroke?.DrawingAttributes != null
                     && !e.Stroke.DrawingAttributes.IsHighlighter
-                    && !e.Stroke.DrawingAttributes.IgnorePressure
                     && e.Stroke.StylusPoints.Count >= 3)
                 {
                     ApplyVelocityBrushTipFromSpeed(e.Stroke);
@@ -404,6 +567,9 @@ namespace Ink_Canvas
                 Stroke strokeForHandwritingBeautify = e.Stroke;
                 if (wasStraightened && inkCanvas.Strokes.Count > 0)
                     strokeForHandwritingBeautify = inkCanvas.Strokes[inkCanvas.Strokes.Count - 1];
+
+                if (wasStraightened && strokeForHandwritingBeautify != null)
+                    preBrushHandwritingPoints = CloneStylusPointCollectionForHandwritingInput(strokeForHandwritingBeautify.StylusPoints);
 
                 if (ShapeRecognitionRouter.ShouldRunShapeRecognition(
                         Settings.InkToShape.IsInkToShapeEnabled,
@@ -741,202 +907,56 @@ namespace Ink_Canvas
                         }
                     }
 
-                    void InkToShapeProcess()
+                    bool InkToShapeProcess()
                     {
                         var engineMode = ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine);
                         if (ShapeRecognitionRouter.ResolveUseWinRt(engineMode))
                         {
+                            var strokeHw = strokeForHandwritingBeautify;
+                            var preBrushHwPts = preBrushHandwritingPoints;
+                            var wsTail = wasStraightened;
                             Dispatcher.BeginInvoke(new Action(async () =>
                             {
                                 try
                                 {
                                     await InkToShapeProcessCoreAsync();
                                     if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
-                                        ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke);
+                                        ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeHw, isBoardBrushStroke, preBrushHwPts);
+                                    RunStrokeCollectedPostShapeRecognitionTail(e, wsTail);
                                 }
                                 catch (Exception ex)
                                 {
                                     System.Diagnostics.Debug.WriteLine(ex);
                                 }
                             }), DispatcherPriority.Normal);
-                            return;
+                            return true;
                         }
 
-                        InkToShapeProcessCoreAsync().GetAwaiter().GetResult();
+                        try
+                        {
+                            InkToShapeProcessCoreAsync().GetAwaiter().GetResult();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine(ex);
+                        }
+
                         if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
-                            ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke);
+                            ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke, preBrushHandwritingPoints);
+                        return false;
                     }
 
-                    InkToShapeProcess();
+                    if (InkToShapeProcess())
+                        return;
                 }
                 else if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
                 {
-                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke);
-                }
-
-                foreach (var stylusPoint in e.Stroke.StylusPoints)
-                    //LogHelper.WriteLogToFile(stylusPoint.PressureFactor.ToString(), LogHelper.LogType.Info);
-                    // 检查是否是压感笔书写
-                    //if (stylusPoint.PressureFactor != 0.5 && stylusPoint.PressureFactor != 0)
-                    if ((stylusPoint.PressureFactor > 0.501 || stylusPoint.PressureFactor < 0.5) &&
-                        stylusPoint.PressureFactor != 0)
-                        return;
-
-                try
-                {
-                    if (e.Stroke.StylusPoints.Count > 3)
-                    {
-                        var random = new Random();
-                        var _speed = GetPointSpeed(
-                            e.Stroke.StylusPoints[random.Next(0, e.Stroke.StylusPoints.Count - 1)].ToPoint(),
-                            e.Stroke.StylusPoints[random.Next(0, e.Stroke.StylusPoints.Count - 1)].ToPoint(),
-                            e.Stroke.StylusPoints[random.Next(0, e.Stroke.StylusPoints.Count - 1)].ToPoint());
-
-                        RandWindow.randSeed = (int)(_speed * 100000 * 1000);
-                    }
-                }
-                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-
-                switch (Settings.Canvas.InkStyle)
-                {
-                    case 1:
-                        if (penType == 0)
-                            try
-                            {
-                                var stylusPoints = new StylusPointCollection();
-                                var n = e.Stroke.StylusPoints.Count - 1;
-                                var s = "";
-
-                                for (var i = 0; i <= n; i++)
-                                {
-                                    var speed = GetPointSpeed(e.Stroke.StylusPoints[Math.Max(i - 1, 0)].ToPoint(),
-                                        e.Stroke.StylusPoints[i].ToPoint(),
-                                        e.Stroke.StylusPoints[Math.Min(i + 1, n)].ToPoint());
-                                    s += speed + "\t";
-                                    var point = new StylusPoint();
-                                    if (speed >= 0.25)
-                                        point.PressureFactor = (float)(0.5 - 0.3 * (Math.Min(speed, 1.5) - 0.3) / 1.2);
-                                    else if (speed >= 0.05)
-                                        point.PressureFactor = (float)0.5;
-                                    else
-                                        point.PressureFactor = (float)(0.5 + 0.4 * (0.05 - speed) / 0.05);
-
-                                    point.X = e.Stroke.StylusPoints[i].X;
-                                    point.Y = e.Stroke.StylusPoints[i].Y;
-                                    stylusPoints.Add(point);
-                                }
-
-                                e.Stroke.StylusPoints = stylusPoints;
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-
-                        break;
-                    case 0:
-                        if (penType == 0)
-                            try
-                            {
-                                var stylusPoints = new StylusPointCollection();
-                                var n = e.Stroke.StylusPoints.Count - 1;
-                                var pressure = 0.1;
-                                var x = 10;
-                                if (n == 1) return;
-                                if (n >= x)
-                                {
-                                    for (var i = 0; i < n - x; i++)
-                                    {
-                                        var point = new StylusPoint();
-
-                                        point.PressureFactor = (float)0.5;
-                                        point.X = e.Stroke.StylusPoints[i].X;
-                                        point.Y = e.Stroke.StylusPoints[i].Y;
-                                        stylusPoints.Add(point);
-                                    }
-
-                                    for (var i = n - x; i <= n; i++)
-                                    {
-                                        var point = new StylusPoint();
-
-                                        point.PressureFactor = (float)((0.5 - pressure) * (n - i) / x + pressure);
-                                        point.X = e.Stroke.StylusPoints[i].X;
-                                        point.Y = e.Stroke.StylusPoints[i].Y;
-                                        stylusPoints.Add(point);
-                                    }
-                                }
-                                else
-                                {
-                                    for (var i = 0; i <= n; i++)
-                                    {
-                                        var point = new StylusPoint();
-
-                                        point.PressureFactor = (float)(0.4 * (n - i) / n + pressure);
-                                        point.X = e.Stroke.StylusPoints[i].X;
-                                        point.Y = e.Stroke.StylusPoints[i].Y;
-                                        stylusPoints.Add(point);
-                                    }
-                                }
-
-                                e.Stroke.StylusPoints = stylusPoints;
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-
-                        break;
-                    case 3:
-                        break;
+                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke, preBrushHandwritingPoints);
                 }
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
-            // 应用高级贝塞尔曲线平滑（仅在未进行直线拉直时）
-            Debug.WriteLine($"墨迹平滑检查: UseAdvancedBezierSmoothing={Settings.Canvas.UseAdvancedBezierSmoothing}, wasStraightened={wasStraightened}");
-            Debug.WriteLine($"异步平滑设置: UseAsyncInkSmoothing={Settings.Canvas.UseAsyncInkSmoothing}, _inkSmoothingManager={_inkSmoothingManager != null}");
-
-            if (Settings.Canvas.UseAdvancedBezierSmoothing && !wasStraightened)
-            {
-                try
-                {
-                    Debug.WriteLine($"开始墨迹平滑处理: 原始点数={e.Stroke.StylusPoints.Count}, 直线拉直={wasStraightened}");
-
-                    // 检查原始笔画是否仍然存在于画布中
-                    if (inkCanvas.Strokes.Contains(e.Stroke))
-                    {
-                        // 使用新的异步墨迹平滑管理器
-                        if (Settings.Canvas.UseAsyncInkSmoothing && _inkSmoothingManager != null)
-                        {
-                            Debug.WriteLine("使用异步墨迹平滑");
-                            // 异步处理
-                            _ = ProcessStrokeAsync(e.Stroke);
-                        }
-                        else
-                        {
-                            // 同步处理（向后兼容）
-                            var smoothedStroke = _inkSmoothingManager?.SmoothStroke(e.Stroke) ?? e.Stroke;
-
-                            if (smoothedStroke != e.Stroke)
-                            {
-                                // 替换原始笔画
-                                SetNewBackupOfStroke();
-                                _currentCommitType = CommitReason.ShapeRecognition;
-                                inkCanvas.Strokes.Remove(e.Stroke);
-                                inkCanvas.Strokes.Add(smoothedStroke);
-                                _currentCommitType = CommitReason.UserInput;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Debug.WriteLine("原始笔画不在画布中，跳过平滑处理");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // 如果高级平滑失败，回退到原始笔画
-                    Debug.WriteLine($"高级贝塞尔曲线平滑失败: {ex.Message}");
-                }
-            }
-            else if (Settings.Canvas.FitToCurve && !wasStraightened)
-            {
-                drawingAttributes.FitToCurve = true;
-            }
+            RunStrokeCollectedPostShapeRecognitionTail(e, wasStraightened);
         }
 
         /// <summary>
@@ -2106,6 +2126,7 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将沿线速度映射为压感并与硬件压感混合，快写略细、慢写略粗；与 Inkeys 中 RTSSpeed 驱动的笔锋类似，在落笔后统一施加。
+        /// 无压感设备上系统可能将 <see cref="DrawingAttributes.IgnorePressure"/> 置为 true，此处强制关闭以便粗细随合成压感变化（与「屏蔽压感」无关：调用方已保证未屏蔽）。
         /// </summary>
         private void ApplyVelocityBrushTipFromSpeed(Stroke stroke)
         {
@@ -2114,6 +2135,9 @@ namespace Ink_Canvas
                 var mix = Settings.Canvas.VelocityBrushTipMix;
                 if (mix <= 0 || stroke == null) return;
                 if (mix > 1) mix = 1;
+
+                if (stroke.DrawingAttributes != null)
+                    stroke.DrawingAttributes.IgnorePressure = false;
 
                 var pts = stroke.StylusPoints;
                 if (pts.Count < 3) return;
@@ -2700,8 +2724,12 @@ namespace Ink_Canvas
         {
             for (var i = _handwritingRecentStrokesForBeautify.Count - 1; i >= 0; i--)
             {
-                if (!inkCanvas.Strokes.Contains(_handwritingRecentStrokesForBeautify[i]))
+                var s = _handwritingRecentStrokesForBeautify[i];
+                if (!inkCanvas.Strokes.Contains(s))
+                {
+                    _handwritingBeautifyInkInputByCanvasStroke.Remove(s);
                     _handwritingRecentStrokesForBeautify.RemoveAt(i);
+                }
             }
         }
 
@@ -2716,8 +2744,23 @@ namespace Ink_Canvas
             _handwritingBeautifyDebounceTimer.Tick += HandwritingBeautifyDebounceTimer_Tick;
         }
 
+        /// <summary>深拷贝点集，供手写纠正识别输入（与笔锋/二次压感合成前的画布数据一致）。</summary>
+        private static StylusPointCollection CloneStylusPointCollectionForHandwritingInput(StylusPointCollection source)
+        {
+            if (source == null || source.Count == 0)
+                return null;
+            var copy = new StylusPointCollection();
+            foreach (StylusPoint p in source)
+                copy.Add(new StylusPoint(p.X, p.Y, p.PressureFactor));
+            return copy;
+        }
+
         /// <summary>并入批次并重置 1s 计时器（多笔需停笔满延迟后才矫正）。</summary>
-        private void ScheduleHandwritingGlyphReplaceAfterStrokeCollected(Stroke strokeForBeautify, bool isBoardBrushStroke)
+        /// <param name="preBrushHandwritingPoints">笔锋与后续 InkStyle 压感合成前的点集；为 null 时识别输入与画布笔画一致（兼容旧行为）。</param>
+        private void ScheduleHandwritingGlyphReplaceAfterStrokeCollected(
+            Stroke strokeForBeautify,
+            bool isBoardBrushStroke,
+            StylusPointCollection preBrushHandwritingPoints = null)
         {
             if (!Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
                 return;
@@ -2729,6 +2772,18 @@ namespace Ink_Canvas
                 return;
 
             _handwritingBeautifyScheduleRevision++;
+
+            if (preBrushHandwritingPoints != null && preBrushHandwritingPoints.Count > 0)
+            {
+                _handwritingBeautifyInkInputByCanvasStroke[strokeForBeautify] = new Stroke(preBrushHandwritingPoints)
+                {
+                    DrawingAttributes = strokeForBeautify.DrawingAttributes.Clone()
+                };
+            }
+            else
+            {
+                _handwritingBeautifyInkInputByCanvasStroke.Remove(strokeForBeautify);
+            }
 
             var alreadyInBatch = false;
             foreach (Stroke x in _handwritingRecentStrokesForBeautify)
@@ -2780,30 +2835,36 @@ namespace Ink_Canvas
 
                 PruneHandwritingBeautifyBatch();
 
-                var input = new StrokeCollection();
+                var canvasStrokes = new StrokeCollection();
+                var recognitionInput = new StrokeCollection();
                 foreach (Stroke s in _handwritingRecentStrokesForBeautify)
                 {
-                    if (inkCanvas.Strokes.Contains(s))
-                        input.Add(s);
+                    if (!inkCanvas.Strokes.Contains(s))
+                        continue;
+                    canvasStrokes.Add(s);
+                    if (_handwritingBeautifyInkInputByCanvasStroke.TryGetValue(s, out var inkInput) && inkInput != null)
+                        recognitionInput.Add(inkInput);
+                    else
+                        recognitionInput.Add(s);
                 }
 
-                if (input.Count == 0)
+                if (canvasStrokes.Count == 0)
                     return;
                 if (_handwritingBeautifyScheduleRevision != revisionWhenIdle)
                     return;
 
                 var shapeMode = ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine);
-                var result = await InkRecognizeHelper.CorrectHandwritingStrokesUnifiedAsync(input, shapeMode).ConfigureAwait(true);
+                var result = await InkRecognizeHelper.CorrectHandwritingStrokesUnifiedAsync(recognitionInput, shapeMode).ConfigureAwait(true);
 
                 if (_handwritingBeautifyScheduleRevision != revisionWhenIdle)
                     return;
                 if (result == null || result.Count == 0)
                     return;
-                if (ReferenceEquals(result, input))
+                if (ReferenceEquals(result, recognitionInput))
                     return;
 
                 var anyInputStillPresent = false;
-                foreach (Stroke s in input)
+                foreach (Stroke s in canvasStrokes)
                 {
                     if (inkCanvas.Strokes.Contains(s))
                     {
@@ -2817,7 +2878,7 @@ namespace Ink_Canvas
 
                 SetNewBackupOfStroke();
                 _currentCommitType = CommitReason.ShapeRecognition;
-                foreach (Stroke s in input)
+                foreach (Stroke s in canvasStrokes)
                 {
                     if (inkCanvas.Strokes.Contains(s))
                         inkCanvas.Strokes.Remove(s);
@@ -2827,8 +2888,11 @@ namespace Ink_Canvas
                     inkCanvas.Strokes.Add(s);
                 _currentCommitType = CommitReason.UserInput;
 
-                foreach (Stroke s in input)
+                foreach (Stroke s in canvasStrokes)
+                {
                     _handwritingRecentStrokesForBeautify.Remove(s);
+                    _handwritingBeautifyInkInputByCanvasStroke.Remove(s);
+                }
 
                 PruneHandwritingBeautifyBatch();
             }
