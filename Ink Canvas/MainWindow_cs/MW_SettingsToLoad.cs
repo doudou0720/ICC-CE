@@ -37,6 +37,9 @@ namespace Ink_Canvas
         /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时不会在加载设置后执行自动更新检测。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
+            BeginDeferredSettingsSaveDuringLoad();
+            try
+            {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             try
             {
@@ -450,12 +453,6 @@ namespace Ink_Canvas
                         : Visibility.Collapsed;
                 }
 
-                // 初始化HitokotoCategories，如果为空则默认全选
-                if (Settings.Appearance.HitokotoCategories == null || Settings.Appearance.HitokotoCategories.Count == 0)
-                {
-                    Settings.Appearance.HitokotoCategories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
-                }
-
                 ToggleSwitchEnableQuickPanel.IsOn = Settings.Appearance.IsShowQuickPanel;
 
                 ToggleSwitchEnableSplashScreen.IsOn = Settings.Appearance.EnableSplashScreen;
@@ -636,12 +633,14 @@ namespace Ink_Canvas
                 }
                 else
                 {
+                    int prev = Settings.PowerPointSettings.PPTButtonsDisplayOption;
                     Settings.PowerPointSettings.PPTButtonsDisplayOption = 2222;
                     CheckboxEnableLBPPTButton.IsChecked = true;
                     CheckboxEnableRBPPTButton.IsChecked = true;
                     CheckboxEnableLSPPTButton.IsChecked = true;
                     CheckboxEnableRSPPTButton.IsChecked = true;
-                    SaveSettingsToFile();
+                    if (prev != 2222)
+                        SaveSettingsToFile();
                 }
 
                 var sops = Settings.PowerPointSettings.PPTSButtonsOption.ToString();
@@ -655,11 +654,13 @@ namespace Ink_Canvas
                 }
                 else
                 {
+                    int prev = Settings.PowerPointSettings.PPTSButtonsOption;
                     Settings.PowerPointSettings.PPTSButtonsOption = 221;
                     CheckboxSPPTDisplayPage.IsChecked = true;
                     CheckboxSPPTHalfOpacity.IsChecked = true;
                     CheckboxSPPTBlackBackground.IsChecked = false;
-                    SaveSettingsToFile();
+                    if (prev != 221)
+                        SaveSettingsToFile();
                 }
 
                 var bops = Settings.PowerPointSettings.PPTBButtonsOption.ToString();
@@ -673,11 +674,13 @@ namespace Ink_Canvas
                 }
                 else
                 {
+                    int prev = Settings.PowerPointSettings.PPTBButtonsOption;
                     Settings.PowerPointSettings.PPTBButtonsOption = 121;
                     CheckboxBPPTDisplayPage.IsChecked = false;
                     CheckboxBPPTHalfOpacity.IsChecked = true;
                     CheckboxBPPTBlackBackground.IsChecked = false;
-                    SaveSettingsToFile();
+                    if (prev != 121)
+                        SaveSettingsToFile();
                 }
 
                 PPTButtonLeftPositionValueSlider.Value = Settings.PowerPointSettings.PPTLSButtonPosition;
@@ -1322,6 +1325,14 @@ namespace Ink_Canvas
 
             // 刷新配置文件列表
             try { RefreshConfigProfileList(); } catch (Exception ex) { LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Warning); }
+
+            // 一言分类数组固定为 a–l 顺序并去重，避免仅顺序/重复导致配置反复变化
+            StabilizeAppearanceHitokotoCategories();
+            }
+            finally
+            {
+                EndDeferredSettingsSaveDuringLoad();
+            }
         }
 
         /// <summary>
