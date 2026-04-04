@@ -1436,7 +1436,7 @@ namespace Ink_Canvas.Helpers
         /// </summary>
         /// <remarks>
         /// 该方法会临时将 App.IsUpdateInstalling 置为 true、尝试关闭进程保护（并在结束时还原）、在必要时备份当前设置、解压更新 ZIP、启动解压后的新可执行文件（以更新模式传递旧进程 ID、解压路径和目标路径等参数），并在新进程启动后关闭当前进程。方法会记录日志并在遇到错误时安全退出相应步骤，但不会抛出异常给调用方以外的上下文。</remarks>
-        /// <param name="version">要安装的版本号，用于定位更新包文件名（例如 InkCanvasForClass.CE.{version}.zip）。</param>
+        /// <param name="version">要安装的版本号，用于定位更新包文件名（与 <see cref="GetLocalUpdateZipFilePath"/> 一致；选择 x64 包时为 InkCanvasForClass.CE.{version}-x64.zip）。</param>
         /// <param name="isInSilence">指示是否以静默模式启动新版本（影响传递给新进程的参数和可能的用户提示）。</param>
         public static void InstallNewVersionApp(string version, bool isInSilence)
         {
@@ -1487,7 +1487,7 @@ namespace Ink_Canvas.Helpers
                     LogHelper.WriteLogToFile($"更新前自动备份设置时出错: {ex.Message}", LogHelper.LogType.Error);
                 }
 
-                string zipFilePath = Path.Combine(updatesFolderPath, $"InkCanvasForClass.CE.{version}.zip");
+                string zipFilePath = GetLocalUpdateZipFilePath(version);
                 LogHelper.WriteLogToFile($"AutoUpdate | 检查ZIP文件: {zipFilePath}");
 
                 if (!File.Exists(zipFilePath))
