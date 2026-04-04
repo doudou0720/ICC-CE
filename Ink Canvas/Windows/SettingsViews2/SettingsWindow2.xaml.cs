@@ -37,6 +37,9 @@ namespace Ink_Canvas.Windows.SettingsViews2
         private double _originalTop;
         private double _originalWidth;
         private double _originalHeight;
+        
+        // 标记窗口是否曾经最大化过
+        private bool _wasMaximized = false;
 
         public SettingsWindow2()
         {
@@ -99,19 +102,30 @@ namespace Ink_Canvas.Windows.SettingsViews2
                     _originalWidth = this.Width;
                     _originalHeight = this.Height;
                     
+                    // 标记窗口曾经最大化过
+                    _wasMaximized = true;
+                    
                     // 最大化时清除最大尺寸限制
                     this.MaxWidth = double.PositiveInfinity;
                     this.MaxHeight = double.PositiveInfinity;
                 }
-                else
+                else if (this.WindowState == WindowState.Normal && _wasMaximized)
                 {
-                    // 非最大化时恢复窗口原始位置和大小
+                    // 从最大化恢复到正常状态时，恢复窗口原始位置和大小
                     this.Left = _originalLeft;
                     this.Top = _originalTop;
                     this.Width = _originalWidth;
                     this.Height = _originalHeight;
                     
+                    // 重置标记
+                    _wasMaximized = false;
+                    
                     // 只设置最大尺寸，不改变窗口位置
+                    SetMaxSizeOnly();
+                }
+                else if (this.WindowState == WindowState.Normal)
+                {
+                    // 正常状态下只设置最大尺寸限制
                     SetMaxSizeOnly();
                 }
             };

@@ -1,17 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
@@ -20,76 +9,260 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
     /// </summary>
     public partial class NewSettingStartup : Page
     {
+        private bool _isLoaded = false;
+
         public NewSettingStartup()
         {
             InitializeComponent();
-            // 初始化开关状态
-            InitializeSwitchState();
+            Loaded += NewSettingStartup_Loaded;
+        }
+
+        private void NewSettingStartup_Loaded(object sender, RoutedEventArgs e)
+        {
+            LoadSettings();
+            _isLoaded = true;
         }
 
         /// <summary>
-        /// 初始化开关状态
+        /// 加载设置到UI
         /// </summary>
-        private void InitializeSwitchState()
+        private void LoadSettings()
         {
+            if (MainWindow.Settings == null) return;
+
+            _isLoaded = false;
+
             try
             {
-                // 通过检查启动文件夹中是否存在快捷方式来判断开机自启动状态
-                if (System.IO.File.Exists(System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup) + "\\Ink Canvas Annotation.lnk"))
+                // 窗口无焦点模式
+                if (MainWindow.Settings.Advanced != null)
                 {
-                    ToggleSwitchRunAtStartup.IsOn = true;
+                    ToggleSwitchNoFocusMode.IsOn = MainWindow.Settings.Advanced.IsNoFocusMode;
                 }
-                else
+
+                // 窗口无边框模式
+                if (MainWindow.Settings.Advanced != null)
                 {
-                    ToggleSwitchRunAtStartup.IsOn = false;
+                    ToggleSwitchWindowMode.IsOn = MainWindow.Settings.Advanced.WindowMode;
                 }
-                
-                // 同步主窗口的开关状态
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                if (mainWindow != null && mainWindow.ToggleSwitchRunAtStartup != null)
+
+                // 窗口置顶
+                if (MainWindow.Settings.Advanced != null)
                 {
-                    mainWindow.ToggleSwitchRunAtStartup.IsOn = ToggleSwitchRunAtStartup.IsOn;
+                    ToggleSwitchAlwaysOnTop.IsOn = MainWindow.Settings.Advanced.IsAlwaysOnTop;
+                }
+
+                // UIA置顶
+                if (MainWindow.Settings.Advanced != null)
+                {
+                    ToggleSwitchUIAccessTopMost.IsOn = MainWindow.Settings.Advanced.EnableUIAccessTopMost;
+                }
+
+                // 开机时运行
+                bool runAtStartup = System.IO.File.Exists(
+                    System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup) + "\\Ink Canvas Annotation.lnk");
+                ToggleSwitchRunAtStartup.IsOn = runAtStartup;
+
+                // 启动时折叠
+                if (MainWindow.Settings.Startup != null)
+                {
+                    ToggleSwitchFoldAtStartup.IsOn = MainWindow.Settings.Startup.IsFoldAtStartup;
+                }
+
+                // 仅PPT模式
+                if (MainWindow.Settings.ModeSettings != null)
+                {
+                    ToggleSwitchPPTOnlyMode.IsOn = MainWindow.Settings.ModeSettings.IsPPTOnlyMode;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 如果发生异常，默认设置为关闭
-                ToggleSwitchRunAtStartup.IsOn = false;
+                System.Diagnostics.Debug.WriteLine($"加载启动设置时出错: {ex.Message}");
+            }
+
+            _isLoaded = true;
+        }
+
+        #region 窗口设置事件处理
+
+        /// <summary>
+        /// 窗口无焦点模式开关事件
+        /// </summary>
+        private void ToggleSwitchNoFocusMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            try
+            {
+                bool newState = ToggleSwitchNoFocusMode.IsOn;
+                
+                // 使用Helper类更新设置并应用
+                Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchNoFocusMode", newState);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置窗口无焦点模式时出错: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 处理开机自启动开关状态更改事件
+        /// 窗口无边框模式开关事件
         /// </summary>
-        /// <param name="sender">事件发送者</param>
-        /// <param name="e">路由事件参数</param>
+        private void ToggleSwitchWindowMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            try
+            {
+                bool newState = ToggleSwitchWindowMode.IsOn;
+                
+                // 使用Helper类更新设置并应用
+                Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchWindowMode", newState);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置窗口无边框模式时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 窗口置顶开关事件
+        /// </summary>
+        private void ToggleSwitchAlwaysOnTop_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            try
+            {
+                bool newState = ToggleSwitchAlwaysOnTop.IsOn;
+                
+                // 使用Helper类更新设置并应用
+                Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAlwaysOnTop", newState);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置窗口置顶时出错: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// UIA置顶开关事件
+        /// </summary>
+        private void ToggleSwitchUIAccessTopMost_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            try
+            {
+                bool newState = ToggleSwitchUIAccessTopMost.IsOn;
+                
+                // 更新Settings对象
+                if (MainWindow.Settings.Advanced != null)
+                {
+                    MainWindow.Settings.Advanced.EnableUIAccessTopMost = newState;
+                }
+                
+                // 保存设置
+                MainWindow.SaveSettingsToFile();
+                
+                // 通知其他面板同步状态
+                Windows.SettingsViews.MainWindowSettingsHelper.NotifySettingsPanelsSyncState("ToggleSwitchUIAccessTopMost");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置UIA置顶时出错: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region 启动设置事件处理
+
+        /// <summary>
+        /// 开机时运行开关事件
+        /// </summary>
         private void ToggleSwitchRunAtStartup_Toggled(object sender, RoutedEventArgs e)
         {
+            if (!_isLoaded) return;
+
             try
             {
-                // 直接实现开机自启动逻辑
-                if (ToggleSwitchRunAtStartup.IsOn)
-                {
-                    MainWindow.StartAutomaticallyDel("InkCanvas");
-                    MainWindow.StartAutomaticallyCreate("Ink Canvas Annotation");
-                }
-                else
-                {
-                    MainWindow.StartAutomaticallyDel("InkCanvas");
-                    MainWindow.StartAutomaticallyDel("Ink Canvas Annotation");
-                }
+                bool newState = ToggleSwitchRunAtStartup.IsOn;
                 
-                // 同步到主窗口的设置
-                var mainWindow = Application.Current.MainWindow as MainWindow;
-                if (mainWindow != null && mainWindow.ToggleSwitchRunAtStartup != null)
-                {
-                    mainWindow.ToggleSwitchRunAtStartup.IsOn = ToggleSwitchRunAtStartup.IsOn;
-                }
+                // 使用Helper类更新设置并应用
+                Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchRunAtStartup", newState);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // 忽略异常
+                System.Diagnostics.Debug.WriteLine($"设置开机启动时出错: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// 开机运行后收纳到侧边栏开关事件
+        /// </summary>
+        private void ToggleSwitchFoldAtStartup_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            try
+            {
+                bool newState = ToggleSwitchFoldAtStartup.IsOn;
+                
+                // 使用Helper类更新设置并应用
+                Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFoldAtStartup", newState);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置开机折叠时出错: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region 模式设置事件处理
+
+        /// <summary>
+        /// 仅PPT模式开关事件
+        /// </summary>
+        private void ToggleSwitchPPTOnlyMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+
+            try
+            {
+                bool newState = ToggleSwitchPPTOnlyMode.IsOn;
+                
+                // 使用Helper类更新设置并应用
+                Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchMode", newState);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"设置仅PPT模式时出错: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region 插件管理事件处理
+
+        /// <summary>
+        /// 打开插件管理器按钮点击事件
+        /// </summary>
+        private void BtnOpenPluginManager_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // 创建并显示插件设置窗口
+                var pluginSettingsWindow = new Windows.PluginSettingsWindow();
+                pluginSettingsWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开插件管理器时出错: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 }

@@ -65,7 +65,7 @@
             <ui:NavigationView.AutoSuggestBox>
                 <ui:AutoSuggestBox
                     x:Name="controlsSearchBox"
-                    MinWidth="220"
+                    MinWidth="200"
                     VerticalAlignment="Center"
                     x:FieldModifier="public"
                     PlaceholderText="查找设置"
@@ -78,6 +78,7 @@
             </ui:NavigationView.AutoSuggestBox>
 
             <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItemHeader Content="ICC CE 设置" Foreground="Black"/>
                 <!-- 基本设置 -->
                 <ui:NavigationViewItem
                     x:Name="BasicItem"
@@ -181,6 +182,7 @@
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItemHeader Content="插件设置"  Foreground="Black"/>
             </ui:NavigationView.MenuItems>
 
             <ui:NavigationView.FooterMenuItems>

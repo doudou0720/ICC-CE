@@ -9,11 +9,10 @@
       xmlns:i18n="clr-namespace:Ink_Canvas.MarkupExtensions"
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="950" d:DesignWidth="800"
       Title="启动">
 
     <ScrollViewer Padding="59,0,59,0">
-        <!--  These styles can be referenced to create a consistent SettingsPage layout  -->
         <FrameworkElement.Resources>
             <!--  Spacing between cards  -->
             <sys:Double x:Key="SettingsCardSpacing">4</sys:Double>
@@ -30,16 +29,100 @@
             <ikw:SimpleStackPanel MaxWidth="1000"
                 HorizontalAlignment="Stretch"
                 Spacing="{StaticResource SettingsCardSpacing}">
+                
+                <!-- 窗口设置 -->
                 <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                    Text="启动时行为" />
-                <!--  开机时运行 - 开关  -->
+                    Text="窗口设置" />
+                
+                <!-- 窗口无焦点模式 -->
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_NoFocusModeHint}"
+                        Header="窗口无焦点模式">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.View}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:ToggleSwitch Name="ToggleSwitchNoFocusMode" Toggled="ToggleSwitchNoFocusMode_Toggled" />
+                </ui:SettingsCard>
+                
+                <!-- 窗口无边框模式 -->
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_NoBorderModeHint}"
+                        Header="窗口无边框模式">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:ToggleSwitch Name="ToggleSwitchWindowMode" Toggled="ToggleSwitchWindowMode_Toggled" />
+                </ui:SettingsCard>
+                
+                <!-- 窗口置顶 -->
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_TopMostHint}"
+                        Header="窗口置顶">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:ToggleSwitch Name="ToggleSwitchAlwaysOnTop" Toggled="ToggleSwitchAlwaysOnTop_Toggled" />
+                </ui:SettingsCard>
+                
+                <!-- UIA置顶 -->
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_UIAccessTopMostHint}"
+                        Header="UIA置顶">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:ToggleSwitch Name="ToggleSwitchUIAccessTopMost" Toggled="ToggleSwitchUIAccessTopMost_Toggled" />
+                </ui:SettingsCard>
+                
+                <!-- 启动设置 -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    Text="启动设置" />
+                
+                <!-- 开机时运行 -->
                 <ui:SettingsCard Description="{i18n:I18n Key=Startup_RunAtStartupHint}"
                         Header="{i18n:I18n Key=Startup_RunAtStartup}">
                     <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Glyph="&#xE768;" />
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}"/>
                     </ui:SettingsCard.HeaderIcon>
                     <ui:ToggleSwitch Name="ToggleSwitchRunAtStartup" Toggled="ToggleSwitchRunAtStartup_Toggled" />
                 </ui:SettingsCard>
+                
+                <!-- 开机运行后收纳到侧边栏 -->
+                <ui:SettingsCard Description="{i18n:I18n Key=Startup_FoldAtStartupHint}"
+                        Header="{i18n:I18n Key=Startup_FoldAtStartup}">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:ToggleSwitch Name="ToggleSwitchFoldAtStartup" Toggled="ToggleSwitchFoldAtStartup_Toggled" />
+                </ui:SettingsCard>
+                
+                <!-- 模式设置 -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    Text="模式设置" />
+                
+                <ui:SettingsExpander Description="选择软件运行模式。仅PPT模式下，软件将完全隐藏，仅在PPT放映时出现。（实验性功能，可能不稳定。）"
+                        Header="运行模式">
+                    <ui:SettingsExpander.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                    </ui:SettingsExpander.HeaderIcon>
+                    <ui:SettingsExpander.Items>
+                        <ui:SettingsCard Header="仅PPT模式">
+                            <ui:ToggleSwitch Name="ToggleSwitchPPTOnlyMode" Toggled="ToggleSwitchPPTOnlyMode_Toggled" />
+                        </ui:SettingsCard>
+                    </ui:SettingsExpander.Items>
+                </ui:SettingsExpander>
+                
+                <!-- 插件管理 -->
+                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    Text="插件管理" />
+                
+                <ui:SettingsCard Description="通过插件扩展InkCanvas的功能。您可以启用或禁用插件，或加载自定义插件。"
+                        Header="插件管理">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
+                    </ui:SettingsCard.HeaderIcon>
+                    <Button Name="BtnOpenPluginManager" Content="打开插件管理器" Click="BtnOpenPluginManager_Click" />
+                </ui:SettingsCard>
+                
+                <!-- 底部空白 -->
+                <Rectangle Height="48" />
+                
             </ikw:SimpleStackPanel>
         </Grid>
     </ScrollViewer>
