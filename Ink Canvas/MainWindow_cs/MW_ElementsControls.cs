@@ -35,6 +35,9 @@ namespace Ink_Canvas
         /// </summary>
         private Point dragStartPoint;
 
+        /// <summary>页码侧栏当前订阅 <see cref="PdfEmbeddedView.PageNavigationStateChanged"/> 的 PDF 视图。</summary>
+        private PdfEmbeddedView _pdfPageSidebarEventSource;
+
         #region Image
         /// <summary>
         /// 处理图片插入按钮点击事件
@@ -93,6 +96,8 @@ namespace Ink_Canvas
 
                             // 最后绑定事件处理器
                             BindElementEvents(element);
+
+                            SyncPdfPageSidebarWithCanvas();
 
                             LogHelper.WriteLogToFile($"图片插入完成: {element.Name}");
                         }), DispatcherPriority.Loaded);
@@ -526,9 +531,6 @@ namespace Ink_Canvas
             // 根据元素类型显示不同的选择工具栏
             if (IsBitmapLikeCanvasElement(element))
             {
-                if (BorderPdfPageSidebar != null)
-                    BorderPdfPageSidebar.Visibility = element is PdfEmbeddedView ? Visibility.Visible : Visibility.Collapsed;
-
                 // 显示图片选择工具栏并设置位置
                 if (BorderImageSelectionControl != null)
                 {
@@ -540,25 +542,11 @@ namespace Ink_Canvas
                 // 显示图片缩放选择点
                 ShowImageResizeHandles(element);
 
-                if (element is PdfEmbeddedView pdfView)
-                {
-                    pdfView.PageNavigationStateChanged -= SelectedPdf_PageNavigationStateChanged;
-                    pdfView.PageNavigationStateChanged += SelectedPdf_PageNavigationStateChanged;
-                    UpdatePdfSidebarFromSelectedPdf();
-                    UpdatePdfPageSidebarPosition(pdfView);
-                }
-                else
-                    ResetPdfSidebarToIdle();
-
                 // 墨迹选择工具栏通过GridInkCanvasSelectionCover的可见性来控制
                 // 不需要直接设置BorderStrokeSelectionControl.Visibility
             }
             else
             {
-                if (BorderPdfPageSidebar != null)
-                    BorderPdfPageSidebar.Visibility = Visibility.Collapsed;
-                ResetPdfSidebarToIdle();
-
                 // 隐藏图片选择工具栏
                 if (BorderImageSelectionControl != null)
                 {
@@ -586,6 +574,8 @@ namespace Ink_Canvas
                 // 保持选择模式，这样用户可以直接点击墨迹来选择
                 inkCanvas.EditingMode = InkCanvasEditingMode.Select;
             }
+
+            SyncPdfPageSidebarWithCanvas();
         }
 
         /// <summary>
@@ -601,15 +591,6 @@ namespace Ink_Canvas
         private void UnselectElement(FrameworkElement element)
         {
             // 去除选中效果
-
-            if (element is PdfEmbeddedView pdfView)
-            {
-                pdfView.PageNavigationStateChanged -= SelectedPdf_PageNavigationStateChanged;
-            }
-
-            if (BorderPdfPageSidebar != null)
-                BorderPdfPageSidebar.Visibility = Visibility.Collapsed;
-            ResetPdfSidebarToIdle();
 
             // 隐藏图片选择工具栏
             if (BorderImageSelectionControl != null)
@@ -634,6 +615,8 @@ namespace Ink_Canvas
             {
                 inkCanvas.EditingMode = InkCanvasEditingMode.Select;
             }
+
+            SyncPdfPageSidebarWithCanvas();
         }
 
         /// <summary>
@@ -1527,8 +1510,9 @@ namespace Ink_Canvas
                 // 设置工具栏位置
                 BorderImageSelectionControl.Margin = new Thickness(toolbarLeft, toolbarTop, 0, 0);
 
-                if (element is PdfEmbeddedView && BorderPdfPageSidebar?.Visibility == Visibility.Visible)
-                    UpdatePdfPageSidebarPosition(element);
+                var pdfTarget = GetPdfSidebarTargetElement();
+                if (pdfTarget != null && BorderPdfPageSidebar != null && BorderPdfPageSidebar.Visibility == Visibility.Visible)
+                    UpdatePdfPageSidebarPosition(pdfTarget);
             }
             catch (Exception ex)
             {
@@ -1537,6 +1521,67 @@ namespace Ink_Canvas
         }
 
         private const double PdfPageSidebarGap = 10;
+
+        /// <summary>
+        /// 侧栏绑定的 PDF：若当前选中的是 PDF 则用该项；否则用画布上最后一个 PdfEmbeddedView。
+        /// </summary>
+        private PdfEmbeddedView GetPdfSidebarTargetElement()
+        {
+            if (inkCanvas == null) return null;
+            var pdfs = inkCanvas.Children.OfType<PdfEmbeddedView>().ToList();
+            if (pdfs.Count == 0) return null;
+            if (currentSelectedElement is PdfEmbeddedView sel && pdfs.Contains(sel))
+                return sel;
+            return pdfs[pdfs.Count - 1];
+        }
+
+        private void AttachPdfPageSidebarEvents(PdfEmbeddedView pdf)
+        {
+            if (pdf == null || _pdfPageSidebarEventSource == pdf) return;
+            DetachPdfPageSidebarEvents();
+            _pdfPageSidebarEventSource = pdf;
+            _pdfPageSidebarEventSource.PageNavigationStateChanged += SelectedPdf_PageNavigationStateChanged;
+        }
+
+        private void DetachPdfPageSidebarEvents()
+        {
+            if (_pdfPageSidebarEventSource != null)
+            {
+                _pdfPageSidebarEventSource.PageNavigationStateChanged -= SelectedPdf_PageNavigationStateChanged;
+                _pdfPageSidebarEventSource = null;
+            }
+        }
+
+        /// <summary>
+        /// 画布上存在 PDF 时始终显示右侧页码栏并跟随目标 PDF；无任何 PDF 时隐藏。
+        /// </summary>
+        private void SyncPdfPageSidebarWithCanvas()
+        {
+            if (BorderPdfPageSidebar == null || inkCanvas == null) return;
+
+            // 屏幕模式（已退出白板/黑板）下不显示侧栏，避免画布仍含 PDF 时栏残留在桌面上
+            if (currentMode == 0)
+            {
+                DetachPdfPageSidebarEvents();
+                BorderPdfPageSidebar.Visibility = Visibility.Collapsed;
+                ResetPdfSidebarToIdle();
+                return;
+            }
+
+            var pdf = GetPdfSidebarTargetElement();
+            if (pdf == null)
+            {
+                DetachPdfPageSidebarEvents();
+                BorderPdfPageSidebar.Visibility = Visibility.Collapsed;
+                ResetPdfSidebarToIdle();
+                return;
+            }
+
+            AttachPdfPageSidebarEvents(pdf);
+            BorderPdfPageSidebar.Visibility = Visibility.Visible;
+            UpdatePdfSidebarFromPdf(pdf);
+            UpdatePdfPageSidebarPosition(pdf);
+        }
 
         /// <summary>
         /// 将 PDF 专用页码栏贴在当前所选 PDF 的右侧（画布坐标，与底部选中栏一致）。
@@ -1909,29 +1954,28 @@ namespace Ink_Canvas
             }
         }
 
-        private void UpdatePdfSidebarFromSelectedPdf()
+        private void UpdatePdfSidebarFromPdf(PdfEmbeddedView pdf)
         {
-            if (currentSelectedElement is PdfEmbeddedView pdf)
+            if (pdf == null) return;
+
+            if (TextBlockPdfSidebarPageLabel != null)
             {
-                if (TextBlockPdfSidebarPageLabel != null)
-                {
-                    TextBlockPdfSidebarPageLabel.Text = pdf.PageLabelText;
-                    TextBlockPdfSidebarPageLabel.Opacity = 1.0;
-                }
+                TextBlockPdfSidebarPageLabel.Text = pdf.PageLabelText;
+                TextBlockPdfSidebarPageLabel.Opacity = 1.0;
+            }
 
-                bool prevOk = pdf.CanGoPrevious;
-                bool nextOk = pdf.CanGoNext;
-                if (BorderPdfSidebarPagePrev != null)
-                {
-                    BorderPdfSidebarPagePrev.Opacity = prevOk ? 1.0 : 0.35;
-                    BorderPdfSidebarPagePrev.IsHitTestVisible = prevOk;
-                }
+            bool prevOk = pdf.CanGoPrevious;
+            bool nextOk = pdf.CanGoNext;
+            if (BorderPdfSidebarPagePrev != null)
+            {
+                BorderPdfSidebarPagePrev.Opacity = prevOk ? 1.0 : 0.35;
+                BorderPdfSidebarPagePrev.IsHitTestVisible = prevOk;
+            }
 
-                if (BorderPdfSidebarPageNext != null)
-                {
-                    BorderPdfSidebarPageNext.Opacity = nextOk ? 1.0 : 0.35;
-                    BorderPdfSidebarPageNext.IsHitTestVisible = nextOk;
-                }
+            if (BorderPdfSidebarPageNext != null)
+            {
+                BorderPdfSidebarPageNext.Opacity = nextOk ? 1.0 : 0.35;
+                BorderPdfSidebarPageNext.IsHitTestVisible = nextOk;
             }
         }
 
@@ -1939,7 +1983,11 @@ namespace Ink_Canvas
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                UpdatePdfSidebarFromSelectedPdf();
+                if (sender is PdfEmbeddedView pdf)
+                {
+                    UpdatePdfSidebarFromPdf(pdf);
+                    UpdatePdfPageSidebarPosition(pdf);
+                }
                 if (currentSelectedElement != null && IsBitmapLikeCanvasElement(currentSelectedElement))
                 {
                     UpdateImageSelectionToolbarPosition(currentSelectedElement);
@@ -1953,7 +2001,8 @@ namespace Ink_Canvas
         {
             try
             {
-                if (currentSelectedElement is PdfEmbeddedView pdf && pdf.CanGoPrevious)
+                var pdf = GetPdfSidebarTargetElement();
+                if (pdf != null && pdf.CanGoPrevious)
                     await pdf.GoToPreviousPageAsync();
             }
             catch (Exception ex)
@@ -1966,7 +2015,8 @@ namespace Ink_Canvas
         {
             try
             {
-                if (currentSelectedElement is PdfEmbeddedView pdf && pdf.CanGoNext)
+                var pdf = GetPdfSidebarTargetElement();
+                if (pdf != null && pdf.CanGoNext)
                     await pdf.GoToNextPageAsync();
             }
             catch (Exception ex)

@@ -3568,6 +3568,8 @@ namespace Ink_Canvas
                         break;
                 }
             }
+
+            SyncPdfPageSidebarWithCanvas();
         }
 
         private int BoundsWidth = 5;
@@ -3832,6 +3834,7 @@ namespace Ink_Canvas
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    SyncPdfPageSidebarWithCanvas();
                 }
             }
         }
@@ -3898,6 +3901,7 @@ namespace Ink_Canvas
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    SyncPdfPageSidebarWithCanvas();
                 }
             }
         }
@@ -3964,6 +3968,7 @@ namespace Ink_Canvas
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    SyncPdfPageSidebarWithCanvas();
                 }
             }
         }
