@@ -6,12 +6,34 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
     xmlns:ikw="http://schemas.inkore.net/lib/ui/wpf"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:controls="clr-namespace:Ink_Canvas.Controls"
     Title="图标设置"
     mc:Ignorable="d">
-    <Grid>
+    <Grid x:Name="RootGrid">
         <StackPanel Margin="24">
-            <TextBlock Text="图标设置" Style="{DynamicResource TitleTextBlockStyle}" Margin="0,0,0,16" />
-            <TextBlock Text="这里是图标设置页面" Style="{DynamicResource BodyTextBlockStyle}" />
+            <ui:SettingsExpander x:Name="settingsCard" VerticalAlignment="Top"
+        Description="The SettingsExpander has the same properties as a Card, and you can set SettingsCard as part of the Items collection."
+        Header="SettingsExpander" IsEnabled="True">
+
+                <ui:SettingsExpander.HeaderIcon>
+                    <ui:FontIcon Glyph="&#xE91B;"/>
+                </ui:SettingsExpander.HeaderIcon>
+
+
+                <controls:CopyButton Text="You can override the Left indention of a SettingsCard by overriding the SettingsCardLeftIndention"/>
+
+
+
+                <ui:SettingsExpander.Items>
+                    <ui:SettingsCard Description="You can override the Left indention of a SettingsCard by overriding the SettingsCardLeftIndention"
+            Header="Customization">
+                        <ui:SettingsCard.Resources>
+                            <sys:Double x:Key="SettingsCardLeftIndention">0</sys:Double>
+                        </ui:SettingsCard.Resources>
+                    </ui:SettingsCard>
+                </ui:SettingsExpander.Items>
+            </ui:SettingsExpander>
         </StackPanel>
     </Grid>
 </ui:Page>
