@@ -263,7 +263,7 @@
                             ToolTipText="InkCanvasForClass"
                             ContextMenu="{StaticResource SysTrayMenu}"
                             IconSource="/Resources/icc.ico"/>
-                <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.MergedDictionaries>
                 <ui:ThemeResources/>
                 <ui:XamlControlsResources />
                 <ResourceDictionary Source="Resources/SeewoImageDictionary.xaml"/>

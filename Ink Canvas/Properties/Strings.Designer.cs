@@ -19,7 +19,7 @@ namespace Ink_Canvas.Properties
     [CompilerGenerated]
     public static class Strings
     {
-        private const string EmbeddedEnUsResxName = "Ink_Canvas.Properties.Strings.enUS.xml";
+        private const string EmbeddedEnUsResxName = "Ink_Canvas.Properties.Strings.en-US.resx";
         private static readonly object EnUsLock = new object();
         private static Dictionary<string, string> _embeddedEnUs;
         private static ResourceManager _resourceMan;
