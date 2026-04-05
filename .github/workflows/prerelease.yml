@@ -236,7 +236,7 @@ jobs:
       - name: Check if exe file is generated
         id: check-exe
         run: |
-          $exePath = "Ink Canvas\bin\Release\${{ matrix.architecture }}\net472\InkCanvasForClass.exe"
+          $exePath = "Ink Canvas/bin/Release/${{ matrix.architecture }}/net462/InkCanvasForClass.exe"
           
           if (Test-Path $exePath) {
             echo "build_success=true" >> $env:GITHUB_OUTPUT
@@ -283,8 +283,8 @@ jobs:
           # 创建发布目录
           New-Item -ItemType Directory -Path "release" -Force
           
-          # 复制发布文件（使用架构特定的路径）
-          Copy-Item "Ink Canvas\bin\Release\$architecture\net472\*" "release/" -Recurse -Force
+          # 复制发布文件
+          Copy-Item "Ink Canvas/bin/Release/$architecture/net462/*" "release/" -Recurse -Force
           
           # 创建压缩包
           Compress-Archive -Path "release/*" -DestinationPath $archiveName -Force
