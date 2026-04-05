@@ -1,3 +1,4 @@
+using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern;
 using System;
@@ -3832,6 +3833,8 @@ namespace Ink_Canvas
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    if (element is PdfEmbeddedView)
+                        _pdfSidebarNextPositionUseHostTransform = true;
                     SyncPdfPageSidebarWithCanvas();
                 }
             }
@@ -3899,6 +3902,8 @@ namespace Ink_Canvas
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    if (element is PdfEmbeddedView)
+                        _pdfSidebarNextPositionUseHostTransform = true;
                     SyncPdfPageSidebarWithCanvas();
                 }
             }
@@ -3966,6 +3971,8 @@ namespace Ink_Canvas
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    if (element is PdfEmbeddedView)
+                        _pdfSidebarNextPositionUseHostTransform = true;
                     SyncPdfPageSidebarWithCanvas();
                 }
             }

@@ -40,6 +40,9 @@ namespace Ink_Canvas
 
         private bool _pdfSidebarPositionRefreshPending;
 
+        /// <summary>为 true 时，下一次成功算出 PDF 边界后的侧栏定位使用宿主 Visual 变换（仅用于刚插入/恢复 PDF 的首帧对齐）。</summary>
+        private bool _pdfSidebarNextPositionUseHostTransform;
+
         #region Image
         /// <summary>
         /// 处理图片插入按钮点击事件
@@ -99,6 +102,8 @@ namespace Ink_Canvas
                             // 最后绑定事件处理器
                             BindElementEvents(element);
 
+                            if (element is PdfEmbeddedView)
+                                _pdfSidebarNextPositionUseHostTransform = true;
                             SyncPdfPageSidebarWithCanvas();
 
                             LogHelper.WriteLogToFile($"图片插入完成: {element.Name}");
@@ -1055,6 +1060,7 @@ namespace Ink_Canvas
                 InitializeElementTransform(view);
                 BindElementEvents(view);
                 inkCanvas.Children.Add(view);
+                _pdfSidebarNextPositionUseHostTransform = true;
                 SyncPdfPageSidebarWithCanvas();
             }
             catch (Exception ex)
@@ -1681,8 +1687,22 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 将 PDF 专用页码栏贴在当前 PDF 右侧。侧栏与 InkCanvas 不在同一视觉子树，需把墨迹坐标变换到侧栏父容器坐标系。
+        /// 将 PDF 专用页码栏贴在当前 PDF 右侧。默认 Margin 与墨迹画布坐标一致；仅在 <see cref="_pdfSidebarNextPositionUseHostTransform"/> 为 true 时用宿主变换对齐首帧。
         /// </summary>
+        private void ApplyPdfSidebarMarginFromInkBounds(Rect b, double sidebarW, double sidebarH, out double left, out double top, out double maxLeft, out double maxTop)
+        {
+            left = b.Right + PdfPageSidebarGap;
+            top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
+            maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
+            maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
+            if (left > maxLeft)
+            {
+                double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
+                if (leftAlt >= 0)
+                    left = leftAlt;
+            }
+        }
+
         private void UpdatePdfPageSidebarPosition(FrameworkElement element)
         {
             try
@@ -1695,6 +1715,8 @@ namespace Ink_Canvas
                     SyncPdfPageSidebarWithCanvas();
                     return;
                 }
+
+                bool wantHostOnce = _pdfSidebarNextPositionUseHostTransform;
 
                 pdfEl.UpdateLayout();
                 Rect b = GetElementActualBounds(pdfEl);
@@ -1720,12 +1742,10 @@ namespace Ink_Canvas
                     sidebarH = 220;
 
                 Visual sidebarHost = VisualTreeHelper.GetParent(BorderPdfPageSidebar) as Visual;
-                double left;
-                double top;
-                double maxLeft;
-                double maxTop;
+                double left = 0, top = 0, maxLeft = 0, maxTop = 0;
+                bool hostOk = false;
 
-                if (sidebarHost != null)
+                if (wantHostOnce && sidebarHost != null)
                 {
                     try
                     {
@@ -1750,34 +1770,20 @@ namespace Ink_Canvas
                             if (leftAlt >= 0)
                                 left = leftAlt;
                         }
+
+                        hostOk = true;
                     }
                     catch
                     {
-                        left = b.Right + PdfPageSidebarGap;
-                        top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
-                        maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
-                        maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
-                        if (left > maxLeft)
-                        {
-                            double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
-                            if (leftAlt >= 0)
-                                left = leftAlt;
-                        }
+                        hostOk = false;
                     }
                 }
-                else
-                {
-                    left = b.Right + PdfPageSidebarGap;
-                    top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
-                    maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
-                    maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
-                    if (left > maxLeft)
-                    {
-                        double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
-                        if (leftAlt >= 0)
-                            left = leftAlt;
-                    }
-                }
+
+                if (!hostOk)
+                    ApplyPdfSidebarMarginFromInkBounds(b, sidebarW, sidebarH, out left, out top, out maxLeft, out maxTop);
+
+                if (wantHostOnce)
+                    _pdfSidebarNextPositionUseHostTransform = false;
 
                 left = Math.Max(0, Math.Min(left, maxLeft));
                 top = Math.Max(0, Math.Min(top, maxTop));
