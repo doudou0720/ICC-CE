@@ -38,6 +38,8 @@ namespace Ink_Canvas
         /// <summary>页码侧栏当前订阅 <see cref="PdfEmbeddedView.PageNavigationStateChanged"/> 的 PDF 视图。</summary>
         private PdfEmbeddedView _pdfPageSidebarEventSource;
 
+        private bool _pdfSidebarPositionRefreshPending;
+
         #region Image
         /// <summary>
         /// 处理图片插入按钮点击事件
@@ -1581,6 +1583,7 @@ namespace Ink_Canvas
             DetachPdfPageSidebarEvents();
             _pdfPageSidebarEventSource = pdf;
             _pdfPageSidebarEventSource.PageNavigationStateChanged += SelectedPdf_PageNavigationStateChanged;
+            _pdfPageSidebarEventSource.LayoutUpdated += OnPdfSidebarTargetLayoutUpdated;
         }
 
         private void DetachPdfPageSidebarEvents()
@@ -1588,8 +1591,53 @@ namespace Ink_Canvas
             if (_pdfPageSidebarEventSource != null)
             {
                 _pdfPageSidebarEventSource.PageNavigationStateChanged -= SelectedPdf_PageNavigationStateChanged;
+                _pdfPageSidebarEventSource.LayoutUpdated -= OnPdfSidebarTargetLayoutUpdated;
                 _pdfPageSidebarEventSource = null;
             }
+        }
+
+        private void OnPdfSidebarTargetLayoutUpdated(object sender, EventArgs e)
+        {
+            if (BorderPdfPageSidebar?.Visibility != Visibility.Visible || inkCanvas == null) return;
+            if (!(sender is PdfEmbeddedView p) || !ReferenceEquals(_pdfPageSidebarEventSource, p)) return;
+            if (!inkCanvas.Children.Contains(p))
+                SyncPdfPageSidebarWithCanvas();
+            else
+                RequestPdfSidebarPositionRefresh();
+        }
+
+        /// <summary>在下一帧合并更新侧栏位置（初始布局、翻页改尺寸后 ActualWidth 仍为 0 时尤其需要）。</summary>
+        private void RequestPdfSidebarPositionRefresh()
+        {
+            if (_pdfSidebarPositionRefreshPending) return;
+            _pdfSidebarPositionRefreshPending = true;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _pdfSidebarPositionRefreshPending = false;
+                try
+                {
+                    var t = GetPdfSidebarTargetElement();
+                    if (t == null || BorderPdfPageSidebar?.Visibility != Visibility.Visible)
+                    {
+                        SyncPdfPageSidebarWithCanvas();
+                        return;
+                    }
+
+                    if (!inkCanvas.Children.Contains(t))
+                    {
+                        SyncPdfPageSidebarWithCanvas();
+                        return;
+                    }
+
+                    t.UpdateLayout();
+                    inkCanvas.UpdateLayout();
+                    UpdatePdfPageSidebarPosition(t);
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"PDF 侧栏延迟定位失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
+            }), DispatcherPriority.Render);
         }
 
         /// <summary>
@@ -1620,22 +1668,48 @@ namespace Ink_Canvas
             AttachPdfPageSidebarEvents(pdf);
             BorderPdfPageSidebar.Visibility = Visibility.Visible;
             UpdatePdfSidebarFromPdf(pdf);
+            pdf.UpdateLayout();
+            inkCanvas.UpdateLayout();
             UpdatePdfPageSidebarPosition(pdf);
+            RequestPdfSidebarPositionRefresh();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var t = GetPdfSidebarTargetElement();
+                if (t != null && BorderPdfPageSidebar?.Visibility == Visibility.Visible && inkCanvas.Children.Contains(t))
+                    UpdatePdfPageSidebarPosition(t);
+            }), DispatcherPriority.ContextIdle);
         }
 
         /// <summary>
-        /// 将 PDF 专用页码栏贴在当前所选 PDF 的右侧（画布坐标，与底部选中栏一致）。
+        /// 将 PDF 专用页码栏贴在当前 PDF 右侧。侧栏与 InkCanvas 不在同一视觉子树，需把墨迹坐标变换到侧栏父容器坐标系。
         /// </summary>
         private void UpdatePdfPageSidebarPosition(FrameworkElement element)
         {
             try
             {
-                if (BorderPdfPageSidebar == null || inkCanvas == null || !(element is PdfEmbeddedView))
+                if (BorderPdfPageSidebar == null || inkCanvas == null || !(element is PdfEmbeddedView pdfEl))
                     return;
 
-                Rect b = GetElementActualBounds(element);
+                if (!inkCanvas.Children.Contains(pdfEl))
+                {
+                    SyncPdfPageSidebarWithCanvas();
+                    return;
+                }
 
-                BorderPdfPageSidebar.Measure(new Size(BorderPdfPageSidebar.Width, double.PositiveInfinity));
+                pdfEl.UpdateLayout();
+                Rect b = GetElementActualBounds(pdfEl);
+                if (b.Width <= 0 || b.Height <= 0 || double.IsNaN(b.Width) || double.IsNaN(b.Height))
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        var t = GetPdfSidebarTargetElement();
+                        if (t is PdfEmbeddedView pe && inkCanvas.Children.Contains(pe) && BorderPdfPageSidebar?.Visibility == Visibility.Visible)
+                            UpdatePdfPageSidebarPosition(pe);
+                    }), DispatcherPriority.Loaded);
+                    return;
+                }
+
+                BorderPdfPageSidebar.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
                 double sidebarW = BorderPdfPageSidebar.DesiredSize.Width;
                 double sidebarH = BorderPdfPageSidebar.DesiredSize.Height;
                 if (sidebarW <= 0)
@@ -1645,17 +1719,64 @@ namespace Ink_Canvas
                 if (sidebarH <= 0)
                     sidebarH = 220;
 
-                double left = b.Right + PdfPageSidebarGap;
-                double top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
+                Visual sidebarHost = VisualTreeHelper.GetParent(BorderPdfPageSidebar) as Visual;
+                double left;
+                double top;
+                double maxLeft;
+                double maxTop;
 
-                double maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
-                double maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
-
-                if (left > maxLeft)
+                if (sidebarHost != null)
                 {
-                    double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
-                    if (leftAlt >= 0)
-                        left = leftAlt;
+                    try
+                    {
+                        GeneralTransform inkToHost = inkCanvas.TransformToVisual(sidebarHost);
+                        Point tl = inkToHost.Transform(new Point(b.Left, b.Top));
+                        Point br = inkToHost.Transform(new Point(b.Right, b.Bottom));
+                        double rightX = Math.Max(tl.X, br.X);
+                        double midY = (tl.Y + br.Y) * 0.5;
+                        left = rightX + PdfPageSidebarGap;
+                        top = midY - sidebarH * 0.5;
+
+                        var feHost = sidebarHost as FrameworkElement;
+                        double hostW = feHost != null && feHost.ActualWidth > 0 ? feHost.ActualWidth : inkCanvas.ActualWidth;
+                        double hostH = feHost != null && feHost.ActualHeight > 0 ? feHost.ActualHeight : inkCanvas.ActualHeight;
+                        maxLeft = Math.Max(0, hostW - sidebarW);
+                        maxTop = Math.Max(0, hostH - sidebarH);
+
+                        if (left > maxLeft)
+                        {
+                            double leftEdge = Math.Min(tl.X, br.X);
+                            double leftAlt = leftEdge - PdfPageSidebarGap - sidebarW;
+                            if (leftAlt >= 0)
+                                left = leftAlt;
+                        }
+                    }
+                    catch
+                    {
+                        left = b.Right + PdfPageSidebarGap;
+                        top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
+                        maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
+                        maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
+                        if (left > maxLeft)
+                        {
+                            double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
+                            if (leftAlt >= 0)
+                                left = leftAlt;
+                        }
+                    }
+                }
+                else
+                {
+                    left = b.Right + PdfPageSidebarGap;
+                    top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
+                    maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
+                    maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
+                    if (left > maxLeft)
+                    {
+                        double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
+                        if (leftAlt >= 0)
+                            left = leftAlt;
+                    }
                 }
 
                 left = Math.Max(0, Math.Min(left, maxLeft));
@@ -2025,8 +2146,15 @@ namespace Ink_Canvas
             {
                 if (sender is PdfEmbeddedView pdf)
                 {
+                    if (!inkCanvas.Children.Contains(pdf))
+                    {
+                        SyncPdfPageSidebarWithCanvas();
+                        return;
+                    }
+
                     UpdatePdfSidebarFromPdf(pdf);
                     UpdatePdfPageSidebarPosition(pdf);
+                    RequestPdfSidebarPositionRefresh();
                 }
                 if (currentSelectedElement != null && IsBitmapLikeCanvasElement(currentSelectedElement))
                 {
@@ -2034,7 +2162,7 @@ namespace Ink_Canvas
                     if (ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
                         UpdateImageResizeHandlesPosition(GetElementActualBounds(currentSelectedElement));
                 }
-            }), DispatcherPriority.Background);
+            }), DispatcherPriority.Loaded);
         }
 
         private async void BorderPdfSidebarPagePrev_MouseUp(object sender, MouseButtonEventArgs e)
@@ -2044,6 +2172,7 @@ namespace Ink_Canvas
                 var pdf = GetPdfSidebarTargetElement();
                 if (pdf != null && pdf.CanGoPrevious)
                     await pdf.GoToPreviousPageAsync();
+                SyncPdfPageSidebarWithCanvas();
             }
             catch (Exception ex)
             {
@@ -2058,6 +2187,7 @@ namespace Ink_Canvas
                 var pdf = GetPdfSidebarTargetElement();
                 if (pdf != null && pdf.CanGoNext)
                     await pdf.GoToNextPageAsync();
+                SyncPdfPageSidebarWithCanvas();
             }
             catch (Exception ex)
             {
@@ -2090,6 +2220,8 @@ namespace Ink_Canvas
 
                     // 恢复到删除前的编辑模式
                     inkCanvas.EditingMode = previousEditingMode;
+
+                    SyncPdfPageSidebarWithCanvas();
 
                     LogHelper.WriteLogToFile($"图片删除完成，已恢复到编辑模式: {previousEditingMode}");
                 }
