@@ -1,3 +1,4 @@
+using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern;
 using System;
@@ -3774,32 +3775,29 @@ namespace Ink_Canvas
             // Open file dialog to select image
             var dialog = new OpenFileDialog
             {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                Image image = await CreateAndCompressImageAsync(filePath);
-                if (image != null)
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 初始化TransformGroup
-                    if (image is FrameworkElement element)
-                    {
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new ScaleTransform(1, 1));
-                        transformGroup.Children.Add(new TranslateTransform(0, 0));
-                        transformGroup.Children.Add(new RotateTransform(0));
-                        element.RenderTransform = transformGroup;
-                    }
+                    var transformGroup = new TransformGroup();
+                    transformGroup.Children.Add(new ScaleTransform(1, 1));
+                    transformGroup.Children.Add(new TranslateTransform(0, 0));
+                    transformGroup.Children.Add(new RotateTransform(0));
+                    element.RenderTransform = transformGroup;
 
-                    CenterAndScaleElement(image);
+                    CenterAndScaleElement(element);
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     if (inkCanvas != null)
@@ -3810,29 +3808,25 @@ namespace Ink_Canvas
                         inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
 
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 绑定事件处理器
-                    if (image is FrameworkElement elementForEvents)
-                    {
-                        // 鼠标事件
-                        elementForEvents.MouseLeftButtonDown += Element_MouseLeftButtonDown;
-                        elementForEvents.MouseLeftButtonUp += Element_MouseLeftButtonUp;
-                        elementForEvents.MouseMove += Element_MouseMove;
-                        elementForEvents.MouseWheel += Element_MouseWheel;
+                    element.MouseLeftButtonDown += Element_MouseLeftButtonDown;
+                    element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
+                    element.MouseMove += Element_MouseMove;
+                    element.MouseWheel += Element_MouseWheel;
 
-                        // 触摸事件
-                        elementForEvents.TouchDown += Element_TouchDown;
-                        elementForEvents.TouchUp += Element_TouchUp;
-                        elementForEvents.IsManipulationEnabled = true;
-                        elementForEvents.ManipulationDelta += Element_ManipulationDelta;
-                        elementForEvents.ManipulationCompleted += Element_ManipulationCompleted;
+                    // 触摸事件
+                    element.TouchDown += Element_TouchDown;
+                    element.TouchUp += Element_TouchUp;
+                    element.IsManipulationEnabled = true;
+                    element.ManipulationDelta += Element_ManipulationDelta;
+                    element.ManipulationCompleted += Element_ManipulationCompleted;
 
-                        // 设置光标
-                        elementForEvents.Cursor = Cursors.Hand;
-                    }
+                    // 设置光标
+                    element.Cursor = Cursors.Hand;
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
@@ -3847,32 +3841,29 @@ namespace Ink_Canvas
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                Image image = await CreateAndCompressImageAsync(filePath);
-                if (image != null)
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 初始化TransformGroup
-                    if (image is FrameworkElement element)
-                    {
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new ScaleTransform(1, 1));
-                        transformGroup.Children.Add(new TranslateTransform(0, 0));
-                        transformGroup.Children.Add(new RotateTransform(0));
-                        element.RenderTransform = transformGroup;
-                    }
+                    var transformGroup = new TransformGroup();
+                    transformGroup.Children.Add(new ScaleTransform(1, 1));
+                    transformGroup.Children.Add(new TranslateTransform(0, 0));
+                    transformGroup.Children.Add(new RotateTransform(0));
+                    element.RenderTransform = transformGroup;
 
-                    CenterAndScaleElement(image);
+                    CenterAndScaleElement(element);
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     if (inkCanvas != null)
@@ -3883,29 +3874,25 @@ namespace Ink_Canvas
                         inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
 
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 绑定事件处理器
-                    if (image is FrameworkElement elementForEvents)
-                    {
-                        // 鼠标事件
-                        elementForEvents.MouseLeftButtonDown += Element_MouseLeftButtonDown;
-                        elementForEvents.MouseLeftButtonUp += Element_MouseLeftButtonUp;
-                        elementForEvents.MouseMove += Element_MouseMove;
-                        elementForEvents.MouseWheel += Element_MouseWheel;
+                    element.MouseLeftButtonDown += Element_MouseLeftButtonDown;
+                    element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
+                    element.MouseMove += Element_MouseMove;
+                    element.MouseWheel += Element_MouseWheel;
 
-                        // 触摸事件
-                        elementForEvents.TouchDown += Element_TouchDown;
-                        elementForEvents.TouchUp += Element_TouchUp;
-                        elementForEvents.IsManipulationEnabled = true;
-                        elementForEvents.ManipulationDelta += Element_ManipulationDelta;
-                        elementForEvents.ManipulationCompleted += Element_ManipulationCompleted;
+                    // 触摸事件
+                    element.TouchDown += Element_TouchDown;
+                    element.TouchUp += Element_TouchUp;
+                    element.IsManipulationEnabled = true;
+                    element.ManipulationDelta += Element_ManipulationDelta;
+                    element.ManipulationCompleted += Element_ManipulationCompleted;
 
-                        // 设置光标
-                        elementForEvents.Cursor = Cursors.Hand;
-                    }
+                    // 设置光标
+                    element.Cursor = Cursors.Hand;
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
@@ -3920,32 +3907,29 @@ namespace Ink_Canvas
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                Image image = await CreateAndCompressImageAsync(filePath); // 补充image定义
-                if (image != null)
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 初始化TransformGroup
-                    if (image is FrameworkElement element)
-                    {
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new ScaleTransform(1, 1));
-                        transformGroup.Children.Add(new TranslateTransform(0, 0));
-                        transformGroup.Children.Add(new RotateTransform(0));
-                        element.RenderTransform = transformGroup;
-                    }
+                    var transformGroup = new TransformGroup();
+                    transformGroup.Children.Add(new ScaleTransform(1, 1));
+                    transformGroup.Children.Add(new TranslateTransform(0, 0));
+                    transformGroup.Children.Add(new RotateTransform(0));
+                    element.RenderTransform = transformGroup;
 
-                    CenterAndScaleElement(image);
+                    CenterAndScaleElement(element);
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     if (inkCanvas != null)
@@ -3956,29 +3940,25 @@ namespace Ink_Canvas
                         inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
 
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 绑定事件处理器
-                    if (image is FrameworkElement elementForEvents)
-                    {
-                        // 鼠标事件
-                        elementForEvents.MouseLeftButtonDown += Element_MouseLeftButtonDown;
-                        elementForEvents.MouseLeftButtonUp += Element_MouseLeftButtonUp;
-                        elementForEvents.MouseMove += Element_MouseMove;
-                        elementForEvents.MouseWheel += Element_MouseWheel;
+                    element.MouseLeftButtonDown += Element_MouseLeftButtonDown;
+                    element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
+                    element.MouseMove += Element_MouseMove;
+                    element.MouseWheel += Element_MouseWheel;
 
-                        // 触摸事件
-                        elementForEvents.TouchDown += Element_TouchDown;
-                        elementForEvents.TouchUp += Element_TouchUp;
-                        elementForEvents.IsManipulationEnabled = true;
-                        elementForEvents.ManipulationDelta += Element_ManipulationDelta;
-                        elementForEvents.ManipulationCompleted += Element_ManipulationCompleted;
+                    // 触摸事件
+                    element.TouchDown += Element_TouchDown;
+                    element.TouchUp += Element_TouchUp;
+                    element.IsManipulationEnabled = true;
+                    element.ManipulationDelta += Element_ManipulationDelta;
+                    element.ManipulationCompleted += Element_ManipulationCompleted;
 
-                        // 设置光标
-                        elementForEvents.Cursor = Cursors.Hand;
-                    }
+                    // 设置光标
+                    element.Cursor = Cursors.Hand;
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);

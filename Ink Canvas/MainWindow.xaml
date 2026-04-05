@@ -4948,6 +4948,109 @@
                 </Viewbox>
             </Border>
 
+            <Border Name="BorderPdfPageSidebar"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="0,0,0,0"
+                    Width="58"
+                    CornerRadius="10"
+                    Background="{DynamicResource FloatBarBackground}"
+                    BorderBrush="{DynamicResource FloatBarBorderBrush}"
+                    BorderThickness="1"
+                    SnapsToDevicePixels="True"
+                    Visibility="Collapsed"
+                    Panel.ZIndex="1001">
+                <Border.Resources>
+                    <Style x:Key="PdfSidebarNavButtonStyle" TargetType="Border">
+                        <Setter Property="Width" Value="42" />
+                        <Setter Property="Height" Value="38" />
+                        <Setter Property="CornerRadius" Value="8" />
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource FloatBarForeground}" />
+                        <Setter Property="Cursor" Value="Hand" />
+                        <Setter Property="SnapsToDevicePixels" Value="True" />
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <SolidColorBrush Color="White" Opacity="0.10" />
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="White" Opacity="0.22" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Resources>
+                <Grid>
+                    <ikw:SimpleStackPanel VerticalAlignment="Center"
+                                         HorizontalAlignment="Center"
+                                         Spacing="10"
+                                         Margin="0,8,0,8">
+                        <TextBlock Text="PDF"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource FloatBarForeground}"
+                                   Opacity="0.9" />
+                        <Border CornerRadius="8"
+                                Padding="6,8"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource FloatBarForeground}"
+                                SnapsToDevicePixels="True">
+                            <Border.Background>
+                                <SolidColorBrush Color="White" Opacity="0.08" />
+                            </Border.Background>
+                            <TextBlock Name="TextBlockPdfSidebarPageLabel"
+                                       Text="— / —"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="{DynamicResource FloatBarForeground}"
+                                       Opacity="0.55" />
+                        </Border>
+                        <Border Name="BorderPdfSidebarPagePrev"
+                                Style="{StaticResource PdfSidebarNavButtonStyle}"
+                                Opacity="0.35"
+                                IsHitTestVisible="False"
+                                MouseDown="Border_MouseDown"
+                                MouseUp="BorderPdfSidebarPagePrev_MouseUp">
+                            <TextBlock Text="&#x2039;"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Margin="0,-2,0,0"
+                                       Foreground="{DynamicResource FloatBarForeground}" />
+                        </Border>
+                        <Border Name="BorderPdfSidebarPageNext"
+                                Style="{StaticResource PdfSidebarNavButtonStyle}"
+                                Opacity="0.35"
+                                IsHitTestVisible="False"
+                                MouseDown="Border_MouseDown"
+                                MouseUp="BorderPdfSidebarPageNext_MouseUp">
+                            <TextBlock Text="&#x203A;"
+                                       FontSize="20"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Margin="0,-2,0,0"
+                                       Foreground="{DynamicResource FloatBarForeground}" />
+                        </Border>
+                        <TextBlock Text="翻页"
+                                   FontSize="9"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource FloatBarForeground}"
+                                   Opacity="0.65" />
+                    </ikw:SimpleStackPanel>
+                </Grid>
+            </Border>
+
             <!-- 图片缩放选择点 -->
             <Canvas Name="ImageResizeHandlesCanvas" 
                     Visibility="Collapsed" 

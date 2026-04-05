@@ -1,3 +1,4 @@
+using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using Microsoft.Win32;
 using System;
@@ -56,48 +57,48 @@ namespace Ink_Canvas
         private async void BtnImageInsert_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image files (*.jpg; *.jpeg; *.png; *.bmp)|*.jpg;*.jpeg;*.png;*.bmp";
+            openFileDialog.Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf";
 
             if (openFileDialog.ShowDialog() == true)
             {
                 string filePath = openFileDialog.FileName;
 
-                Image image = await CreateAndCompressImageAsync(filePath);
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
 
-                if (image != null)
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     InitializeInkCanvasSelectionSettings();
 
                     // 先添加到画布
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 等待图片加载完成后再进行后续处理
-                    image.Loaded += (s, args) =>
+                    element.Loaded += (s, args) =>
                     {
                         Dispatcher.BeginInvoke(new Action(() =>
                         {
                             // 初始化TransformGroup
-                            InitializeElementTransform(image);
+                            InitializeElementTransform(element);
 
                             // 居中缩放
-                            CenterAndScaleElement(image);
+                            CenterAndScaleElement(element);
 
                             // 最后绑定事件处理器
-                            BindElementEvents(image);
+                            BindElementEvents(element);
 
-                            LogHelper.WriteLogToFile($"图片插入完成: {image.Name}");
+                            LogHelper.WriteLogToFile($"图片插入完成: {element.Name}");
                         }), DispatcherPriority.Loaded);
                     };
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
@@ -270,13 +271,13 @@ namespace Ink_Canvas
                 ApplyMouseDragTransform(element, currentPoint, dragStartPoint);
 
                 // 如果是图片元素，更新工具栏位置
-                if (element is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                 {
                     UpdateImageSelectionToolbarPosition(element);
                 }
 
                 // 如果是图片元素，更新选择点位置
-                if (element is Image && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
                 {
                     UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
                 }
@@ -306,13 +307,13 @@ namespace Ink_Canvas
                 ApplyWheelScaleTransform(element, e);
 
                 // 如果是图片元素，更新工具栏位置
-                if (element is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                 {
                     UpdateImageSelectionToolbarPosition(element);
                 }
 
                 // 如果是图片元素，更新选择点位置
-                if (element is Image && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
                 {
                     UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
                 }
@@ -396,13 +397,13 @@ namespace Ink_Canvas
                 ApplyTouchManipulationTransform(element, e);
 
                 // 如果是图片元素，更新工具栏位置
-                if (element is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                 {
                     UpdateImageSelectionToolbarPosition(element);
                 }
 
                 // 如果是图片元素，更新选择点位置
-                if (element is Image && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
                 {
                     UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
                 }
@@ -523,12 +524,15 @@ namespace Ink_Canvas
             currentSelectedElement = element;
 
             // 根据元素类型显示不同的选择工具栏
-            if (element is Image)
+            if (IsBitmapLikeCanvasElement(element))
             {
+                if (BorderPdfPageSidebar != null)
+                    BorderPdfPageSidebar.Visibility = element is PdfEmbeddedView ? Visibility.Visible : Visibility.Collapsed;
+
                 // 显示图片选择工具栏并设置位置
                 if (BorderImageSelectionControl != null)
                 {
-                    // 计算工具栏位置
+                    // 计算工具栏位置（内部会同步 PDF 右侧栏位置）
                     UpdateImageSelectionToolbarPosition(element);
                     BorderImageSelectionControl.Visibility = Visibility.Visible;
                 }
@@ -536,11 +540,25 @@ namespace Ink_Canvas
                 // 显示图片缩放选择点
                 ShowImageResizeHandles(element);
 
+                if (element is PdfEmbeddedView pdfView)
+                {
+                    pdfView.PageNavigationStateChanged -= SelectedPdf_PageNavigationStateChanged;
+                    pdfView.PageNavigationStateChanged += SelectedPdf_PageNavigationStateChanged;
+                    UpdatePdfSidebarFromSelectedPdf();
+                    UpdatePdfPageSidebarPosition(pdfView);
+                }
+                else
+                    ResetPdfSidebarToIdle();
+
                 // 墨迹选择工具栏通过GridInkCanvasSelectionCover的可见性来控制
                 // 不需要直接设置BorderStrokeSelectionControl.Visibility
             }
             else
             {
+                if (BorderPdfPageSidebar != null)
+                    BorderPdfPageSidebar.Visibility = Visibility.Collapsed;
+                ResetPdfSidebarToIdle();
+
                 // 隐藏图片选择工具栏
                 if (BorderImageSelectionControl != null)
                 {
@@ -583,6 +601,15 @@ namespace Ink_Canvas
         private void UnselectElement(FrameworkElement element)
         {
             // 去除选中效果
+
+            if (element is PdfEmbeddedView pdfView)
+            {
+                pdfView.PageNavigationStateChanged -= SelectedPdf_PageNavigationStateChanged;
+            }
+
+            if (BorderPdfPageSidebar != null)
+                BorderPdfPageSidebar.Visibility = Visibility.Collapsed;
+            ResetPdfSidebarToIdle();
 
             // 隐藏图片选择工具栏
             if (BorderImageSelectionControl != null)
@@ -914,15 +941,24 @@ namespace Ink_Canvas
         /// - 否则使用原始尺寸
         /// - 返回创建的Image对象
         /// </remarks>
-        private async Task<Image> CreateAndCompressImageAsync(string filePath)
+        /// <summary>与图片选择工具栏、缩放控制点联动的画布位图类元素（普通图片或多页 PDF 嵌入）。</summary>
+        private static bool IsBitmapLikeCanvasElement(FrameworkElement fe)
         {
+            return fe is Image || fe is PdfEmbeddedView;
+        }
+
+        private async Task<FrameworkElement> CreateAndCompressImageAsync(string filePath)
+        {
+            string fileExtension = Path.GetExtension(filePath);
+            if (string.Equals(fileExtension, ".pdf", StringComparison.OrdinalIgnoreCase))
+                return await CreateAndCompressImageFromPdfAsync(filePath);
+
             string savePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "File Dependency");
             if (!Directory.Exists(savePath))
             {
                 Directory.CreateDirectory(savePath);
             }
 
-            string fileExtension = Path.GetExtension(filePath);
             string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
             string newFilePath = Path.Combine(savePath, timestamp + fileExtension);
 
@@ -965,6 +1001,43 @@ namespace Ink_Canvas
                 return image;
             });
         }
+
+        /// <summary>
+        /// 插入完整 PDF：嵌入控件内可翻页，右下角显示页码（类似希沃白板交互）。
+        /// </summary>
+        private async Task<PdfEmbeddedView> CreateAndCompressImageFromPdfAsync(string filePath)
+        {
+            try
+            {
+                string savePath = Path.Combine(Settings.Automation.AutoSavedStrokesLocation, "File Dependency");
+                if (!Directory.Exists(savePath))
+                    Directory.CreateDirectory(savePath);
+
+                string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
+                string newFilePath = Path.Combine(savePath, timestamp + ".pdf");
+                await Task.Run(() => File.Copy(filePath, newFilePath, true));
+
+                uint pageCount = await PdfWinRtHelper.GetPageCountAsync(newFilePath);
+                if (pageCount == 0)
+                {
+                    ShowNotification("无法打开 PDF（可能已加密、损坏或不支持）。");
+                    return null;
+                }
+
+                bool compress = isLoaded && Settings.Canvas.IsCompressPicturesUploaded;
+                var view = new PdfEmbeddedView();
+                await view.InitializeAsync(newFilePath, pageCount, compress);
+                view.Tag = filePath;
+                return view;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"插入 PDF 失败: {ex.Message}", LogHelper.LogType.Error);
+                ShowNotification($"插入 PDF 失败: {ex.Message}");
+                return null;
+            }
+        }
+
         #endregion
 
         #region Media
@@ -1453,10 +1526,61 @@ namespace Ink_Canvas
 
                 // 设置工具栏位置
                 BorderImageSelectionControl.Margin = new Thickness(toolbarLeft, toolbarTop, 0, 0);
+
+                if (element is PdfEmbeddedView && BorderPdfPageSidebar?.Visibility == Visibility.Visible)
+                    UpdatePdfPageSidebarPosition(element);
             }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"更新图片选择工具栏位置失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private const double PdfPageSidebarGap = 10;
+
+        /// <summary>
+        /// 将 PDF 专用页码栏贴在当前所选 PDF 的右侧（画布坐标，与底部选中栏一致）。
+        /// </summary>
+        private void UpdatePdfPageSidebarPosition(FrameworkElement element)
+        {
+            try
+            {
+                if (BorderPdfPageSidebar == null || inkCanvas == null || !(element is PdfEmbeddedView))
+                    return;
+
+                Rect b = GetElementActualBounds(element);
+
+                BorderPdfPageSidebar.Measure(new Size(BorderPdfPageSidebar.Width, double.PositiveInfinity));
+                double sidebarW = BorderPdfPageSidebar.DesiredSize.Width;
+                double sidebarH = BorderPdfPageSidebar.DesiredSize.Height;
+                if (sidebarW <= 0)
+                    sidebarW = BorderPdfPageSidebar.Width;
+                if (sidebarH <= 0)
+                    sidebarH = BorderPdfPageSidebar.ActualHeight;
+                if (sidebarH <= 0)
+                    sidebarH = 220;
+
+                double left = b.Right + PdfPageSidebarGap;
+                double top = b.Top + (b.Height * 0.5) - (sidebarH * 0.5);
+
+                double maxLeft = Math.Max(0, inkCanvas.ActualWidth - sidebarW);
+                double maxTop = Math.Max(0, inkCanvas.ActualHeight - sidebarH);
+
+                if (left > maxLeft)
+                {
+                    double leftAlt = b.Left - PdfPageSidebarGap - sidebarW;
+                    if (leftAlt >= 0)
+                        left = leftAlt;
+                }
+
+                left = Math.Max(0, Math.Min(left, maxLeft));
+                top = Math.Max(0, Math.Min(top, maxTop));
+
+                BorderPdfPageSidebar.Margin = new Thickness(left, top, 0, 0);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新 PDF 右侧页码栏位置失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -1644,7 +1768,7 @@ namespace Ink_Canvas
                     ApplyRotateTransform(currentSelectedElement, -45);
 
                     // 更新工具栏位置
-                    if (currentSelectedElement is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                    if (IsBitmapLikeCanvasElement(currentSelectedElement) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                     {
                         UpdateImageSelectionToolbarPosition(currentSelectedElement);
                     }
@@ -1678,7 +1802,7 @@ namespace Ink_Canvas
                     ApplyRotateTransform(currentSelectedElement, 45);
 
                     // 更新工具栏位置
-                    if (currentSelectedElement is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                    if (IsBitmapLikeCanvasElement(currentSelectedElement) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                     {
                         UpdateImageSelectionToolbarPosition(currentSelectedElement);
                     }
@@ -1714,7 +1838,7 @@ namespace Ink_Canvas
                     ApplyScaleTransform(currentSelectedElement, 0.9, elementCenter);
 
                     // 更新工具栏位置
-                    if (currentSelectedElement is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                    if (IsBitmapLikeCanvasElement(currentSelectedElement) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                     {
                         UpdateImageSelectionToolbarPosition(currentSelectedElement);
                     }
@@ -1750,7 +1874,7 @@ namespace Ink_Canvas
                     ApplyScaleTransform(currentSelectedElement, 1.1, elementCenter);
 
                     // 更新工具栏位置
-                    if (currentSelectedElement is Image && BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                    if (IsBitmapLikeCanvasElement(currentSelectedElement) && BorderImageSelectionControl?.Visibility == Visibility.Visible)
                     {
                         UpdateImageSelectionToolbarPosition(currentSelectedElement);
                     }
@@ -1764,19 +1888,96 @@ namespace Ink_Canvas
             }
         }
 
+        private void ResetPdfSidebarToIdle()
+        {
+            if (TextBlockPdfSidebarPageLabel != null)
+            {
+                TextBlockPdfSidebarPageLabel.Text = "— / —";
+                TextBlockPdfSidebarPageLabel.Opacity = 0.55;
+            }
+
+            if (BorderPdfSidebarPagePrev != null)
+            {
+                BorderPdfSidebarPagePrev.Opacity = 0.35;
+                BorderPdfSidebarPagePrev.IsHitTestVisible = false;
+            }
+
+            if (BorderPdfSidebarPageNext != null)
+            {
+                BorderPdfSidebarPageNext.Opacity = 0.35;
+                BorderPdfSidebarPageNext.IsHitTestVisible = false;
+            }
+        }
+
+        private void UpdatePdfSidebarFromSelectedPdf()
+        {
+            if (currentSelectedElement is PdfEmbeddedView pdf)
+            {
+                if (TextBlockPdfSidebarPageLabel != null)
+                {
+                    TextBlockPdfSidebarPageLabel.Text = pdf.PageLabelText;
+                    TextBlockPdfSidebarPageLabel.Opacity = 1.0;
+                }
+
+                bool prevOk = pdf.CanGoPrevious;
+                bool nextOk = pdf.CanGoNext;
+                if (BorderPdfSidebarPagePrev != null)
+                {
+                    BorderPdfSidebarPagePrev.Opacity = prevOk ? 1.0 : 0.35;
+                    BorderPdfSidebarPagePrev.IsHitTestVisible = prevOk;
+                }
+
+                if (BorderPdfSidebarPageNext != null)
+                {
+                    BorderPdfSidebarPageNext.Opacity = nextOk ? 1.0 : 0.35;
+                    BorderPdfSidebarPageNext.IsHitTestVisible = nextOk;
+                }
+            }
+        }
+
+        private void SelectedPdf_PageNavigationStateChanged(object sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                UpdatePdfSidebarFromSelectedPdf();
+                if (currentSelectedElement != null && IsBitmapLikeCanvasElement(currentSelectedElement))
+                {
+                    UpdateImageSelectionToolbarPosition(currentSelectedElement);
+                    if (ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                        UpdateImageResizeHandlesPosition(GetElementActualBounds(currentSelectedElement));
+                }
+            }), DispatcherPriority.Background);
+        }
+
+        private async void BorderPdfSidebarPagePrev_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (currentSelectedElement is PdfEmbeddedView pdf && pdf.CanGoPrevious)
+                    await pdf.GoToPreviousPageAsync();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"PDF 上一页失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private async void BorderPdfSidebarPageNext_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (currentSelectedElement is PdfEmbeddedView pdf && pdf.CanGoNext)
+                    await pdf.GoToNextPageAsync();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"PDF 下一页失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         /// <summary>
         /// 处理图片删除功能
         /// </summary>
-        /// <param name="sender">事件发送者</param>
-        /// <param name="e">事件参数</param>
-        /// <remarks>
-        /// - 检查当前是否有选中元素
-        /// - 保存删除前的编辑模式
-        /// - 记录删除历史
-        /// - 从画布中移除
-        /// - 清除选中状态
-        /// - 包含异常处理
-        /// </remarks>
         private void BorderImageDelete_MouseUp(object sender, MouseButtonEventArgs e)
         {
             try
@@ -1789,11 +1990,12 @@ namespace Ink_Canvas
                     // 记录删除历史
                     timeMachine.CommitElementRemoveHistory(currentSelectedElement);
 
+                    var toRemove = currentSelectedElement;
                     // 从画布中移除
-                    inkCanvas.Children.Remove(currentSelectedElement);
+                    inkCanvas.Children.Remove(toRemove);
 
                     // 清除选中状态
-                    UnselectElement(currentSelectedElement);
+                    UnselectElement(toRemove);
                     currentSelectedElement = null;
 
                     // 恢复到删除前的编辑模式
@@ -2029,7 +2231,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (currentSelectedElement is Image image && sender is Ellipse ellipse)
+                if (IsBitmapLikeCanvasElement(currentSelectedElement) && sender is Ellipse ellipse)
                 {
                     isResizingImage = true;
                     imageResizeStartPoint = e.GetPosition(inkCanvas);
@@ -2072,10 +2274,10 @@ namespace Ink_Canvas
         {
             try
             {
-                if (isResizingImage && currentSelectedElement is Image image && sender is Ellipse ellipse)
+                if (isResizingImage && IsBitmapLikeCanvasElement(currentSelectedElement) && sender is Ellipse ellipse)
                 {
                     var currentPoint = e.GetPosition(inkCanvas);
-                    ResizeImageByHandle(image, imageResizeStartPoint, currentPoint, activeResizeHandle);
+                    ResizeImageByHandle(currentSelectedElement, imageResizeStartPoint, currentPoint, activeResizeHandle);
                     imageResizeStartPoint = currentPoint;
                     e.Handled = true;
                 }
@@ -2087,11 +2289,11 @@ namespace Ink_Canvas
         }
 
         // 根据控制点缩放图片
-        private void ResizeImageByHandle(Image image, Point startPoint, Point currentPoint, string handleName)
+        private void ResizeImageByHandle(FrameworkElement element, Point startPoint, Point currentPoint, string handleName)
         {
             try
             {
-                if (image.RenderTransform is TransformGroup transformGroup)
+                if (element.RenderTransform is TransformGroup transformGroup)
                 {
                     var scaleTransform = transformGroup.Children.OfType<ScaleTransform>().FirstOrDefault();
                     var translateTransform = transformGroup.Children.OfType<TranslateTransform>().FirstOrDefault();
@@ -2099,7 +2301,7 @@ namespace Ink_Canvas
                     if (scaleTransform == null || translateTransform == null) return;
 
                     // 获取图片的当前边界
-                    Rect currentBounds = GetElementActualBounds(image);
+                    Rect currentBounds = GetElementActualBounds(element);
                     double deltaX = currentPoint.X - startPoint.X;
                     double deltaY = currentPoint.Y - startPoint.Y;
 
@@ -2160,7 +2362,10 @@ namespace Ink_Canvas
                     translateTransform.Y += translateY;
 
                     // 更新选择点位置
-                    UpdateImageResizeHandlesPosition(GetElementActualBounds(image));
+                    UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
+
+                    if (BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                        UpdateImageSelectionToolbarPosition(element);
                 }
             }
             catch (Exception ex)
