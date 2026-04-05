@@ -5,19 +5,19 @@ using System.Windows.Controls;
 namespace Ink_Canvas.Windows.SettingsViews2.Pages
 {
     /// <summary>
-    /// NewSettingStartup.xaml 的交互逻辑
+    /// StartupPage.xaml 的交互逻辑
     /// </summary>
-    public partial class NewSettingStartup : Page
+    public partial class StartupPage : Page
     {
         private bool _isLoaded = false;
 
-        public NewSettingStartup()
+        public StartupPage()
         {
             InitializeComponent();
-            Loaded += NewSettingStartup_Loaded;
+            Loaded += StartupPage_Loaded;
         }
 
-        private void NewSettingStartup_Loaded(object sender, RoutedEventArgs e)
+        private void StartupPage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSettings();
             _isLoaded = true;

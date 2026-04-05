@@ -2577,4 +2577,10 @@ Hide</value>
   <data name="Startup_UIAccessTopMostHint_1" xml:space="preserve">
     <value>Use UIA method to achieve topmost, requires administrator privileges</value>
   </data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBooth" xml:space="preserve">
+    <value>Whiteboard booth opens Seewo Video Showcase</value>
+  </data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBoothHint" xml:space="preserve">
+    <value>When enabled, the whiteboard toolbar Booth button launches Seewo Video Showcase (must be installed). When disabled, the built-in booth is used.</value>
+  </data>
 </root>

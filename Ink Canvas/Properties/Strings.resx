@@ -2620,4 +2620,10 @@
   <data name="Startup_UIAccessTopMostHint_1" xml:space="preserve">
     <value>使用UIA方式实现置顶，需要管理员权限</value>
   </data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBooth" xml:space="preserve">
+    <value>白板展台按钮启动希沃视频展台</value>
+  </data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBoothHint" xml:space="preserve">
+    <value>开启后，点击白板工具栏「展台」将打开希沃视频展台（需已安装）；关闭则使用内置展台。</value>
+  </data>
 </root>

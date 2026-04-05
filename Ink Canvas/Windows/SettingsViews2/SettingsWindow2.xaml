@@ -136,7 +136,7 @@
                     </ui:NavigationViewItem.Icon>
                     <ui:NavigationViewItem.MenuItems>
                         <ui:NavigationViewItem
-                            x:Name="NewSettingStartupItem"
+                            x:Name="StartupPageItem"
                             Content="启动"
                             Tag="StartupPage"
                             ToolTipService.ToolTip="启动设置">

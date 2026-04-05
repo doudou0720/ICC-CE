@@ -58,7 +58,7 @@ namespace Ink_Canvas.Windows.SettingsViews2
                 { "ThemePage", typeof(ThemePage) },
                 { "ColorsPage", typeof(ColorsPage) },
                 { "FontsPage", typeof(FontsPage) },
-                { "StartupPage", typeof(NewSettingStartup) },
+                { "StartupPage", typeof(StartupPage) },
                 { "AboutPage", typeof(AboutPage) },
                 { "Settings", typeof(SettingsPage) }
             };
