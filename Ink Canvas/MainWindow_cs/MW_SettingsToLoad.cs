@@ -852,6 +852,9 @@ namespace Ink_Canvas
                 ToggleSwitchDisablePressure.IsOn = Settings.Canvas.DisablePressure;
                 inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
 
+                ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth.IsOn =
+                    Settings.Canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth;
+
                 if (Settings.Canvas.EnableVelocityBrushTip)
                 {
                     Settings.Canvas.InkStyle = 3;
@@ -873,8 +876,6 @@ namespace Ink_Canvas
                     Settings.Canvas.ClearCanvasAndClearTimeMachine;
                 ToggleSwitchClearCanvasAlsoClearImages.IsOn = Settings.Canvas.ClearCanvasAlsoClearImages;
                 ToggleSwitchShowCircleCenter.IsOn = Settings.Canvas.ShowCircleCenter;
-
-                ApplyWhiteboardBoothToolbarFromSettings();
 
                 switch (Settings.Canvas.EraserShapeType)
                 {

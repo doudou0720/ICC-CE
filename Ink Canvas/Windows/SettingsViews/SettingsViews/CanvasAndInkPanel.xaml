@@ -63,7 +63,7 @@
                             <TextBlock Foreground="#2e3436" FontSize="14.5" Text="屏蔽压感" HorizontalAlignment="Left"/>
                             <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，将忽略所有设备的压感信息，使所有笔画具有统一的粗细。与压感触屏模式互斥" HorizontalAlignment="Left"/>
                         </StackPanel>
-                        <Border x:Name="ToggleSwitchDisablePressure" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="DisablePressure" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border x:Name="ToggleSwitchDisablePressure" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="DisablePressure" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
@@ -149,6 +149,20 @@
                         </StackPanel>
                         <Border x:Name="ToggleSwitchCompressPicturesUploaded" Style="{StaticResource ToggleSwitchStyle}" Background="#3584e4" Tag="CompressPicturesUploaded" MouseLeftButtonDown="ToggleSwitch_Click">
                             <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
+                                </Border.Effect>
+                            </Border>
+                        </Border>
+                    </Grid>
+                    <Border Height="1" Background="#ebebeb"/>
+                    <Grid Height="54">
+                        <StackPanel Orientation="Vertical" Margin="18,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                            <TextBlock Foreground="#2e3436" FontSize="14.5" Text="白板展台按钮启动希沃视频展台" HorizontalAlignment="Left"/>
+                            <TextBlock Foreground="#9a9996" FontSize="11" Margin="0,3.5,0,0" Text="开启后，点击白板工具栏「展台」将打开希沃视频展台（需已安装）；关闭则使用内置展台" HorizontalAlignment="Left" TextWrapping="Wrap" MaxWidth="420"/>
+                        </StackPanel>
+                        <Border x:Name="ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth" Style="{StaticResource ToggleSwitchStyle}" Background="#e1e1e1" Tag="LaunchSeewoVideoShowcaseForWhiteboardBooth" MouseLeftButtonDown="ToggleSwitch_Click">
+                            <Border Width="19" Height="19" Background="White" CornerRadius="10" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="4" Direction="-45" Color="Black" Opacity="0.3" ShadowDepth="0"/>
                                 </Border.Effect>

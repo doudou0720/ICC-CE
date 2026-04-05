@@ -2705,6 +2705,15 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.Canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth =
+                ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth.IsOn;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchAutoStraightenLine_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;

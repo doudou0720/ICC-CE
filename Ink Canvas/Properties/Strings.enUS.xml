@@ -179,6 +179,8 @@
   <data name="AskEachTime" xml:space="preserve"><value>Ask each time</value></data>
   <data name="Canvas_AsymptoteHint" xml:space="preserve"><value># Disabling may cause undo bugs.</value></data>
   <data name="Canvas_ShowCircleCenter" xml:space="preserve"><value>Show circle center</value></data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBooth" xml:space="preserve"><value>Whiteboard booth opens Seewo Video Showcase</value></data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBoothHint" xml:space="preserve"><value>When enabled, the whiteboard toolbar Booth button launches Seewo Video Showcase (must be installed). When disabled, the built-in booth is used.</value></data>
   <data name="Canvas_WPFBezier" xml:space="preserve"><value>WPF default Bezier smoothing</value></data>
   <data name="Canvas_AdvancedSmoothing" xml:space="preserve"><value>Advanced curve smoothing (recommended)</value></data>
   <data name="Canvas_InkFade" xml:space="preserve"><value>Ink fade</value></data>

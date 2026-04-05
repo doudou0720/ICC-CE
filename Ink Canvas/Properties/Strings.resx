@@ -194,6 +194,8 @@
   <data name="AskEachTime" xml:space="preserve"><value>每次询问</value></data>
   <data name="Canvas_AsymptoteHint" xml:space="preserve"><value># 请注意，若不保留双曲线渐近线可能会有遇到撤回相关的 BUG…</value></data>
   <data name="Canvas_ShowCircleCenter" xml:space="preserve"><value>绘制圆时显示圆心位置</value></data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBooth" xml:space="preserve"><value>白板展台按钮启动希沃视频展台</value></data>
+  <data name="Canvas_LaunchSeewoVideoShowcaseForWhiteboardBoothHint" xml:space="preserve"><value>开启后，点击白板工具栏「展台」将打开希沃视频展台（需已安装）；关闭则使用内置展台。</value></data>
   <data name="Canvas_WPFBezier" xml:space="preserve"><value>使用WPF默认贝塞尔曲线平滑</value></data>
   <data name="Canvas_AdvancedSmoothing" xml:space="preserve"><value>使用高级曲线平滑（推荐）</value></data>
   <data name="Canvas_InkFade" xml:space="preserve"><value>启用墨迹渐隐功能</value></data>
