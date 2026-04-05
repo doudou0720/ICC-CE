@@ -1021,6 +1021,46 @@ namespace Ink_Canvas
             }
         }
 
+        /// <summary>从保存的 <see cref="CanvasElementInfo"/> 恢复 PDF（与打开墨迹时的图片恢复流程一致，不单独写入时间轴）。</summary>
+        private async Task RestorePdfFromElementInfoAsync(CanvasElementInfo info)
+        {
+            if (info == null || inkCanvas == null) return;
+            if (!string.Equals(info.Type, "Pdf", StringComparison.OrdinalIgnoreCase)) return;
+            if (string.IsNullOrEmpty(info.SourcePath) || !File.Exists(info.SourcePath)) return;
+
+            try
+            {
+                uint pageCount = await PdfWinRtHelper.GetPageCountAsync(info.SourcePath);
+                if (pageCount == 0) return;
+
+                bool compress = isLoaded && Settings.Canvas.IsCompressPicturesUploaded;
+                uint initial = 0;
+                if (info.PdfCurrentPage.HasValue)
+                    initial = (uint)Math.Max(0, Math.Min(info.PdfCurrentPage.Value, (int)pageCount - 1));
+
+                var view = new PdfEmbeddedView
+                {
+                    Name = "pdf_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff")
+                };
+                await view.InitializeAsync(info.SourcePath, pageCount, compress, initial);
+
+                if (info.Width > 0) view.Width = info.Width;
+                if (info.Height > 0) view.Height = info.Height;
+
+                InkCanvas.SetLeft(view, info.Left);
+                InkCanvas.SetTop(view, info.Top);
+
+                InitializeElementTransform(view);
+                BindElementEvents(view);
+                inkCanvas.Children.Add(view);
+                SyncPdfPageSidebarWithCanvas();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"从 .elements.json 恢复 PDF 失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         #endregion
 
         #region Media

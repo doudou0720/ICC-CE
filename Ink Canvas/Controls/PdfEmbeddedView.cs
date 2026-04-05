@@ -20,7 +20,6 @@ namespace Ink_Canvas.Controls
         private uint _currentIndex;
         private bool _compressLargePictures;
         private bool _isPagingBusy;
-        private bool _layoutSizeLocked;
 
         /// <summary>页码或可翻页状态变化（用于更新侧栏）。</summary>
         public event EventHandler PageNavigationStateChanged;
@@ -42,14 +41,18 @@ namespace Ink_Canvas.Controls
         }
 
         /// <summary>
-        /// 初始化并显示第一页；由 MainWindow 在 UI 线程创建后调用。
+        /// 初始化并显示指定页；由 MainWindow 在 UI 线程创建后调用。
         /// </summary>
-        public async Task InitializeAsync(string pdfFilePath, uint pageCount, bool compressLargePictures)
+        /// <param name="initialPageIndex">从 0 开始的页码，超出范围时夹紧到合法区间。</param>
+        public async Task InitializeAsync(string pdfFilePath, uint pageCount, bool compressLargePictures, uint initialPageIndex = 0)
         {
             _pdfPath = pdfFilePath ?? throw new ArgumentNullException(nameof(pdfFilePath));
             _pageCount = pageCount;
             _compressLargePictures = compressLargePictures;
-            _currentIndex = 0;
+            if (_pageCount == 0)
+                _currentIndex = 0;
+            else
+                _currentIndex = initialPageIndex >= _pageCount ? _pageCount - 1 : initialPageIndex;
 
             await ShowPageAsync(_currentIndex);
         }
@@ -104,12 +107,9 @@ namespace Ink_Canvas.Controls
 
                 BitmapSource display = ApplyCompressionIfNeeded(raw);
                 _pageImage.Source = display;
-                if (!_layoutSizeLocked)
-                {
-                    Width = display.PixelWidth;
-                    Height = display.PixelHeight;
-                    _layoutSizeLocked = true;
-                }
+                // 每页尺寸可能不同，与图片一致按当前页位图更新布局，避免翻页后内容被裁切或“消失”
+                Width = display.PixelWidth;
+                Height = display.PixelHeight;
             }
             finally
             {
