@@ -20,6 +20,7 @@ namespace Ink_Canvas.Controls
         private uint _currentIndex;
         private bool _compressLargePictures;
         private bool _isPagingBusy;
+        private bool _layoutSizeCommitted;
 
         /// <summary>页码或可翻页状态变化（用于更新侧栏）。</summary>
         public event EventHandler PageNavigationStateChanged;
@@ -107,9 +108,17 @@ namespace Ink_Canvas.Controls
 
                 BitmapSource display = ApplyCompressionIfNeeded(raw);
                 _pageImage.Source = display;
-                // 每页尺寸可能不同，与图片一致按当前页位图更新布局，避免翻页后内容被裁切或“消失”
-                Width = display.PixelWidth;
-                Height = display.PixelHeight;
+                if (!_layoutSizeCommitted)
+                {
+                    bool callerSized = !double.IsNaN(Width) && Width > 0 && !double.IsNaN(Height) && Height > 0;
+                    if (!callerSized)
+                    {
+                        Width = display.PixelWidth;
+                        Height = display.PixelHeight;
+                    }
+
+                    _layoutSizeCommitted = true;
+                }
             }
             finally
             {
