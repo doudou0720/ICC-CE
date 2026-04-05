@@ -82,6 +82,8 @@ namespace Ink_Canvas
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
 
+        internal static DateTime? TrayTemporaryShowUntilUtc;
+
         #region Window Initialization
 
         /// <summary>
@@ -4398,12 +4400,19 @@ namespace Ink_Canvas
         /// <summary>
         /// 检查是否应该显示主窗口（基于PPT模式和PPT放映状态）
         /// </summary>
-        private void CheckMainWindowVisibility()
+        internal void CheckMainWindowVisibility()
         {
             try
             {
                 if (Settings.ModeSettings.IsPPTOnlyMode)
                 {
+                    if (TrayTemporaryShowUntilUtc.HasValue && DateTime.UtcNow < TrayTemporaryShowUntilUtc.Value)
+                    {
+                        if (!IsVisible)
+                            Show();
+                        return;
+                    }
+
                     // 仅PPT模式：以 COM/UI 状态为主，Win32 检测全屏放映窗口（screenClass）作兜底，避免 COM 异常时无法唤出
                     bool comUiSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
                     bool win32SlideShow = IsPowerPointSlideshowSurfacePresentWin32();
