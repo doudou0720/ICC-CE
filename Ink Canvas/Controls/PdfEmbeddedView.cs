@@ -102,7 +102,7 @@ namespace Ink_Canvas.Controls
             NotifyPageNavigationStateChanged();
             try
             {
-                BitmapSource raw = await PdfDocumentRenderHelper.RenderPageToBitmapSourceAsync(_pdfPath, pageIndex);
+                BitmapSource raw = await PdfWinRtHelper.RenderPageToBitmapSourceAsync(_pdfPath, pageIndex);
                 if (raw == null)
                     return;
 

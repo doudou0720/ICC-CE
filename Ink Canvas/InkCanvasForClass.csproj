@@ -141,7 +141,6 @@
     <PackageReference Include="MdXaml" Version="1.27.0" />
     <PackageReference Include="Microsoft.Office.Interop.PowerPoint" Version="15.0.4420.1018" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.19041.2" />
-    <PackageReference Include="PDFtoImage" Version="5.1.0" />
     <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.7.0" />
     <PackageReference Include="MicrosoftOfficeCore" Version="15.0.0" />
     <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
