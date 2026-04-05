@@ -302,7 +302,7 @@ namespace Ink_Canvas.Helpers
         /// <returns>派生出的密钥字节数组，长度等于 <paramref name="keyBytes"/>。</returns>
         private static byte[] DeriveKey(string password, byte[] salt, int keyBytes)
         {
-            // 注意：Rfc2898DeriveBytes 在 net462 默认 HMACSHA1
+            // 注意：Rfc2898DeriveBytes 在 net472 默认 HMACSHA1
             using (var kdf = new Rfc2898DeriveBytes(password, salt, Pbkdf2Iterations))
             {
                 return kdf.GetBytes(keyBytes);

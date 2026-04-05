@@ -63,8 +63,8 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 function InitializeSetup: Boolean;
 begin
   Result := True; // Always allow setup to continue
-  if not IsDotNetInstalled(net462, 0) then // Check if .NET Framework version 4.6.2 or compatible is installed
-    SuppressibleMsgBox('警告：未检测到 .NET Framework 4.6.2 或更高版本。应用程序可能无法正常运行。', mbInformation, MB_OK, IDOK);
+  if not IsDotNetInstalled(net472, 0) then // Check if .NET Framework version 4.7.2 or compatible is installed
+    SuppressibleMsgBox('警告：未检测到 .NET Framework 4.7.2 或更高版本。应用程序可能无法正常运行。', mbInformation, MB_OK, IDOK);
 end;
 
 [Run]
