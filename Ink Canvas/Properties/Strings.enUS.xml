@@ -763,4 +763,6 @@
   <data name="FloatingBar_Gesture_TwoFingerRotate" xml:space="preserve"><value>Two-finger rotate</value></data>
   <data name="Board_Gesture" xml:space="preserve"><value>Gesture</value></data>
   <data name="Board_GestureOptions" xml:space="preserve"><value>Gesture options</value></data>
+  <data name="Tray_TempShowMainWindow" xml:space="preserve"><value>Show main window (2 minutes)</value></data>
+  <data name="Tray_OpenSettings" xml:space="preserve"><value>Open settings</value></data>
 </root>

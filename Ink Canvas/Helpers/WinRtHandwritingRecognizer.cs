@@ -40,7 +40,9 @@ namespace Ink_Canvas.Helpers
                 {
                     try
                     {
-                        await RecognizeHandwritingAsync(new StrokeCollection()).ConfigureAwait(true);
+                        await RecognizeHandwritingAsync(
+                            WinRtInkShapeRecognizer.CreateMinimalWarmupStrokeCollection(),
+                            verboseTrace: false).ConfigureAwait(true);
                     }
                     catch
                     {
@@ -59,12 +61,15 @@ namespace Ink_Canvas.Helpers
         /// 再对每一分词用 <see cref="WinRtInk.InkRecognizerContainer"/> 取 <c>GetTextCandidates</c>（与当前 SDK 中部分版本的
         /// <see cref="WinRtInk.InkRecognitionResult"/> 未暴露笔画映射的局限兼容）。
         /// </summary>
-        public static async Task<HandwritingRecognitionResult> RecognizeHandwritingAsync(StrokeCollection strokes)
+        /// <param name="verboseTrace">为 false 时跳过详细识别日志（用于 <see cref="Warmup"/> 等）。</param>
+        public static async Task<HandwritingRecognitionResult> RecognizeHandwritingAsync(
+            StrokeCollection strokes,
+            bool verboseTrace = true)
         {
             if (!IsApiAvailable || strokes == null || strokes.Count == 0)
                 return HandwritingRecognitionResult.Empty;
 
-            var traceRecognition = strokes.Count > 0;
+            var traceRecognition = verboseTrace;
 
             try
             {

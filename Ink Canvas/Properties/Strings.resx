@@ -782,4 +782,12 @@
   <data name="FloatingBar_Gesture_TwoFingerRotate" xml:space="preserve"><value>双指旋转</value></data>
   <data name="Board_Gesture" xml:space="preserve"><value>手势</value></data>
   <data name="Board_GestureOptions" xml:space="preserve"><value>手势选项</value></data>
+  <data name="Tray_TempShowMainWindow" xml:space="preserve">
+    <value>显示主窗口（2分钟）</value>
+    <comment>系统托盘 - 临时显示主窗口</comment>
+  </data>
+  <data name="Tray_OpenSettings" xml:space="preserve">
+    <value>打开设置</value>
+    <comment>系统托盘 - 打开设置</comment>
+  </data>
 </root>
