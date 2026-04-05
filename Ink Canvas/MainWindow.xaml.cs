@@ -1407,6 +1407,7 @@ namespace Ink_Canvas
 
             // 检查模式设置并应用
             CheckMainWindowVisibility();
+            EnsurePptOnlyVisibilityProbeTimer();
 
             // 检查是否通过--board参数启动，如果是则自动切换到白板模式
             if (App.StartWithBoardMode)
@@ -4377,9 +4378,11 @@ namespace Ink_Canvas
                     {
                         Hide();
                         LogHelper.WriteLogToFile("已切换到仅PPT模式，主窗口已隐藏", LogHelper.LogType.Event);
+                        EnsurePptOnlyVisibilityProbeTimer();
                     }
                     else
                     {
+                        StopPptOnlyVisibilityProbeTimer();
                         // 如果切换到正常模式，显示主窗口
                         Show();
                         LogHelper.WriteLogToFile("已切换到正常模式，主窗口已显示", LogHelper.LogType.Event);
@@ -4401,8 +4404,10 @@ namespace Ink_Canvas
             {
                 if (Settings.ModeSettings.IsPPTOnlyMode)
                 {
-                    // 仅PPT模式下，只有在PPT放映时才显示
-                    bool isInSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    // 仅PPT模式：以 COM/UI 状态为主，Win32 检测全屏放映窗口（screenClass）作兜底，避免 COM 异常时无法唤出
+                    bool comUiSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    bool win32SlideShow = IsPowerPointSlideshowSurfacePresentWin32();
+                    bool isInSlideShow = comUiSlideShow || win32SlideShow;
                     if (isInSlideShow && !IsVisible)
                     {
                         Show();
