@@ -1261,8 +1261,11 @@ namespace Ink_Canvas
         /// </remarks>
         private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
+            if (_suppressChickenSoupSourceSelectionChanged) return;
             if (!isLoaded) return;
             int idx = ComboBoxChickenSoupSource.SelectedIndex;
+            if (idx < 0) return;
+            if (Settings.Appearance.ChickenSoupSource == idx) return;
 
             Settings.Appearance.ChickenSoupSource = idx;
 

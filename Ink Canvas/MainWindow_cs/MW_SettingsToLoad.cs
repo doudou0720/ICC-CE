@@ -440,7 +440,17 @@ namespace Ink_Canvas
                 // 设置主题下拉框
                 ComboBoxTheme.SelectedIndex = Settings.Appearance.Theme;
 
-                ComboBoxChickenSoupSource.SelectedIndex = Settings.Appearance.ChickenSoupSource;
+                _suppressChickenSoupSourceSelectionChanged = true;
+                try
+                {
+                    ComboBoxChickenSoupSource.SelectedIndex = Settings.Appearance.ChickenSoupSource;
+                }
+                finally
+                {
+                    Dispatcher.BeginInvoke(
+                        (Action)(() => { _suppressChickenSoupSourceSelectionChanged = false; }),
+                        DispatcherPriority.ContextIdle);
+                }
 
                 // 初始化自定义按钮的可见性（仅在选择API时显示）
                 if (BtnHitokotoCustomize != null)
@@ -450,11 +460,6 @@ namespace Ink_Canvas
                         : Visibility.Collapsed;
                 }
 
-                // 初始化HitokotoCategories，如果为空则默认全选
-                if (Settings.Appearance.HitokotoCategories == null || Settings.Appearance.HitokotoCategories.Count == 0)
-                {
-                    Settings.Appearance.HitokotoCategories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
-                }
 
                 ToggleSwitchEnableQuickPanel.IsOn = Settings.Appearance.IsShowQuickPanel;
 
@@ -868,6 +873,8 @@ namespace Ink_Canvas
                     Settings.Canvas.ClearCanvasAndClearTimeMachine;
                 ToggleSwitchClearCanvasAlsoClearImages.IsOn = Settings.Canvas.ClearCanvasAlsoClearImages;
                 ToggleSwitchShowCircleCenter.IsOn = Settings.Canvas.ShowCircleCenter;
+
+                ApplyWhiteboardBoothToolbarFromSettings();
 
                 switch (Settings.Canvas.EraserShapeType)
                 {
@@ -1494,7 +1501,7 @@ namespace Ink_Canvas
                 Settings defaultSettings = new Settings();
 
                 // 将默认配置和用户配置都序列化为JObject
-                JObject defaultConfigObj = JObject.FromObject(defaultSettings);
+                JObject defaultConfigObj = JObject.FromObject(defaultSettings);               EnsureDefaultConfigSchemaIncludesIgnoredNullKeys(defaultConfigObj);
                 JObject userConfigObj = JObject.Parse(userConfigJson);
 
                 // 记录是否有清理操作
@@ -1535,6 +1542,13 @@ namespace Ink_Canvas
         /// 7. 删除标记的键
         /// 8. 设置变更标志
         /// </remarks>
+        private static void EnsureDefaultConfigSchemaIncludesIgnoredNullKeys(JObject defaultConfigObj)
+        {
+            if (defaultConfigObj == null) return;
+            if (defaultConfigObj["appearance"] is JObject appearance && !appearance.ContainsKey("hitokotoCategories"))
+                appearance["hitokotoCategories"] = JValue.CreateNull();
+        }
+
         private void RemoveObsoleteProperties(JObject userObj, JObject defaultObj, ref bool hasChanges)
         {
             if (userObj == null || defaultObj == null)

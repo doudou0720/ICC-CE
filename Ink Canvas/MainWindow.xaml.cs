@@ -1165,6 +1165,7 @@ namespace Ink_Canvas
         public static Settings Settings = new Settings();
         public static string settingsFileName = Path.Combine("Configs", "Settings.json");
         private bool isLoaded;
+        private bool _suppressChickenSoupSourceSelectionChanged;
         private bool forcePointEraser;
 
         /// <summary>
