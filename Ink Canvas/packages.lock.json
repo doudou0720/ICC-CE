@@ -157,6 +157,21 @@
           "Microsoft.Win32.Registry": "5.0.0"
         }
       },
+      "PDFtoImage": {
+        "type": "Direct",
+        "requested": "[5.1.0, )",
+        "resolved": "5.1.0",
+        "contentHash": "QbGA2pdMCdQFI0MpXXDD7teGJsOR3ic9T8iGv3hXTtyMSjJkVgFDKRxRU9Ri31DbkkpvY7azzNeUTWdf5AqPZg==",
+        "dependencies": {
+          "SkiaSharp": "3.119.0",
+          "SkiaSharp.NativeAssets.Linux.NoDependencies": "3.119.0",
+          "SkiaSharp.NativeAssets.Win32": "3.119.0",
+          "SkiaSharp.NativeAssets.macOS": "3.119.0",
+          "bblanchon.PDFium.Linux": "137.0.7149",
+          "bblanchon.PDFium.Win32": "137.0.7149",
+          "bblanchon.PDFium.macOS": "137.0.7149"
+        }
+      },
       "Sentry": {
         "type": "Direct",
         "requested": "[6.2.0, )",
@@ -189,6 +204,21 @@
         "type": "Transitive",
         "resolved": "6.3.0.90",
         "contentHash": "WVTb5MxwGqKdeasd3nG5udlV4t6OpvkFanziwI133K0/QJ5FvZmfzRQgpAjGTJhQfIA8GP7AzKQ3sTY9JOFk8Q=="
+      },
+      "bblanchon.PDFium.Linux": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "tT2GeyKE39ci3THZ/ddzhvZ3efgfCdEsZtDfEH+kDV1dfl2hxFeZesdTcRnxj3hp/ScnxTNJNa0RZtwOwc0I3g=="
+      },
+      "bblanchon.PDFium.macOS": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "OXZJhlJ/jynL5dz9/OJ65UFCIqZBepdyd84xE11AAWgG6UPERi2p4tEmmIAbloZ+aRBtaCRWNk5pgyF2WDe7vQ=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "M3C2UCvKD1X6hJ/VB6arBMhI91OYHzybWMAOVFUKuEpfTR1nKfbYa/1dNVHKPmc8ST0SAYeVOlkv+XlJrsXy/Q=="
       },
       "Fody": {
         "type": "Transitive",
@@ -239,6 +269,31 @@
         "type": "Transitive",
         "resolved": "4.0.0",
         "contentHash": "5HKzttVKWeKoDQKJd3+J7Dy1MW6gbNNYfftkVufe2ddFQD0kXjnT1IN3ZJBfF6QVEQmHpQSp+/PT7Jo2YyHFcw=="
+      },
+      "SkiaSharp": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "gR9yVoOta2Mc1Rxt15LD65AckfHMfwjIs/3kkD59C9bT2nYYISsE6uz3t4aMPNHA6CgsIL0Ssn+jE5OVilZ1yw==",
+        "dependencies": {
+          "SkiaSharp.NativeAssets.Win32": "3.119.0",
+          "SkiaSharp.NativeAssets.macOS": "3.119.0",
+          "System.Memory": "4.5.5"
+        }
+      },
+      "SkiaSharp.NativeAssets.Linux.NoDependencies": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "e92vdqf1VOETPjy1T67Fs1zPxfGMM1nbrpt69GM5foXSI/iIbq6L9avPz/bl/DbWtb81D0yF/NKjRmXuOZoLcg=="
+      },
+      "SkiaSharp.NativeAssets.macOS": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "YE1vNn0Nyw2PWtv7hw1PYkKJO0itFiQp9vSqGppZUKzQJqwp28a2jgdCMPfYtOiR8KCnDgZqQoynqJRRaE2ZVg=="
+      },
+      "SkiaSharp.NativeAssets.Win32": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "IwC9yx36lOdXVT2DjgmWHl1qkVspfj8ctd4+li8CNnvqdfaTolXCOh6TLznURcPAvzatx9K/tLOB7zT6T8EA9w=="
       },
       "System.Buffers": {
         "type": "Transitive",
@@ -351,6 +406,21 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win": {
+      "bblanchon.PDFium.Linux": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "tT2GeyKE39ci3THZ/ddzhvZ3efgfCdEsZtDfEH+kDV1dfl2hxFeZesdTcRnxj3hp/ScnxTNJNa0RZtwOwc0I3g=="
+      },
+      "bblanchon.PDFium.macOS": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "OXZJhlJ/jynL5dz9/OJ65UFCIqZBepdyd84xE11AAWgG6UPERi2p4tEmmIAbloZ+aRBtaCRWNk5pgyF2WDe7vQ=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "M3C2UCvKD1X6hJ/VB6arBMhI91OYHzybWMAOVFUKuEpfTR1nKfbYa/1dNVHKPmc8ST0SAYeVOlkv+XlJrsXy/Q=="
+      },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -359,6 +429,21 @@
           "System.Security.AccessControl": "5.0.0",
           "System.Security.Principal.Windows": "5.0.0"
         }
+      },
+      "SkiaSharp.NativeAssets.Linux.NoDependencies": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "e92vdqf1VOETPjy1T67Fs1zPxfGMM1nbrpt69GM5foXSI/iIbq6L9avPz/bl/DbWtb81D0yF/NKjRmXuOZoLcg=="
+      },
+      "SkiaSharp.NativeAssets.macOS": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "YE1vNn0Nyw2PWtv7hw1PYkKJO0itFiQp9vSqGppZUKzQJqwp28a2jgdCMPfYtOiR8KCnDgZqQoynqJRRaE2ZVg=="
+      },
+      "SkiaSharp.NativeAssets.Win32": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "IwC9yx36lOdXVT2DjgmWHl1qkVspfj8ctd4+li8CNnvqdfaTolXCOh6TLznURcPAvzatx9K/tLOB7zT6T8EA9w=="
       },
       "System.Runtime.InteropServices.RuntimeInformation": {
         "type": "Transitive",
@@ -380,6 +465,21 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win-arm64": {
+      "bblanchon.PDFium.Linux": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "tT2GeyKE39ci3THZ/ddzhvZ3efgfCdEsZtDfEH+kDV1dfl2hxFeZesdTcRnxj3hp/ScnxTNJNa0RZtwOwc0I3g=="
+      },
+      "bblanchon.PDFium.macOS": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "OXZJhlJ/jynL5dz9/OJ65UFCIqZBepdyd84xE11AAWgG6UPERi2p4tEmmIAbloZ+aRBtaCRWNk5pgyF2WDe7vQ=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "M3C2UCvKD1X6hJ/VB6arBMhI91OYHzybWMAOVFUKuEpfTR1nKfbYa/1dNVHKPmc8ST0SAYeVOlkv+XlJrsXy/Q=="
+      },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -388,6 +488,21 @@
           "System.Security.AccessControl": "5.0.0",
           "System.Security.Principal.Windows": "5.0.0"
         }
+      },
+      "SkiaSharp.NativeAssets.Linux.NoDependencies": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "e92vdqf1VOETPjy1T67Fs1zPxfGMM1nbrpt69GM5foXSI/iIbq6L9avPz/bl/DbWtb81D0yF/NKjRmXuOZoLcg=="
+      },
+      "SkiaSharp.NativeAssets.macOS": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "YE1vNn0Nyw2PWtv7hw1PYkKJO0itFiQp9vSqGppZUKzQJqwp28a2jgdCMPfYtOiR8KCnDgZqQoynqJRRaE2ZVg=="
+      },
+      "SkiaSharp.NativeAssets.Win32": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "IwC9yx36lOdXVT2DjgmWHl1qkVspfj8ctd4+li8CNnvqdfaTolXCOh6TLznURcPAvzatx9K/tLOB7zT6T8EA9w=="
       },
       "System.Runtime.InteropServices.RuntimeInformation": {
         "type": "Transitive",
@@ -409,6 +524,21 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win-x64": {
+      "bblanchon.PDFium.Linux": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "tT2GeyKE39ci3THZ/ddzhvZ3efgfCdEsZtDfEH+kDV1dfl2hxFeZesdTcRnxj3hp/ScnxTNJNa0RZtwOwc0I3g=="
+      },
+      "bblanchon.PDFium.macOS": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "OXZJhlJ/jynL5dz9/OJ65UFCIqZBepdyd84xE11AAWgG6UPERi2p4tEmmIAbloZ+aRBtaCRWNk5pgyF2WDe7vQ=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "M3C2UCvKD1X6hJ/VB6arBMhI91OYHzybWMAOVFUKuEpfTR1nKfbYa/1dNVHKPmc8ST0SAYeVOlkv+XlJrsXy/Q=="
+      },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -417,6 +547,21 @@
           "System.Security.AccessControl": "5.0.0",
           "System.Security.Principal.Windows": "5.0.0"
         }
+      },
+      "SkiaSharp.NativeAssets.Linux.NoDependencies": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "e92vdqf1VOETPjy1T67Fs1zPxfGMM1nbrpt69GM5foXSI/iIbq6L9avPz/bl/DbWtb81D0yF/NKjRmXuOZoLcg=="
+      },
+      "SkiaSharp.NativeAssets.macOS": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "YE1vNn0Nyw2PWtv7hw1PYkKJO0itFiQp9vSqGppZUKzQJqwp28a2jgdCMPfYtOiR8KCnDgZqQoynqJRRaE2ZVg=="
+      },
+      "SkiaSharp.NativeAssets.Win32": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "IwC9yx36lOdXVT2DjgmWHl1qkVspfj8ctd4+li8CNnvqdfaTolXCOh6TLznURcPAvzatx9K/tLOB7zT6T8EA9w=="
       },
       "System.Runtime.InteropServices.RuntimeInformation": {
         "type": "Transitive",
@@ -438,6 +583,21 @@
       }
     },
     ".NETFramework,Version=v4.7.2/win-x86": {
+      "bblanchon.PDFium.Linux": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "tT2GeyKE39ci3THZ/ddzhvZ3efgfCdEsZtDfEH+kDV1dfl2hxFeZesdTcRnxj3hp/ScnxTNJNa0RZtwOwc0I3g=="
+      },
+      "bblanchon.PDFium.macOS": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "OXZJhlJ/jynL5dz9/OJ65UFCIqZBepdyd84xE11AAWgG6UPERi2p4tEmmIAbloZ+aRBtaCRWNk5pgyF2WDe7vQ=="
+      },
+      "bblanchon.PDFium.Win32": {
+        "type": "Transitive",
+        "resolved": "137.0.7149",
+        "contentHash": "M3C2UCvKD1X6hJ/VB6arBMhI91OYHzybWMAOVFUKuEpfTR1nKfbYa/1dNVHKPmc8ST0SAYeVOlkv+XlJrsXy/Q=="
+      },
       "Microsoft.Win32.Registry": {
         "type": "Transitive",
         "resolved": "5.0.0",
@@ -446,6 +606,21 @@
           "System.Security.AccessControl": "5.0.0",
           "System.Security.Principal.Windows": "5.0.0"
         }
+      },
+      "SkiaSharp.NativeAssets.Linux.NoDependencies": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "e92vdqf1VOETPjy1T67Fs1zPxfGMM1nbrpt69GM5foXSI/iIbq6L9avPz/bl/DbWtb81D0yF/NKjRmXuOZoLcg=="
+      },
+      "SkiaSharp.NativeAssets.macOS": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "YE1vNn0Nyw2PWtv7hw1PYkKJO0itFiQp9vSqGppZUKzQJqwp28a2jgdCMPfYtOiR8KCnDgZqQoynqJRRaE2ZVg=="
+      },
+      "SkiaSharp.NativeAssets.Win32": {
+        "type": "Transitive",
+        "resolved": "3.119.0",
+        "contentHash": "IwC9yx36lOdXVT2DjgmWHl1qkVspfj8ctd4+li8CNnvqdfaTolXCOh6TLznURcPAvzatx9K/tLOB7zT6T8EA9w=="
       },
       "System.Runtime.InteropServices.RuntimeInformation": {
         "type": "Transitive",

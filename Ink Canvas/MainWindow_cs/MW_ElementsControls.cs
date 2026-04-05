@@ -1007,7 +1007,7 @@ namespace Ink_Canvas
                 string newFilePath = Path.Combine(savePath, timestamp + ".pdf");
                 await Task.Run(() => File.Copy(filePath, newFilePath, true));
 
-                uint pageCount = await PdfWinRtHelper.GetPageCountAsync(newFilePath);
+                uint pageCount = await PdfDocumentRenderHelper.GetPageCountAsync(newFilePath);
                 if (pageCount == 0)
                 {
                     ShowNotification("无法打开 PDF（可能已加密、损坏或不支持）。");
@@ -1037,7 +1037,7 @@ namespace Ink_Canvas
 
             try
             {
-                uint pageCount = await PdfWinRtHelper.GetPageCountAsync(info.SourcePath);
+                uint pageCount = await PdfDocumentRenderHelper.GetPageCountAsync(info.SourcePath);
                 if (pageCount == 0) return;
 
                 bool compress = isLoaded && Settings.Canvas.IsCompressPicturesUploaded;
