@@ -35,6 +35,11 @@ namespace Ink_Canvas.Helpers.Plugins
         public string Id { get; protected set; }
 
         /// <summary>
+        /// 写入 <see cref="PluginManager"/> 配置时使用的稳定键（默认同类型全名；多实例类型如 SDK 目录插件应重写）。
+        /// </summary>
+        public virtual string PluginStateKey => GetType().FullName;
+
+        /// <summary>
         /// 插件路径
         /// </summary>
         public string PluginPath { get; set; }

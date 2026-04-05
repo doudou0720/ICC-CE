@@ -157,6 +157,10 @@
     <PackageReference Include="AForge.Math" Version="2.2.5" />
     <PackageReference Include="WebDav.Client" Version="2.9.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Plugins\SDK\InkCanvas.PluginSdk.csproj" />
+    <ProjectReference Include="..\Plugins\Host\InkCanvas.PluginHost.csproj" />
+  </ItemGroup>
   <ItemGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
     <COMReference Include="IWshRuntimeLibrary">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>

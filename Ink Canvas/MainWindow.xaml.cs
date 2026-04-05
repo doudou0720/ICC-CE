@@ -80,6 +80,12 @@ namespace Ink_Canvas
         public int BoothResolutionWidth => _boothResolutionWidth;
         public int BoothResolutionHeight => _boothResolutionHeight;
 
+        /// <summary>供插件系统访问的白板页面列表（只读）。</summary>
+        public IList<System.Windows.Controls.Canvas> WhiteboardPages => whiteboardPages;
+
+        /// <summary>供插件系统访问的当前页索引。</summary>
+        public int CurrentPageIndex => currentPageIndex;
+
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
 
@@ -2824,7 +2830,7 @@ namespace Ink_Canvas
         {
             try
             {
-                // 初始化插件管理器
+                PluginRuntime.Initialize(this);
                 PluginManager.Instance.Initialize();
                 LogHelper.WriteLogToFile("插件系统已初始化");
             }

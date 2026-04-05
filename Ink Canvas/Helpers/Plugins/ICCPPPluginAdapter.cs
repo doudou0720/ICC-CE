@@ -14,6 +14,8 @@ namespace Ink_Canvas.Helpers.Plugins
         private readonly Version _pluginVersion;
         private bool _isInitialized;
 
+        public override string PluginStateKey => "ICCPP:" + (_pluginPath ?? string.Empty);
+
         /// <summary>
         /// 创建 ICCPP 插件适配器
         /// </summary>

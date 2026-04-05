@@ -20,12 +20,12 @@ namespace Ink_Canvas.Helpers.Plugins
         /// <summary>
         /// 获取当前画布
         /// </summary>
-        InkCanvas CurrentCanvas { get; }
+        global::System.Windows.Controls.InkCanvas CurrentCanvas { get; }
 
         /// <summary>
         /// 获取所有画布页面
         /// </summary>
-        List<Canvas> AllCanvasPages { get; }
+        List<global::System.Windows.Controls.Canvas> AllCanvasPages { get; }
 
         /// <summary>
         /// 获取当前页面索引

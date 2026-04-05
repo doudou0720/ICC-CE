@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>InkCanvasForClass.SamplePlugins</RootNamespace>
+    <AssemblyName>SampleClockPlugin</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SDK\InkCanvas.PluginSdk.csproj" />
+  </ItemGroup>
+
+</Project>

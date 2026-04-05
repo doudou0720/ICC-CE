@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Ink;
@@ -140,6 +140,12 @@ namespace Ink_Canvas.Helpers
             OnUndoStateChanged?.Invoke(_currentIndex > -1);
             OnRedoStateChanged?.Invoke(_currentStrokeHistory.Count - _currentIndex - 1 > 0);
         }
+
+        /// <summary>当前历史是否允许撤销。</summary>
+        public bool CanUndo => _currentIndex > -1;
+
+        /// <summary>当前历史是否允许重做。</summary>
+        public bool CanRedo => _currentStrokeHistory.Count > 0 && _currentStrokeHistory.Count - _currentIndex - 1 > 0;
     }
 
     public class TimeMachineHistory

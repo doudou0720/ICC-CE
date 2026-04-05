@@ -1,4 +1,6 @@
 using Ink_Canvas.Windows;
+using InkCanvasForClass.PluginHost;
+using InkCanvasForClass.PluginSdk;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -71,6 +73,23 @@ namespace Ink_Canvas.Helpers.Plugins
         /// </summary>
         private Dictionary<string, string> _pluginHashes = new Dictionary<string, string>();
 
+        /// <summary>
+        /// SDK 插件程序集（按主 DLL 路径缓存）
+        /// </summary>
+        private readonly Dictionary<string, Assembly> _sdkAssembliesByPath =
+            new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// 已加载的 SDK 插件核心实例（键为插件目录名）
+        /// </summary>
+        private readonly Dictionary<string, IInkCanvasPlugin> _sdkCoreByFolderId =
+            new Dictionary<string, IInkCanvasPlugin>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// SDK 插件登记的菜单 / 工具栏 / 设置页，供主窗口挂载。
+        /// </summary>
+        public CollectingPluginRegistry ExtensionRegistry { get; } = new CollectingPluginRegistry();
+
         private PluginManager()
         {
             // 确保插件目录存在
@@ -102,6 +121,60 @@ namespace Ink_Canvas.Helpers.Plugins
             };
         }
 
+        private static string GetPluginStateKey(IPlugin plugin)
+        {
+            if (plugin is PluginBase pluginBase)
+            {
+                return pluginBase.PluginStateKey;
+            }
+
+            return plugin.GetType().FullName;
+        }
+
+        public IInkCanvasPlugin GetSdkPluginInstance(string folderId)
+        {
+            if (string.IsNullOrEmpty(folderId))
+            {
+                return null;
+            }
+
+            return _sdkCoreByFolderId.TryGetValue(folderId, out var core) ? core : null;
+        }
+
+        public IReadOnlyList<IInkCanvasPlugin> GetAllSdkPluginInstances()
+        {
+            return _sdkCoreByFolderId.Values.ToList();
+        }
+
+        public IInkCanvasPlugin GetSdkPluginByName(string name)
+        {
+            return _sdkCoreByFolderId.Values.FirstOrDefault(p => p.Name == name);
+        }
+
+        public void SetSdkPluginEnabledByName(string name, bool enable)
+        {
+            var adapter = Plugins.OfType<SdkPluginAdapter>().FirstOrDefault(a =>
+                a.Name == name || string.Equals(a.FolderId, name, StringComparison.OrdinalIgnoreCase));
+            if (adapter == null)
+            {
+                return;
+            }
+
+            TogglePlugin(adapter, enable);
+        }
+
+        public void UnloadSdkPluginByName(string name)
+        {
+            var adapter = Plugins.OfType<SdkPluginAdapter>().FirstOrDefault(a =>
+                a.Name == name || string.Equals(a.FolderId, name, StringComparison.OrdinalIgnoreCase));
+            if (adapter == null)
+            {
+                return;
+            }
+
+            UnloadPlugin(adapter, true);
+        }
+
         /// <summary>
         /// 初始化插件系统
         /// </summary>
@@ -122,6 +195,10 @@ namespace Ink_Canvas.Helpers.Plugins
                 // 加载外部插件
                 LogHelper.WriteLogToFile("正在加载外部插件...");
                 LoadExternalPlugins();
+
+                // 加载 Plugins 子目录中的 SDK 插件（IInkCanvasPlugin）
+                LogHelper.WriteLogToFile("正在加载 SDK 插件（子目录）...");
+                LoadSdkPluginsFromSubfolders();
 
                 // 启用已配置为启用的插件
                 LogHelper.WriteLogToFile("正在应用配置的插件状态...");
@@ -211,6 +288,87 @@ namespace Ink_Canvas.Helpers.Plugins
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"加载外部插件时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 扫描 <see cref="PluginsDirectory"/> 下一层子目录，加载实现 <see cref="IInkCanvasPlugin"/> 的 SDK 插件。
+        /// </summary>
+        private void LoadSdkPluginsFromSubfolders()
+        {
+            try
+            {
+                if (!Directory.Exists(PluginsDirectory))
+                {
+                    return;
+                }
+
+                foreach (var pluginDir in Directory.GetDirectories(PluginsDirectory))
+                {
+                    var folderId = Path.GetFileName(pluginDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                    if (string.IsNullOrEmpty(folderId))
+                    {
+                        continue;
+                    }
+
+                    var dllFiles = Directory.GetFiles(pluginDir, "*.dll", SearchOption.AllDirectories);
+                    var mainDll = dllFiles.FirstOrDefault(f =>
+                        f.IndexOf($"{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) < 0 &&
+                        f.IndexOf($"{Path.AltDirectorySeparatorChar}lib{Path.AltDirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) < 0 &&
+                        f.IndexOf($"{Path.DirectorySeparatorChar}runtimes{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) < 0 &&
+                        f.IndexOf($"{Path.AltDirectorySeparatorChar}runtimes{Path.AltDirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase) < 0);
+
+                    if (mainDll == null)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        if (!_sdkAssembliesByPath.TryGetValue(mainDll, out var assembly))
+                        {
+                            assembly = Assembly.LoadFrom(mainDll);
+                            _sdkAssembliesByPath[mainDll] = assembly;
+                        }
+
+                        Type pluginType = null;
+                        try
+                        {
+                            pluginType = assembly.GetTypes()
+                                .FirstOrDefault(t =>
+                                    typeof(IInkCanvasPlugin).IsAssignableFrom(t) &&
+                                    !t.IsAbstract &&
+                                    !t.IsInterface &&
+                                    t.IsClass);
+                        }
+                        catch (ReflectionTypeLoadException ex)
+                        {
+                            LogHelper.WriteLogToFile($"枚举 SDK 插件类型失败 {folderId}: {ex.Message}", LogHelper.LogType.Error);
+                        }
+
+                        if (pluginType == null)
+                        {
+                            continue;
+                        }
+
+                        var core = (IInkCanvasPlugin)Activator.CreateInstance(pluginType);
+                        _sdkCoreByFolderId[folderId] = core;
+
+                        var adapter = new SdkPluginAdapter(folderId, core, mainDll);
+                        adapter.Initialize();
+                        Plugins.Add(adapter);
+
+                        LogHelper.WriteLogToFile($"已加载 SDK 插件(子目录): {core.Name} — {folderId}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"加载 SDK 插件目录 {folderId} 失败: {ex.Message}", LogHelper.LogType.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"扫描 SDK 插件子目录失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -349,7 +507,7 @@ namespace Ink_Canvas.Helpers.Plugins
             {
                 try
                 {
-                    string pluginTypeName = plugin.GetType().FullName;
+                    string pluginTypeName = GetPluginStateKey(plugin);
 
                     // 检查配置中的插件状态
                     if (PluginStates.TryGetValue(pluginTypeName, out bool enabled))
@@ -434,7 +592,7 @@ namespace Ink_Canvas.Helpers.Plugins
             {
                 if (sender is IPlugin plugin)
                 {
-                    string pluginTypeName = plugin.GetType().FullName;
+                    string pluginTypeName = GetPluginStateKey(plugin);
 
                     // 更新配置状态
                     if (!PluginStates.ContainsKey(pluginTypeName) || PluginStates[pluginTypeName] != isEnabled)
@@ -537,7 +695,7 @@ namespace Ink_Canvas.Helpers.Plugins
 
                 // 保存插件的当前状态
                 bool wasEnabled = plugin.IsEnabled;
-                string pluginTypeName = plugin.GetType().FullName;
+                string pluginTypeName = GetPluginStateKey(plugin);
 
                 // 卸载插件
                 UnloadPlugin(plugin);
@@ -564,7 +722,7 @@ namespace Ink_Canvas.Helpers.Plugins
                     }
 
                     // 更新配置（如果类型名称变化）
-                    string newPluginTypeName = newPlugin.GetType().FullName;
+                    string newPluginTypeName = GetPluginStateKey(newPlugin);
                     if (pluginTypeName != newPluginTypeName && PluginStates.ContainsKey(pluginTypeName))
                     {
                         bool state = PluginStates[pluginTypeName];
@@ -614,10 +772,15 @@ namespace Ink_Canvas.Helpers.Plugins
                 // 从插件集合中移除
                 Plugins.Remove(plugin);
 
+                if (plugin is SdkPluginAdapter sdkAdapter)
+                {
+                    _sdkCoreByFolderId.Remove(sdkAdapter.FolderId);
+                }
+
                 // 从配置中移除（如果需要）
                 if (removeFromConfig && plugin.GetType() != null)
                 {
-                    string pluginTypeName = plugin.GetType().FullName;
+                    string pluginTypeName = GetPluginStateKey(plugin);
                     if (PluginStates.ContainsKey(pluginTypeName))
                     {
                         PluginStates.Remove(pluginTypeName);
@@ -706,7 +869,7 @@ namespace Ink_Canvas.Helpers.Plugins
 
                 // 记录插件信息，用于日志
                 string pluginName = plugin.Name;
-                string pluginTypeName = plugin.GetType().FullName;
+                string pluginTypeName = GetPluginStateKey(plugin);
 
                 LogHelper.WriteLogToFile($"开始切换插件 {pluginName} 状态为: {(enable ? "启用" : "禁用")}");
 
@@ -919,7 +1082,7 @@ namespace Ink_Canvas.Helpers.Plugins
                     if (!string.IsNullOrEmpty(pluginPath) && File.Exists(pluginPath))
                     {
                         // 记录插件类型名称，用于后续状态检查
-                        string pluginTypeName = plugin.GetType().FullName;
+                        string pluginTypeName = GetPluginStateKey(plugin);
                         bool targetState = enable;
 
                         // 使用调度器确保在UI线程执行热重载
@@ -1322,7 +1485,7 @@ namespace Ink_Canvas.Helpers.Plugins
                 // 对比配置，查找变更的插件
                 foreach (var plugin in Plugins.ToList()) // 创建副本进行遍历，避免集合修改异常
                 {
-                    string pluginTypeName = plugin.GetType().FullName;
+                    string pluginTypeName = GetPluginStateKey(plugin);
 
                     // 检查插件在配置中是否存在
                     if (PluginStates.TryGetValue(pluginTypeName, out bool shouldBeEnabled))
