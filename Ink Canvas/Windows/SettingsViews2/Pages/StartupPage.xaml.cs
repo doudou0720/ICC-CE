@@ -95,7 +95,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchNoFocusMode.IsOn;
-                
+
                 // 使用Helper类更新设置并应用
                 Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchNoFocusMode", newState);
             }
@@ -115,7 +115,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchWindowMode.IsOn;
-                
+
                 // 使用Helper类更新设置并应用
                 Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchWindowMode", newState);
             }
@@ -135,7 +135,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchAlwaysOnTop.IsOn;
-                
+
                 // 使用Helper类更新设置并应用
                 Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchAlwaysOnTop", newState);
             }
@@ -155,16 +155,16 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchUIAccessTopMost.IsOn;
-                
+
                 // 更新Settings对象
                 if (MainWindow.Settings.Advanced != null)
                 {
                     MainWindow.Settings.Advanced.EnableUIAccessTopMost = newState;
                 }
-                
+
                 // 保存设置
                 MainWindow.SaveSettingsToFile();
-                
+
                 // 通知其他面板同步状态
                 Windows.SettingsViews.MainWindowSettingsHelper.NotifySettingsPanelsSyncState("ToggleSwitchUIAccessTopMost");
             }
@@ -188,7 +188,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchRunAtStartup.IsOn;
-                
+
                 // 使用Helper类更新设置并应用
                 Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchRunAtStartup", newState);
             }
@@ -208,7 +208,7 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchFoldAtStartup.IsOn;
-                
+
                 // 使用Helper类更新设置并应用
                 Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchFoldAtStartup", newState);
             }
@@ -232,34 +232,13 @@ namespace Ink_Canvas.Windows.SettingsViews2.Pages
             try
             {
                 bool newState = ToggleSwitchPPTOnlyMode.IsOn;
-                
+
                 // 使用Helper类更新设置并应用
                 Windows.SettingsViews.MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchMode", newState);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"设置仅PPT模式时出错: {ex.Message}");
-            }
-        }
-
-        #endregion
-
-        #region 插件管理事件处理
-
-        /// <summary>
-        /// 打开插件管理器按钮点击事件
-        /// </summary>
-        private void BtnOpenPluginManager_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 创建并显示插件设置窗口
-                var pluginSettingsWindow = new Windows.PluginSettingsWindow();
-                pluginSettingsWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"打开插件管理器时出错: {ex.Message}");
             }
         }
 

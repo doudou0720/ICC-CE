@@ -107,19 +107,7 @@
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
-                
-                <!-- 插件管理 -->
-                <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                    Text="插件管理" />
-                
-                <ui:SettingsCard Description="通过插件扩展InkCanvas的功能。您可以启用或禁用插件，或加载自定义插件。"
-                        Header="插件管理">
-                    <ui:SettingsCard.HeaderIcon>
-                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Settings}" />
-                    </ui:SettingsCard.HeaderIcon>
-                    <Button Name="BtnOpenPluginManager" Content="打开插件管理器" Click="BtnOpenPluginManager_Click" />
-                </ui:SettingsCard>
-                
+
                 <!-- 底部空白 -->
                 <Rectangle Height="48" />
                 
