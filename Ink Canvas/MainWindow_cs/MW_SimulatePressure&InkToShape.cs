@@ -142,14 +142,24 @@ namespace Ink_Canvas
             }
         }
 
-        private void RunStrokeCollectedPostShapeRecognitionTail(InkCanvasStrokeCollectedEventArgs e, bool wasStraightened)
+        /// <summary>
+        /// 收笔后压感/墨迹平滑等尾部处理。返回「当前应登记到手写字形替换批次」的画布笔画引用：
+        /// 同步贝塞尔平滑若替换了笔画，则为新 <see cref="Stroke"/>；否则为 <paramref name="e"/>.Stroke。
+        /// 直线拉直后事件参数中的笔画可能已不在画布上，调用方需另行传入画布上的笔画（见收笔处）。
+        /// </summary>
+        private Stroke RunStrokeCollectedPostShapeRecognitionTail(InkCanvasStrokeCollectedEventArgs e, bool wasStraightened)
         {
+            if (e?.Stroke == null)
+                return null;
+
+            var handwritingScheduleStroke = e.Stroke;
+
             try
             {
                 foreach (var stylusPoint in e.Stroke.StylusPoints)
                     if ((stylusPoint.PressureFactor > 0.501 || stylusPoint.PressureFactor < 0.5) &&
                         stylusPoint.PressureFactor != 0)
-                        return;
+                        return e.Stroke;
 
                 try
                 {
@@ -202,7 +212,7 @@ namespace Ink_Canvas
                                 var n = e.Stroke.StylusPoints.Count - 1;
                                 var pressure = 0.1;
                                 var x = 10;
-                                if (n == 1) return;
+                                if (n == 1) return e.Stroke;
                                 if (n >= x)
                                 {
                                     for (var i = 0; i < n - x; i++)
@@ -276,6 +286,7 @@ namespace Ink_Canvas
                                 inkCanvas.Strokes.Remove(e.Stroke);
                                 inkCanvas.Strokes.Add(smoothedStroke);
                                 _currentCommitType = CommitReason.UserInput;
+                                handwritingScheduleStroke = smoothedStroke;
                             }
                         }
                     }
@@ -293,6 +304,8 @@ namespace Ink_Canvas
             {
                 drawingAttributes.FitToCurve = true;
             }
+
+            return handwritingScheduleStroke;
         }
 
         /// <summary>
@@ -324,6 +337,10 @@ namespace Ink_Canvas
                                       && strokeDrawingAttributes.StylusTip == StylusTip.Rectangle
                                       && Math.Abs(strokeDrawingAttributes.Width - BoardBrushInkWidth) < 0.01
                                       && Math.Abs(strokeDrawingAttributes.Height - BoardBrushInkHeight) < 0.01;
+
+            // 手写识别须与画布显示分离：在压感/触摸模拟/笔锋/直线拉直等修改 e.Stroke 之前快照原始落笔点集。
+            var handwritingRawPointsForRecognizer =
+                CloneStylusPointCollectionForHandwritingInput(e.Stroke?.StylusPoints);
 
             // 检查是否启用墨迹渐隐功能
             if (Settings.Canvas.EnableInkFade && !isBoardBrushStroke)
@@ -372,6 +389,8 @@ namespace Ink_Canvas
 
             // 标记是否进行了直线拉直
             bool wasStraightened = false;
+            StylusPointCollection preBrushHandwritingPoints = null;
+            Stroke strokeForHandwritingBeautify = null;
 
             if (Settings.Canvas.FitToCurve) drawingAttributes.FitToCurve = false;
 
@@ -379,7 +398,7 @@ namespace Ink_Canvas
             {
                 inkCanvas.Opacity = 1;
                 var touchPressureSimulationApplied = false;
-                var preBrushHandwritingPoints = CloneStylusPointCollectionForHandwritingInput(e.Stroke?.StylusPoints);
+                preBrushHandwritingPoints = handwritingRawPointsForRecognizer;
 
                 if (Settings.Canvas.DisablePressure)
                 {
@@ -500,6 +519,8 @@ namespace Ink_Canvas
 
                 // Apply line straightening and endpoint snapping if ink-to-shape is enabled
 
+                Stroke straightStrokeForHandwritingKey = null;
+
                 if (Settings.InkToShape.IsInkToShapeEnabled)
                 {
                     // 检查是否启用了直线自动拉直功能
@@ -542,6 +563,8 @@ namespace Ink_Canvas
                             inkCanvas.Strokes.Add(straightStroke);
                             _currentCommitType = CommitReason.UserInput;
 
+                            straightStrokeForHandwritingKey = straightStroke;
+
                             // We can't modify e.Stroke directly, but we need to update newStrokes
                             // to ensure proper shape recognition for the straightened line
                             if (newStrokes.Contains(e.Stroke))
@@ -555,8 +578,10 @@ namespace Ink_Canvas
                     }
                 }
 
-                Stroke strokeForHandwritingBeautify = e.Stroke;
-                if (wasStraightened && inkCanvas.Strokes.Count > 0)
+                strokeForHandwritingBeautify = e.Stroke;
+                if (wasStraightened && straightStrokeForHandwritingKey != null)
+                    strokeForHandwritingBeautify = straightStrokeForHandwritingKey;
+                else if (wasStraightened && inkCanvas.Strokes.Count > 0)
                     strokeForHandwritingBeautify = inkCanvas.Strokes[inkCanvas.Strokes.Count - 1];
 
 
@@ -910,9 +935,15 @@ namespace Ink_Canvas
                             try
                             {
                                 await InkToShapeProcessCoreAsync();
+                                var strokeAfterTail = RunStrokeCollectedPostShapeRecognitionTail(e, wsTail);
                                 if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
-                                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeHw, isBoardBrushStroke, preBrushHwPts);
-                                RunStrokeCollectedPostShapeRecognitionTail(e, wsTail);
+                                {
+                                    var canvasStrokeForHw = wsTail ? strokeHw : strokeAfterTail;
+                                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(
+                                        canvasStrokeForHw,
+                                        isBoardBrushStroke,
+                                        preBrushHwPts);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -925,14 +956,21 @@ namespace Ink_Canvas
                     if (InkToShapeProcess())
                         return;
                 }
-                else if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
-                {
-                    ScheduleHandwritingGlyphReplaceAfterStrokeCollected(strokeForHandwritingBeautify, isBoardBrushStroke, preBrushHandwritingPoints);
-                }
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
-            RunStrokeCollectedPostShapeRecognitionTail(e, wasStraightened);
+            var strokeAfterTailSync = RunStrokeCollectedPostShapeRecognitionTail(e, wasStraightened);
+            if (Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify
+                && !ShapeRecognitionRouter.ShouldRunShapeRecognition(
+                    Settings.InkToShape.IsInkToShapeEnabled,
+                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
+            {
+                var canvasStrokeForHw = wasStraightened ? strokeForHandwritingBeautify : strokeAfterTailSync;
+                ScheduleHandwritingGlyphReplaceAfterStrokeCollected(
+                    canvasStrokeForHw,
+                    isBoardBrushStroke,
+                    preBrushHandwritingPoints);
+            }
         }
 
         /// <summary>
@@ -967,6 +1005,8 @@ namespace Ink_Canvas
                         inkCanvas.Strokes.Remove(original);
                         inkCanvas.Strokes.Add(smoothed);
                         _currentCommitType = CommitReason.UserInput;
+                        // 收笔尾部仍以 original 登记手写批次；异步平滑后画布对象变为 smoothed，须迁移引用，否则防抖识别时字典 miss 会退回画布几何（非实时笔锋常见）。
+                        MigrateHandwritingBeautifyCanvasStrokeReference(original, smoothed);
                     }
                     else
                     {
@@ -2731,6 +2771,29 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 异步墨迹平滑将画布上的 <paramref name="fromStroke"/> 替换为 <paramref name="toStroke"/> 后，把手写字形替换批次里的画布引用一并迁移，使识别仍命中「原始点快照」字典项。
+        /// </summary>
+        private void MigrateHandwritingBeautifyCanvasStrokeReference(Stroke fromStroke, Stroke toStroke)
+        {
+            if (fromStroke == null || toStroke == null || ReferenceEquals(fromStroke, toStroke))
+                return;
+            if (!Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify)
+                return;
+
+            if (_handwritingBeautifyInkInputByCanvasStroke.TryGetValue(fromStroke, out var inkInput))
+            {
+                _handwritingBeautifyInkInputByCanvasStroke.Remove(fromStroke);
+                _handwritingBeautifyInkInputByCanvasStroke[toStroke] = inkInput;
+            }
+
+            for (var i = 0; i < _handwritingRecentStrokesForBeautify.Count; i++)
+            {
+                if (ReferenceEquals(_handwritingRecentStrokesForBeautify[i], fromStroke))
+                    _handwritingRecentStrokesForBeautify[i] = toStroke;
+            }
+        }
+
+        /// <summary>
         /// 收笔后：在墨迹转形状（若启用）完成之后，将笔画并入批次并启动/重置停笔防抖计时器，再于延迟后多笔合并矫正。
         /// </summary>
         private void PruneHandwritingBeautifyBatch()
@@ -2788,10 +2851,19 @@ namespace Ink_Canvas
 
             if (preBrushHandwritingPoints != null && preBrushHandwritingPoints.Count > 0)
             {
-                _handwritingBeautifyInkInputByCanvasStroke[strokeForBeautify] = new Stroke(preBrushHandwritingPoints)
+                // 再拷贝一份给识别专用 Stroke，避免与外部 StylusPointCollection 或 WPF Stroke 内部共享后被改写。
+                var ptsForRecognizer = CloneStylusPointCollectionForHandwritingInput(preBrushHandwritingPoints);
+                if (ptsForRecognizer != null && ptsForRecognizer.Count > 0)
                 {
-                    DrawingAttributes = strokeForBeautify.DrawingAttributes.Clone()
-                };
+                    _handwritingBeautifyInkInputByCanvasStroke[strokeForBeautify] = new Stroke(ptsForRecognizer)
+                    {
+                        DrawingAttributes = strokeForBeautify.DrawingAttributes.Clone()
+                    };
+                }
+                else
+                {
+                    _handwritingBeautifyInkInputByCanvasStroke.Remove(strokeForBeautify);
+                }
             }
             else
             {
@@ -2856,9 +2928,17 @@ namespace Ink_Canvas
                         continue;
                     canvasStrokes.Add(s);
                     if (_handwritingBeautifyInkInputByCanvasStroke.TryGetValue(s, out var inkInput) && inkInput != null)
+                    {
                         recognitionInput.Add(inkInput);
+                    }
                     else
+                    {
+                        LogHelper.WriteLogToFile(
+                            "[手写体] 批次识别输入回退为画布笔画（未命中原始点快照）。画布点数=" +
+                            (s.StylusPoints?.Count ?? 0),
+                            LogHelper.LogType.Info);
                         recognitionInput.Add(s);
+                    }
                 }
 
                 if (canvasStrokes.Count == 0)
