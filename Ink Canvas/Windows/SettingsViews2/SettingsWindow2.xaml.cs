@@ -200,13 +200,17 @@ namespace Ink_Canvas.Windows.SettingsViews2
             {
                 // 插件加载失败不影响主程序运行，仅输出调试日志
                 System.Diagnostics.Debug.WriteLine($"插件加载失败: {ex.Message}");
+                _pluginPages = Array.Empty<IPluginSettingsPage>();
             }
+
+            if (_pluginPages == null)
+                _pluginPages = Array.Empty<IPluginSettingsPage>();
         }
 
         private void InitializeNavigationMenu()
         {
             // 自动将插件页面添加到导航菜单
-            foreach (var pluginPage in _pluginPages)
+            foreach (var pluginPage in _pluginPages ?? Enumerable.Empty<IPluginSettingsPage>())
             {
                 var navItem = new NavigationViewItem
                 {
