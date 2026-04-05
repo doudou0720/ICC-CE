@@ -643,17 +643,14 @@
                                 </ikw:SimpleStackPanel>
                             </GroupBox>
                             
-                            <GroupBox Name="GroupBoxNewSettings">
+                            <GroupBox Name="GroupBoxSettings">
                                 <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Settings_NewWindow}" FontWeight="Bold" Foreground="#fafafa"
+                                    <TextBlock Margin="0,12,0,0" Text="设置" FontWeight="Bold" Foreground="#fafafa"
                                                FontSize="26" />
                                 </GroupBox.Header>
                                 <ikw:SimpleStackPanel Spacing="6" Margin="0,10,0,0">
-                                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Foreground="#fafafa" Text="{i18n:I18n Key=Settings_NewWindowDesc}"/>
-                                    <Button x:Name="BtnOpenNewSettings" Content="{i18n:I18n Key=Btn_OpenNewSettings}" 
-                                            HorizontalAlignment="Left" Click="BtnOpenNewSettings_Click" 
-                                            Padding="15,5" Margin="0,10,0,0"/>
-                                    <Button x:Name="BtnOpenNewNewSettings" Content="打开新新设置" 
+                                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Foreground="#fafafa" Text="打开设置窗口"/>
+                                    <Button x:Name="BtnOpenSettings" Content="打开设置" 
                                             HorizontalAlignment="Left" Click="BtnOpenNewNewSettings_Click" 
                                             Padding="15,5" Margin="0,10,0,0"/>
                                 </ikw:SimpleStackPanel>

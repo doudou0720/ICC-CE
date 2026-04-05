@@ -2812,39 +2812,6 @@ namespace Ink_Canvas
         #endregion Navigation Sidebar Methods
 
         #region 新设置窗口
-
-        /// <summary>
-        /// 在隐藏子面板后打开新的设置窗口；若需要则先提示并验证安全密码，并在正在打开或隐藏设置面板时不执行任何操作。
-        /// </summary>
-        /// <remarks>
-        /// 在验证密码失败或发生异常时会中止操作。成功通过验证后以模式窗口方式显示设置窗口并将当前窗口设为其所有者。
-        /// </remarks>
-        private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
-        {
-            if (isOpeningOrHidingSettingsPane) return;
-            HideSubPanels();
-            {
-                try
-                {
-                    if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
-                    {
-                        bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
-                        if (!ok) return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
-                    return;
-                }
-
-                var settingsWindow = new SettingsWindow();
-                settingsWindow.Owner = this;
-                settingsWindow.ShowDialog();
-            }
-        }
-
-
         private async void BtnOpenNewNewSettings_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;

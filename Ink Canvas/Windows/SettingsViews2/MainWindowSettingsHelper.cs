@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Media = System.Windows.Media;
 
-namespace Ink_Canvas.Windows.SettingsViews
+namespace Ink_Canvas.Windows.SettingsViews2
 {
     public static class MainWindowSettingsHelper
     {
@@ -331,35 +331,10 @@ namespace Ink_Canvas.Windows.SettingsViews
                     // 查找所有打开的设置窗口
                     foreach (Window window in Application.Current.Windows)
                     {
-                        if (window.GetType().Name == "SettingsWindow")
+                        if (window.GetType().Name == "SettingsWindow2")
                         {
-                            // 根据控件名称确定需要同步的面板
-                            var panelToSync = GetPanelForControl(controlName);
-
-                            if (panelToSync != null)
-                            {
-                                // 获取对应的面板属性
-                                var panelProp = window.GetType().GetProperty(panelToSync, BindingFlags.Public | BindingFlags.Instance);
-                                if (panelProp != null)
-                                {
-                                    var panel = panelProp.GetValue(window) as System.Windows.Controls.UserControl;
-                                    if (panel != null)
-                                    {
-                                        // 调用 LoadSettings 方法重新加载设置
-                                        var loadMethod = panel.GetType().GetMethod("LoadSettings",
-                                            BindingFlags.Public | BindingFlags.Instance);
-                                        if (loadMethod != null)
-                                        {
-                                            loadMethod.Invoke(panel, null);
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                // 如果无法确定具体面板，则同步所有面板（保守策略）
-                                SyncAllPanels(window);
-                            }
+                            // 同步所有面板（保守策略）
+                            SyncAllPanels(window);
                             break; // 通常只有一个设置窗口
                         }
                     }
@@ -372,138 +347,42 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
 
         /// <summary>
-        /// 根据控件名称获取对应的面板名称
-        /// </summary>
-        private static string GetPanelForControl(string controlName)
-        {
-            // 定义控件名称到面板名称的映射
-            var controlToPanel = new Dictionary<string, string>
-            {
-                // StartupPanel
-                { "ToggleSwitchIsAutoUpdate", "StartupPanel" },
-                { "ToggleSwitchIsAutoUpdateWithSilence", "StartupPanel" },
-                { "ToggleSwitchRunAtStartup", "StartupPanel" },
-                { "ToggleSwitchFoldAtStartup", "StartupPanel" },
-                { "AutoUpdateWithSilenceStartTimeComboBox", "StartupPanel" },
-                { "AutoUpdateWithSilenceEndTimeComboBox", "StartupPanel" },
-                
-                // ThemePanel
-                { "ComboBoxTheme", "ThemePanel" },
-                { "ToggleSwitchEnableSplashScreen", "ThemePanel" },
-                { "ComboBoxSplashScreenStyle", "ThemePanel" },
-                { "ToggleSwitchEnableTrayIcon", "ThemePanel" },
-                { "ComboBoxFloatingBarImg", "ThemePanel" },
-                { "ComboBoxUnFoldBtnImg", "ThemePanel" },
-                { "ComboBoxChickenSoupSource", "ThemePanel" },
-                { "ComboBoxQuickColorPaletteDisplayMode", "ThemePanel" },
-                { "ComboBoxEraserDisplayOption", "ThemePanel" },
-                { "ToggleSwitchEnableQuickPanel", "ThemePanel" },
-                { "ViewboxFloatingBarScaleTransformValueSlider", "ThemePanel" },
-                { "ViewboxFloatingBarOpacityValueSlider", "ThemePanel" },
-                { "ViewboxFloatingBarOpacityInPPTValueSlider", "ThemePanel" },
-                
-                // PowerPointPanel
-                { "ToggleSwitchSupportPowerPoint", "PowerPointPanel" },
-                { "ToggleSwitchShowPPTButton", "PowerPointPanel" },
-                { "ToggleSwitchEnablePPTButtonPageClickable", "PowerPointPanel" },
-                { "ToggleSwitchShowCanvasAtNewSlideShow", "PowerPointPanel" },
-                { "PPTButtonLeftPositionValueSlider", "PowerPointPanel" },
-                { "PPTButtonRightPositionValueSlider", "PowerPointPanel" },
-                
-                // GesturesPanel
-                { "ToggleSwitchEnableTwoFingerRotationOnSelection", "GesturesPanel" },
-                { "ToggleSwitchEnablePalmEraser", "GesturesPanel" },
-                { "ComboBoxPalmEraserSensitivity", "GesturesPanel" },
-                
-                // CanvasAndInkPanel
-                { "ToggleSwitchShowCursor", "CanvasAndInkPanel" },
-                { "ToggleSwitchDisablePressure", "CanvasAndInkPanel" },
-                { "ToggleSwitchEnablePressureTouchMode", "CanvasAndInkPanel" },
-                { "ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth", "CanvasAndInkPanel" },
-                { "ComboBoxEraserSize", "CanvasAndInkPanel" },
-                { "ComboBoxHyperbolaAsymptoteOption", "CanvasAndInkPanel" },
-                { "ComboBoxAutoSaveStrokesInterval", "CanvasAndInkPanel" },
-                
-                // SnapshotPanel
-                { "AutoSavedStrokesLocation", "SnapshotPanel" },
-                { "ComboBoxAutoDelSavedFilesDaysThreshold", "SnapshotPanel" },
-                { "ToggleSwitchAutoDelSavedFiles", "SnapshotPanel" },
-                
-                // AdvancedPanel
-                { "ComboBoxAutoBackupInterval", "AdvancedPanel" },
-                { "ToggleSwitchIsQuadIR", "AdvancedPanel" },
-                { "ToggleSwitchIsLogEnabled", "AdvancedPanel" },
-                { "ToggleSwitchIsSaveLogByDate", "AdvancedPanel" },
-                { "ToggleSwitchIsSecondConfimeWhenShutdownApp", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableFullScreenHelper", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableAvoidFullScreenHelper", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableEdgeGestureUtil", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableForceFullScreen", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableDPIChangeDetection", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableResolutionChangeDetection", "AdvancedPanel" },
-                { "ToggleSwitchIsAutoBackupBeforeUpdate", "AdvancedPanel" },
-                { "ToggleSwitchIsAutoBackupEnabled", "AdvancedPanel" },
-                { "ToggleSwitchIsEnableUriScheme", "AdvancedPanel" },
-                
-                // LuckyRandomPanel
-                { "ToggleSwitchDisplayRandWindowNamesInputBtn", "LuckyRandomPanel" },
-                { "ToggleSwitchShowRandomAndSingleDraw", "LuckyRandomPanel" },
-                { "ToggleSwitchEnableQuickDraw", "LuckyRandomPanel" },
-                { "ToggleSwitchExternalCaller", "LuckyRandomPanel" },
-                { "ComboBoxExternalCallerType", "LuckyRandomPanel" },
-                { "RandWindowOnceCloseLatencySlider", "LuckyRandomPanel" },
-                { "RandWindowOnceMaxStudentsSlider", "LuckyRandomPanel" },
-            };
-
-            // 查找匹配的面板
-            foreach (var kvp in controlToPanel)
-            {
-                if (controlName.Contains(kvp.Key) || kvp.Key.Contains(controlName))
-                {
-                    return kvp.Value;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// 同步所有面板的状态（保守策略）
         /// </summary>
         private static void SyncAllPanels(Window settingsWindow)
         {
             try
             {
-                // 获取所有面板属性
-                var panelProperties = settingsWindow.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(p => p.PropertyType.Name.EndsWith("Panel") &&
-                               p.PropertyType.IsSubclassOf(typeof(System.Windows.Controls.UserControl)));
+                // 获取所有页面属性
+                var pageProperties = settingsWindow.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(p => p.PropertyType.Name.EndsWith("Page") &&
+                               p.PropertyType.IsSubclassOf(typeof(System.Windows.Controls.Page)));
 
-                foreach (var panelProp in panelProperties)
+                foreach (var pageProp in pageProperties)
                 {
                     try
                     {
-                        var panel = panelProp.GetValue(settingsWindow) as System.Windows.Controls.UserControl;
-                        if (panel != null)
+                        var page = pageProp.GetValue(settingsWindow) as System.Windows.Controls.Page;
+                        if (page != null)
                         {
                             // 调用 LoadSettings 方法
-                            var loadMethod = panel.GetType().GetMethod("LoadSettings",
+                            var loadMethod = page.GetType().GetMethod("LoadSettings",
                                 BindingFlags.Public | BindingFlags.Instance);
                             if (loadMethod != null)
                             {
-                                loadMethod.Invoke(panel, null);
+                                loadMethod.Invoke(page, null);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"同步面板 {panelProp.Name} 状态失败: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"同步页面 {pageProp.Name} 状态失败: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"同步所有面板状态失败: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"同步所有页面状态失败: {ex.Message}");
             }
         }
 
@@ -568,7 +447,7 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
 
         /// <summary>
-        /// 通知设置窗口更新所有面板的主题
+        /// 通知设置窗口更新所有页面的主题
         /// </summary>
         private static void NotifySettingsWindowThemeUpdate()
         {
@@ -577,17 +456,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 查找所有打开的设置窗口
                 foreach (Window window in Application.Current.Windows)
                 {
-                    // 使用类型名称匹配，因为 SettingsWindow 在不同的命名空间中
-                    if (window.GetType().Name == "SettingsWindow")
+                    // 使用类型名称匹配，因为 SettingsWindow2 在不同的命名空间中
+                    if (window.GetType().Name == "SettingsWindow2")
                     {
-                        // 使用反射调用 ApplyThemeToAllPanels 方法
-                        var method = window.GetType().GetMethod("ApplyThemeToAllPanels",
-                            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-                        if (method != null)
-                        {
-                            method.Invoke(window, null);
-                        }
-
                         // 同时调用 ApplyTheme 方法更新窗口本身
                         var applyThemeMethod = window.GetType().GetMethod("ApplyTheme",
                             BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
@@ -607,7 +478,7 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
 
         /// <summary>
-        /// 强制更新所有设置面板的主题（公共方法，可在外部调用）
+        /// 强制更新所有设置页面的主题（公共方法，可在外部调用）
         /// </summary>
         public static void ForceUpdateAllPanelsTheme()
         {
@@ -711,4 +582,3 @@ namespace Ink_Canvas.Windows.SettingsViews
         }
     }
 }
-
