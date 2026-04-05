@@ -1,5 +1,4 @@
 using Ink_Canvas.Helpers;
-using Ink_Canvas.Helpers.Plugins;
 using Ink_Canvas.Windows;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -79,12 +78,6 @@ namespace Ink_Canvas
         private int _boothResolutionHeight = 1080;
         public int BoothResolutionWidth => _boothResolutionWidth;
         public int BoothResolutionHeight => _boothResolutionHeight;
-
-        /// <summary>供插件系统访问的白板页面列表（只读）。</summary>
-        public IList<System.Windows.Controls.Canvas> WhiteboardPages => whiteboardPages;
-
-        /// <summary>供插件系统访问的当前页索引。</summary>
-        public int CurrentPageIndex => currentPageIndex;
 
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
@@ -1372,8 +1365,6 @@ namespace Ink_Canvas
                 }), DispatcherPriority.Loaded);
             }
 
-            // 初始化插件系统
-            InitializePluginSystem();
             // 确保开关和设置同步
             ToggleSwitchNoFocusMode.IsOn = Settings.Advanced.IsNoFocusMode;
             ApplyNoFocusMode();
@@ -2584,9 +2575,6 @@ namespace Ink_Canvas
                 case "about":
                     targetGroupBox = GroupBoxAbout;
                     break;
-                case "plugins":
-                    targetGroupBox = GroupBoxPlugins;
-                    break;
                 default:
                     // 默认滚动到顶部
                     SettingsPanelScrollViewer.ScrollToTop();
@@ -2734,9 +2722,6 @@ namespace Ink_Canvas
                 case "about":
                     SetNavButtonTag("about");
                     break;
-                case "plugins":
-                    SetNavButtonTag("plugins");
-                    break;
             }
         }
 
@@ -2822,64 +2807,6 @@ namespace Ink_Canvas
         }
 
         #endregion Navigation Sidebar Methods
-
-        #region 插件???
-
-        // 添加插件系统初始化方法
-        private void InitializePluginSystem()
-        {
-            try
-            {
-                PluginRuntime.Initialize(this);
-                PluginManager.Instance.Initialize();
-                LogHelper.WriteLogToFile("插件系统已初始化");
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化插件系统时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        // 添加插件管理导航点击事件处理
-        private void NavPlugins_Click(object sender, RoutedEventArgs e)
-        {
-            ShowSettingsSection("plugins");
-        }
-
-        // 添加打开插件管理器按钮点击事件
-        private void BtnOpenPluginManager_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 暂时隐藏设置面板
-                BorderSettings.Visibility = Visibility.Hidden;
-                BorderSettingsMask.Visibility = Visibility.Hidden;
-
-                // 创建并显示插件设置窗口
-                PluginSettingsWindow pluginSettingsWindow = new PluginSettingsWindow();
-
-                // 设置窗口关闭事件，用于在插件管理窗口关闭后恢复设置面板
-                pluginSettingsWindow.Closed += (s, args) =>
-                {
-                    // 恢复设置面板显示
-                    BorderSettings.Visibility = Visibility.Visible;
-                    BorderSettingsMask.Visibility = Visibility.Visible;
-                };
-
-                // 显示插件设置窗口
-                pluginSettingsWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                // 确保在发生错误时也恢复设置面板显示
-                BorderSettings.Visibility = Visibility.Visible;
-                BorderSettingsMask.Visibility = Visibility.Visible;
-
-                LogHelper.WriteLogToFile($"打开插件管理器时出错: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"打开插件管理器时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        #endregion 插件???
 
         #region 新设置窗口
 

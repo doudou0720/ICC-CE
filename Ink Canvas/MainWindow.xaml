@@ -247,21 +247,6 @@
                             <!-- 主要导航按钮 -->
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel>
-                                    <!-- Plugins -->
-                                    <Button Width="40" Height="40" Margin="0,5,0,0" Style="{StaticResource NavButton}"
-                                            Click="NavPlugins_Click" Tag="plugins" ToolTip="{x:Static props:Strings.Nav_Plugins}">
-                                        <Image Width="20" Height="20">
-                                            <Image.Source>
-                                                <DrawingImage>
-                                                    <DrawingImage.Drawing>
-                                                        <GeometryDrawing Brush="White"
-                                                                         Geometry="M342.826667 213.333333a149.333333 149.333333 0 0 1 295.68 0H682.666667a128 128 0 0 1 128 128v44.16a149.333333 149.333333 0 0 1 0 295.68V725.333333a128 128 0 0 1-128 128h-128v-21.333333a64 64 0 0 0-128 0v21.333333H298.666667a128 128 0 0 1-128-128v-128h21.333333a64 64 0 0 0 0-128H170.666667V341.333333a128 128 0 0 1 128-128h44.16zM426.666667 234.666667V298.666667H298.666667q-17.664 0-30.165334 12.501333T256 341.333333v56.576q22.528 10.752 41.6 29.866667Q341.333333 471.466667 341.333333 533.333333q0 61.866667-43.733333 105.6-19.072 19.072-41.6 29.824V725.333333q0 17.664 12.501333 30.165334T298.666667 768h56.576q10.752-22.528 29.866666-41.6Q428.8 682.666667 490.666667 682.666667q61.866667 0 105.6 43.733333 19.072 19.072 29.824 41.6H682.666667q17.664 0 30.165333-12.501333T725.333333 725.333333v-128h64a64 64 0 0 0 0-128H725.333333V341.333333q0-17.664-12.501333-30.165333T682.666667 298.666667h-128V234.666667a64 64 0 1 0-128 0z"/>
-                                                    </DrawingImage.Drawing>
-                                                </DrawingImage>
-                                            </Image.Source>
-                                        </Image>
-                                    </Button>
-
                                     <!-- Startup -->
                                     <Button Width="40" Height="40" Margin="0,10,0,0" Style="{StaticResource NavButton}" 
                                             Click="NavStartup_Click" Tag="startup" ToolTip="{x:Static props:Strings.Nav_Startup}">
@@ -667,19 +652,6 @@
                                     <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Foreground="#fafafa" Text="{i18n:I18n Key=Settings_NewWindowDesc}"/>
                                     <Button x:Name="BtnOpenNewSettings" Content="{i18n:I18n Key=Btn_OpenNewSettings}" 
                                             HorizontalAlignment="Left" Click="BtnOpenNewSettings_Click" 
-                                            Padding="15,5" Margin="0,10,0,0"/>
-                                </ikw:SimpleStackPanel>
-                            </GroupBox>
-                            
-                            <GroupBox Name="GroupBoxPlugins">
-                                <GroupBox.Header>
-                                    <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Settings_Plugins}" FontWeight="Bold" Foreground="#fafafa"
-                                               FontSize="26" />
-                                </GroupBox.Header>
-                                <ikw:SimpleStackPanel Spacing="6" Margin="0,10,0,0">
-                                    <TextBlock TextWrapping="Wrap" Margin="0,0,0,10" Foreground="#fafafa" Text="{i18n:I18n Key=Settings_PluginsDesc}"/>
-                                    <Button x:Name="BtnOpenPluginManager" Content="{i18n:I18n Key=Btn_OpenPluginManager}" 
-                                            HorizontalAlignment="Left" Click="BtnOpenPluginManager_Click" 
                                             Padding="15,5" Margin="0,10,0,0"/>
                                 </ikw:SimpleStackPanel>
                             </GroupBox>
