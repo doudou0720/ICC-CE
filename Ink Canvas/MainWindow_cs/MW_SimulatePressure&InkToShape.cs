@@ -559,8 +559,6 @@ namespace Ink_Canvas
                 if (wasStraightened && inkCanvas.Strokes.Count > 0)
                     strokeForHandwritingBeautify = inkCanvas.Strokes[inkCanvas.Strokes.Count - 1];
 
-                if (wasStraightened && strokeForHandwritingBeautify != null)
-                    preBrushHandwritingPoints = CloneStylusPointCollectionForHandwritingInput(strokeForHandwritingBeautify.StylusPoints);
 
                 if (ShapeRecognitionRouter.ShouldRunShapeRecognition(
                         Settings.InkToShape.IsInkToShapeEnabled,
