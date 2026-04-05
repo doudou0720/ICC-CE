@@ -481,7 +481,7 @@
   <data name="QuickPanel_Timer" xml:space="preserve"><value>Timer</value></data>
   <data name="QuickPanel_Whiteboard" xml:space="preserve"><value>Whiteboard</value></data>
   <data name="QuickPanel_ExitShow" xml:space="preserve"><value>Exit slide show</value></data>
-  <data name="QuickPanel_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="QuickPanel_Show" xml:space="preserve"><value>Annotation bar</value></data>
   <data name="QuickPanel_Exit" xml:space="preserve"><value>Exit</value></data>
   <data name="Backup_Title" xml:space="preserve"><value>Settings backup &amp; restore</value></data>
   <data name="Backup_Desc" xml:space="preserve"><value># You can manually back up current settings or restore previous backups; backups are also created automatically before updates.</value></data>

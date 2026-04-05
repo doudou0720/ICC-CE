@@ -500,7 +500,7 @@
   <data name="QuickPanel_Timer" xml:space="preserve"><value>计时器</value></data>
   <data name="QuickPanel_Whiteboard" xml:space="preserve"><value>白板</value></data>
   <data name="QuickPanel_ExitShow" xml:space="preserve"><value>退出放映</value></data>
-  <data name="QuickPanel_Show" xml:space="preserve"><value>显示</value></data>
+  <data name="QuickPanel_Show" xml:space="preserve"><value>批注栏</value></data>
   <data name="QuickPanel_Exit" xml:space="preserve"><value>退出</value></data>
   <data name="Backup_Title" xml:space="preserve"><value>设置备份与还原</value></data>
   <data name="Backup_Desc" xml:space="preserve"><value># 可手动备份当前设置或还原之前的备份，自动更新前也会自动备份</value></data>
