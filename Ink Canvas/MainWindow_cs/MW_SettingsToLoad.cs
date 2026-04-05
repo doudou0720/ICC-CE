@@ -37,9 +37,6 @@ namespace Ink_Canvas
         /// <param name="skipAutoUpdateCheck">指示是否跳过自动更新检查；为 true 时不会在加载设置后执行自动更新检测。</param>
         private void LoadSettings(bool isStartup = false, bool skipAutoUpdateCheck = false)
         {
-            BeginDeferredSettingsSaveDuringLoad();
-            try
-            {
             AppVersionTextBlock.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             try
             {
@@ -451,6 +448,12 @@ namespace Ink_Canvas
                     BtnHitokotoCustomize.Visibility = Settings.Appearance.ChickenSoupSource == 3
                         ? Visibility.Visible
                         : Visibility.Collapsed;
+                }
+
+                // 初始化HitokotoCategories，如果为空则默认全选
+                if (Settings.Appearance.HitokotoCategories == null || Settings.Appearance.HitokotoCategories.Count == 0)
+                {
+                    Settings.Appearance.HitokotoCategories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
                 }
 
                 ToggleSwitchEnableQuickPanel.IsOn = Settings.Appearance.IsShowQuickPanel;
@@ -1319,11 +1322,6 @@ namespace Ink_Canvas
 
             // 刷新配置文件列表
             try { RefreshConfigProfileList(); } catch (Exception ex) { LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Warning); }
-            }
-            finally
-            {
-                EndDeferredSettingsSaveDuringLoad();
-            }
         }
 
         /// <summary>
