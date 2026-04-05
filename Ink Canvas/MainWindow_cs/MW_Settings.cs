@@ -1,4 +1,4 @@
-using Hardcodet.Wpf.TaskbarNotification;
+using H.NotifyIcon;
 using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using OSVersionExtension;
@@ -1209,17 +1209,12 @@ namespace Ink_Canvas
                             return;
                         }
 
-                        // 构建API URL，包含选中的分类参数
-                        var categories = Settings.Appearance.HitokotoCategories;
-                        if (categories == null || categories.Count == 0)
-                        {
-                            // 如果没有选中任何分类，默认全选
-                            categories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
-                            Settings.Appearance.HitokotoCategories = categories;
-                        }
+                        var cats = Settings.Appearance.HitokotoCategories;
+                        if (cats == null || cats.Count == 0)
+                            cats = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
 
                         var urlBuilder = new StringBuilder("https://v1.hitokoto.cn/?encode=text");
-                        foreach (var category in categories)
+                        foreach (var category in cats)
                         {
                             urlBuilder.Append($"&c={category}");
                         }
@@ -1266,8 +1261,13 @@ namespace Ink_Canvas
         /// </remarks>
         private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
+            if (_suppressChickenSoupSourceSelectionChanged) return;
             if (!isLoaded) return;
-            Settings.Appearance.ChickenSoupSource = ComboBoxChickenSoupSource.SelectedIndex;
+            int idx = ComboBoxChickenSoupSource.SelectedIndex;
+            if (idx < 0) return;
+            if (Settings.Appearance.ChickenSoupSource == idx) return;
+
+            Settings.Appearance.ChickenSoupSource = idx;
 
             if (BtnHitokotoCustomize != null)
             {
@@ -1317,6 +1317,9 @@ namespace Ink_Canvas
             // 存储各个分类的复选框
             var categoryCheckBoxes = new Dictionary<string, CheckBox>();
 
+            var savedHitokoto = Settings.Appearance.HitokotoCategories;
+            bool implicitAllCategories = savedHitokoto == null || savedHitokoto.Count == 0;
+
             // 创建分类复选框
             foreach (var category in categories)
             {
@@ -1326,7 +1329,7 @@ namespace Ink_Canvas
                     Tag = category.Key,
                     FontSize = 13,
                     FontFamily = new FontFamily("Microsoft YaHei UI"),
-                    IsChecked = Settings.Appearance.HitokotoCategories.Contains(category.Key),
+                    IsChecked = implicitAllCategories || savedHitokoto.Contains(category.Key),
                     Margin = new Thickness(0, 0, 0, 8)
                 };
                 categoryCheckBoxes[category.Key] = checkBox;
@@ -1335,7 +1338,7 @@ namespace Ink_Canvas
 
             // 全选复选框逻辑
             bool isUpdatingSelectAll = false;
-            selectAllCheckBox.IsChecked = Settings.Appearance.HitokotoCategories.Count == categories.Count;
+            selectAllCheckBox.IsChecked = implicitAllCategories || savedHitokoto.Count == categories.Count;
 
             selectAllCheckBox.Checked += (s, args) =>
             {
@@ -2702,6 +2705,15 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.Canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth =
+                ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth.IsOn;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchAutoStraightenLine_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -3859,7 +3871,8 @@ namespace Ink_Canvas
             Settings.InkToShape.IsInkToShapeTriangle = true;
             Settings.InkToShape.IsInkToShapeRectangle = true;
             Settings.InkToShape.IsInkToShapeRounded = true;
-
+            Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify = false;
+            Settings.InkToShape.HandwritingCorrectionFontFamily = "Ink Free,KaiTi,Segoe Script";
 
             Settings.Startup.IsEnableNibMode = false;
             Settings.Startup.IsAutoUpdate = true;
@@ -3939,6 +3952,15 @@ namespace Ink_Canvas
             if (idx < 0) idx = 0;
             if (idx > 2) idx = 2;
             Settings.InkToShape.ShapeRecognitionEngine = idx;
+            SaveSettingsToFile();
+        }
+
+        private void ToggleSwitchEnableWinRtHandwritingStrokeBeautify_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify =
+                ToggleSwitchEnableWinRtHandwritingStrokeBeautify != null &&
+                ToggleSwitchEnableWinRtHandwritingStrokeBeautify.IsOn;
             SaveSettingsToFile();
         }
 

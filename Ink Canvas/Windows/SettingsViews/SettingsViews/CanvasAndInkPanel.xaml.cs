@@ -101,6 +101,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 插入图片时自动压缩
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchCompressPicturesUploaded"), canvas.IsCompressPicturesUploaded);
 
+                // 白板展台按钮启动希沃视频展台
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth"), canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth);
+
                 // 保留双曲线渐近线
                 SetOptionButtonState("HyperbolaAsymptote", (int)canvas.HyperbolaAsymptoteOption);
 
@@ -247,6 +250,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                         return canvas.EnablePressureTouchMode;
                     case "DisablePressure":
                         return canvas.DisablePressure;
+                    case "LaunchSeewoVideoShowcaseForWhiteboardBooth":
+                        return canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth;
                     case "HideStrokeWhenSelecting":
                         return canvas.HideStrokeWhenSelecting;
                     case "ClearCanvasAndClearTimeMachine":
@@ -340,6 +345,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                         MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePressureTouchMode", false);
                         SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnablePressureTouchMode"), false);
                     }
+                    break;
+
+                case "LaunchSeewoVideoShowcaseForWhiteboardBooth":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled(
+                        "ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth", newState);
                     break;
 
                 case "HideStrokeWhenSelecting":

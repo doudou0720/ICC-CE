@@ -1,5 +1,4 @@
 using Ink_Canvas.Helpers;
-using Ink_Canvas.Helpers.Plugins;
 using Ink_Canvas.Windows;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
@@ -82,6 +81,8 @@ namespace Ink_Canvas
 
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
+
+        internal static DateTime? TrayTemporaryShowUntilUtc;
 
         #region Window Initialization
 
@@ -1165,6 +1166,7 @@ namespace Ink_Canvas
         public static Settings Settings = new Settings();
         public static string settingsFileName = Path.Combine("Configs", "Settings.json");
         private bool isLoaded;
+        private bool _suppressChickenSoupSourceSelectionChanged;
         private bool forcePointEraser;
 
         /// <summary>
@@ -1365,8 +1367,6 @@ namespace Ink_Canvas
                 }), DispatcherPriority.Loaded);
             }
 
-            // 初始化插件系统
-            InitializePluginSystem();
             // 确保开关和设置同步
             ToggleSwitchNoFocusMode.IsOn = Settings.Advanced.IsNoFocusMode;
             ApplyNoFocusMode();
@@ -1409,6 +1409,7 @@ namespace Ink_Canvas
 
             // 检查模式设置并应用
             CheckMainWindowVisibility();
+            EnsurePptOnlyVisibilityProbeTimer();
 
             // 检查是否通过--board参数启动，如果是则自动切换到白板模式
             if (App.StartWithBoardMode)
@@ -2577,9 +2578,6 @@ namespace Ink_Canvas
                 case "about":
                     targetGroupBox = GroupBoxAbout;
                     break;
-                case "plugins":
-                    targetGroupBox = GroupBoxPlugins;
-                    break;
                 default:
                     // 默认滚动到顶部
                     SettingsPanelScrollViewer.ScrollToTop();
@@ -2727,9 +2725,6 @@ namespace Ink_Canvas
                 case "about":
                     SetNavButtonTag("about");
                     break;
-                case "plugins":
-                    SetNavButtonTag("plugins");
-                    break;
             }
         }
 
@@ -2815,64 +2810,6 @@ namespace Ink_Canvas
         }
 
         #endregion Navigation Sidebar Methods
-
-        #region 插件???
-
-        // 添加插件系统初始化方法
-        private void InitializePluginSystem()
-        {
-            try
-            {
-                // 初始化插件管理器
-                PluginManager.Instance.Initialize();
-                LogHelper.WriteLogToFile("插件系统已初始化");
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化插件系统时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        // 添加插件管理导航点击事件处理
-        private void NavPlugins_Click(object sender, RoutedEventArgs e)
-        {
-            ShowSettingsSection("plugins");
-        }
-
-        // 添加打开插件管理器按钮点击事件
-        private void BtnOpenPluginManager_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 暂时隐藏设置面板
-                BorderSettings.Visibility = Visibility.Hidden;
-                BorderSettingsMask.Visibility = Visibility.Hidden;
-
-                // 创建并显示插件设置窗口
-                PluginSettingsWindow pluginSettingsWindow = new PluginSettingsWindow();
-
-                // 设置窗口关闭事件，用于在插件管理窗口关闭后恢复设置面板
-                pluginSettingsWindow.Closed += (s, args) =>
-                {
-                    // 恢复设置面板显示
-                    BorderSettings.Visibility = Visibility.Visible;
-                    BorderSettingsMask.Visibility = Visibility.Visible;
-                };
-
-                // 显示插件设置窗口
-                pluginSettingsWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                // 确保在发生错误时也恢复设置面板显示
-                BorderSettings.Visibility = Visibility.Visible;
-                BorderSettingsMask.Visibility = Visibility.Visible;
-
-                LogHelper.WriteLogToFile($"打开插件管理器时出错: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"打开插件管理器时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        #endregion 插件???
 
         #region 新设置窗口
 
@@ -4455,9 +4392,11 @@ namespace Ink_Canvas
                     {
                         Hide();
                         LogHelper.WriteLogToFile("已切换到仅PPT模式，主窗口已隐藏", LogHelper.LogType.Event);
+                        EnsurePptOnlyVisibilityProbeTimer();
                     }
                     else
                     {
+                        StopPptOnlyVisibilityProbeTimer();
                         // 如果切换到正常模式，显示主窗口
                         Show();
                         LogHelper.WriteLogToFile("已切换到正常模式，主窗口已显示", LogHelper.LogType.Event);
@@ -4473,14 +4412,23 @@ namespace Ink_Canvas
         /// <summary>
         /// 检查是否应该显示主窗口（基于PPT模式和PPT放映状态）
         /// </summary>
-        private void CheckMainWindowVisibility()
+        internal void CheckMainWindowVisibility()
         {
             try
             {
                 if (Settings.ModeSettings.IsPPTOnlyMode)
                 {
-                    // 仅PPT模式下，只有在PPT放映时才显示
-                    bool isInSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    if (TrayTemporaryShowUntilUtc.HasValue && DateTime.UtcNow < TrayTemporaryShowUntilUtc.Value)
+                    {
+                        if (!IsVisible)
+                            Show();
+                        return;
+                    }
+
+                    // 仅PPT模式：以 COM/UI 状态为主，Win32 检测全屏放映窗口（screenClass）作兜底，避免 COM 异常时无法唤出
+                    bool comUiSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    bool win32SlideShow = IsPowerPointSlideshowSurfacePresentWin32();
+                    bool isInSlideShow = comUiSlideShow || win32SlideShow;
                     if (isInSlideShow && !IsVisible)
                     {
                         Show();

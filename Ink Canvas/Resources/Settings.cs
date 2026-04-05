@@ -147,9 +147,13 @@ namespace Ink_Canvas
         [JsonProperty("eraserAutoSwitchBackDelaySeconds")]
         public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
         [JsonProperty("velocityBrushTipMix")]
-        public double VelocityBrushTipMix { get; set; } = 0.22;
+        public double VelocityBrushTipMix { get; set; } = 0.45;
         [JsonProperty("enableVelocityBrushTip")]
         public bool EnableVelocityBrushTip { get; set; }
+
+        /// <summary>为 true 时，白板工具栏「展台」按钮启动希沃视频展台（sweclauncher），否则使用内置展台。</summary>
+        [JsonProperty("launchSeewoVideoShowcaseForWhiteboardBooth")]
+        public bool LaunchSeewoVideoShowcaseForWhiteboardBooth { get; set; } = false;
 
     }
 
@@ -294,8 +298,8 @@ namespace Ink_Canvas
         public bool IsShowQuickPanel { get; set; } = true;
         [JsonProperty("chickenSoupSource")]
         public int ChickenSoupSource { get; set; } = 1;
-        [JsonProperty("hitokotoCategories")]
-        public List<string> HitokotoCategories { get; set; } = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" }; // 默认全选所有分类
+        [JsonProperty("hitokotoCategories", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> HitokotoCategories { get; set; }
         [JsonProperty("isShowModeFingerToggleSwitch")]
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]
@@ -747,12 +751,12 @@ namespace Ink_Canvas
         public double LineStraightenSensitivity { get; set; } = 0.20;
         [JsonProperty("lineNormalizationThreshold")]
         public double LineNormalizationThreshold { get; set; } = 0.5;
-
-        /// <summary>
-        /// 形状识别后端：0=自动（x64 用 WinRT，x86 用 IACore），1=IACore，2=WinRT。
-        /// </summary>
         [JsonProperty("shapeRecognitionEngine")]
         public int ShapeRecognitionEngine { get; set; }
+        [JsonProperty("enableWinRtHandwritingStrokeBeautify")]
+        public bool EnableWinRtHandwritingStrokeBeautify { get; set; }
+        [JsonProperty("handwritingCorrectionFontFamily")]
+        public string HandwritingCorrectionFontFamily { get; set; } = "Ink Free,KaiTi,Segoe Script";
     }
 
     public class RandSettings

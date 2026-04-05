@@ -150,15 +150,6 @@
                 </StackPanel>
             </Border>
             
-            <!-- 插件管理 -->
-            <Border Margin="0,25,0,0" BorderBrush="#e6e6e6" BorderThickness="1.25,1.25,1.25,4" CornerRadius="8">
-                <StackPanel Orientation="Vertical" Margin="18,18,18,18">
-                    <TextBlock Text="通过插件扩展InkCanvas的功能。您可以启用或禁用插件，或加载自定义插件。" 
-                               TextWrapping="Wrap" Foreground="#9a9996" FontSize="11" Margin="0,0,0,12"/>
-                    <Button x:Name="BtnOpenPluginManager" Content="打开插件管理器" 
-                            HorizontalAlignment="Left" Padding="15,5"/>
-                </StackPanel>
-            </Border>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

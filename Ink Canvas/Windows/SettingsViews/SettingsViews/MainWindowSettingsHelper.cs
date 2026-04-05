@@ -419,6 +419,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "ToggleSwitchShowCursor", "CanvasAndInkPanel" },
                 { "ToggleSwitchDisablePressure", "CanvasAndInkPanel" },
                 { "ToggleSwitchEnablePressureTouchMode", "CanvasAndInkPanel" },
+                { "ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth", "CanvasAndInkPanel" },
                 { "ComboBoxEraserSize", "CanvasAndInkPanel" },
                 { "ComboBoxHyperbolaAsymptoteOption", "CanvasAndInkPanel" },
                 { "ComboBoxAutoSaveStrokesInterval", "CanvasAndInkPanel" },

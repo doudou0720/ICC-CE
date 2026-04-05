@@ -370,7 +370,7 @@ namespace Ink_Canvas
         /// <param name="autoAlignCenter">
         ///     是否自動居中浮動工具欄
         /// </param>
-        private async void HideSubPanels(string mode = null, bool autoAlignCenter = false)
+        internal async void HideSubPanels(string mode = null, bool autoAlignCenter = false)
         {
             AnimationsHelper.HideWithSlideAndFade(BorderTools);
             AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
@@ -3177,7 +3177,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="sender">发送者</param>
         /// <param name="e">路由事件参数</param>
-        private async void BtnSettings_Click(object sender, RoutedEventArgs e)
+        internal async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
             {
