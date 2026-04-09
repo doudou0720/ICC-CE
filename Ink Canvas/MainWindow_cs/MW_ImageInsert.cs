@@ -30,15 +30,19 @@ namespace Ink_Canvas
         public Bitmap CameraImage;
         public BitmapSource CameraBitmapSource;
         public bool AddToWhiteboard;
+        public bool IncludeInk;
+        public BitmapSource InkOverlayBitmapSource;
 
         public ScreenshotResult(Rectangle area, List<Point> path = null, Bitmap cameraImage = null,
-            BitmapSource cameraBitmapSource = null, bool addToWhiteboard = false)
+            BitmapSource cameraBitmapSource = null, bool addToWhiteboard = false, bool includeInk = false, BitmapSource inkOverlayBitmapSource = null)
         {
             Area = area;
             Path = path;
             CameraImage = cameraImage;
             CameraBitmapSource = cameraBitmapSource;
             AddToWhiteboard = addToWhiteboard;
+            IncludeInk = includeInk;
+            InkOverlayBitmapSource = inkOverlayBitmapSource;
         }
     }
 
@@ -60,6 +64,8 @@ namespace Ink_Canvas
         {
             try
             {
+                var inkOverlayPreview = CreateInkOverlayPreviewBitmapSource();
+
                 // 隐藏主窗口以避免截图包含窗口本身
                 var originalVisibility = Visibility;
                 Visibility = Visibility.Hidden;
@@ -68,7 +74,7 @@ namespace Ink_Canvas
                 await Task.Delay(200);
 
                 // 启动区域选择截图
-                var screenshotResult = await ShowScreenshotSelector();
+                var screenshotResult = await ShowScreenshotSelector(inkOverlayPreview);
 
                 // 恢复窗口显示
                 Visibility = originalVisibility;
@@ -104,11 +110,33 @@ namespace Ink_Canvas
 
                                 try
                                 {
+                                    if (screenshotResult.Value.IncludeInk && screenshotResult.Value.InkOverlayBitmapSource != null)
+                                    {
+                                        var withInkBitmap = OverlayInkOnCapturedBitmap(finalBitmap, screenshotResult.Value.Area, screenshotResult.Value.InkOverlayBitmapSource);
+                                        if (withInkBitmap != null && withInkBitmap != finalBitmap)
+                                        {
+                                            if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                                            {
+                                                finalBitmap.Dispose();
+                                            }
+                                            finalBitmap = withInkBitmap;
+                                            needDisposeFinalBitmap = true;
+                                        }
+                                    }
+
                                     // 如果有路径信息，应用形状遮罩
                                     if (screenshotResult.Value.Path != null && screenshotResult.Value.Path.Count > 0)
                                     {
-                                        finalBitmap = ApplyShapeMask(originalBitmap, screenshotResult.Value.Path, screenshotResult.Value.Area);
-                                        needDisposeFinalBitmap = true; // 标记需要释放新创建的位图
+                                        var maskedBitmap = ApplyShapeMask(finalBitmap, screenshotResult.Value.Path, screenshotResult.Value.Area);
+                                        if (maskedBitmap != null && maskedBitmap != finalBitmap)
+                                        {
+                                            if (needDisposeFinalBitmap && finalBitmap != originalBitmap)
+                                            {
+                                                finalBitmap.Dispose();
+                                            }
+                                            finalBitmap = maskedBitmap;
+                                            needDisposeFinalBitmap = true; // 标记需要释放新创建的位图
+                                        }
                                     }
 
                                     // 将截图转换为WPF Image并插入到画布
@@ -199,7 +227,7 @@ namespace Ink_Canvas
         /// 2. 获取用户选择的区域或摄像头截图
         /// 3. 返回截图结果
         /// </remarks>
-        private async Task<ScreenshotResult?> ShowScreenshotSelector()
+        private async Task<ScreenshotResult?> ShowScreenshotSelector(BitmapSource inkOverlayPreview = null)
         {
             ScreenshotResult? result = null;
 
@@ -207,7 +235,7 @@ namespace Ink_Canvas
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    var selectorWindow = new ScreenshotSelectorWindow();
+                    var selectorWindow = new ScreenshotSelectorWindow(inkOverlayPreview);
                     if (selectorWindow.ShowDialog() == true)
                     {
                         // 检查是否是摄像头截图
@@ -218,7 +246,9 @@ namespace Ink_Canvas
                                 null, // 摄像头截图不需要路径
                                 null, // 不再使用Bitmap
                                 selectorWindow.CameraBitmapSource, // 摄像头BitmapSource
-                                selectorWindow.ShouldAddToWhiteboard
+                                selectorWindow.ShouldAddToWhiteboard,
+                                false,
+                                null
                             );
                         }
                         else if (selectorWindow.CameraImage != null)
@@ -228,7 +258,9 @@ namespace Ink_Canvas
                                 null, // 摄像头截图不需要路径
                                 selectorWindow.CameraImage, // 摄像头图像
                                 null,
-                                selectorWindow.ShouldAddToWhiteboard
+                                selectorWindow.ShouldAddToWhiteboard,
+                                false,
+                                null
                             );
                         }
                         else
@@ -238,7 +270,9 @@ namespace Ink_Canvas
                                 selectorWindow.SelectedPath,
                                 null,
                                 null,
-                                selectorWindow.ShouldAddToWhiteboard
+                                selectorWindow.ShouldAddToWhiteboard,
+                                selectorWindow.IncludeInkInScreenshot,
+                                selectorWindow.IncludeInkInScreenshot ? inkOverlayPreview : null
                             );
                         }
                     }
@@ -301,6 +335,127 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"截取屏幕区域失败: {ex.Message}", LogHelper.LogType.Error);
                 return null;
+            }
+        }
+
+        private BitmapSource CreateInkOverlayPreviewBitmapSource()
+        {
+            try
+            {
+                if (inkCanvas == null || inkCanvas.Strokes == null || inkCanvas.Strokes.Count == 0)
+                {
+                    return null;
+                }
+
+                if (inkCanvas.ActualWidth <= 0 || inkCanvas.ActualHeight <= 0)
+                {
+                    return null;
+                }
+
+                var virtualScreen = SystemInformation.VirtualScreen;
+                var dpiScale = GetDpiScale();
+                var virtualLeftDip = virtualScreen.Left / dpiScale;
+                var virtualTopDip = virtualScreen.Top / dpiScale;
+
+                var inkTopLeftInWindow = inkCanvas.TranslatePoint(new Point(0, 0), this);
+                var inkRectDip = new Rect(
+                    (Left + inkTopLeftInWindow.X) - virtualLeftDip,
+                    (Top + inkTopLeftInWindow.Y) - virtualTopDip,
+                    inkCanvas.ActualWidth,
+                    inkCanvas.ActualHeight);
+
+                var drawingVisual = new DrawingVisual();
+                using (var dc = drawingVisual.RenderOpen())
+                {
+                    var visualBrush = new VisualBrush(inkCanvas)
+                    {
+                        Stretch = Stretch.Fill
+                    };
+                    dc.DrawRectangle(visualBrush, null, inkRectDip);
+                }
+
+                var rtb = new RenderTargetBitmap(
+                    Math.Max(1, virtualScreen.Width),
+                    Math.Max(1, virtualScreen.Height),
+                    96,
+                    96,
+                    PixelFormats.Pbgra32);
+                rtb.Render(drawingVisual);
+                rtb.Freeze();
+                return rtb;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"创建截图墨迹预览失败: {ex.Message}", LogHelper.LogType.Warning);
+                return null;
+            }
+        }
+
+        private Bitmap OverlayInkOnCapturedBitmap(Bitmap capturedBitmap, Rectangle captureArea, BitmapSource inkOverlayBitmapSource)
+        {
+            if (capturedBitmap == null || inkOverlayBitmapSource == null)
+            {
+                return capturedBitmap;
+            }
+
+            try
+            {
+                var virtualScreen = SystemInformation.VirtualScreen;
+                var sourceRect = new Rectangle(
+                    captureArea.X - virtualScreen.X,
+                    captureArea.Y - virtualScreen.Y,
+                    captureArea.Width,
+                    captureArea.Height);
+
+                sourceRect.Intersect(new Rectangle(0, 0, inkOverlayBitmapSource.PixelWidth, inkOverlayBitmapSource.PixelHeight));
+                if (sourceRect.Width <= 0 || sourceRect.Height <= 0)
+                {
+                    return capturedBitmap;
+                }
+
+                using (var inkOverlayBitmap = ConvertBitmapSourceToBitmap(inkOverlayBitmapSource))
+                {
+                    if (inkOverlayBitmap == null)
+                    {
+                        return capturedBitmap;
+                    }
+
+                    var resultBitmap = new Bitmap(capturedBitmap.Width, capturedBitmap.Height, PixelFormat.Format32bppArgb);
+                    using (var g = Graphics.FromImage(resultBitmap))
+                    {
+                        g.DrawImage(capturedBitmap, 0, 0, capturedBitmap.Width, capturedBitmap.Height);
+
+                        var targetRect = new Rectangle(0, 0, Math.Min(sourceRect.Width, capturedBitmap.Width), Math.Min(sourceRect.Height, capturedBitmap.Height));
+                        g.DrawImage(inkOverlayBitmap, targetRect, sourceRect, GraphicsUnit.Pixel);
+                    }
+
+                    return resultBitmap;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"叠加截图墨迹失败: {ex.Message}", LogHelper.LogType.Warning);
+                return capturedBitmap;
+            }
+        }
+
+        private Bitmap ConvertBitmapSourceToBitmap(BitmapSource bitmapSource)
+        {
+            if (bitmapSource == null)
+            {
+                return null;
+            }
+
+            using (var memoryStream = new MemoryStream())
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+                encoder.Save(memoryStream);
+                memoryStream.Position = 0;
+                using (var tempBitmap = new Bitmap(memoryStream))
+                {
+                    return new Bitmap(tempBitmap);
+                }
             }
         }
 
