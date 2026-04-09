@@ -342,7 +342,12 @@ namespace Ink_Canvas
         {
             try
             {
-                if (inkCanvas == null || inkCanvas.Strokes == null || inkCanvas.Strokes.Count == 0)
+                if (inkCanvas == null)
+                {
+                    return null;
+                }
+
+                if ((inkCanvas.Strokes?.Count ?? 0) == 0 && inkCanvas.Children.Count == 0)
                 {
                     return null;
                 }
@@ -361,19 +366,18 @@ namespace Ink_Canvas
                 var inkTopLeftPx = transformToDevice.Transform(inkTopLeftDip);
                 var offsetX = inkTopLeftPx.X - virtualScreen.Left;
                 var offsetY = inkTopLeftPx.Y - virtualScreen.Top;
-                var strokes = inkCanvas.Strokes.Clone();
+                var widthPx = inkCanvas.ActualWidth * transformToDevice.M11;
+                var heightPx = inkCanvas.ActualHeight * transformToDevice.M22;
 
                 var drawingVisual = new DrawingVisual();
                 using (var dc = drawingVisual.RenderOpen())
                 {
-                    // 直接绘制墨迹，避免 VisualBrush 在不同 DPI/布局下产生轻微偏移
-                    var matrix = new System.Windows.Media.Matrix(
-                        transformToDevice.M11, 0,
-                        0, transformToDevice.M22,
-                        offsetX, offsetY);
-                    dc.PushTransform(new MatrixTransform(matrix));
-                    strokes.Draw(dc);
-                    dc.Pop();
+                    // 使用完整 InkCanvas 视觉树，确保包含图片等子元素
+                    var visualBrush = new VisualBrush(inkCanvas)
+                    {
+                        Stretch = Stretch.Fill
+                    };
+                    dc.DrawRectangle(visualBrush, null, new Rect(offsetX, offsetY, widthPx, heightPx));
                 }
 
                 var rtb = new RenderTargetBitmap(
@@ -422,16 +426,25 @@ namespace Ink_Canvas
                         return capturedBitmap;
                     }
 
-                    var resultBitmap = new Bitmap(capturedBitmap.Width, capturedBitmap.Height, PixelFormat.Format32bppArgb);
-                    using (var g = Graphics.FromImage(resultBitmap))
+                    Bitmap resultBitmap = null;
+                    try
                     {
-                        g.DrawImage(capturedBitmap, 0, 0, capturedBitmap.Width, capturedBitmap.Height);
+                        resultBitmap = new Bitmap(capturedBitmap.Width, capturedBitmap.Height, PixelFormat.Format32bppArgb);
+                        using (var g = Graphics.FromImage(resultBitmap))
+                        {
+                            g.DrawImage(capturedBitmap, 0, 0, capturedBitmap.Width, capturedBitmap.Height);
 
-                        var targetRect = new Rectangle(0, 0, Math.Min(sourceRect.Width, capturedBitmap.Width), Math.Min(sourceRect.Height, capturedBitmap.Height));
-                        g.DrawImage(inkOverlayBitmap, targetRect, sourceRect, GraphicsUnit.Pixel);
+                            var targetRect = new Rectangle(0, 0, Math.Min(sourceRect.Width, capturedBitmap.Width), Math.Min(sourceRect.Height, capturedBitmap.Height));
+                            g.DrawImage(inkOverlayBitmap, targetRect, sourceRect, GraphicsUnit.Pixel);
+                        }
+
+                        return resultBitmap;
                     }
-
-                    return resultBitmap;
+                    catch
+                    {
+                        resultBitmap?.Dispose();
+                        throw;
+                    }
                 }
             }
             catch (Exception ex)
