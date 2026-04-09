@@ -359,21 +359,21 @@ namespace Ink_Canvas
                 // PointToScreen 返回WPF坐标（DIP），统一转换为设备像素后再与 VirtualScreen 对齐
                 var inkTopLeftDip = inkCanvas.PointToScreen(new Point(0, 0));
                 var inkTopLeftPx = transformToDevice.Transform(inkTopLeftDip);
-
-                var inkRectPx = new Rect(
-                    Math.Round(inkTopLeftPx.X - virtualScreen.Left),
-                    Math.Round(inkTopLeftPx.Y - virtualScreen.Top),
-                    Math.Round(inkCanvas.ActualWidth * transformToDevice.M11),
-                    Math.Round(inkCanvas.ActualHeight * transformToDevice.M22));
+                var offsetX = inkTopLeftPx.X - virtualScreen.Left;
+                var offsetY = inkTopLeftPx.Y - virtualScreen.Top;
+                var strokes = inkCanvas.Strokes.Clone();
 
                 var drawingVisual = new DrawingVisual();
                 using (var dc = drawingVisual.RenderOpen())
                 {
-                    var visualBrush = new VisualBrush(inkCanvas)
-                    {
-                        Stretch = Stretch.Fill
-                    };
-                    dc.DrawRectangle(visualBrush, null, inkRectPx);
+                    // 直接绘制墨迹，避免 VisualBrush 在不同 DPI/布局下产生轻微偏移
+                    var matrix = new Matrix(
+                        transformToDevice.M11, 0,
+                        0, transformToDevice.M22,
+                        offsetX, offsetY);
+                    dc.PushTransform(new MatrixTransform(matrix));
+                    strokes.Draw(dc);
+                    dc.Pop();
                 }
 
                 var rtb = new RenderTargetBitmap(
