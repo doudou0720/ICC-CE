@@ -354,7 +354,7 @@ namespace Ink_Canvas
 
                 var virtualScreen = SystemInformation.VirtualScreen;
                 var source = PresentationSource.FromVisual(inkCanvas);
-                var transformToDevice = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
+                var transformToDevice = source?.CompositionTarget?.TransformToDevice ?? System.Windows.Media.Matrix.Identity;
 
                 // PointToScreen 返回WPF坐标（DIP），统一转换为设备像素后再与 VirtualScreen 对齐
                 var inkTopLeftDip = inkCanvas.PointToScreen(new Point(0, 0));
@@ -367,7 +367,7 @@ namespace Ink_Canvas
                 using (var dc = drawingVisual.RenderOpen())
                 {
                     // 直接绘制墨迹，避免 VisualBrush 在不同 DPI/布局下产生轻微偏移
-                    var matrix = new Matrix(
+                    var matrix = new System.Windows.Media.Matrix(
                         transformToDevice.M11, 0,
                         0, transformToDevice.M22,
                         offsetX, offsetY);
