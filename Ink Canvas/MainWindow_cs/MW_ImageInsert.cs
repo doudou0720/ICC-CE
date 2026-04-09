@@ -353,16 +353,18 @@ namespace Ink_Canvas
                 }
 
                 var virtualScreen = SystemInformation.VirtualScreen;
-                var dpiScale = GetDpiScale();
-                var virtualLeftDip = virtualScreen.Left / dpiScale;
-                var virtualTopDip = virtualScreen.Top / dpiScale;
+                var source = PresentationSource.FromVisual(inkCanvas);
+                var transformToDevice = source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
 
-                var inkTopLeftInWindow = inkCanvas.TranslatePoint(new Point(0, 0), this);
-                var inkRectDip = new Rect(
-                    (Left + inkTopLeftInWindow.X) - virtualLeftDip,
-                    (Top + inkTopLeftInWindow.Y) - virtualTopDip,
-                    inkCanvas.ActualWidth,
-                    inkCanvas.ActualHeight);
+                // PointToScreen 返回WPF坐标（DIP），统一转换为设备像素后再与 VirtualScreen 对齐
+                var inkTopLeftDip = inkCanvas.PointToScreen(new Point(0, 0));
+                var inkTopLeftPx = transformToDevice.Transform(inkTopLeftDip);
+
+                var inkRectPx = new Rect(
+                    Math.Round(inkTopLeftPx.X - virtualScreen.Left),
+                    Math.Round(inkTopLeftPx.Y - virtualScreen.Top),
+                    Math.Round(inkCanvas.ActualWidth * transformToDevice.M11),
+                    Math.Round(inkCanvas.ActualHeight * transformToDevice.M22));
 
                 var drawingVisual = new DrawingVisual();
                 using (var dc = drawingVisual.RenderOpen())
@@ -371,15 +373,14 @@ namespace Ink_Canvas
                     {
                         Stretch = Stretch.Fill
                     };
-                    dc.DrawRectangle(visualBrush, null, inkRectDip);
+                    dc.DrawRectangle(visualBrush, null, inkRectPx);
                 }
 
-                var dpi = 96.0 * dpiScale;
                 var rtb = new RenderTargetBitmap(
                     Math.Max(1, virtualScreen.Width),
                     Math.Max(1, virtualScreen.Height),
-                    dpi,
-                    dpi,
+                    96,
+                    96,
                     PixelFormats.Pbgra32);
                 rtb.Render(drawingVisual);
                 rtb.Freeze();
