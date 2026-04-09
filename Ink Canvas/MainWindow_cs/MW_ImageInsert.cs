@@ -374,11 +374,12 @@ namespace Ink_Canvas
                     dc.DrawRectangle(visualBrush, null, inkRectDip);
                 }
 
+                var dpi = 96.0 * dpiScale;
                 var rtb = new RenderTargetBitmap(
                     Math.Max(1, virtualScreen.Width),
                     Math.Max(1, virtualScreen.Height),
-                    96,
-                    96,
+                    dpi,
+                    dpi,
                     PixelFormats.Pbgra32);
                 rtb.Render(drawingVisual);
                 rtb.Freeze();

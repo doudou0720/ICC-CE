@@ -155,7 +155,8 @@
                           Foreground="White"
                           Checked="IncludeInkCheckBox_Checked"
                           Unchecked="IncludeInkCheckBox_Unchecked" />
-                <Rectangle Width="1"
+                <Rectangle Name="ToolbarDividerRectangle"
+                           Width="1"
                            Height="20"
                            Fill="#404040"
                            Margin="8,0" />

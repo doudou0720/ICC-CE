@@ -628,10 +628,12 @@ namespace Ink_Canvas
             if (hitElement != null && (
                 hitElement is Ellipse ||
                 hitElement is System.Windows.Controls.Button ||
+                hitElement is System.Windows.Controls.CheckBox ||
                 hitElement is Border ||
                 hitElement is TextBlock ||
                 hitElement is StackPanel ||
                 hitElement is Separator ||
+                hitElement.Name == "ToolbarDividerRectangle" ||
                 hitElement.Name == "SizeInfoBorder" ||
                 hitElement.Name == "HintText" ||
                 hitElement.Name == "AdjustModeHint" ||
@@ -719,10 +721,12 @@ namespace Ink_Canvas
             if (hitElement != null && (
                 hitElement is Ellipse ||
                 hitElement is System.Windows.Controls.Button ||
+                hitElement is System.Windows.Controls.CheckBox ||
                 hitElement is Border ||
                 hitElement is TextBlock ||
                 hitElement is StackPanel ||
                 hitElement is Separator ||
+                hitElement.Name == "ToolbarDividerRectangle" ||
                 hitElement.Name == "SizeInfoBorder" ||
                 hitElement.Name == "HintText" ||
                 hitElement.Name == "AdjustModeHint"))
