@@ -218,14 +218,17 @@ namespace Ink_Canvas
         }
 
         /// <summary>
-        /// 显示截图区域选择器
+        /// 显示截图区域选择器并返回用户的截图结果（区域截图或摄像头截图）。
         /// </summary>
-        /// <returns>截图结果，包含区域、路径和摄像头截图信息</returns>
+        /// <param name="inkOverlayPreview">当用户选择包含墨迹的区域截图时，用于作为墨迹叠加的预览 <see cref="BitmapSource"/>；可为 <c>null</c>。</param>
+        /// <returns>若用户确认截图则返回 <see cref="ScreenshotResult"/>，否则返回 <c>null</c>。返回的结果可能为摄像头截图或区域截图，摄像头截图会包含 <see cref="ScreenshotResult.CameraBitmapSource"/> 或 <see cref="ScreenshotResult.CameraImage"/>，区域截图会包含有效的区域与路径。</returns>
         /// <remarks>
         /// 该方法会：
-        /// 1. 显示截图选择器窗口
-        /// 2. 获取用户选择的区域或摄像头截图
-        /// 3. 返回截图结果
+        /// 1. 在 UI 线程（通过 <see cref="Application.Current.Dispatcher"/>）上显示截图选择器窗口 <see cref="ScreenshotSelectorWindow"/>；
+        /// 2. 获取用户选择的区域截图或摄像头截图；
+        /// 3. 根据用户选择构建并返回 <see cref="ScreenshotResult"/>；
+        /// 4. 若用户取消对话框或未确认截图，返回 <c>null</c>；
+        /// 5. 方法内部捕获异常并记录日志（不会向调用方抛出异常），如需外部处理请调整实现以重新抛出或传回错误信息。
         /// </remarks>
         private async Task<ScreenshotResult?> ShowScreenshotSelector(BitmapSource inkOverlayPreview = null)
         {
