@@ -1180,6 +1180,7 @@ namespace Ink_Canvas
             loadPenCanvas();
             //加载设置
             LoadSettings(true);
+            ShowNetCompatibilityChangePromptIfNeeded();
             ApplyLanguageFromSettings();
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
@@ -1499,6 +1500,27 @@ namespace Ink_Canvas
                 }
             }), DispatcherPriority.Loaded);
             AddTouchSupportToSliders();
+        }
+
+        private void ShowNetCompatibilityChangePromptIfNeeded()
+        {
+            try
+            {
+                if (Settings?.Startup?.HasConfirmedNetCompatibilityChange == true)
+                {
+                    return;
+                }
+
+                MessageBox.Show(
+                    "下个版本将更换.NET6，请前往设置确认以便继续使用自动更新",
+                    "兼容性变更",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"兼容性变更提示弹窗失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
         private void ApplyLanguageFromSettings()
@@ -1917,6 +1939,12 @@ namespace Ink_Canvas
 
         private async void AutoUpdate()
         {
+            if (Settings?.Startup?.HasConfirmedNetCompatibilityChange != true)
+            {
+                LogHelper.WriteLogToFile("AutoUpdate | 自动更新已暂停：未确认兼容性变更（NET472 -> .NET6）", LogHelper.LogType.Warning);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
             {
                 if (DateTime.TryParse(Settings.Startup.AutoUpdatePauseUntilDate, out DateTime pauseUntilDate))

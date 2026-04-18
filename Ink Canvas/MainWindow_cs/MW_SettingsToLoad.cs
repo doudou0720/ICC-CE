@@ -267,7 +267,7 @@ namespace Ink_Canvas
                 ToggleSwitchIsAutoUpdate.IsOn = Settings.Startup.IsAutoUpdate;
 
                 // 只有在启用了自动更新功能时才检查更新
-                if (Settings.Startup.IsAutoUpdate && !skipAutoUpdateCheck)
+                if (Settings.Startup.IsAutoUpdate && Settings.Startup.HasConfirmedNetCompatibilityChange && !skipAutoUpdateCheck)
                 {
                     if (isStartup)
                     {
@@ -287,6 +287,8 @@ namespace Ink_Canvas
                 {
                     ToggleSwitchIsAutoUpdateWithSilence.IsOn = true;
                 }
+
+                ApplyNetCompatibilityConfirmationGateToUpdateSettingsUi();
 
                 // 初始化更新通道选择
                 foreach (var radioButton in UpdateChannelSelector.Items)
@@ -1315,6 +1317,26 @@ namespace Ink_Canvas
 
             // 刷新配置文件列表
             try { RefreshConfigProfileList(); } catch (Exception ex) { LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Warning); }
+        }
+
+        private void ApplyNetCompatibilityConfirmationGateToUpdateSettingsUi()
+        {
+            bool confirmed = Settings?.Startup?.HasConfirmedNetCompatibilityChange == true;
+
+            if (Net472CompatibilityWarningPanel != null)
+            {
+                Net472CompatibilityWarningPanel.Visibility = confirmed ? Visibility.Collapsed : Visibility.Visible;
+            }
+
+            if (ToggleSwitchIsAutoUpdate != null)
+            {
+                ToggleSwitchIsAutoUpdate.IsEnabled = confirmed;
+            }
+
+            if (ToggleSwitchIsAutoUpdateWithSilence != null)
+            {
+                ToggleSwitchIsAutoUpdateWithSilence.IsEnabled = confirmed;
+            }
         }
 
         /// <summary>

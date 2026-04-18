@@ -624,6 +624,65 @@
                                     </ikw:SimpleStackPanel>
                                 </ikw:SimpleStackPanel>
                             </Border>
+                            
+                            <Border x:Name="Net472CompatibilityWarningPanel"
+                                    Background="#FFFFF4C2"
+                                    BorderBrush="#FFF0C24B"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="14,12"
+                                    Margin="0,14,0,0"
+                                    Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               TextWrapping="Wrap"
+                                               Foreground="#FF2A2A2A"
+                                               FontSize="14"
+                                               Text="此版本为最后一个基于.net framework 4.7.2版本，您需要手动确认才能继续接受自动更新。" />
+                                    <Button Grid.Column="1"
+                                            Margin="14,0,0,0"
+                                            Padding="18,6"
+                                            MinWidth="92"
+                                            Click="ConfirmNetCompatibilityChangeButton_Click"
+                                            Background="#FFF0C24B"
+                                            BorderBrush="#FFE0A800"
+                                            Foreground="#FF1F1F1F"
+                                            Content="确认">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border x:Name="Bd"
+                                                        Background="{TemplateBinding Background}"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="8"
+                                                        SnapsToDevicePixels="True">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"
+                                                                      RecognizesAccessKey="True"
+                                                                      Margin="{TemplateBinding Padding}" />
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#FFE9B53C" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#FFDCA628" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#FFE7E7E7" />
+                                                        <Setter Property="Foreground" Value="#FF7A7A7A" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Border>
+                            
                             <GroupBox Name="GroupBoxModeSettings">
                                 <GroupBox.Header>
                                     <TextBlock Margin="0,12,0,0" Text="{i18n:I18n Key=Settings_Mode}" FontWeight="Bold" Foreground="#fafafa"

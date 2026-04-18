@@ -617,6 +617,18 @@ namespace Ink_Canvas
         private void ToggleSwitchIsAutoUpdate_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
+
+            if (ToggleSwitchIsAutoUpdate.IsOn && Settings?.Startup?.HasConfirmedNetCompatibilityChange != true)
+            {
+                ToggleSwitchIsAutoUpdate.IsOn = false;
+                MessageBox.Show(
+                    "此版本为最后一个NET472版本，您需要手动确认才能继续接受自动更新。",
+                    "兼容性变更",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             Settings.Startup.IsAutoUpdate = ToggleSwitchIsAutoUpdate.IsOn;
 
             // 自动更新关闭时隐藏静默更新选项
@@ -651,6 +663,18 @@ namespace Ink_Canvas
         private void ToggleSwitchIsAutoUpdateWithSilence_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
+
+            if (ToggleSwitchIsAutoUpdateWithSilence.IsOn && Settings?.Startup?.HasConfirmedNetCompatibilityChange != true)
+            {
+                ToggleSwitchIsAutoUpdateWithSilence.IsOn = false;
+                MessageBox.Show(
+                    "此版本为最后一个NET472版本，您需要手动确认才能继续接受自动更新。",
+                    "兼容性变更",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             Settings.Startup.IsAutoUpdateWithSilence = ToggleSwitchIsAutoUpdateWithSilence.IsOn;
 
             // 静默更新的时间设置区域只在静默更新开启时显示
@@ -5303,7 +5327,7 @@ namespace Ink_Canvas
                 SaveSettingsToFile();
 
                 // 如果启用了自动更新，立即执行完整的检查更新操作
-                if (Settings.Startup.IsAutoUpdate)
+                if (Settings.Startup.IsAutoUpdate && Settings.Startup.HasConfirmedNetCompatibilityChange)
                 {
                     LogHelper.WriteLogToFile($"AutoUpdate | Channel changed to {newChannel}, performing immediate update check");
                     ResetUpdateCheckRetry();
@@ -5329,6 +5353,39 @@ namespace Ink_Canvas
                 {
                     LogHelper.WriteLogToFile($"AutoUpdate | Channel changed to {newChannel}, but auto-update is disabled");
                 }
+            }
+        }
+
+        private void ConfirmNetCompatibilityChangeButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (Settings?.Startup == null)
+                {
+                    Settings.Startup = new Startup();
+                }
+
+                Settings.Startup.HasConfirmedNetCompatibilityChange = true;
+                SaveSettingsToFile();
+
+                if (Net472CompatibilityWarningPanel != null)
+                {
+                    Net472CompatibilityWarningPanel.Visibility = Visibility.Collapsed;
+                }
+
+                if (ToggleSwitchIsAutoUpdate != null)
+                {
+                    ToggleSwitchIsAutoUpdate.IsEnabled = true;
+                }
+
+                if (ToggleSwitchIsAutoUpdateWithSilence != null)
+                {
+                    ToggleSwitchIsAutoUpdateWithSilence.IsEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"确认兼容性变更失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
