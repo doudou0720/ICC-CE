@@ -5360,13 +5360,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (Settings?.Startup == null)
-                {
-                    Settings.Startup = new Startup();
-                }
-
-                Settings.Startup.HasConfirmedNetCompatibilityChange = true;
-                SaveSettingsToFile();
+                PersistNetCompatibilityChangeConfirmation();
 
                 if (Net472CompatibilityWarningPanel != null)
                 {

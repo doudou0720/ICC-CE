@@ -1180,7 +1180,7 @@ namespace Ink_Canvas
             loadPenCanvas();
             //加载设置
             LoadSettings(true);
-            ShowNetCompatibilityChangePromptIfNeeded();
+            ScheduleNetCompatibilityChangePromptAfterStartup();
             ApplyLanguageFromSettings();
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
@@ -1506,7 +1506,7 @@ namespace Ink_Canvas
         {
             try
             {
-                if (Settings?.Startup?.HasConfirmedNetCompatibilityChange == true)
+                if (IsNetCompatibilityChangeConfirmed())
                 {
                     return;
                 }
@@ -1521,6 +1521,87 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"兼容性变更提示弹窗失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private void ScheduleNetCompatibilityChangePromptAfterStartup()
+        {
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try
+                {
+                    // 等待主窗口启动流程与初始渲染基本完成后再提示，避免“刚启动就弹窗”。
+                    await Task.Delay(1000);
+                    ShowNetCompatibilityChangePromptIfNeeded();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"延迟显示兼容性变更提示失败: {ex.Message}", LogHelper.LogType.Error);
+                }
+            }), DispatcherPriority.ApplicationIdle);
+        }
+
+        private string GetNetCompatibilityConfirmationFlagPath()
+        {
+            return Path.Combine(App.RootPath, "Configs", "NetCompatibilityConfirmed.flag");
+        }
+
+        private bool IsNetCompatibilityChangeConfirmed()
+        {
+            if (Settings?.Startup?.HasConfirmedNetCompatibilityChange == true)
+            {
+                return true;
+            }
+
+            try
+            {
+                var flagPath = GetNetCompatibilityConfirmationFlagPath();
+                if (File.Exists(flagPath))
+                {
+                    if (Settings?.Startup != null && !Settings.Startup.HasConfirmedNetCompatibilityChange)
+                    {
+                        Settings.Startup.HasConfirmedNetCompatibilityChange = true;
+                        SaveSettingsToFile();
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"读取兼容性确认标记失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            return false;
+        }
+
+        private void PersistNetCompatibilityChangeConfirmation()
+        {
+            if (Settings?.Startup == null)
+            {
+                Settings.Startup = new Startup();
+            }
+
+            Settings.Startup.HasConfirmedNetCompatibilityChange = true;
+
+            try
+            {
+                var flagPath = GetNetCompatibilityConfirmationFlagPath();
+                var dir = Path.GetDirectoryName(flagPath);
+                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                if (!File.Exists(flagPath))
+                {
+                    File.WriteAllText(flagPath, "confirmed=true");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"写入兼容性确认标记失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            SaveSettingsToFile();
         }
 
         private void ApplyLanguageFromSettings()

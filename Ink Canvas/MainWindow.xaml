@@ -642,15 +642,15 @@
                                                TextWrapping="Wrap"
                                                Foreground="#FF2A2A2A"
                                                FontSize="14"
-                                               Text="此版本为最后一个基于.net framework 4.7.2版本，您需要手动确认才能继续接受自动更新。" />
+                                               Text="此版本为最后一个基于.NET Framework 4.7.2的版本，您需要手动确认才能继续接受自动更新。" />
                                     <Button Grid.Column="1"
                                             Margin="14,0,0,0"
                                             Padding="18,6"
                                             MinWidth="92"
                                             Click="ConfirmNetCompatibilityChangeButton_Click"
-                                            Background="#FFF0C24B"
-                                            BorderBrush="#FFE0A800"
-                                            Foreground="#FF1F1F1F"
+                                            Background="#FFFFFFFF"
+                                            BorderBrush="#FFE5E7EB"
+                                            Foreground="#FF111827"
                                             Content="确认">
                                         <Button.Template>
                                             <ControlTemplate TargetType="{x:Type Button}">
@@ -667,10 +667,12 @@
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Bd" Property="Background" Value="#FFE9B53C" />
+                                                        <Setter TargetName="Bd" Property="Background" Value="#FFF9FAFB" />
+                                                        <Setter TargetName="Bd" Property="BorderBrush" Value="#FFD1D5DB" />
                                                     </Trigger>
                                                     <Trigger Property="IsPressed" Value="True">
-                                                        <Setter TargetName="Bd" Property="Background" Value="#FFDCA628" />
+                                                        <Setter TargetName="Bd" Property="Background" Value="#FFF3F4F6" />
+                                                        <Setter TargetName="Bd" Property="BorderBrush" Value="#FF9CA3AF" />
                                                     </Trigger>
                                                     <Trigger Property="IsEnabled" Value="False">
                                                         <Setter TargetName="Bd" Property="Background" Value="#FFE7E7E7" />
