@@ -528,6 +528,12 @@
   <data name="InkRecog_EnableInkRecognition" xml:space="preserve">
     <value>Enable ink recognition</value>
   </data>
+  <data name="InkRecog_HandwritingBeautify" xml:space="preserve">
+    <value>Handwriting correction</value>
+  </data>
+  <data name="InkRecog_HandwritingBeautifyHint" xml:space="preserve">
+    <value># When enabled, strokes will be corrected to look smoother and neater (WinRT-based).</value>
+  </data>
   <data name="InkRecog_BlockRectFakePressure" xml:space="preserve">
     <value>Block fake pressure on corrected rectangles</value>
   </data>
@@ -956,6 +962,12 @@
   </data>
   <data name="Canvas_GroupTitle" xml:space="preserve">
     <value>Canvas and ink</value>
+  </data>
+  <data name="Canvas_DisableHardwareAcceleration" xml:space="preserve">
+    <value>Disable hardware acceleration</value>
+  </data>
+  <data name="Canvas_DisableHardwareAccelerationHint" xml:space="preserve">
+    <value># Improves compatibility but may reduce performance; some effects may require an app restart to fully apply.</value>
   </data>
   <data name="Canvas_ShowCursor" xml:space="preserve">
     <value>Show pen cursor</value>

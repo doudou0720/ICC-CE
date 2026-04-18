@@ -804,6 +804,15 @@
                                 </GroupBox.Header>
                                 <ikw:SimpleStackPanel Spacing="6">
                                     <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                        <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_DisableHardwareAcceleration}" VerticalAlignment="Center"
+                                                   FontSize="14" Margin="0,0,16,0" />
+                                        <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchDisableHardwareAcceleration"
+                                                         IsOn="False" FontFamily="Microsoft YaHei UI" FontWeight="Bold"
+                                                         Toggled="ToggleSwitchDisableHardwareAcceleration_Toggled" />
+                                    </ikw:SimpleStackPanel>
+                                    <TextBlock Text="{i18n:I18n Key=Canvas_DisableHardwareAccelerationHint}" TextWrapping="Wrap" Foreground="#a1a1aa" />
+
+                                    <ikw:SimpleStackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                         <TextBlock Foreground="#fafafa" Text="{i18n:I18n Key=Canvas_ShowCursor}" VerticalAlignment="Center"
                                                    FontSize="14" Margin="0,0,16,0" />
                                         <ui:ToggleSwitch OnContent="" OffContent="" Name="ToggleSwitchShowCursor"
