@@ -617,6 +617,18 @@ namespace Ink_Canvas
         private void ToggleSwitchIsAutoUpdate_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
+
+            if (ToggleSwitchIsAutoUpdate.IsOn && Settings?.Startup?.HasConfirmedNetCompatibilityChange != true)
+            {
+                ToggleSwitchIsAutoUpdate.IsOn = false;
+                MessageBox.Show(
+                    "此版本为最后一个NET472版本，您需要手动确认才能继续接受自动更新。",
+                    "兼容性变更",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             Settings.Startup.IsAutoUpdate = ToggleSwitchIsAutoUpdate.IsOn;
 
             // 自动更新关闭时隐藏静默更新选项
@@ -651,6 +663,18 @@ namespace Ink_Canvas
         private void ToggleSwitchIsAutoUpdateWithSilence_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
+
+            if (ToggleSwitchIsAutoUpdateWithSilence.IsOn && Settings?.Startup?.HasConfirmedNetCompatibilityChange != true)
+            {
+                ToggleSwitchIsAutoUpdateWithSilence.IsOn = false;
+                MessageBox.Show(
+                    "此版本为最后一个NET472版本，您需要手动确认才能继续接受自动更新。",
+                    "兼容性变更",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
             Settings.Startup.IsAutoUpdateWithSilence = ToggleSwitchIsAutoUpdateWithSilence.IsOn;
 
             // 静默更新的时间设置区域只在静默更新开启时显示
@@ -3331,54 +3355,15 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        // 注释掉这些方法，因为对应的UI控件还没有在XAML中定义
-        /*
-        private void ToggleSwitchAsyncInkSmoothing_Toggled(object sender, RoutedEventArgs e) {
+        private void ToggleSwitchDisableHardwareAcceleration_Toggled(object sender, RoutedEventArgs e)
+        {
             if (!isLoaded) return;
-            Settings.Canvas.UseAsyncInkSmoothing = ToggleSwitchAsyncInkSmoothing.IsOn;
+
+            Settings.Canvas.UseHardwareAcceleration = !ToggleSwitchDisableHardwareAcceleration.IsOn;
+
             _inkSmoothingManager?.UpdateConfig();
             SaveSettingsToFile();
         }
-
-        private void ToggleSwitchHardwareAcceleration_Toggled(object sender, RoutedEventArgs e) {
-            if (!isLoaded) return;
-            Settings.Canvas.UseHardwareAcceleration = ToggleSwitchHardwareAcceleration.IsOn;
-            _inkSmoothingManager?.UpdateConfig();
-            SaveSettingsToFile();
-        }
-
-        private void ComboBoxInkSmoothingQuality_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (!isLoaded) return;
-            Settings.Canvas.InkSmoothingQuality = ComboBoxInkSmoothingQuality.SelectedIndex;
-            _inkSmoothingManager?.UpdateConfig();
-            SaveSettingsToFile();
-        }
-
-        private void SliderMaxConcurrentTasks_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            if (!isLoaded) return;
-            Settings.Canvas.MaxConcurrentSmoothingTasks = (int)SliderMaxConcurrentTasks.Value;
-            _inkSmoothingManager?.UpdateConfig();
-            SaveSettingsToFile();
-        }
-
-        private void ButtonApplyRecommendedSettings_Click(object sender, RoutedEventArgs e) {
-            // 应用推荐的性能设置
-            Helpers.InkSmoothingManager.ApplyRecommendedSettings();
-            LoadSettings(false);
-            _inkSmoothingManager?.UpdateConfig();
-            SaveSettingsToFile();
-
-            ShowNotification("已应用推荐的性能设置");
-        }
-
-        private void ButtonShowPerformanceStats_Click(object sender, RoutedEventArgs e) {
-            if (_inkSmoothingManager != null)
-            {
-                var stats = _inkSmoothingManager.GetPerformanceStats();
-                ShowNotification($"性能统计: {stats}");
-            }
-        }
-        */
 
         private void ToggleSwitchAutoSaveStrokesInPowerPoint_Toggled(object sender, RoutedEventArgs e)
         {
@@ -3597,6 +3582,11 @@ namespace Ink_Canvas
                     RestoreNonStrokeElements(preservedElements);
                     isInMultiTouchMode = true;
 
+                    palmEraserWasEnabledBeforeMultiTouch = Settings.Canvas.EnablePalmEraser;
+                    Settings.Canvas.EnablePalmEraser = false;
+                    if (ToggleSwitchEnablePalmEraser != null)
+                        ToggleSwitchEnablePalmEraser.IsOn = false;
+
                     // 恢复到之前的编辑状态
                     inkCanvas.EditingMode = currentEditingMode;
                     drawingShapeMode = currentDrawingShapeMode;
@@ -3626,6 +3616,13 @@ namespace Ink_Canvas
                     // 恢复非笔画元素
                     RestoreNonStrokeElements(preservedElements);
                     isInMultiTouchMode = false;
+
+                    if (palmEraserWasEnabledBeforeMultiTouch)
+                    {
+                        Settings.Canvas.EnablePalmEraser = true;
+                        if (ToggleSwitchEnablePalmEraser != null)
+                            ToggleSwitchEnablePalmEraser.IsOn = true;
+                    }
 
                     // 恢复到之前的编辑状态
                     inkCanvas.EditingMode = currentEditingMode;
@@ -5330,7 +5327,7 @@ namespace Ink_Canvas
                 SaveSettingsToFile();
 
                 // 如果启用了自动更新，立即执行完整的检查更新操作
-                if (Settings.Startup.IsAutoUpdate)
+                if (Settings.Startup.IsAutoUpdate && Settings.Startup.HasConfirmedNetCompatibilityChange)
                 {
                     LogHelper.WriteLogToFile($"AutoUpdate | Channel changed to {newChannel}, performing immediate update check");
                     ResetUpdateCheckRetry();
@@ -5356,6 +5353,33 @@ namespace Ink_Canvas
                 {
                     LogHelper.WriteLogToFile($"AutoUpdate | Channel changed to {newChannel}, but auto-update is disabled");
                 }
+            }
+        }
+
+        private void ConfirmNetCompatibilityChangeButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                PersistNetCompatibilityChangeConfirmation();
+
+                if (Net472CompatibilityWarningPanel != null)
+                {
+                    Net472CompatibilityWarningPanel.Visibility = Visibility.Collapsed;
+                }
+
+                if (ToggleSwitchIsAutoUpdate != null)
+                {
+                    ToggleSwitchIsAutoUpdate.IsEnabled = true;
+                }
+
+                if (ToggleSwitchIsAutoUpdateWithSilence != null)
+                {
+                    ToggleSwitchIsAutoUpdateWithSilence.IsEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"确认兼容性变更失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

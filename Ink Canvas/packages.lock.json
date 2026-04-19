@@ -168,6 +168,12 @@
           "System.Text.Json": "8.0.5"
         }
       },
+      "System.Runtime.WindowsRuntime": {
+        "type": "Direct",
+        "requested": "[4.7.0, )",
+        "resolved": "4.7.0",
+        "contentHash": "RQxUkf37fp7MSWbOfKRjUjyudyfZb2u79YY5i1s+d7vuD80A7kmr2YfefO0JprQUhanxSm8bhXigCVfX2kEh+w=="
+      },
       "WebDav.Client": {
         "type": "Direct",
         "requested": "[2.9.0, )",
@@ -247,11 +253,6 @@
           "System.Memory": "4.5.4"
         }
       },
-      "System.ComponentModel.Annotations": {
-        "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "dMkqfy2el8A8/I76n2Hi1oBFEbG1SfxD2l5nhwXV3XjlnOmwxJlQbYpJH4W51odnU9sARCSAgv7S3CyAFMkpYg=="
-      },
       "System.Memory": {
         "type": "Transitive",
         "resolved": "4.5.5",
@@ -289,11 +290,6 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "J4GUi3xZQLUBasNwZnjrffN8i5wpHrBtZoLG+OhRyGo/+YunMRWWtwoMDlUAIdmX0uRfpHIBDSV6zyr3yf00TA=="
-      },
-      "System.Runtime.WindowsRuntime": {
-        "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "IWrs1TmbxP65ZZjIglNyvDkFNoV5q2Pofg5WO7I8RKQOpLdFprQSh3xesOoClBqR4JHr4nEB1Xk1MqLPW1jPuQ=="
       },
       "System.Runtime.WindowsRuntime.UI.Xaml": {
         "type": "Transitive",
@@ -352,19 +348,6 @@
         "type": "Transitive",
         "resolved": "4.5.0",
         "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
-      },
-      "inkcanvas.pluginhost": {
-        "type": "Project",
-        "dependencies": {
-          "InkCanvas.PluginSdk": "[1.0.0, )"
-        }
-      },
-      "inkcanvas.pluginsdk": {
-        "type": "Project",
-        "dependencies": {
-          "Newtonsoft.Json": "[13.0.3, )",
-          "System.ComponentModel.Annotations": "[5.0.0, )"
-        }
       }
     },
     ".NETFramework,Version=v4.7.2/win": {

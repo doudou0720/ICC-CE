@@ -267,7 +267,7 @@ namespace Ink_Canvas
                 ToggleSwitchIsAutoUpdate.IsOn = Settings.Startup.IsAutoUpdate;
 
                 // 只有在启用了自动更新功能时才检查更新
-                if (Settings.Startup.IsAutoUpdate && !skipAutoUpdateCheck)
+                if (Settings.Startup.IsAutoUpdate && Settings.Startup.HasConfirmedNetCompatibilityChange && !skipAutoUpdateCheck)
                 {
                     if (isStartup)
                     {
@@ -287,6 +287,8 @@ namespace Ink_Canvas
                 {
                     ToggleSwitchIsAutoUpdateWithSilence.IsOn = true;
                 }
+
+                ApplyNetCompatibilityConfirmationGateToUpdateSettingsUi();
 
                 // 初始化更新通道选择
                 foreach (var radioButton in UpdateChannelSelector.Items)
@@ -954,22 +956,7 @@ namespace Ink_Canvas
                     drawingAttributes.FitToCurve = false;
                 }
 
-                // 注释掉新的墨迹平滑性能设置，因为UI控件还没有定义
-                /*
-                // 初始化新的墨迹平滑性能设置
-                ToggleSwitchAsyncInkSmoothing.IsOn = Settings.Canvas.UseAsyncInkSmoothing;
-                ToggleSwitchHardwareAcceleration.IsOn = Settings.Canvas.UseHardwareAcceleration;
-                ComboBoxInkSmoothingQuality.SelectedIndex = Settings.Canvas.InkSmoothingQuality;
-                SliderMaxConcurrentTasks.Value = Settings.Canvas.MaxConcurrentSmoothingTasks > 0 ?
-                    Settings.Canvas.MaxConcurrentSmoothingTasks : Environment.ProcessorCount;
-
-                // 检查硬件加速支持
-                if (!Helpers.InkSmoothingManager.IsHardwareAccelerationSupported())
-                {
-                    ToggleSwitchHardwareAcceleration.IsEnabled = false;
-                    // 可以添加提示文本说明硬件加速不可用
-                }
-                */
+                ToggleSwitchDisableHardwareAcceleration.IsOn = !Settings.Canvas.UseHardwareAcceleration;
 
                 // 初始化直线自动拉直相关设置
                 ToggleSwitchAutoStraightenLine.IsOn = Settings.Canvas.AutoStraightenLine;
@@ -1330,6 +1317,26 @@ namespace Ink_Canvas
 
             // 刷新配置文件列表
             try { RefreshConfigProfileList(); } catch (Exception ex) { LogHelper.WriteLogToFile($"刷新配置文件列表失败: {ex.Message}", LogHelper.LogType.Warning); }
+        }
+
+        private void ApplyNetCompatibilityConfirmationGateToUpdateSettingsUi()
+        {
+            bool confirmed = Settings?.Startup?.HasConfirmedNetCompatibilityChange == true;
+
+            if (Net472CompatibilityWarningPanel != null)
+            {
+                Net472CompatibilityWarningPanel.Visibility = confirmed ? Visibility.Collapsed : Visibility.Visible;
+            }
+
+            if (ToggleSwitchIsAutoUpdate != null)
+            {
+                ToggleSwitchIsAutoUpdate.IsEnabled = confirmed;
+            }
+
+            if (ToggleSwitchIsAutoUpdateWithSilence != null)
+            {
+                ToggleSwitchIsAutoUpdateWithSilence.IsEnabled = confirmed;
+            }
         }
 
         /// <summary>

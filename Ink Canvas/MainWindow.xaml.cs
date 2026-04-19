@@ -1180,6 +1180,7 @@ namespace Ink_Canvas
             loadPenCanvas();
             //加载设置
             LoadSettings(true);
+            ScheduleNetCompatibilityChangePromptAfterStartup();
             ApplyLanguageFromSettings();
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
@@ -1499,6 +1500,112 @@ namespace Ink_Canvas
                 }
             }), DispatcherPriority.Loaded);
             AddTouchSupportToSliders();
+        }
+
+        private void ShowNetCompatibilityChangePromptIfNeeded()
+        {
+            try
+            {
+                if (IsNetCompatibilityChangeConfirmed())
+                {
+                    return;
+                }
+
+                MessageBox.Show(
+                    "下个版本将更换.NET6，请前往设置确认以便继续使用自动更新",
+                    "兼容性变更",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+
+                // 用户关闭提示后即视为已知晓，持久化后下次启动不再弹出（与设置内「确认」按钮一致）。
+                PersistNetCompatibilityChangeConfirmation();
+                ApplyNetCompatibilityConfirmationGateToUpdateSettingsUi();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"兼容性变更提示弹窗失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ScheduleNetCompatibilityChangePromptAfterStartup()
+        {
+            Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try
+                {
+                    // 等待主窗口启动流程与初始渲染基本完成后再提示，避免“刚启动就弹窗”。
+                    await Task.Delay(1000);
+                    ShowNetCompatibilityChangePromptIfNeeded();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"延迟显示兼容性变更提示失败: {ex.Message}", LogHelper.LogType.Error);
+                }
+            }), DispatcherPriority.ApplicationIdle);
+        }
+
+        private string GetNetCompatibilityConfirmationFlagPath()
+        {
+            return Path.Combine(App.RootPath, "Configs", "NetCompatibilityConfirmed.flag");
+        }
+
+        private bool IsNetCompatibilityChangeConfirmed()
+        {
+            if (Settings?.Startup?.HasConfirmedNetCompatibilityChange == true)
+            {
+                return true;
+            }
+
+            try
+            {
+                var flagPath = GetNetCompatibilityConfirmationFlagPath();
+                if (File.Exists(flagPath))
+                {
+                    if (Settings?.Startup != null && !Settings.Startup.HasConfirmedNetCompatibilityChange)
+                    {
+                        Settings.Startup.HasConfirmedNetCompatibilityChange = true;
+                        SaveSettingsToFile();
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"读取兼容性确认标记失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            return false;
+        }
+
+        private void PersistNetCompatibilityChangeConfirmation()
+        {
+            if (Settings?.Startup == null)
+            {
+                Settings.Startup = new Startup();
+            }
+
+            Settings.Startup.HasConfirmedNetCompatibilityChange = true;
+
+            try
+            {
+                var flagPath = GetNetCompatibilityConfirmationFlagPath();
+                var dir = Path.GetDirectoryName(flagPath);
+                if (!string.IsNullOrWhiteSpace(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                if (!File.Exists(flagPath))
+                {
+                    File.WriteAllText(flagPath, "confirmed=true");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"写入兼容性确认标记失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            SaveSettingsToFile();
         }
 
         private void ApplyLanguageFromSettings()
@@ -1917,6 +2024,12 @@ namespace Ink_Canvas
 
         private async void AutoUpdate()
         {
+            if (Settings?.Startup?.HasConfirmedNetCompatibilityChange != true)
+            {
+                LogHelper.WriteLogToFile("AutoUpdate | 自动更新已暂停：未确认兼容性变更（NET472 -> .NET6）", LogHelper.LogType.Warning);
+                return;
+            }
+
             if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
             {
                 if (DateTime.TryParse(Settings.Startup.AutoUpdatePauseUntilDate, out DateTime pauseUntilDate))
@@ -2812,33 +2925,12 @@ namespace Ink_Canvas
         #endregion Navigation Sidebar Methods
 
         #region 新设置窗口
-
-        /// <summary>
-        /// 在隐藏子面板后打开新的设置窗口；若需要则先提示并验证安全密码，并在正在打开或隐藏设置面板时不执行任何操作。
-        /// </summary>
-        /// <remarks>
-        /// 在验证密码失败或发生异常时会中止操作。成功通过验证后以模式窗口方式显示设置窗口并将当前窗口设为其所有者。
-        /// </remarks>
-        private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
+        private async void BtnOpenNewNewSettings_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
             HideSubPanels();
             {
-                try
-                {
-                    if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
-                    {
-                        bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
-                        if (!ok) return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
-                    return;
-                }
-
-                var settingsWindow = new SettingsWindow();
+                var settingsWindow = new Windows.SettingsViews.SettingsWindow();
                 settingsWindow.Owner = this;
                 settingsWindow.ShowDialog();
             }
@@ -4404,6 +4496,9 @@ namespace Ink_Canvas
         {
             try
             {
+                if (!IsLoaded)
+                    return;
+
                 if (Settings.ModeSettings.IsPPTOnlyMode)
                 {
                     if (TrayTemporaryShowUntilUtc.HasValue && DateTime.UtcNow < TrayTemporaryShowUntilUtc.Value)
@@ -4729,6 +4824,22 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"应用UIA置顶功能时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        internal void OpenQuickDrawFromHotkey()
+        {
+            try
+            {
+                if (Settings?.RandSettings?.EnableQuickDraw != true)
+                    return;
+
+                var quickDrawWindow = new QuickDrawWindow();
+                quickDrawWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"打开快抽窗口失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 

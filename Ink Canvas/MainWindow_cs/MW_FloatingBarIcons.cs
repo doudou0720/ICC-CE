@@ -1,3 +1,4 @@
+using Ink_Canvas.Controls;
 using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern;
 using System;
@@ -18,7 +19,6 @@ using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
 using Cursors = System.Windows.Input.Cursors;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
-using Image = System.Windows.Controls.Image;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -49,6 +49,7 @@ namespace Ink_Canvas
             else
             {
                 HideSubPanels();
+                UpdateTwoFingerGestureBorderPosition();
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(TwoFingerGestureBorder);
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardTwoFingerGestureBorder);
             }
@@ -1742,6 +1743,7 @@ namespace Ink_Canvas
             else
             {
                 HideSubPanels();
+                UpdateBorderToolsPosition();
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BorderTools);
                 AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardBorderTools);
             }
@@ -2439,6 +2441,7 @@ namespace Ink_Canvas
                     else
                     {
                         HideSubPanels();
+                        UpdatePenPalettePosition();
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(PenPalette);
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardPenPalette);
                     }
@@ -2548,6 +2551,7 @@ namespace Ink_Canvas
                 // 已是橡皮状态，再次点击才弹出/收起面板
                 if (EraserSizePanel.Visibility == Visibility.Collapsed)
                 {
+                    UpdateEraserSizePanelPosition();
                     AnimationsHelper.ShowWithSlideFromBottomAndFade(EraserSizePanel);
                     if (BoardEraserSizePanel != null)
                         AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardEraserSizePanel);
@@ -2598,6 +2602,7 @@ namespace Ink_Canvas
                 // 已是橡皮状态，再次点击才弹出/收起面板
                 if (BoardEraserSizePanel != null && BoardEraserSizePanel.Visibility == Visibility.Collapsed)
                 {
+                    UpdateEraserSizePanelPosition();
                     AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardEraserSizePanel);
                     AnimationsHelper.ShowWithSlideFromBottomAndFade(EraserSizePanel);
                 }
@@ -3298,6 +3303,9 @@ namespace Ink_Canvas
                 // 清空触摸点计数器
                 dec.Clear();
 
+                if (isPalmEraserActive)
+                    isPalmEraserActive = false;
+
                 // 确保触摸事件能正常响应
                 inkCanvas.IsHitTestVisible = true;
                 inkCanvas.IsManipulationEnabled = true;
@@ -3567,6 +3575,8 @@ namespace Ink_Canvas
                         break;
                 }
             }
+
+            SyncPdfPageSidebarWithCanvas();
         }
 
         private int BoundsWidth = 5;
@@ -3774,32 +3784,29 @@ namespace Ink_Canvas
             // Open file dialog to select image
             var dialog = new OpenFileDialog
             {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                Image image = await CreateAndCompressImageAsync(filePath);
-                if (image != null)
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 初始化TransformGroup
-                    if (image is FrameworkElement element)
-                    {
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new ScaleTransform(1, 1));
-                        transformGroup.Children.Add(new TranslateTransform(0, 0));
-                        transformGroup.Children.Add(new RotateTransform(0));
-                        element.RenderTransform = transformGroup;
-                    }
+                    var transformGroup = new TransformGroup();
+                    transformGroup.Children.Add(new ScaleTransform(1, 1));
+                    transformGroup.Children.Add(new TranslateTransform(0, 0));
+                    transformGroup.Children.Add(new RotateTransform(0));
+                    element.RenderTransform = transformGroup;
 
-                    CenterAndScaleElement(image);
+                    CenterAndScaleElement(element);
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     if (inkCanvas != null)
@@ -3810,34 +3817,33 @@ namespace Ink_Canvas
                         inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
 
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 绑定事件处理器
-                    if (image is FrameworkElement elementForEvents)
-                    {
-                        // 鼠标事件
-                        elementForEvents.MouseLeftButtonDown += Element_MouseLeftButtonDown;
-                        elementForEvents.MouseLeftButtonUp += Element_MouseLeftButtonUp;
-                        elementForEvents.MouseMove += Element_MouseMove;
-                        elementForEvents.MouseWheel += Element_MouseWheel;
+                    element.MouseLeftButtonDown += Element_MouseLeftButtonDown;
+                    element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
+                    element.MouseMove += Element_MouseMove;
+                    element.MouseWheel += Element_MouseWheel;
 
-                        // 触摸事件
-                        elementForEvents.TouchDown += Element_TouchDown;
-                        elementForEvents.TouchUp += Element_TouchUp;
-                        elementForEvents.IsManipulationEnabled = true;
-                        elementForEvents.ManipulationDelta += Element_ManipulationDelta;
-                        elementForEvents.ManipulationCompleted += Element_ManipulationCompleted;
+                    // 触摸事件
+                    element.TouchDown += Element_TouchDown;
+                    element.TouchUp += Element_TouchUp;
+                    element.IsManipulationEnabled = true;
+                    element.ManipulationDelta += Element_ManipulationDelta;
+                    element.ManipulationCompleted += Element_ManipulationCompleted;
 
-                        // 设置光标
-                        elementForEvents.Cursor = Cursors.Hand;
-                    }
+                    // 设置光标
+                    element.Cursor = Cursors.Hand;
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    if (element is PdfEmbeddedView)
+                        _pdfSidebarNextPositionUseHostTransform = true;
+                    SyncPdfPageSidebarWithCanvas();
                 }
             }
         }
@@ -3847,32 +3853,29 @@ namespace Ink_Canvas
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                Image image = await CreateAndCompressImageAsync(filePath);
-                if (image != null)
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 初始化TransformGroup
-                    if (image is FrameworkElement element)
-                    {
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new ScaleTransform(1, 1));
-                        transformGroup.Children.Add(new TranslateTransform(0, 0));
-                        transformGroup.Children.Add(new RotateTransform(0));
-                        element.RenderTransform = transformGroup;
-                    }
+                    var transformGroup = new TransformGroup();
+                    transformGroup.Children.Add(new ScaleTransform(1, 1));
+                    transformGroup.Children.Add(new TranslateTransform(0, 0));
+                    transformGroup.Children.Add(new RotateTransform(0));
+                    element.RenderTransform = transformGroup;
 
-                    CenterAndScaleElement(image);
+                    CenterAndScaleElement(element);
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     if (inkCanvas != null)
@@ -3883,34 +3886,33 @@ namespace Ink_Canvas
                         inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
 
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 绑定事件处理器
-                    if (image is FrameworkElement elementForEvents)
-                    {
-                        // 鼠标事件
-                        elementForEvents.MouseLeftButtonDown += Element_MouseLeftButtonDown;
-                        elementForEvents.MouseLeftButtonUp += Element_MouseLeftButtonUp;
-                        elementForEvents.MouseMove += Element_MouseMove;
-                        elementForEvents.MouseWheel += Element_MouseWheel;
+                    element.MouseLeftButtonDown += Element_MouseLeftButtonDown;
+                    element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
+                    element.MouseMove += Element_MouseMove;
+                    element.MouseWheel += Element_MouseWheel;
 
-                        // 触摸事件
-                        elementForEvents.TouchDown += Element_TouchDown;
-                        elementForEvents.TouchUp += Element_TouchUp;
-                        elementForEvents.IsManipulationEnabled = true;
-                        elementForEvents.ManipulationDelta += Element_ManipulationDelta;
-                        elementForEvents.ManipulationCompleted += Element_ManipulationCompleted;
+                    // 触摸事件
+                    element.TouchDown += Element_TouchDown;
+                    element.TouchUp += Element_TouchUp;
+                    element.IsManipulationEnabled = true;
+                    element.ManipulationDelta += Element_ManipulationDelta;
+                    element.ManipulationCompleted += Element_ManipulationCompleted;
 
-                        // 设置光标
-                        elementForEvents.Cursor = Cursors.Hand;
-                    }
+                    // 设置光标
+                    element.Cursor = Cursors.Hand;
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    if (element is PdfEmbeddedView)
+                        _pdfSidebarNextPositionUseHostTransform = true;
+                    SyncPdfPageSidebarWithCanvas();
                 }
             }
         }
@@ -3920,32 +3922,29 @@ namespace Ink_Canvas
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif"
+                Filter = "图片与 PDF|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.pdf|图片文件|*.jpg;*.jpeg;*.png;*.bmp;*.gif|PDF|*.pdf"
             };
             if (dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
-                Image image = await CreateAndCompressImageAsync(filePath); // 补充image定义
-                if (image != null)
+                FrameworkElement element = await CreateAndCompressImageAsync(filePath);
+                if (element != null)
                 {
                     string timestamp = "img_" + DateTime.Now.ToString("yyyyMMdd_HH_mm_ss_fff");
-                    image.Name = timestamp;
+                    element.Name = timestamp;
 
                     // 初始化TransformGroup
-                    if (image is FrameworkElement element)
-                    {
-                        var transformGroup = new TransformGroup();
-                        transformGroup.Children.Add(new ScaleTransform(1, 1));
-                        transformGroup.Children.Add(new TranslateTransform(0, 0));
-                        transformGroup.Children.Add(new RotateTransform(0));
-                        element.RenderTransform = transformGroup;
-                    }
+                    var transformGroup = new TransformGroup();
+                    transformGroup.Children.Add(new ScaleTransform(1, 1));
+                    transformGroup.Children.Add(new TranslateTransform(0, 0));
+                    transformGroup.Children.Add(new RotateTransform(0));
+                    element.RenderTransform = transformGroup;
 
-                    CenterAndScaleElement(image);
+                    CenterAndScaleElement(element);
 
                     // 设置图片属性，避免被InkCanvas选择系统处理
-                    image.IsHitTestVisible = true;
-                    image.Focusable = false;
+                    element.IsHitTestVisible = true;
+                    element.Focusable = false;
 
                     // 初始化InkCanvas选择设置
                     if (inkCanvas != null)
@@ -3956,34 +3955,33 @@ namespace Ink_Canvas
                         inkCanvas.EditingMode = InkCanvasEditingMode.None;
                     }
 
-                    inkCanvas.Children.Add(image);
+                    inkCanvas.Children.Add(element);
 
                     // 绑定事件处理器
-                    if (image is FrameworkElement elementForEvents)
-                    {
-                        // 鼠标事件
-                        elementForEvents.MouseLeftButtonDown += Element_MouseLeftButtonDown;
-                        elementForEvents.MouseLeftButtonUp += Element_MouseLeftButtonUp;
-                        elementForEvents.MouseMove += Element_MouseMove;
-                        elementForEvents.MouseWheel += Element_MouseWheel;
+                    element.MouseLeftButtonDown += Element_MouseLeftButtonDown;
+                    element.MouseLeftButtonUp += Element_MouseLeftButtonUp;
+                    element.MouseMove += Element_MouseMove;
+                    element.MouseWheel += Element_MouseWheel;
 
-                        // 触摸事件
-                        elementForEvents.TouchDown += Element_TouchDown;
-                        elementForEvents.TouchUp += Element_TouchUp;
-                        elementForEvents.IsManipulationEnabled = true;
-                        elementForEvents.ManipulationDelta += Element_ManipulationDelta;
-                        elementForEvents.ManipulationCompleted += Element_ManipulationCompleted;
+                    // 触摸事件
+                    element.TouchDown += Element_TouchDown;
+                    element.TouchUp += Element_TouchUp;
+                    element.IsManipulationEnabled = true;
+                    element.ManipulationDelta += Element_ManipulationDelta;
+                    element.ManipulationCompleted += Element_ManipulationCompleted;
 
-                        // 设置光标
-                        elementForEvents.Cursor = Cursors.Hand;
-                    }
+                    // 设置光标
+                    element.Cursor = Cursors.Hand;
 
-                    timeMachine.CommitElementInsertHistory(image);
+                    timeMachine.CommitElementInsertHistory(element);
 
                     // 插入图片后切换到选择模式并刷新浮动栏高光显示
                     SetCurrentToolMode(InkCanvasEditingMode.Select);
                     UpdateCurrentToolMode("select");
                     HideSubPanels("select");
+                    if (element is PdfEmbeddedView)
+                        _pdfSidebarNextPositionUseHostTransform = true;
+                    SyncPdfPageSidebarWithCanvas();
                 }
             }
         }
@@ -4214,6 +4212,101 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"设置高光位置失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        /// <summary>
+        /// 通用子面板位置更新方法：根据触发按钮的位置，动态调整子面板的水平位置，
+        /// 使面板水平中心对齐按钮中心。不改变面板大小，不改变上下边距。
+        /// </summary>
+        /// <param name="button">触发按钮元素</param>
+        /// <param name="panel">需要定位的子面板</param>
+        /// <param name="defaultPanelWidth">面板默认宽度（当无法从Margin计算时使用）</param>
+        private void UpdateSubPanelPosition(FrameworkElement button, FrameworkElement panel, double defaultPanelWidth)
+        {
+            try
+            {
+                if (button == null || panel == null) return;
+                if (!(panel.Parent is FrameworkElement panelContainer)) return;
+
+                var ancestor = StackPanelFloatingBar;
+                if (ancestor == null) return;
+
+                // 获取按钮中心的X坐标（相对于 StackPanelFloatingBar 坐标系）
+                var buttonTransform = button.TransformToAncestor(ancestor);
+                var buttonOrigin = buttonTransform.Transform(new Point(0, 0));
+                double buttonCenterX = buttonOrigin.X + button.ActualWidth / 2.0;
+
+                // 获取面板容器（零宽度Grid）的X坐标（相对于 StackPanelFloatingBar 坐标系）
+                var containerTransform = panelContainer.TransformToAncestor(ancestor);
+                var containerOrigin = containerTransform.Transform(new Point(0, 0));
+                double containerX = containerOrigin.X;
+
+                // 计算当前面板宽度（保持不变）：panelWidth = -Margin.Left - Margin.Right
+                double currentLeft = panel.Margin.Left;
+                double currentRight = panel.Margin.Right;
+                double panelWidth = -currentLeft - currentRight;
+                if (panelWidth <= 0) panelWidth = defaultPanelWidth;
+
+                // 计算新的左边距，使面板水平中心对齐按钮：
+                //   panel_center = containerX + newLeft + panelWidth/2 = buttonCenterX
+                //   => newLeft = buttonCenterX - containerX - panelWidth/2
+                double newLeft = buttonCenterX - containerX - panelWidth / 2.0;
+
+                // 保持面板宽度不变：-newLeft - newRight = panelWidth
+                //   => newRight = -panelWidth - newLeft
+                double newRight = -panelWidth - newLeft;
+
+                // 清除可能残留的 Margin 动画（HoldEnd 会阻止本地值生效）
+                panel.BeginAnimation(FrameworkElement.MarginProperty, null);
+
+                // 更新边距，仅调整Left/Right，保持Top/Bottom不变
+                var margin = panel.Margin;
+                panel.Margin = new Thickness(newLeft, margin.Top, newRight, margin.Bottom);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"更新子面板位置失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
+        /// 更新批注子面板（PenPalette）的弹出位置，使其水平中心对齐笔按钮。
+        /// </summary>
+        private void UpdatePenPalettePosition()
+        {
+            UpdateSubPanelPosition(Pen_Icon, PenPalette, 193);
+        }
+
+        /// <summary>
+        /// 更新工具面板（BorderTools）的弹出位置，使其水平中心对齐工具按钮。
+        /// </summary>
+        private void UpdateBorderToolsPosition()
+        {
+            UpdateSubPanelPosition(ToolsFloatingBarBtn, BorderTools, 119);
+        }
+
+        /// <summary>
+        /// 更新橡皮擦尺寸面板（EraserSizePanel）的弹出位置，使其水平中心对齐橡皮擦按钮。
+        /// </summary>
+        private void UpdateEraserSizePanelPosition()
+        {
+            UpdateSubPanelPosition(Eraser_Icon, EraserSizePanel, 120);
+        }
+
+        /// <summary>
+        /// 更新形状绘制面板（BorderDrawShape）的弹出位置，使其水平中心对齐形状按钮。
+        /// </summary>
+        private void UpdateBorderDrawShapePosition()
+        {
+            UpdateSubPanelPosition(ShapeDrawFloatingBarBtn, BorderDrawShape, 317);
+        }
+
+        /// <summary>
+        /// 更新手势面板（TwoFingerGestureBorder）的弹出位置，使其水平中心对齐手势按钮。
+        /// </summary>
+        private void UpdateTwoFingerGestureBorderPosition()
+        {
+            UpdateSubPanelPosition(EnableTwoFingerGestureBorder, TwoFingerGestureBorder, 119);
         }
 
         /// <summary>

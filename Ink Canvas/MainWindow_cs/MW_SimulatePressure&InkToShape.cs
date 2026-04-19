@@ -176,85 +176,89 @@ namespace Ink_Canvas
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
-                switch (Settings.Canvas.InkStyle)
+                // 「屏蔽压感」已在收笔主路径将点集归一成 0.5；此处若再跑 InkStyle 0/1 会重写 PressureFactor，造成假压感。
+                if (!Settings.Canvas.DisablePressure)
                 {
-                    case 1:
-                        if (penType == 0)
-                            try
-                            {
-                                var stylusPoints = new StylusPointCollection();
-                                var n = e.Stroke.StylusPoints.Count - 1;
-
-                                for (var i = 0; i <= n; i++)
+                    switch (Settings.Canvas.InkStyle)
+                    {
+                        case 1:
+                            if (penType == 0)
+                                try
                                 {
-                                    var speed = GetPointSpeed(e.Stroke.StylusPoints[Math.Max(i - 1, 0)].ToPoint(),
-                                        e.Stroke.StylusPoints[i].ToPoint(),
-                                        e.Stroke.StylusPoints[Math.Min(i + 1, n)].ToPoint());
-                                    var point = new StylusPoint
-                                    {
-                                        PressureFactor = RateBasedPressureFactorFromPointSpeed(speed),
-                                        X = e.Stroke.StylusPoints[i].X,
-                                        Y = e.Stroke.StylusPoints[i].Y
-                                    };
-                                    stylusPoints.Add(point);
-                                }
+                                    var stylusPoints = new StylusPointCollection();
+                                    var n = e.Stroke.StylusPoints.Count - 1;
 
-                                e.Stroke.StylusPoints = stylusPoints;
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-
-                        break;
-                    case 0:
-                        if (penType == 0)
-                            try
-                            {
-                                var stylusPoints = new StylusPointCollection();
-                                var n = e.Stroke.StylusPoints.Count - 1;
-                                var pressure = 0.1;
-                                var x = 10;
-                                if (n == 1) return e.Stroke;
-                                if (n >= x)
-                                {
-                                    for (var i = 0; i < n - x; i++)
-                                    {
-                                        var point = new StylusPoint();
-
-                                        point.PressureFactor = (float)0.5;
-                                        point.X = e.Stroke.StylusPoints[i].X;
-                                        point.Y = e.Stroke.StylusPoints[i].Y;
-                                        stylusPoints.Add(point);
-                                    }
-
-                                    for (var i = n - x; i <= n; i++)
-                                    {
-                                        var point = new StylusPoint();
-
-                                        point.PressureFactor = (float)((0.5 - pressure) * (n - i) / x + pressure);
-                                        point.X = e.Stroke.StylusPoints[i].X;
-                                        point.Y = e.Stroke.StylusPoints[i].Y;
-                                        stylusPoints.Add(point);
-                                    }
-                                }
-                                else
-                                {
                                     for (var i = 0; i <= n; i++)
                                     {
-                                        var point = new StylusPoint();
-
-                                        point.PressureFactor = (float)(0.4 * (n - i) / n + pressure);
-                                        point.X = e.Stroke.StylusPoints[i].X;
-                                        point.Y = e.Stroke.StylusPoints[i].Y;
+                                        var speed = GetPointSpeed(e.Stroke.StylusPoints[Math.Max(i - 1, 0)].ToPoint(),
+                                            e.Stroke.StylusPoints[i].ToPoint(),
+                                            e.Stroke.StylusPoints[Math.Min(i + 1, n)].ToPoint());
+                                        var point = new StylusPoint
+                                        {
+                                            PressureFactor = RateBasedPressureFactorFromPointSpeed(speed),
+                                            X = e.Stroke.StylusPoints[i].X,
+                                            Y = e.Stroke.StylusPoints[i].Y
+                                        };
                                         stylusPoints.Add(point);
                                     }
+
+                                    e.Stroke.StylusPoints = stylusPoints;
                                 }
+                                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
-                                e.Stroke.StylusPoints = stylusPoints;
-                            }
-                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                            break;
+                        case 0:
+                            if (penType == 0)
+                                try
+                                {
+                                    var stylusPoints = new StylusPointCollection();
+                                    var n = e.Stroke.StylusPoints.Count - 1;
+                                    var pressure = 0.1;
+                                    var x = 10;
+                                    if (n == 1) return e.Stroke;
+                                    if (n >= x)
+                                    {
+                                        for (var i = 0; i < n - x; i++)
+                                        {
+                                            var point = new StylusPoint();
 
-                        break;
-                    case 3:
-                        break;
+                                            point.PressureFactor = (float)0.5;
+                                            point.X = e.Stroke.StylusPoints[i].X;
+                                            point.Y = e.Stroke.StylusPoints[i].Y;
+                                            stylusPoints.Add(point);
+                                        }
+
+                                        for (var i = n - x; i <= n; i++)
+                                        {
+                                            var point = new StylusPoint();
+
+                                            point.PressureFactor = (float)((0.5 - pressure) * (n - i) / x + pressure);
+                                            point.X = e.Stroke.StylusPoints[i].X;
+                                            point.Y = e.Stroke.StylusPoints[i].Y;
+                                            stylusPoints.Add(point);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        for (var i = 0; i <= n; i++)
+                                        {
+                                            var point = new StylusPoint();
+
+                                            point.PressureFactor = (float)(0.4 * (n - i) / n + pressure);
+                                            point.X = e.Stroke.StylusPoints[i].X;
+                                            point.Y = e.Stroke.StylusPoints[i].Y;
+                                            stylusPoints.Add(point);
+                                        }
+                                    }
+
+                                    e.Stroke.StylusPoints = stylusPoints;
+                                }
+                                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+
+                            break;
+                        case 3:
+                            break;
+                    }
                 }
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
@@ -507,7 +511,11 @@ namespace Ink_Canvas
 
                 // 实时笔锋：勿依赖 DrawingAttributes.IgnorePressure。无压感触摸/鼠标等设备上，运行时仍可能为 true，
                 // 会导致不进入逻辑或进入后渲染仍忽略 PressureFactor；具体在 ApplyVelocityBrushTipFromSpeed 内关闭。
+                // 「屏蔽压感」时必须跳过：否则会重写 PressureFactor 并强制 IgnorePressure=false，与归一压感冲突。
+                // VelocityBrushTipMix <= 0 时 ApplyVelocityBrushTipFromSpeed 为空操作，无需调用。
                 if (Settings.Canvas.InkStyle == 3
+                    && Settings.Canvas.VelocityBrushTipMix > 0
+                    && !Settings.Canvas.DisablePressure
                     && !touchPressureSimulationApplied
                     && penType != 1
                     && e.Stroke?.DrawingAttributes != null
@@ -710,6 +718,18 @@ namespace Ink_Canvas
                                     var endP = new Point(result.Centroid.X + result.ShapeWidth / 2,
                                         result.Centroid.Y + result.ShapeHeight / 2);
 
+                                    // WinRT 返回的热点顺序/方向不稳定时，用点集反推 IACore 风格椭圆参数（中心/长短轴/方向/四个端点）
+                                    var hasEllipseParams = TryEstimateEllipseParamsFromStrokes(
+                                        result.StrokesToRemove,
+                                        out var ellipseCentroid,
+                                        out var ellipseA,
+                                        out var ellipseB,
+                                        out var ellipseThetaRad,
+                                        out var ellipseMajor0,
+                                        out var ellipseMajor1,
+                                        out var ellipseMinor0,
+                                        out var ellipseMinor1);
+
                                     foreach (var circle in circles)
                                         //判断是否画同心椭圆
                                         if (Math.Abs(result.Centroid.X - circle.Centroid.X) / a < 0.2 &&
@@ -797,13 +817,17 @@ namespace Ink_Canvas
                                             }
                                         }
 
-                                    //纠正垂直与水平关系
-                                    var newPoints = FixPointsDirection(p[0], p[2]);
-                                    p[0] = newPoints[0];
-                                    p[2] = newPoints[1];
-                                    newPoints = FixPointsDirection(p[1], p[3]);
-                                    p[1] = newPoints[0];
-                                    p[3] = newPoints[1];
+                                    // 用反推参数替换中心与长短轴（比 WinRT 的包围盒更接近 IACore，且不会竖横翻转）
+                                    if (hasEllipseParams)
+                                    {
+                                        result.Centroid = ellipseCentroid;
+                                        a = ellipseA;
+                                        b = ellipseB;
+                                        iniP = new Point(result.Centroid.X - a, result.Centroid.Y - b);
+                                        endP = new Point(result.Centroid.X + a, result.Centroid.Y + b);
+                                        // 用端点重写热点，保证后续回退分支也一致
+                                        p = new PointCollection { ellipseMajor0, ellipseMinor0, ellipseMajor1, ellipseMinor1 };
+                                    }
 
                                     var pointList = GenerateEllipseGeometry(iniP, endP);
                                     var point = new StylusPointCollection(pointList);
@@ -815,9 +839,8 @@ namespace Ink_Canvas
                                     if (needRotation)
                                     {
                                         var m = new Matrix();
-                                        var fe = e.Source as FrameworkElement;
-                                        var tanTheta = (p[2].Y - p[0].Y) / (p[2].X - p[0].X);
-                                        var theta = Math.Atan(tanTheta);
+                                        // 优先使用反推参数角度；否则用端点向量角度（使用 Atan2 避免斜率无穷）
+                                        var theta = hasEllipseParams ? ellipseThetaRad : Math.Atan2(p[2].Y - p[0].Y, p[2].X - p[0].X);
                                         m.RotateAt(theta * 180.0 / Math.PI, result.Centroid.X, result.Centroid.Y);
                                         stroke.Transform(m, false);
                                     }
@@ -2183,12 +2206,16 @@ namespace Ink_Canvas
 
         /// <summary>
         /// 将沿线速度映射为压感并与硬件压感混合，快写略细、慢写略粗；在落笔时（及手写笔移动时由调用方）统一施加。
-        /// 无压感设备上系统可能将 <see cref="DrawingAttributes.IgnorePressure"/> 置为 true，此处强制关闭以便粗细随合成压感变化（与「屏蔽压感」无关：调用方已保证未屏蔽）。
+        /// 无压感设备上系统可能将 <see cref="DrawingAttributes.IgnorePressure"/> 置为 true，此处强制关闭以便粗细随合成压感变化。
+        /// 若 <see cref="Settings.Canvas.DisablePressure"/> 为 true，本方法直接返回且不修改 IgnorePressure。
         /// </summary>
         private void ApplyVelocityBrushTipFromSpeed(Stroke stroke)
         {
             try
             {
+                if (Settings.Canvas.DisablePressure)
+                    return;
+
                 var mix = Settings.Canvas.VelocityBrushTipMix;
                 if (mix <= 0 || stroke == null) return;
                 if (mix > 1) mix = 1;
@@ -2268,6 +2295,124 @@ namespace Ink_Canvas
             }
 
             return new Point[2] { p1, p2 };
+        }
+
+        /// <summary>
+        /// 用点集拟合出 IACore 风格椭圆参数（中心/长短半轴/方向/四个端点）。
+        /// 解决 WinRT 返回热点顺序不稳定导致椭圆纠正角度翻转的问题。
+        /// </summary>
+        private static bool TryEstimateEllipseParamsFromStrokes(
+            StrokeCollection strokes,
+            out Point centroid,
+            out double a,
+            out double b,
+            out double thetaRad,
+            out Point major0,
+            out Point major1,
+            out Point minor0,
+            out Point minor1)
+        {
+            centroid = default;
+            a = b = 0;
+            thetaRad = 0;
+            major0 = major1 = minor0 = minor1 = default;
+
+            if (strokes == null || strokes.Count == 0) return false;
+
+            var pts = new List<Point>(256);
+            foreach (var s in strokes)
+            {
+                if (s?.StylusPoints == null) continue;
+                foreach (var sp in s.StylusPoints)
+                    pts.Add(sp.ToPoint());
+            }
+
+            if (pts.Count < 12) return false;
+
+            double mx = 0, my = 0;
+            for (int i = 0; i < pts.Count; i++)
+            {
+                mx += pts[i].X;
+                my += pts[i].Y;
+            }
+            mx /= pts.Count;
+            my /= pts.Count;
+            centroid = new Point(mx, my);
+
+            double sxx = 0, syy = 0, sxy = 0;
+            for (int i = 0; i < pts.Count; i++)
+            {
+                var dx = pts[i].X - mx;
+                var dy = pts[i].Y - my;
+                sxx += dx * dx;
+                syy += dy * dy;
+                sxy += dx * dy;
+            }
+
+            if (sxx + syy < 1e-6) return false;
+
+            thetaRad = 0.5 * Math.Atan2(2.0 * sxy, sxx - syy);
+            if (double.IsNaN(thetaRad) || double.IsInfinity(thetaRad)) return false;
+
+            // 主轴单位向量 v1=(cos,sin)，次轴 v2=(-sin,cos)
+            var cos = Math.Cos(thetaRad);
+            var sin = Math.Sin(thetaRad);
+
+            // 投影收集，用分位数抑制离群点
+            var us = new double[pts.Count];
+            var vs = new double[pts.Count];
+            double maxU = double.MinValue, minU = double.MaxValue;
+            double maxV = double.MinValue, minV = double.MaxValue;
+            for (int i = 0; i < pts.Count; i++)
+            {
+                var dx = pts[i].X - mx;
+                var dy = pts[i].Y - my;
+                var u = dx * cos + dy * sin;
+                var v = -dx * sin + dy * cos;
+                us[i] = u;
+                vs[i] = v;
+                if (u > maxU) maxU = u;
+                if (u < minU) minU = u;
+                if (v > maxV) maxV = v;
+                if (v < minV) minV = v;
+            }
+
+            Array.Sort(us);
+            Array.Sort(vs);
+
+            int hi = (int)Math.Round((pts.Count - 1) * 0.98);
+            int lo = (int)Math.Round((pts.Count - 1) * 0.02);
+            hi = Math.Max(0, Math.Min(pts.Count - 1, hi));
+            lo = Math.Max(0, Math.Min(pts.Count - 1, lo));
+
+            var uHi = us[hi];
+            var uLo = us[lo];
+            var vHi = vs[hi];
+            var vLo = vs[lo];
+
+            var aCandidate = Math.Max(Math.Abs(uHi), Math.Abs(uLo));
+            var bCandidate = Math.Max(Math.Abs(vHi), Math.Abs(vLo));
+            if (aCandidate < 1e-3) aCandidate = Math.Max(Math.Abs(maxU), Math.Abs(minU));
+            if (bCandidate < 1e-3) bCandidate = Math.Max(Math.Abs(maxV), Math.Abs(minV));
+
+            a = aCandidate;
+            b = bCandidate;
+
+            // 保证 a 为长半轴
+            if (b > a)
+            {
+                var t = a; a = b; b = t;
+                thetaRad += Math.PI / 2;
+                cos = Math.Cos(thetaRad);
+                sin = Math.Sin(thetaRad);
+            }
+
+            major0 = new Point(mx - a * cos, my - a * sin);
+            major1 = new Point(mx + a * cos, my + a * sin);
+            minor0 = new Point(mx + b * sin, my - b * cos);
+            minor1 = new Point(mx - b * sin, my + b * cos);
+
+            return a > 1e-2 && b > 1e-2;
         }
 
         public StylusPointCollection GenerateFakePressureTriangle(StylusPointCollection points)
@@ -2885,7 +3030,11 @@ namespace Ink_Canvas
 
             PruneHandwritingBeautifyBatch();
             while (_handwritingRecentStrokesForBeautify.Count > HandwritingBeautifyMaxRecentStrokes)
+            {
+                var evicted = _handwritingRecentStrokesForBeautify[0];
                 _handwritingRecentStrokesForBeautify.RemoveAt(0);
+                _handwritingBeautifyInkInputByCanvasStroke.Remove(evicted);
+            }
 
             EnsureHandwritingBeautifyDebounceTimer();
             _handwritingBeautifyDebounceTimer.Stop();

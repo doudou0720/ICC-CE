@@ -100,8 +100,8 @@ namespace Ink_Canvas.Helpers
             var item = _currentStrokeHistory[_currentIndex];
             item.StrokeHasBeenCleared = !item.StrokeHasBeenCleared;
             _currentIndex--;
-            OnUndoStateChanged?.Invoke(_currentIndex > -1);
-            OnRedoStateChanged?.Invoke(_currentStrokeHistory.Count - _currentIndex - 1 > 0);
+            OnUndoStateChanged?.Invoke(CanUndo);
+            OnRedoStateChanged?.Invoke(CanRedo);
             return item;
         }
 
@@ -137,8 +137,8 @@ namespace Ink_Canvas.Helpers
         }
         private void NotifyUndoRedoState()
         {
-            OnUndoStateChanged?.Invoke(_currentIndex > -1);
-            OnRedoStateChanged?.Invoke(_currentStrokeHistory.Count - _currentIndex - 1 > 0);
+            OnUndoStateChanged?.Invoke(CanUndo);
+            OnRedoStateChanged?.Invoke(CanRedo);
         }
 
         /// <summary>当前历史是否允许撤销。</summary>

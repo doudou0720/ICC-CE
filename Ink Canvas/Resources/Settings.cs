@@ -250,6 +250,8 @@ namespace Ink_Canvas
         public bool HasAcceptedTelemetryPrivacy { get; set; } = false;
         [JsonProperty("hasShownOobe")]
         public bool HasShownOobe { get; set; } = false;
+        [JsonProperty("hasConfirmedNetCompatibilityChange")]
+        public bool HasConfirmedNetCompatibilityChange { get; set; } = false;
     }
 
     public class Appearance

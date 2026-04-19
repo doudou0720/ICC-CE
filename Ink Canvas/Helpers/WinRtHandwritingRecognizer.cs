@@ -29,29 +29,13 @@ namespace Ink_Canvas.Helpers
         public static bool IsApiAvailable =>
             OSVersion.GetOperatingSystem() >= OSVersionExtension.OperatingSystem.Windows10;
 
+        /// <summary>
+        /// 启动阶段不再预热线程内 WinRT 手写管线。历史上曾用 <see cref="WinRtInkShapeRecognizer.CreateMinimalWarmupStrokeCollection"/> 跑全链路，
+        /// 会显著拖慢启动；与更早的「空 <see cref="StrokeCollection"/>」一样，此处不再在 Idle 上做任何工作。
+        /// 首次真正需要手写识别时由 <see cref="RecognizeHandwritingAsync"/> 承担冷启动成本。
+        /// </summary>
         public static void Warmup()
         {
-            if (!IsApiAvailable || !Environment.Is64BitProcess) return;
-            try
-            {
-                var d = Application.Current?.Dispatcher;
-                if (d == null) return;
-                d.BeginInvoke(new Action(async () =>
-                {
-                    try
-                    {
-                        await RecognizeHandwritingAsync(new StrokeCollection()).ConfigureAwait(true);
-                    }
-                    catch
-                    {
-                        // ignore
-                    }
-                }));
-            }
-            catch
-            {
-                // ignore
-            }
         }
 
         /// <summary>
@@ -59,12 +43,15 @@ namespace Ink_Canvas.Helpers
         /// 再对每一分词用 <see cref="WinRtInk.InkRecognizerContainer"/> 取 <c>GetTextCandidates</c>（与当前 SDK 中部分版本的
         /// <see cref="WinRtInk.InkRecognitionResult"/> 未暴露笔画映射的局限兼容）。
         /// </summary>
-        public static async Task<HandwritingRecognitionResult> RecognizeHandwritingAsync(StrokeCollection strokes)
+        /// <param name="verboseTrace">为 false 时跳过详细识别日志（用于 <see cref="Warmup"/> 等）。</param>
+        public static async Task<HandwritingRecognitionResult> RecognizeHandwritingAsync(
+            StrokeCollection strokes,
+            bool verboseTrace = true)
         {
             if (!IsApiAvailable || strokes == null || strokes.Count == 0)
                 return HandwritingRecognitionResult.Empty;
 
-            var traceRecognition = strokes.Count > 0;
+            var traceRecognition = verboseTrace;
 
             try
             {
