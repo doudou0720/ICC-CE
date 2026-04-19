@@ -144,7 +144,7 @@ namespace Ink_Canvas.Models
             double targetWidth = 290.0;
             double targetHeight = 180.0;
             double scale = Math.Min(targetWidth / original.PixelWidth, targetHeight / original.PixelHeight);
-            
+
             if (double.IsInfinity(scale) || double.IsNaN(scale) || scale <= 0)
             {
                 throw new InvalidOperationException(

@@ -1,9 +1,9 @@
 using Ink_Canvas.Helpers;
-using Ink_Canvas.Helpers.Plugins;
 using Ink_Canvas.Windows;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -68,6 +68,9 @@ namespace Ink_Canvas
         // 设置面板相关状态
         private bool isTemporarilyDisablingNoFocusMode = false;
 
+        private bool _isApplyingLanguageFromSettings;
+        private bool _isReloadingForLanguageChange;
+
         // 全屏处理状态标志
         public bool isFullScreenApplied = false;
 
@@ -78,6 +81,8 @@ namespace Ink_Canvas
 
         private static Cursor _cachedPenCursor = null;
         private static readonly object _cursorLock = new object();
+
+        internal static DateTime? TrayTemporaryShowUntilUtc;
 
         #region Window Initialization
 
@@ -94,6 +99,25 @@ namespace Ink_Canvas
                 处于画板模式内：Topmost == false / currentMode != 0
                 处于 PPT 放映内：BtnPPTSlideShowEnd.Visibility
             */
+            try
+            {
+                var path = App.RootPath + settingsFileName;
+                if (File.Exists(path))
+                {
+                    var json = File.ReadAllText(path);
+                    var loadedSettings = JsonConvert.DeserializeObject<Settings>(json);
+                    var preferredLanguage = loadedSettings?.Appearance?.Language;
+                    if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                    {
+                        LocalizationHelper.TrySetCulture(preferredLanguage);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"启动时预加载语言失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
             InitializeComponent();
 
             BlackboardLeftSide.Visibility = Visibility.Collapsed;
@@ -205,7 +229,7 @@ namespace Ink_Canvas
             inkCanvas.PreviewMouseDown += inkCanvas_PreviewMouseDown;
             inkCanvas.StylusDown += inkCanvas_StylusDown;
             inkCanvas.MouseRightButtonUp += InkCanvas_MouseRightButtonUp;
-            // 注册橡皮擦操作结束事件（StylusUp 用于自动切换回批注；MouseUp 由 XAML 绑定触发，无需再单独注册）
+            // 注册橡皮擦操作结束事件
             inkCanvas.StylusUp += inkCanvas_StylusUp;
 
             // 初始化第一页Canvas
@@ -216,7 +240,7 @@ namespace Ink_Canvas
             ShowPage(currentPageIndex);
 
             // 手动实现触摸滑动
-            const double TouchTapMovementThreshold = 15.0; 
+            const double TouchTapMovementThreshold = 15.0;
             double leftTouchStartY = 0;
             double leftTouchStartX = 0;
             double leftScrollStartOffset = 0;
@@ -826,7 +850,7 @@ namespace Ink_Canvas
                 if (drawingAttributes == null)
                     drawingAttributes = inkCanvas.DefaultDrawingAttributes;
 
-                if (penType == 1) return; 
+                if (penType == 1) return;
 
                 if (_isBoardBrushMode)
                 {
@@ -1043,7 +1067,7 @@ namespace Ink_Canvas
                 }
                 else
                 {
-                    width = sliderValue / 2.0; 
+                    width = sliderValue / 2.0;
                 }
 
                 SetBrushAttributesDirectly(targetColor, width, width);
@@ -1142,6 +1166,7 @@ namespace Ink_Canvas
         public static Settings Settings = new Settings();
         public static string settingsFileName = Path.Combine("Configs", "Settings.json");
         private bool isLoaded;
+        private bool _suppressChickenSoupSourceSelectionChanged;
         private bool forcePointEraser;
 
         /// <summary>
@@ -1155,11 +1180,20 @@ namespace Ink_Canvas
             loadPenCanvas();
             //加载设置
             LoadSettings(true);
+            ApplyLanguageFromSettings();
             AutoBackupManager.Initialize(Settings);
             CheckUpdateChannelAndTelemetryConsistency();
 
-            // 初始化Dlass上传队列（恢复上次的上传队列）
-            DlassNoteUploader.InitializeQueue();
+            // 初始化上传队列（恢复上次的上传队列）
+            try
+            {
+                UploadQueueHelper.InitializeAllQueues();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[MainWindow] 初始化上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
+                // 继续执行其他初始化操作，不中断整个加载过程
+            }
 
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
 
@@ -1287,11 +1321,13 @@ namespace Ink_Canvas
             BtnWhiteBoardSwitchPrevious.IsEnabled = CurrentWhiteboardIndex != 1;
             BorderInkReplayToolBox.Visibility = Visibility.Collapsed;
 
-            // 提前加载IA库，优化第一笔等待时间
-            if (Settings.InkToShape.IsInkToShapeEnabled && !Environment.Is64BitProcess)
+            // 提前加载识别后端，优化第一笔等待时间
+            if (ShapeRecognitionRouter.ShouldRunShapeRecognition(
+                    Settings.InkToShape.IsInkToShapeEnabled,
+                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
             {
-                var strokeEmpty = new StrokeCollection();
-                InkRecognizeHelper.RecognizeShape(strokeEmpty);
+                InkRecognizeHelper.WarmupShapeRecognition(
+                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine));
             }
 
             SystemEvents.DisplaySettingsChanged += SystemEventsOnDisplaySettingsChanged;
@@ -1299,6 +1335,7 @@ namespace Ink_Canvas
             if (Settings.Startup.IsFoldAtStartup && !App.StartWithBoardMode && !App.StartWithShowMode)
             {
                 FoldFloatingBar_MouseUp(new object(), null);
+                ScheduleStartupFoldAbsenceVerification();
             }
 
             // 恢复崩溃后操作设置
@@ -1330,8 +1367,6 @@ namespace Ink_Canvas
                 }), DispatcherPriority.Loaded);
             }
 
-            // 初始化插件系统
-            InitializePluginSystem();
             // 确保开关和设置同步
             ToggleSwitchNoFocusMode.IsOn = Settings.Advanced.IsNoFocusMode;
             ApplyNoFocusMode();
@@ -1341,7 +1376,7 @@ namespace Ink_Canvas
             // 初始化UIA置顶开关
             ToggleSwitchUIAccessTopMost.IsOn = Settings.Advanced.EnableUIAccessTopMost;
             UpdateUIAccessTopMostVisibility();
-            
+
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
 
             // 初始化橡皮擦自动切换回批注模式开关
@@ -1374,6 +1409,7 @@ namespace Ink_Canvas
 
             // 检查模式设置并应用
             CheckMainWindowVisibility();
+            EnsurePptOnlyVisibilityProbeTimer();
 
             // 检查是否通过--board参数启动，如果是则自动切换到白板模式
             if (App.StartWithBoardMode)
@@ -1407,7 +1443,7 @@ namespace Ink_Canvas
                 if (TimerControl != null && MinimizedTimerControl != null)
                 {
                     MinimizedTimerControl.SetParentControl(TimerControl);
-                    
+
                     // 设置PPT时间胶囊的父控件
                     if (PPTTimeCapsule != null)
                     {
@@ -1419,9 +1455,9 @@ namespace Ink_Canvas
                         if (TimerContainer != null && MinimizedTimerContainer != null && MinimizedTimerControl != null)
                         {
                             TimerContainer.Visibility = Visibility.Collapsed;
-                            
-                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
-                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+
+                            if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
+                                BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
                                 PPTTimeCapsule != null)
                             {
                                 MinimizedTimerContainer.Visibility = Visibility.Collapsed;
@@ -1441,20 +1477,20 @@ namespace Ink_Canvas
                             MinimizedTimerContainer.Visibility = Visibility.Collapsed;
                             MinimizedTimerControl.Visibility = Visibility.Collapsed;
                         }
-                        
+
                         // 如果启用了PPT时间胶囊，停止倒计时显示
                         if (Settings.PowerPointSettings.EnablePPTTimeCapsule && PPTTimeCapsule != null)
                         {
                             PPTTimeCapsule.StopCountdown();
                         }
                     };
-                    
+
                     // 监听计时器完成事件
                     TimerControl.TimerCompleted += (s, args) =>
                     {
                         // 如果启用了PPT时间胶囊且在PPT模式下，触发完成动画
-                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
-                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible && 
+                        if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
+                            BtnPPTSlideShowEnd.Visibility == Visibility.Visible &&
                             PPTTimeCapsule != null)
                         {
                             PPTTimeCapsule.OnTimerCompleted();
@@ -1463,6 +1499,48 @@ namespace Ink_Canvas
                 }
             }), DispatcherPriority.Loaded);
             AddTouchSupportToSliders();
+        }
+
+        private void ApplyLanguageFromSettings()
+        {
+            try
+            {
+                if (ComboBoxLanguage == null || Settings?.Appearance == null) return;
+
+                var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
+                int index;
+
+                if (string.IsNullOrWhiteSpace(preferredLanguage))
+                {
+                    index = 0;
+                }
+                else if (string.Equals(preferredLanguage, "zh-CN", StringComparison.OrdinalIgnoreCase))
+                {
+                    index = 1;
+                }
+                else if (string.Equals(preferredLanguage, "en-US", StringComparison.OrdinalIgnoreCase))
+                {
+                    index = 2;
+                }
+                else
+                {
+                    index = 0;
+                }
+
+                _isApplyingLanguageFromSettings = true;
+                try
+                {
+                    ComboBoxLanguage.SelectedIndex = index;
+                }
+                finally
+                {
+                    _isApplyingLanguageFromSettings = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化语言选项失败: {ex.Message}", LogHelper.LogType.Error);
+            }
         }
 
 
@@ -1786,8 +1864,7 @@ namespace Ink_Canvas
                 if (AvailableLatestVersion != null && Settings.Startup.IsAutoUpdate)
                 {
                     // 检查更新文件是否已下载
-                    string updatesFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "AutoUpdate");
-                    string statusFilePath = Path.Combine(updatesFolderPath, $"DownloadV{AvailableLatestVersion}Status.txt");
+                    string statusFilePath = AutoUpdateHelper.GetUpdateDownloadStatusFilePath(AvailableLatestVersion);
 
                     if (File.Exists(statusFilePath) && File.ReadAllText(statusFilePath).Trim().ToLower() == "true")
                     {
@@ -2189,6 +2266,7 @@ namespace Ink_Canvas
                     SetFloatingBarHighlightPosition("select");
                 }
             }
+
         }
 
         // 手写笔输入
@@ -2212,7 +2290,7 @@ namespace Ink_Canvas
             try
             {
                 // 检查是否在橡皮擦模式且启用了自动切换功能
-                if ((inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint || 
+                if ((inkCanvas.EditingMode == InkCanvasEditingMode.EraseByPoint ||
                      inkCanvas.EditingMode == InkCanvasEditingMode.EraseByStroke) &&
                     Settings.Canvas.EnableEraserAutoSwitchBack)
                 {
@@ -2464,28 +2542,28 @@ namespace Ink_Canvas
             switch (sectionTag.ToLower())
             {
                 case "startup":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "启动");
+                    targetGroupBox = GroupBoxStartup;
                     break;
                 case "canvas":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "画板和墨迹");
+                    targetGroupBox = GroupBoxCanvas;
                     break;
                 case "gesture":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "手势");
+                    targetGroupBox = GroupBoxGesture;
                     break;
                 case "inkrecognition":
                     targetGroupBox = GroupBoxInkRecognition;
                     break;
                 case "crashaction":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "崩溃后操作");
+                    targetGroupBox = GroupBoxCrashAction;
                     break;
                 case "ppt":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "PPT联动");
+                    targetGroupBox = GroupBoxPPT;
                     break;
                 case "advanced":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "高级设置");
+                    targetGroupBox = GroupBoxAdvanced;
                     break;
                 case "automation":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "自动化");
+                    targetGroupBox = GroupBoxAutomation;
                     break;
                 case "randomwindow":
                     targetGroupBox = GroupBoxRandWindow;
@@ -2495,13 +2573,10 @@ namespace Ink_Canvas
                     break;
                 case "shortcuts":
                     // 快捷键设置部分可能尚未实现
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "快捷键");
+                    targetGroupBox = null;
                     break;
                 case "about":
-                    targetGroupBox = FindGroupBoxByHeader(stackPanel, "关于");
-                    break;
-                case "plugins":
-                    targetGroupBox = GroupBoxPlugins;
+                    targetGroupBox = GroupBoxAbout;
                     break;
                 default:
                     // 默认滚动到顶部
@@ -2650,9 +2725,6 @@ namespace Ink_Canvas
                 case "about":
                     SetNavButtonTag("about");
                     break;
-                case "plugins":
-                    SetNavButtonTag("plugins");
-                    break;
             }
         }
 
@@ -2738,64 +2810,6 @@ namespace Ink_Canvas
         }
 
         #endregion Navigation Sidebar Methods
-
-        #region 插件???
-
-        // 添加插件系统初始化方法
-        private void InitializePluginSystem()
-        {
-            try
-            {
-                // 初始化插件管理器
-                PluginManager.Instance.Initialize();
-                LogHelper.WriteLogToFile("插件系统已初始化");
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化插件系统时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        // 添加插件管理导航点击事件处理
-        private void NavPlugins_Click(object sender, RoutedEventArgs e)
-        {
-            ShowSettingsSection("plugins");
-        }
-
-        // 添加打开插件管理器按钮点击事件
-        private void BtnOpenPluginManager_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 暂时隐藏设置面板
-                BorderSettings.Visibility = Visibility.Hidden;
-                BorderSettingsMask.Visibility = Visibility.Hidden;
-
-                // 创建并显示插件设置窗口
-                PluginSettingsWindow pluginSettingsWindow = new PluginSettingsWindow();
-
-                // 设置窗口关闭事件，用于在插件管理窗口关闭后恢复设置面板
-                pluginSettingsWindow.Closed += (s, args) =>
-                {
-                    // 恢复设置面板显示
-                    BorderSettings.Visibility = Visibility.Visible;
-                    BorderSettingsMask.Visibility = Visibility.Visible;
-                };
-
-                // 显示插件设置窗口
-                pluginSettingsWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                // 确保在发生错误时也恢复设置面板显示
-                BorderSettings.Visibility = Visibility.Visible;
-                BorderSettingsMask.Visibility = Visibility.Visible;
-
-                LogHelper.WriteLogToFile($"打开插件管理器时出错: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"打开插件管理器时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        #endregion 插件???
 
         #region 新设置窗口
 
@@ -3461,7 +3475,6 @@ namespace Ink_Canvas
                     ToggleSwitchInkFadeInPanel2.IsOn = Settings.Canvas.EnableInkFade;
                 }
 
-                LogHelper.WriteLogToFile($"墨迹渐隐功能已{(Settings.Canvas.EnableInkFade ? "启用" : "禁用")}", LogHelper.LogType.Event);
             }
             catch (Exception ex)
             {
@@ -3513,7 +3526,6 @@ namespace Ink_Canvas
                     ToggleSwitchInkFadeInPanel2.IsOn = Settings.Canvas.EnableInkFade;
                 }
 
-                LogHelper.WriteLogToFile($"批注子面板中墨迹渐隐功能已{(Settings.Canvas.EnableInkFade ? "启用" : "禁用")}", LogHelper.LogType.Event);
             }
             catch (Exception ex)
             {
@@ -3861,7 +3873,7 @@ namespace Ink_Canvas
             {
                 if (PPTTimeCapsuleContainer == null || PPTTimeCapsule == null) return;
 
-                if (Settings.PowerPointSettings.EnablePPTTimeCapsule && 
+                if (Settings.PowerPointSettings.EnablePPTTimeCapsule &&
                     BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                 {
                     PPTTimeCapsuleContainer.Visibility = Visibility.Visible;
@@ -4368,9 +4380,11 @@ namespace Ink_Canvas
                     {
                         Hide();
                         LogHelper.WriteLogToFile("已切换到仅PPT模式，主窗口已隐藏", LogHelper.LogType.Event);
+                        EnsurePptOnlyVisibilityProbeTimer();
                     }
                     else
                     {
+                        StopPptOnlyVisibilityProbeTimer();
                         // 如果切换到正常模式，显示主窗口
                         Show();
                         LogHelper.WriteLogToFile("已切换到正常模式，主窗口已显示", LogHelper.LogType.Event);
@@ -4386,14 +4400,23 @@ namespace Ink_Canvas
         /// <summary>
         /// 检查是否应该显示主窗口（基于PPT模式和PPT放映状态）
         /// </summary>
-        private void CheckMainWindowVisibility()
+        internal void CheckMainWindowVisibility()
         {
             try
             {
                 if (Settings.ModeSettings.IsPPTOnlyMode)
                 {
-                    // 仅PPT模式下，只有在PPT放映时才显示
-                    bool isInSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    if (TrayTemporaryShowUntilUtc.HasValue && DateTime.UtcNow < TrayTemporaryShowUntilUtc.Value)
+                    {
+                        if (!IsVisible)
+                            Show();
+                        return;
+                    }
+
+                    // 仅PPT模式：以 COM/UI 状态为主，Win32 检测全屏放映窗口（screenClass）作兜底，避免 COM 异常时无法唤出
+                    bool comUiSlideShow = BtnPPTSlideShowEnd.Visibility == Visibility.Visible;
+                    bool win32SlideShow = IsPowerPointSlideshowSurfacePresentWin32();
+                    bool isInSlideShow = comUiSlideShow || win32SlideShow;
                     if (isInSlideShow && !IsVisible)
                     {
                         Show();
@@ -4489,6 +4512,69 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"切换主题时出错: {ex.Message}", LogHelper.LogType.Error);
                 ShowNotification("主题切换失败");
+            }
+        }
+
+
+        private void ComboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (!isLoaded) return;
+                if (_isApplyingLanguageFromSettings) return;
+                if (_isReloadingForLanguageChange) return;
+                if (Settings?.Appearance == null) return;
+                if (ComboBoxLanguage == null) return;
+
+                var index = ComboBoxLanguage.SelectedIndex;
+                string language;
+
+                switch (index)
+                {
+                    case 1:
+                        language = "zh-CN";
+                        break;
+                    case 2:
+                        language = "en-US";
+                        break;
+                    case 0:
+                    default:
+                        language = string.Empty;
+                        break;
+                }
+
+                Settings.Appearance.Language = language;
+                SaveSettingsToFile();
+
+                LocalizationHelper.TrySetCulture(language);
+
+                _isReloadingForLanguageChange = true;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    try
+                    {
+                        var newWindow = new MainWindow
+                        {
+                            WindowState = WindowState,
+                            Left = Left,
+                            Top = Top
+                        };
+                        newWindow.Show();
+                        Close();
+                    }
+                    catch (Exception ex2)
+                    {
+                        LogHelper.WriteLogToFile($"重建主窗口以应用语言时出错: {ex2.Message}", LogHelper.LogType.Error);
+                        ShowNotification("已更新界面语言设置，重启应用后可完全生效。");
+                        _isReloadingForLanguageChange = false;
+                    }
+                }), DispatcherPriority.ApplicationIdle);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换界面语言时出错: {ex.Message}", LogHelper.LogType.Error);
+                ShowNotification("切换界面语言失败。");
+                _isReloadingForLanguageChange = false;
             }
         }
 

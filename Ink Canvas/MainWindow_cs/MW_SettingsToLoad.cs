@@ -1,4 +1,4 @@
-using Hardcodet.Wpf.TaskbarNotification;
+using H.NotifyIcon;
 using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -152,6 +152,22 @@ namespace Ink_Canvas
 
             try
             {
+                if (Settings?.Appearance != null)
+                {
+                    var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
+                    if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                    {
+                        LocalizationHelper.TrySetCulture(preferredLanguage);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"从配置应用界面语言失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            try
+            {
                 ProcessProtectionManager.ApplyFromSettings();
             }
             catch
@@ -285,6 +301,29 @@ namespace Ink_Canvas
                     }
                 }
 
+                // 初始化更新包架构
+                if (UpdatePackageArchitectureSelector != null)
+                {
+                    _isChangingUpdatePackageArchInternally = true;
+                    try
+                    {
+                        string wantTag = Settings.Startup.UpdatePackageArchitecture == UpdatePackageArchitecture.X64 ? "X64" : "X86";
+                        foreach (var item in UpdatePackageArchitectureSelector.Items)
+                        {
+                            if (item is RadioButton rb && rb.Tag != null &&
+                                string.Equals(rb.Tag.ToString(), wantTag, StringComparison.OrdinalIgnoreCase))
+                            {
+                                rb.IsChecked = true;
+                                break;
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _isChangingUpdatePackageArchInternally = false;
+                    }
+                }
+
                 AutoUpdateTimePeriodBlock.Visibility = Settings.Startup.IsAutoUpdateWithSilence
                     ? Visibility.Visible
                     : Visibility.Collapsed;
@@ -401,21 +440,26 @@ namespace Ink_Canvas
                 // 设置主题下拉框
                 ComboBoxTheme.SelectedIndex = Settings.Appearance.Theme;
 
-                ComboBoxChickenSoupSource.SelectedIndex = Settings.Appearance.ChickenSoupSource;
-                
+                _suppressChickenSoupSourceSelectionChanged = true;
+                try
+                {
+                    ComboBoxChickenSoupSource.SelectedIndex = Settings.Appearance.ChickenSoupSource;
+                }
+                finally
+                {
+                    Dispatcher.BeginInvoke(
+                        (Action)(() => { _suppressChickenSoupSourceSelectionChanged = false; }),
+                        DispatcherPriority.ContextIdle);
+                }
+
                 // 初始化自定义按钮的可见性（仅在选择API时显示）
                 if (BtnHitokotoCustomize != null)
                 {
-                    BtnHitokotoCustomize.Visibility = Settings.Appearance.ChickenSoupSource == 3 
-                        ? Visibility.Visible 
+                    BtnHitokotoCustomize.Visibility = Settings.Appearance.ChickenSoupSource == 3
+                        ? Visibility.Visible
                         : Visibility.Collapsed;
                 }
-                
-                // 初始化HitokotoCategories，如果为空则默认全选
-                if (Settings.Appearance.HitokotoCategories == null || Settings.Appearance.HitokotoCategories.Count == 0)
-                {
-                    Settings.Appearance.HitokotoCategories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
-                }
+
 
                 ToggleSwitchEnableQuickPanel.IsOn = Settings.Appearance.IsShowQuickPanel;
 
@@ -808,8 +852,21 @@ namespace Ink_Canvas
                 ToggleSwitchDisablePressure.IsOn = Settings.Canvas.DisablePressure;
                 inkCanvas.DefaultDrawingAttributes.IgnorePressure = Settings.Canvas.DisablePressure;
 
-                ComboBoxPenStyle.SelectedIndex = Settings.Canvas.InkStyle;
-                BoardComboBoxPenStyle.SelectedIndex = Settings.Canvas.InkStyle;
+                ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth.IsOn =
+                    Settings.Canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth;
+
+                if (Settings.Canvas.EnableVelocityBrushTip)
+                {
+                    Settings.Canvas.InkStyle = 3;
+                    Settings.Canvas.EnableVelocityBrushTip = false;
+                }
+
+                if (Settings.Canvas.InkStyle < 0 || Settings.Canvas.InkStyle > 3)
+                    Settings.Canvas.InkStyle = 0;
+
+                int penStyleUi = PenStyleUiIndexFromInkStyle(Settings.Canvas.InkStyle);
+                ComboBoxPenStyle.SelectedIndex = penStyleUi;
+                BoardComboBoxPenStyle.SelectedIndex = penStyleUi;
 
                 ComboBoxEraserSize.SelectedIndex = Settings.Canvas.EraserSize;
                 ComboBoxEraserSizeFloatingBar.SelectedIndex = Settings.Canvas.EraserSize;
@@ -1003,6 +1060,17 @@ namespace Ink_Canvas
             if (Settings.InkToShape != null)
             {
                 ToggleSwitchEnableInkToShape.IsOn = Settings.InkToShape.IsInkToShapeEnabled;
+
+                if (ComboBoxShapeRecognitionEngine != null)
+                {
+                    int eng = Settings.InkToShape.ShapeRecognitionEngine;
+                    if (eng < 0 || eng > 2) eng = 0;
+                    ComboBoxShapeRecognitionEngine.SelectedIndex = eng;
+                }
+
+                if (ToggleSwitchEnableWinRtHandwritingStrokeBeautify != null)
+                    ToggleSwitchEnableWinRtHandwritingStrokeBeautify.IsOn =
+                        Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify;
 
                 ToggleSwitchEnableInkToShapeNoFakePressureRectangle.IsOn =
                     Settings.InkToShape.IsInkToShapeNoFakePressureRectangle;
@@ -1291,7 +1359,7 @@ namespace Ink_Canvas
                 {
                     if (string.IsNullOrWhiteSpace(Settings.Canvas.BrushAutoRestoreColor))
                     {
-                        Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000"; 
+                        Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000";
                     }
 
                     bool found = false;
@@ -1312,13 +1380,13 @@ namespace Ink_Canvas
                             break;
                         }
                     }
-                    
+
                     if (!found && ComboBoxBrushAutoRestoreColor.Items.Count > 0)
                     {
                         ComboBoxBrushAutoRestoreColor.SelectionChanged -= ComboBoxBrushAutoRestoreColor_SelectionChanged;
                         try
                         {
-                            ComboBoxBrushAutoRestoreColor.SelectedIndex = 0; 
+                            ComboBoxBrushAutoRestoreColor.SelectedIndex = 0;
                             Settings.Canvas.BrushAutoRestoreColor = "#FFFF0000";
                         }
                         finally
@@ -1331,8 +1399,8 @@ namespace Ink_Canvas
                 // 同步粗细滑块
                 if (BrushAutoRestoreWidthSlider != null)
                 {
-                    BrushAutoRestoreWidthSlider.Value = Settings.Canvas.BrushAutoRestoreWidth > 0 
-                        ? Settings.Canvas.BrushAutoRestoreWidth 
+                    BrushAutoRestoreWidthSlider.Value = Settings.Canvas.BrushAutoRestoreWidth > 0
+                        ? Settings.Canvas.BrushAutoRestoreWidth
                         : 5;
                 }
 
@@ -1434,7 +1502,7 @@ namespace Ink_Canvas
                 Settings defaultSettings = new Settings();
 
                 // 将默认配置和用户配置都序列化为JObject
-                JObject defaultConfigObj = JObject.FromObject(defaultSettings);
+                JObject defaultConfigObj = JObject.FromObject(defaultSettings); EnsureDefaultConfigSchemaIncludesIgnoredNullKeys(defaultConfigObj);
                 JObject userConfigObj = JObject.Parse(userConfigJson);
 
                 // 记录是否有清理操作
@@ -1475,6 +1543,13 @@ namespace Ink_Canvas
         /// 7. 删除标记的键
         /// 8. 设置变更标志
         /// </remarks>
+        private static void EnsureDefaultConfigSchemaIncludesIgnoredNullKeys(JObject defaultConfigObj)
+        {
+            if (defaultConfigObj == null) return;
+            if (defaultConfigObj["appearance"] is JObject appearance && !appearance.ContainsKey("hitokotoCategories"))
+                appearance["hitokotoCategories"] = JValue.CreateNull();
+        }
+
         private void RemoveObsoleteProperties(JObject userObj, JObject defaultObj, ref bool hasChanges)
         {
             if (userObj == null || defaultObj == null)

@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -52,6 +51,14 @@ namespace Ink_Canvas
         /// <param name="e">鼠标按钮事件的参数。</param>
         private void BtnToggleVideoPresenter_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            if (Settings?.Canvas?.LaunchSeewoVideoShowcaseForWhiteboardBooth == true)
+            {
+                // 与主窗口「希沃视频展台」入口（BoardLaunchEasiCamera_MouseUp）一致：先走黑板/白板入口逻辑再启动
+                ImageBlackboard_MouseUp(null, null);
+                SoftwareLauncher.LaunchEasiCamera("希沃视频展台");
+                return;
+            }
+
             ToggleVideoPresenterSidebar();
         }
 
@@ -143,6 +150,36 @@ namespace Ink_Canvas
             }
         }
 
+        private void CloseVideoPresenterSidebarAndReleaseResources()
+        {
+            if (VideoPresenterSidebar != null)
+            {
+                VideoPresenterSidebar.Visibility = Visibility.Collapsed;
+            }
+
+            StopVideoPresenterPreviewAndFrameCache(clearPreviewImage: true);
+        }
+
+        private void StopVideoPresenterPreviewAndFrameCache(bool clearPreviewImage)
+        {
+            if (BtnCapturePhoto != null)
+            {
+                BtnCapturePhoto.IsEnabled = false;
+            }
+
+            if (clearPreviewImage && VideoPresenterPreviewImage != null)
+            {
+                VideoPresenterPreviewImage.Source = null;
+            }
+
+            try { _cameraService?.StopPreview(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            lock (_videoPresenterFrameLock)
+            {
+                _lastFrame?.Dispose();
+                _lastFrame = null;
+            }
+        }
+
         /// <summary>
         /// 延迟初始化摄像头服务并订阅其帧和错误事件；如果服务已存在则不做任何操作。
         /// </summary>
@@ -181,7 +218,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="frame">来自摄像头的位图帧；为 null 时忽略。</param>
         /// <remarks>
-        /// 缓存该帧为最新帧、更新预览控件的图像来源、启用拍照按钮并尝试在当前白板页上刷新实时画面。
+        /// 缓存该帧为最新帧，并通过 CameraService 提供的 BitmapSource 直接更新预览与实时上屏
         /// </remarks>
         private void CameraService_FrameReceived(object sender, Bitmap frame)
         {
@@ -206,15 +243,15 @@ namespace Ink_Canvas
                     _lastFrame = (Bitmap)serviceCopy.Clone();
                 }
 
-                var preview = ConvertBitmapToBitmapImage(serviceCopy);
+                var previewSource = _cameraService?.GetCurrentFrameAsBitmapSource();
                 serviceCopy.Dispose();
-                if (preview == null) return;
+                if (previewSource == null) return;
 
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     if (VideoPresenterPreviewImage != null)
                     {
-                        VideoPresenterPreviewImage.Source = preview;
+                        VideoPresenterPreviewImage.Source = previewSource;
                     }
 
                     if (BtnCapturePhoto != null)
@@ -223,7 +260,7 @@ namespace Ink_Canvas
                     }
 
                     // 实时上屏：刷新当前页的画面元素
-                    TryUpdateLiveFrameOnCanvas(preview);
+                    TryUpdateLiveFrameOnCanvas(previewSource);
                 }));
             }
             catch
@@ -247,10 +284,12 @@ namespace Ink_Canvas
         /// <remarks>
         /// 如果当前页面未启用实时显示，或画布/对应图像元素不可用，则函数不执行任何操作。
         /// </remarks>
-        private void TryUpdateLiveFrameOnCanvas(BitmapImage preview)
+        private void TryUpdateLiveFrameOnCanvas(ImageSource preview)
         {
             try
             {
+                if (preview == null) return;
+
                 int page = GetCurrentPageIndex();
                 if (!_liveEnabledPages.Contains(page)) return;
                 if (inkCanvas == null) return;
@@ -441,6 +480,7 @@ namespace Ink_Canvas
             ApplyBoothButtonHighlight(BtnToggleVideoPresenterLiveOnCanvas, true);
             int page = GetCurrentPageIndex();
             _liveEnabledPages.Add(page);
+            StartVideoPresenterPreviewForCurrentPageIfNeeded();
 
             var img = EnsureLiveFrameElementForPage(page);
             ApplyLiveFrameLayoutForPage(page, img);
@@ -459,9 +499,9 @@ namespace Ink_Canvas
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
             // 立即用侧栏预览刷新一次
-            if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
+            if (VideoPresenterPreviewImage?.Source is ImageSource src)
             {
-                img.Source = bi;
+                img.Source = src;
             }
         }
 
@@ -487,6 +527,44 @@ namespace Ink_Canvas
                     }
                 }
                 catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+            }
+
+            if (_liveEnabledPages.Count == 0)
+            {
+                StopVideoPresenterPreviewAndFrameCache(clearPreviewImage: false);
+            }
+        }
+
+        private void StartVideoPresenterPreviewForCurrentPageIfNeeded()
+        {
+            try
+            {
+                EnsureCameraService();
+                if (_cameraService == null || _cameraService.IsCapturing) return;
+
+                int page = GetCurrentPageIndex();
+                int idx = 0;
+                if (_cameraIndexByPage.TryGetValue(page, out int savedIdx))
+                {
+                    idx = savedIdx;
+                }
+
+                if (_cameraService.AvailableCameras == null || _cameraService.AvailableCameras.Count == 0)
+                {
+                    _cameraService.RefreshCameraList();
+                }
+
+                if (_cameraService.AvailableCameras == null || _cameraService.AvailableCameras.Count == 0)
+                {
+                    return;
+                }
+
+                idx = Math.Max(0, Math.Min(idx, _cameraService.AvailableCameras.Count - 1));
+                _cameraService.StartPreview(idx);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"启动视频展台预览失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -541,14 +619,15 @@ namespace Ink_Canvas
                         inkCanvas.Children.Add(img);
                     }
 
-                    if (VideoPresenterPreviewImage?.Source is BitmapImage bi)
+                    if (VideoPresenterPreviewImage?.Source is ImageSource src)
                     {
-                        img.Source = bi;
+                        img.Source = src;
                     }
                 }
 
-                // 按页摄像头索引：切页后自动切回该页的摄像头
-                if (_cameraIndexByPage.TryGetValue(page, out int idx))
+                // 按页摄像头索引：仅在展台侧栏可见时，切页后自动切回该页的摄像头
+                if (VideoPresenterSidebar?.Visibility == Visibility.Visible
+                    && _cameraIndexByPage.TryGetValue(page, out int idx))
                 {
                     EnsureCameraService();
                     _cameraService?.StartPreview(idx);
@@ -607,12 +686,12 @@ namespace Ink_Canvas
                             {
                                 var ci = new CapturedImage(bmpImage);
                                 _capturedPhotos.Insert(0, ci);
-                                
+
                                 while (_capturedPhotos.Count > MaxCapturedPhotos)
                                 {
                                     _capturedPhotos.RemoveAt(_capturedPhotos.Count - 1);
                                 }
-                                
+
                                 UpdateCapturedPhotosDisplay();
                             }));
                         }
@@ -767,11 +846,7 @@ namespace Ink_Canvas
         {
             try
             {
-                // 收起侧栏
-                if (VideoPresenterSidebar != null)
-                {
-                    VideoPresenterSidebar.Visibility = Visibility.Collapsed;
-                }
+                CloseVideoPresenterSidebarAndReleaseResources();
 
                 if (BtnToggleVideoPresenterLiveOnCanvas != null)
                 {
@@ -796,7 +871,6 @@ namespace Ink_Canvas
                     }
                 }
 
-                try { _cameraService?.StopPreview(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
             }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
         }

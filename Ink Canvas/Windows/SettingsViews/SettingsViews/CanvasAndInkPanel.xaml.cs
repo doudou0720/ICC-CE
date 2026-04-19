@@ -1,11 +1,7 @@
-using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Ink_Canvas.Windows.SettingsViews
@@ -105,6 +101,9 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 插入图片时自动压缩
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchCompressPicturesUploaded"), canvas.IsCompressPicturesUploaded);
 
+                // 白板展台按钮启动希沃视频展台
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth"), canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth);
+
                 // 保留双曲线渐近线
                 SetOptionButtonState("HyperbolaAsymptote", (int)canvas.HyperbolaAsymptoteOption);
 
@@ -156,7 +155,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 // 自动保存幻灯片墨迹
                 if (MainWindow.Settings.PowerPointSettings != null)
                 {
-                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoSaveStrokesInPowerPoint"), 
+                    SetToggleSwitchState(FindToggleSwitch("ToggleSwitchAutoSaveStrokesInPowerPoint"),
                         MainWindow.Settings.PowerPointSettings.IsAutoSaveStrokesInPowerPoint);
                 }
             }
@@ -182,8 +181,8 @@ namespace Ink_Canvas.Windows.SettingsViews
         private void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
-            toggleSwitch.Background = isOn 
-                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
+            toggleSwitch.Background = isOn
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228))
                 : (ThemeHelper.IsDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225)));
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
@@ -200,9 +199,9 @@ namespace Ink_Canvas.Windows.SettingsViews
         {
             var buttons = new[] { "VerySmall", "Small", "Medium", "Large", "VeryLarge" };
             var hyperbolaButtons = new[] { "Yes", "No", "Ask" };
-            
+
             string[] buttonNames = group == "EraserSize" ? buttons : hyperbolaButtons;
-            
+
             bool isDarkTheme = ThemeHelper.IsDarkTheme;
             var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
             var unselectedBrush = new SolidColorBrush(Colors.Transparent);
@@ -251,6 +250,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                         return canvas.EnablePressureTouchMode;
                     case "DisablePressure":
                         return canvas.DisablePressure;
+                    case "LaunchSeewoVideoShowcaseForWhiteboardBooth":
+                        return canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth;
                     case "HideStrokeWhenSelecting":
                         return canvas.HideStrokeWhenSelecting;
                     case "ClearCanvasAndClearTimeMachine":
@@ -344,6 +345,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                         MainWindowSettingsHelper.InvokeToggleSwitchToggled("ToggleSwitchEnablePressureTouchMode", false);
                         SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnablePressureTouchMode"), false);
                     }
+                    break;
+
+                case "LaunchSeewoVideoShowcaseForWhiteboardBooth":
+                    MainWindowSettingsHelper.InvokeToggleSwitchToggled(
+                        "ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth", newState);
                     break;
 
                 case "HideStrokeWhenSelecting":
@@ -664,7 +670,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 MainWindowSettingsHelper.InvokeSliderValueChanged("InkFadeTimeSlider", value);
             }
         }
-        
+
         /// <summary>
         /// 应用主题
         /// </summary>

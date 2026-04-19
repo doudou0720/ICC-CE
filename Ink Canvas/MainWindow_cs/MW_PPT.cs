@@ -4,6 +4,7 @@ using Microsoft.Office.Core;
 using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -73,22 +74,22 @@ namespace Ink_Canvas
         /// PowerPoint应用程序实例，用于与PowerPoint进行交互。
         /// </summary>
         public static Microsoft.Office.Interop.PowerPoint.Application pptApplication;
-        
+
         /// <summary>
         /// 当前活动的PowerPoint演示文稿。
         /// </summary>
         public static Presentation presentation;
-        
+
         /// <summary>
         /// 当前演示文稿的幻灯片集合。
         /// </summary>
         public static Slides slides;
-        
+
         /// <summary>
         /// 当前活动的幻灯片。
         /// </summary>
         public static Slide slide;
-        
+
         /// <summary>
         /// 当前演示文稿的幻灯片总数。
         /// </summary>
@@ -99,8 +100,8 @@ namespace Ink_Canvas
         /// <summary>
         /// 幻灯片放映结束事件重入保护标志，防止重复处理放映结束事件。
         /// </summary>
-        private bool isEnteredSlideShowEndEvent; 
-        
+        private bool isEnteredSlideShowEndEvent;
+
         /// <summary>
         /// 演示文稿是否有黑边的指示标志。
         /// </summary>
@@ -111,17 +112,17 @@ namespace Ink_Canvas
         /// 用于处理长按翻页功能的定时器。
         /// </summary>
         private DispatcherTimer _longPressTimer;
-        
+
         /// <summary>
         /// 长按翻页方向标志，true表示下一页，false表示上一页。
         /// </summary>
         private bool _isLongPressNext = true; // true为下一页，false为上一页
-        
+
         /// <summary>
         /// 长按延迟时间（毫秒），即用户需要按住按钮多长时间才开始连续翻页。
         /// </summary>
         private const int LongPressDelay = 500; // 长按延迟时间（毫秒）
-        
+
         /// <summary>
         /// 长按翻页间隔（毫秒），即连续翻页的时间间隔。
         /// </summary>
@@ -132,7 +133,7 @@ namespace Ink_Canvas
         /// 用于监控PowerPoint应用程序状态的定时器。
         /// </summary>
         private DispatcherTimer _powerPointProcessMonitorTimer;
-        
+
         /// <summary>
         /// 应用程序监控间隔（毫秒），即每隔多长时间检查一次PowerPoint应用程序状态。
         /// </summary>
@@ -143,12 +144,12 @@ namespace Ink_Canvas
         /// 上次播放的幻灯片页码。
         /// </summary>
         private int _lastPlaybackPage = 0;
-        
+
         /// <summary>
         /// 是否应该导航到上次播放页码的标志。
         /// </summary>
         private bool _shouldNavigateToLastPage = false;
-        
+
         // 当前播放页码跟踪
         /// <summary>
         /// 当前幻灯片放映的位置（页码）。
@@ -162,11 +163,23 @@ namespace Ink_Canvas
         /// 用于在PowerPoint连接断开后延迟退出PPT模式的定时器。
         /// </summary>
         private DispatcherTimer _exitPPTModeAfterDisconnectTimer;
-        
+
         /// <summary>
         /// 断开连接后退出PPT模式的延迟时间（毫秒），即连接断开后多长时间才退出PPT模式。
         /// </summary>
-        private const int ExitPPTModeAfterDisconnectDelayMs = 1200; 
+        private const int ExitPPTModeAfterDisconnectDelayMs = 1200;
+
+        /// <summary>
+        /// 仅PPT模式下周期性探测放映界面（COM 失效时依赖 Win32），间隔不宜过小以免多余开销。
+        /// </summary>
+        private DispatcherTimer _pptOnlyVisibilityProbeTimer;
+
+        private const int PptOnlyVisibilityProbeIntervalMs = 800;
+
+        /// <summary>
+        /// PowerPoint 全屏放映顶层窗口类名（与编辑态 PPTFrameClass 区分）。
+        /// </summary>
+        private const string PowerPointSlideShowWindowClassName = "screenClass";
         #endregion
 
         #region PPT Managers
@@ -174,12 +187,12 @@ namespace Ink_Canvas
         /// PPT链接管理器，用于管理与PowerPoint的连接和事件处理。
         /// </summary>
         private IPPTLinkManager _pptManager;
-        
+
         /// <summary>
         /// PPT墨迹管理器，用于管理PowerPoint幻灯片上的墨迹。
         /// </summary>
         private PPTInkManager _singlePPTInkManager;
-        
+
         /// <summary>
         /// PPT UI管理器，用于管理与PowerPoint相关的用户界面元素。
         /// </summary>
@@ -638,6 +651,8 @@ namespace Ink_Canvas
                 ClosePowerPointApplication();
                 ClearStaticInteropState();
 
+                StopPptOnlyVisibilityProbeTimer();
+
                 LogHelper.WriteLogToFile("PPT管理器已释放", LogHelper.LogType.Event);
             }
             catch (Exception ex)
@@ -700,6 +715,104 @@ namespace Ink_Canvas
         }
         #endregion
 
+        #region 仅PPT模式可见性（COM + Win32 兜底）
+
+        /// <summary>
+        /// 在启用「仅PPT模式」时启动轻量探测，COM 事件延迟或失效时仍可根据全屏放映窗口显示主窗口。
+        /// </summary>
+        internal void EnsurePptOnlyVisibilityProbeTimer()
+        {
+            try
+            {
+                if (!Settings.ModeSettings.IsPPTOnlyMode)
+                {
+                    StopPptOnlyVisibilityProbeTimer();
+                    return;
+                }
+
+                if (_pptOnlyVisibilityProbeTimer == null)
+                {
+                    _pptOnlyVisibilityProbeTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(PptOnlyVisibilityProbeIntervalMs)
+                    };
+                    _pptOnlyVisibilityProbeTimer.Tick += (_, __) => CheckMainWindowVisibility();
+                }
+
+                if (!_pptOnlyVisibilityProbeTimer.IsEnabled)
+                    _pptOnlyVisibilityProbeTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"仅PPT可见性探测计时器启动失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+        }
+
+        internal void StopPptOnlyVisibilityProbeTimer()
+        {
+            try
+            {
+                _pptOnlyVisibilityProbeTimer?.Stop();
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>
+        /// 检测是否存在 PowerPoint 全屏放映顶层窗口（类名 screenClass，进程 powerpnt），用于 COM 不可用时的兜底。
+        /// </summary>
+        internal bool IsPowerPointSlideshowSurfacePresentWin32()
+        {
+            if (!Settings.ModeSettings.IsPPTOnlyMode)
+                return false;
+
+            try
+            {
+                bool found = false;
+                EnumWindows((hWnd, _) =>
+                {
+                    if (!IsWindow(hWnd) || !IsWindowVisible(hWnd))
+                        return true;
+
+                    var cls = new StringBuilder(256);
+                    if (GetClassName(hWnd, cls, cls.Capacity) == 0)
+                        return true;
+
+                    if (!string.Equals(cls.ToString(), PowerPointSlideShowWindowClassName, StringComparison.OrdinalIgnoreCase))
+                        return true;
+
+                    try
+                    {
+                        GetWindowThreadProcessId(hWnd, out uint pid);
+                        using (var proc = Process.GetProcessById((int)pid))
+                        {
+                            var name = proc.ProcessName;
+                            if (string.Equals(name, "POWERPNT", StringComparison.OrdinalIgnoreCase))
+                            {
+                                found = true;
+                                return false;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    return true;
+                }, IntPtr.Zero);
+
+                return found;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"Win32 检测 PPT 放映窗口失败: {ex.Message}", LogHelper.LogType.Trace);
+                return false;
+            }
+        }
+
+        #endregion
+
         #region New PPT Event Handlers
         /// <summary>
         /// 处理 PowerPoint 连接状态的变更：更新界面连接/放映状态，并在断开时启动一个短延迟以安全退出 PPT 模式。
@@ -724,23 +837,15 @@ namespace Ink_Canvas
                         LogHelper.WriteLogToFile("PPT连接已断开", LogHelper.LogType.Event);
                         _singlePPTInkManager?.ClearAllStrokes();
                         _exitPPTModeAfterDisconnectTimer?.Stop();
-                        _exitPPTModeAfterDisconnectTimer = new DispatcherTimer
-                        {
-                            Interval = TimeSpan.FromMilliseconds(ExitPPTModeAfterDisconnectDelayMs)
-                        };
-                        _exitPPTModeAfterDisconnectTimer.Tick += (s, e) =>
-                        {
-                            _exitPPTModeAfterDisconnectTimer?.Stop();
-                            _exitPPTModeAfterDisconnectTimer = null;
-                            if (_pptManager?.IsConnected != true)
-                            {
-                                _pptUIManager?.UpdateSlideShowStatus(false);
-                                _pptUIManager?.UpdateSidebarExitButtons(false);
-                                ResetPPTStateVariables();
-                                _ = HandleManualSlideShowEnd();
-                            }
-                        };
-                        _exitPPTModeAfterDisconnectTimer.Start();
+                        _exitPPTModeAfterDisconnectTimer = null;
+                        _pptUIManager?.UpdateSlideShowStatus(false);
+                        _pptUIManager?.UpdateSidebarExitButtons(false);
+                        ResetPPTStateVariables();
+                        _ = HandleManualSlideShowEnd();
+                        if (Settings.PowerPointSettings.UseRotPptLink)
+                            _pptManager?.ReloadConnection();
+
+                        CheckMainWindowVisibility();
                     }
                 });
             }
@@ -921,14 +1026,36 @@ namespace Ink_Canvas
                 string presentationName = null;
                 Presentation activePresentation = null;
 
-                if (wn?.View != null && wn.Presentation != null)
+                if (wn != null)
                 {
-                    activePresentation = wn.Presentation;
-                    currentSlide = wn.View.CurrentShowPosition;
-                    totalSlides = activePresentation.Slides.Count;
-                    presentationName = activePresentation.Name;
+                    try
+                    {
+                        if (wn.View != null && wn.Presentation != null)
+                        {
+                            activePresentation = wn.Presentation;
+                            currentSlide = wn.View.CurrentShowPosition;
+                            totalSlides = activePresentation.Slides.Count;
+                            presentationName = activePresentation.Name;
+                        }
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        activePresentation = null;
+                        currentSlide = 0;
+                        totalSlides = 0;
+                        presentationName = null;
+                    }
+                    catch (Exception)
+                    {
+                        activePresentation = null;
+                        currentSlide = 0;
+                        totalSlides = 0;
+                        presentationName = null;
+                    }
                 }
-                else
+
+                if (activePresentation == null)
                 {
                     activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
                     currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
@@ -1102,6 +1229,9 @@ namespace Ink_Canvas
 
                     // 加载当前页墨迹
                     LoadCurrentSlideInk(currentSlide);
+
+                    // 仅PPT模式：放映开始立即同步主窗口可见性（勿仅依赖 SlideShowStateChanged 定时器）
+                    CheckMainWindowVisibility();
                 });
 
                 if (!isFloatingBarFolded)
@@ -1134,16 +1264,47 @@ namespace Ink_Canvas
         {
             try
             {
-                if (wn?.View == null || wn.Presentation == null) return;
+                int currentSlide = 0;
+                int totalSlides = 0;
 
-                int currentSlide = wn.View.CurrentShowPosition;
-                int totalSlides = wn.Presentation.Slides.Count;
+                if (wn != null)
+                {
+                    try
+                    {
+                        if (wn.View != null)
+                        {
+                            currentSlide = wn.View.CurrentShowPosition;
+                        }
+                    }
+                    catch (COMException comEx)
+                    {
+                        var hr = (uint)comEx.HResult;
+                        LogHelper.WriteLogToFile(
+                            $"通过 SlideShowWindow.View 获取当前页失败: {comEx.Message} (HR: 0x{hr:X8})，将回退到 PPT 管理器获取",
+                            LogHelper.LogType.Warning);
+                        currentSlide = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile(
+                            $"通过 SlideShowWindow.View 获取当前页时发生异常，将回退到 PPT 管理器获取: {ex}",
+                            LogHelper.LogType.Warning);
+                        currentSlide = 0;
+                    }
+                }
+
+                if (currentSlide <= 0)
+                {
+                    currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                }
+
+                totalSlides = _pptManager?.SlidesCount ?? 0;
 
                 if (currentSlide == _previousSlideID) return;
 
                 int prev = _previousSlideID;
 
-                Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     var ms = new MemoryStream();
                     inkCanvas.Strokes.Save(ms);
@@ -1185,7 +1346,7 @@ namespace Ink_Canvas
                         }).ContinueWith(t =>
                         {
                             if (t.IsFaulted || t.Result == null) return;
-                            Application.Current.Dispatcher.Invoke(() =>
+                            Application.Current.Dispatcher.InvokeAsync(() =>
                             {
                                 if (_currentSlideShowPosition != loadingPage) return;
                                 inkCanvas.Strokes.Add(t.Result);
@@ -1389,9 +1550,11 @@ namespace Ink_Canvas
                         if (GridTransparencyFakeBackground.Background != Brushes.Transparent)
                             BtnHideInkCanvas_Click(BtnHideInkCanvas, null);
                         SetCurrentToolMode(InkCanvasEditingMode.None);
-                        
+
                         UpdateCurrentToolMode("cursor");
                         SetFloatingBarHighlightPosition("cursor");
+
+                        CheckMainWindowVisibility();
                     }
                     catch (Exception ex)
                     {
@@ -1742,7 +1905,7 @@ namespace Ink_Canvas
                 // 重置上次播放位置相关字段
                 _lastPlaybackPage = 0;
                 _shouldNavigateToLastPage = false;
-                
+
                 // 重置当前播放页码跟踪
                 _currentSlideShowPosition = 0;
                 _previousSlideID = 0;
@@ -1879,7 +2042,7 @@ namespace Ink_Canvas
                 {
                     Settings.PowerPointSettings.PowerPointSupport = true;
                     ToggleSwitchSupportPowerPoint.IsOn = true;
-                    
+
                     // 启动PPT监控
                     if (_pptManager == null)
                     {
@@ -1930,7 +2093,7 @@ namespace Ink_Canvas
         /// 指示是否正在显示恢复隐藏幻灯片的窗口
         /// </summary>
         public static bool IsShowingRestoreHiddenSlidesWindow;
-        
+
         /// <summary>
         /// 指示是否正在显示自动播放提示窗口
         /// </summary>
@@ -2248,6 +2411,7 @@ namespace Ink_Canvas
                         _pptUIManager?.UpdateSlideShowStatus(false);
                         _pptUIManager?.UpdateSidebarExitButtons(false);
                         LogHelper.WriteLogToFile("手动更新放映结束UI状态", LogHelper.LogType.Trace);
+                        CheckMainWindowVisibility();
                     });
 
                     // 手动处理自动收纳，因为OnPPTSlideShowEnd事件可能未触发
@@ -2262,7 +2426,7 @@ namespace Ink_Canvas
                 {
                     PureViewboxFloatingBarMarginAnimationInDesktopMode();
                     if (Settings.Automation.IsAutoEnterAnnotationModeWhenExitFoldMode)
-                    {   
+                    {
                         await Task.Delay(350);
                         if (!isFloatingBarFolded)
                         {
@@ -2280,6 +2444,7 @@ namespace Ink_Canvas
                 {
                     _pptUIManager?.UpdateSlideShowStatus(false);
                     _pptUIManager?.UpdateSidebarExitButtons(false);
+                    CheckMainWindowVisibility();
                 });
 
                 // 异常情况下也手动处理自动收纳

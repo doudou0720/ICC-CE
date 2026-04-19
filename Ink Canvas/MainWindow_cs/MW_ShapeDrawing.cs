@@ -1,4 +1,5 @@
 using Ink_Canvas.Helpers;
+using iNKORE.UI.WPF.Modern.Common.IconKeys;
 using iNKORE.UI.WPF.Modern.Controls;
 using System;
 using System.Collections.Generic;
@@ -113,9 +114,9 @@ namespace Ink_Canvas
             ToggleSwitchDrawShapeBorderAutoHide.IsOn = !ToggleSwitchDrawShapeBorderAutoHide.IsOn;
 
             if (ToggleSwitchDrawShapeBorderAutoHide.IsOn)
-                ((SymbolIcon)sender).Symbol = Symbol.Pin;
+                ((FontIcon)sender).Icon = SegoeFluentIcons.Pin;
             else
-                ((SymbolIcon)sender).Symbol = Symbol.UnPin;
+                ((FontIcon)sender).Icon = SegoeFluentIcons.Unpin;
         }
 
         /// <summary>
@@ -2082,12 +2083,12 @@ namespace Ink_Canvas
         /// 用于标识是否是长方体绘制的第一次触摸，第一次触摸绘制正面矩形，第二次触摸绘制深度
         /// </remarks>
         private bool isFirstTouchCuboid = true;
-        
+
         /// <summary>
         /// 长方体正面矩形的起始点
         /// </summary>
         private Point CuboidFrontRectIniP;
-        
+
         /// <summary>
         /// 长方体正面矩形的结束点
         /// </summary>
@@ -2100,7 +2101,7 @@ namespace Ink_Canvas
         /// 用于存储当前正在绘制的临时笔画，在绘制过程中实时更新
         /// </remarks>
         private Stroke lastTempStroke;
-        
+
         /// <summary>
         /// 上一次的临时笔画集合
         /// </summary>
@@ -2122,7 +2123,7 @@ namespace Ink_Canvas
         /// 上一次更新时间
         /// </summary>
         private DateTime lastUpdateTime = DateTime.MinValue;
-        
+
         /// <summary>
         /// 更新节流时间（毫秒）
         /// </summary>
@@ -2493,7 +2494,7 @@ namespace Ink_Canvas
         /// 用于标识鼠标是否处于按下状态，在绘制过程中使用
         /// </remarks>
         private bool isMouseDown;
-        
+
         /// <summary>
         /// 触摸按下状态标志
         /// </summary>
@@ -2537,7 +2538,7 @@ namespace Ink_Canvas
         private void inkCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (isMouseDown) MouseTouchMove(e.GetPosition(inkCanvas));
-            
+
             if (Settings.Canvas.IsShowCursor)
             {
                 SetCursorBasedOnEditingMode(inkCanvas);
@@ -2564,7 +2565,7 @@ namespace Ink_Canvas
         /// </remarks>
         private void inkCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            HandleEraserOperationEnded(); // 橡皮擦自动切换回批注模式：松手后启动/重置计时
+            HandleEraserOperationEnded();
             inkCanvas.ReleaseMouseCapture();
             ViewboxFloatingBar.IsHitTestVisible = true;
             BlackboardUIGridForInkReplay.IsHitTestVisible = true;

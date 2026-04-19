@@ -32,6 +32,9 @@ namespace Ink_Canvas
         [JsonProperty("dlass")]
         public DlassSettings Dlass { get; set; } = new DlassSettings();
 
+        [JsonProperty("upload")]
+        public UploadSettings Upload { get; set; } = new UploadSettings();
+
         [JsonProperty("security")]
         public Security Security { get; set; } = new Security();
     }
@@ -50,6 +53,8 @@ namespace Ink_Canvas
         public bool RequirePasswordOnEnterSettings { get; set; } = false;
         [JsonProperty("requirePasswordOnResetConfig")]
         public bool RequirePasswordOnResetConfig { get; set; } = false;
+        [JsonProperty("requirePasswordOnModifyOrClearNameList")]
+        public bool RequirePasswordOnModifyOrClearNameList { get; set; } = false;
         [JsonProperty("enableProcessProtection")]
         public bool EnableProcessProtection { get; set; } = true;
     }
@@ -64,6 +69,7 @@ namespace Ink_Canvas
         public double InkAlpha { get; set; } = 255;
         [JsonProperty("isShowCursor")]
         public bool IsShowCursor { get; set; }
+        /// <summary>笔锋存储值：0 基于点集，1 基于速率，2 关闭，3 实时笔锋（速度与压感混合）。界面下拉顺序为实时笔锋、点集、速率、关闭。</summary>
         [JsonProperty("inkStyle")]
         public int InkStyle { get; set; }
         [JsonProperty("eraserSize")]
@@ -102,13 +108,10 @@ namespace Ink_Canvas
         public bool LineEndpointSnapping { get; set; } = true; // 是否启用直线端点吸附
         [JsonProperty("lineEndpointSnappingThreshold")]
         public int LineEndpointSnappingThreshold { get; set; } = 15; // 直线端点吸附的距离阈值（像素）
-
         [JsonProperty("usingWhiteboard")]
         public bool UsingWhiteboard { get; set; }
-
         [JsonProperty("customBackgroundColor")]
         public string CustomBackgroundColor { get; set; } = "#162924";
-
         [JsonProperty("hyperbolaAsymptoteOption")]
         public OptionalOperation HyperbolaAsymptoteOption { get; set; } = OptionalOperation.Ask;
         [JsonProperty("isCompressPicturesUploaded")]
@@ -121,8 +124,6 @@ namespace Ink_Canvas
         public bool ClearCanvasAlsoClearImages { get; set; } = true;
         [JsonProperty("showCircleCenter")]
         public bool ShowCircleCenter { get; set; }
-
-        // 墨迹渐隐功能设置
         [JsonProperty("enableInkFade")]
         public bool EnableInkFade { get; set; } = false;
         [JsonProperty("inkFadeTime")]
@@ -138,13 +139,21 @@ namespace Ink_Canvas
         [JsonProperty("brushAutoRestoreColor")]
         public string BrushAutoRestoreColor { get; set; } = "#FFFF0000";
         [JsonProperty("brushAutoRestoreWidth")]
-        public double BrushAutoRestoreWidth { get; set; } =5;
+        public double BrushAutoRestoreWidth { get; set; } = 5;
         [JsonProperty("brushAutoRestoreAlpha")]
         public int BrushAutoRestoreAlpha { get; set; } = 255;
         [JsonProperty("enableEraserAutoSwitchBack")]
         public bool EnableEraserAutoSwitchBack { get; set; } = false;
         [JsonProperty("eraserAutoSwitchBackDelaySeconds")]
         public int EraserAutoSwitchBackDelaySeconds { get; set; } = 10; // 默认10秒
+        [JsonProperty("velocityBrushTipMix")]
+        public double VelocityBrushTipMix { get; set; } = 0.45;
+        [JsonProperty("enableVelocityBrushTip")]
+        public bool EnableVelocityBrushTip { get; set; }
+
+        /// <summary>为 true 时，白板工具栏「展台」按钮启动希沃视频展台（sweclauncher），否则使用内置展台。</summary>
+        [JsonProperty("launchSeewoVideoShowcaseForWhiteboardBooth")]
+        public bool LaunchSeewoVideoShowcaseForWhiteboardBooth { get; set; } = false;
 
     }
 
@@ -183,6 +192,15 @@ namespace Ink_Canvas
         Beta
     }
 
+    /// <summary>自动更新要下载的安装包架构（与当前运行进程的位数无关）。默认 32 位包；64 位包对应发布物 ZIP 文件名在 .zip 前增加 -x64。</summary>
+    public enum UpdatePackageArchitecture
+    {
+        /// <summary>32 位包，例如 InkCanvasForClass.CE.1.7.0.0.zip</summary>
+        X86 = 0,
+        /// <summary>64 位包，例如 InkCanvasForClass.CE.1.7.0.0-x64.zip</summary>
+        X64 = 1
+    }
+
     /// <summary>
     /// 遥测上传等级
     /// </summary>
@@ -214,6 +232,8 @@ namespace Ink_Canvas
         public string AutoUpdateWithSilenceEndTime { get; set; } = "22:00";
         [JsonProperty("updateChannel")]
         public UpdateChannel UpdateChannel { get; set; } = UpdateChannel.Release;
+        [JsonProperty("updatePackageArchitecture")]
+        public UpdatePackageArchitecture UpdatePackageArchitecture { get; set; } = UpdatePackageArchitecture.X86;
         [JsonProperty("skippedVersion")]
         public string SkippedVersion { get; set; } = "";
         [JsonProperty("autoUpdatePauseUntilDate")]
@@ -278,8 +298,8 @@ namespace Ink_Canvas
         public bool IsShowQuickPanel { get; set; } = true;
         [JsonProperty("chickenSoupSource")]
         public int ChickenSoupSource { get; set; } = 1;
-        [JsonProperty("hitokotoCategories")]
-        public List<string> HitokotoCategories { get; set; } = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" }; // 默认全选所有分类
+        [JsonProperty("hitokotoCategories", NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> HitokotoCategories { get; set; }
         [JsonProperty("isShowModeFingerToggleSwitch")]
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]
@@ -312,6 +332,8 @@ namespace Ink_Canvas
         public int QuickColorPaletteDisplayMode { get; set; } = 1;
         [JsonProperty("enableHotkeysInMouseMode")]
         public bool EnableHotkeysInMouseMode { get; set; } = false;
+        [JsonProperty("language")]
+        public string Language { get; set; } = "";
 
     }
 
@@ -403,7 +425,7 @@ namespace Ink_Canvas
         [JsonProperty("enablePPTTimeCapsule")]
         public bool EnablePPTTimeCapsule { get; set; } = true;
         [JsonProperty("pptTimeCapsulePosition")]
-        public int PPTTimeCapsulePosition { get; set; } = 1; 
+        public int PPTTimeCapsulePosition { get; set; } = 1;
         [JsonProperty("useRotPptLink")]
         public bool UseRotPptLink { get; set; } = false;
         [JsonProperty("showPPTSidebarByDefault")]
@@ -448,6 +470,7 @@ namespace Ink_Canvas
 
         [JsonProperty("isAutoFoldInEasiNote3")]
         public bool IsAutoFoldInEasiNote3 { get; set; }
+
         [JsonProperty("isAutoFoldInEasiNote3C")]
         public bool IsAutoFoldInEasiNote3C { get; set; }
 
@@ -728,6 +751,12 @@ namespace Ink_Canvas
         public double LineStraightenSensitivity { get; set; } = 0.20;
         [JsonProperty("lineNormalizationThreshold")]
         public double LineNormalizationThreshold { get; set; } = 0.5;
+        [JsonProperty("shapeRecognitionEngine")]
+        public int ShapeRecognitionEngine { get; set; }
+        [JsonProperty("enableWinRtHandwritingStrokeBeautify")]
+        public bool EnableWinRtHandwritingStrokeBeautify { get; set; }
+        [JsonProperty("handwritingCorrectionFontFamily")]
+        public string HandwritingCorrectionFontFamily { get; set; } = "Ink Free,KaiTi,Segoe Script";
     }
 
     public class RandSettings
@@ -859,6 +888,37 @@ namespace Ink_Canvas
             get { return _autoUploadDelayMinutes; }
             set { _autoUploadDelayMinutes = Math.Max(0, value); }
         }
+
+        [JsonProperty("webDavUrl")]
+        public string WebDavUrl { get; set; } = string.Empty;
+
+        [JsonProperty("webDavUsername")]
+        public string WebDavUsername { get; set; } = string.Empty;
+
+        [JsonProperty("webDavPassword")]
+        public string WebDavPassword { get; set; } = string.Empty;
+
+        [JsonProperty("webDavRootDirectory")]
+        public string WebDavRootDirectory { get; set; } = string.Empty;
+    }
+
+    public class UploadSettings
+    {
+        [JsonProperty("uploadDelayMinutes")]
+        public int UploadDelayMinutes
+        {
+            get { return _uploadDelayMinutes; }
+            set { _uploadDelayMinutes = Math.Max(0, Math.Min(60, value)); }
+        }
+        private int _uploadDelayMinutes = 0;
+
+        [JsonProperty("enabledProviders")]
+        public List<string> EnabledProviders
+        {
+            get { return _enabledProviders; }
+            set { _enabledProviders = value ?? new List<string>(); }
+        }
+        private List<string> _enabledProviders = new List<string>();
     }
 
 

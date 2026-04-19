@@ -1,12 +1,15 @@
-using Hardcodet.Wpf.TaskbarNotification;
+using H.NotifyIcon;
 using Ink_Canvas.Helpers;
-using iNKORE.UI.WPF.Modern.Controls;
+using iNKORE.UI.WPF.Controls;
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using Application = System.Windows.Application;
 using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
@@ -15,6 +18,11 @@ namespace Ink_Canvas
 {
     public partial class App : Application
     {
+        private const int TrayTemporaryShowMinutes = 2;
+
+        private DispatcherTimer _trayTemporaryShowTimer;
+
+        private bool _trayTemporaryShowRestoreHideChecked;
 
         /// <summary>
         /// 系统托盘菜单打开时的事件处理方法
@@ -37,7 +45,9 @@ namespace Ink_Canvas
             var FoldFloatingBarTrayIconMenuItemIconEyeOn = (Image)((Grid)((MenuItem)s.Items[s.Items.Count - 5]).Icon).Children[1];
             var FoldFloatingBarTrayIconMenuItemHeaderText = (TextBlock)((SimpleStackPanel)((MenuItem)s.Items[s.Items.Count - 5]).Header).Children[0];
             var ResetFloatingBarPositionTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 4];
-            var HideICCMainWindowTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 9];
+            var HideICCMainWindowTrayIconMenuItem = s.Items.OfType<MenuItem>()
+                .FirstOrDefault(mi => mi.Name == "HideICCMainWindowTrayIconMenuItem");
+            if (HideICCMainWindowTrayIconMenuItem == null) return;
             var mainWin = (MainWindow)Current.MainWindow;
             if (mainWin.IsLoaded)
             {
@@ -84,10 +94,156 @@ namespace Ink_Canvas
         /// 1. 获取主窗口实例
         /// 2. 如果主窗口已加载，且在无焦点模式下启用了始终置顶，则恢复主窗口的置顶状态
         /// </remarks>
+        private bool EnsureMainWindowReadyForSettings(MainWindow mainWin)
+        {
+            if (mainWin?.IsLoaded != true)
+            {
+                return false;
+            }
+
+            var trayMenu = ((TaskbarIcon)Current.Resources["TaskbarTrayIcon"]).ContextMenu;
+            var hideMainWindowMenuItem = trayMenu?.Items.OfType<MenuItem>()
+                .FirstOrDefault(mi => mi.Name == "HideICCMainWindowTrayIconMenuItem");
+
+            if (hideMainWindowMenuItem != null && hideMainWindowMenuItem.IsChecked)
+            {
+                hideMainWindowMenuItem.IsChecked = false;
+            }
+            else if (!mainWin.IsVisible)
+            {
+                mainWin.Show();
+            }
+
+            if (mainWin.WindowState == WindowState.Minimized)
+            {
+                mainWin.WindowState = WindowState.Normal;
+            }
+
+            mainWin.Activate();
+            return true;
+        }
+
+        private bool IsLegacySettingsVisible(MainWindow mainWin)
+        {
+            try
+            {
+                var borderSettingsField = typeof(MainWindow).GetField("BorderSettings", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                var borderSettings = borderSettingsField?.GetValue(mainWin) as FrameworkElement;
+                return borderSettings?.Visibility == Visibility.Visible;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void TempShowMainWindowTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
+        {
+            var mainWin = Current.MainWindow as MainWindow;
+            if (mainWin?.IsLoaded != true)
+                return;
+
+            MenuItem hideItem = null;
+            try
+            {
+                var trayMenu = ((TaskbarIcon)Current.Resources["TaskbarTrayIcon"]).ContextMenu;
+                hideItem = trayMenu?.Items.OfType<MenuItem>()
+                    .FirstOrDefault(mi => mi.Name == "HideICCMainWindowTrayIconMenuItem");
+            }
+            catch
+            {
+            }
+
+            _trayTemporaryShowRestoreHideChecked = hideItem?.IsChecked == true;
+
+            EnsureMainWindowReadyForSettings(mainWin);
+
+            global::Ink_Canvas.MainWindow.TrayTemporaryShowUntilUtc = DateTime.UtcNow.AddMinutes(TrayTemporaryShowMinutes);
+
+            _trayTemporaryShowTimer?.Stop();
+            if (_trayTemporaryShowTimer == null)
+            {
+                _trayTemporaryShowTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMinutes(TrayTemporaryShowMinutes)
+                };
+                _trayTemporaryShowTimer.Tick += TrayTemporaryShowTimer_OnTick;
+            }
+            else
+            {
+                _trayTemporaryShowTimer.Interval = TimeSpan.FromMinutes(TrayTemporaryShowMinutes);
+            }
+
+            _trayTemporaryShowTimer.Start();
+        }
+
+        private void TrayTemporaryShowTimer_OnTick(object sender, EventArgs e)
+        {
+            _trayTemporaryShowTimer?.Stop();
+            global::Ink_Canvas.MainWindow.TrayTemporaryShowUntilUtc = null;
+
+            var mainWin = Current.MainWindow as MainWindow;
+            if (mainWin?.IsLoaded != true)
+            {
+                _trayTemporaryShowRestoreHideChecked = false;
+                return;
+            }
+
+            try
+            {
+                if (_trayTemporaryShowRestoreHideChecked)
+                {
+                    var trayMenu = ((TaskbarIcon)Current.Resources["TaskbarTrayIcon"]).ContextMenu;
+                    var hideItem = trayMenu?.Items.OfType<MenuItem>()
+                        .FirstOrDefault(mi => mi.Name == "HideICCMainWindowTrayIconMenuItem");
+                    if (hideItem != null)
+                        hideItem.IsChecked = true;
+                    else
+                        mainWin.Hide();
+                }
+                else
+                {
+                    mainWin.CheckMainWindowVisibility();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"托盘临时显示计时结束处理失败: {ex.Message}", LogHelper.LogType.Warning);
+            }
+            finally
+            {
+                _trayTemporaryShowRestoreHideChecked = false;
+            }
+        }
+
+        private void OpenSettingsTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
+        {
+            var mainWin = Current.MainWindow as MainWindow;
+            if (!EnsureMainWindowReadyForSettings(mainWin))
+            {
+                return;
+            }
+
+            if (IsLegacySettingsVisible(mainWin))
+            {
+                return;
+            }
+
+            try
+            {
+                var method = typeof(MainWindow).GetMethod("BtnSettings_Click", BindingFlags.NonPublic | BindingFlags.Instance);
+                method?.Invoke(mainWin, new object[] { null, null });
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"Open settings from tray failed: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
         private void SysTrayMenu_Closed(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 // 菜单关闭后，恢复主窗口的置顶状态
                 if (Ink_Canvas.MainWindow.Settings.Advanced.IsAlwaysOnTop && Ink_Canvas.MainWindow.Settings.Advanced.IsNoFocusMode)
@@ -112,7 +268,7 @@ namespace Ink_Canvas
         private void CloseAppTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 IsAppExitByUser = true;
                 mainWin.BtnExit_Click(null, null);
@@ -136,7 +292,7 @@ namespace Ink_Canvas
         private void RestartAppTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 IsAppExitByUser = true;
 
@@ -176,7 +332,7 @@ namespace Ink_Canvas
         private void ForceFullScreenTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 Ink_Canvas.MainWindow.MoveWindow(new WindowInteropHelper(mainWin).Handle, 0, 0,
                     Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height, true);
@@ -199,7 +355,7 @@ namespace Ink_Canvas
         private void FoldFloatingBarTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
                 if (mainWin.isFloatingBarFolded) mainWin.UnFoldFloatingBar_MouseUp(new object(), null);
                 else mainWin.FoldFloatingBar_MouseUp(new object(), null);
         }
@@ -221,7 +377,7 @@ namespace Ink_Canvas
         private void ResetFloatingBarPositionTrayIconMenuItem_Clicked(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 var isInPPTPresentationMode = false;
                 Dispatcher.Invoke(() =>
@@ -255,21 +411,28 @@ namespace Ink_Canvas
         /// </remarks>
         private void HideICCMainWindowTrayIconMenuItem_Checked(object sender, RoutedEventArgs e)
         {
+            _trayTemporaryShowTimer?.Stop();
+            global::Ink_Canvas.MainWindow.TrayTemporaryShowUntilUtc = null;
+            _trayTemporaryShowRestoreHideChecked = false;
+
             var mi = (MenuItem)sender;
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 mainWin.Hide();
                 var s = ((TaskbarIcon)Current.Resources["TaskbarTrayIcon"]).ContextMenu;
-                var ResetFloatingBarPositionTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 4];
-                var FoldFloatingBarTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 5];
-                var ForceFullScreenTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 6];
-                ResetFloatingBarPositionTrayIconMenuItem.IsEnabled = false;
-                FoldFloatingBarTrayIconMenuItem.IsEnabled = false;
-                ForceFullScreenTrayIconMenuItem.IsEnabled = false;
-                ResetFloatingBarPositionTrayIconMenuItem.Opacity = 0.5;
-                FoldFloatingBarTrayIconMenuItem.Opacity = 0.5;
-                ForceFullScreenTrayIconMenuItem.Opacity = 0.5;
+                if (s != null)
+                {
+                    var ResetFloatingBarPositionTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 4];
+                    var FoldFloatingBarTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 5];
+                    var ForceFullScreenTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 6];
+                    ResetFloatingBarPositionTrayIconMenuItem.IsEnabled = false;
+                    FoldFloatingBarTrayIconMenuItem.IsEnabled = false;
+                    ForceFullScreenTrayIconMenuItem.IsEnabled = false;
+                    ResetFloatingBarPositionTrayIconMenuItem.Opacity = 0.5;
+                    FoldFloatingBarTrayIconMenuItem.Opacity = 0.5;
+                    ForceFullScreenTrayIconMenuItem.Opacity = 0.5;
+                }
             }
             else
             {
@@ -299,19 +462,22 @@ namespace Ink_Canvas
         {
             var mi = (MenuItem)sender;
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 mainWin.Show();
                 var s = ((TaskbarIcon)Current.Resources["TaskbarTrayIcon"]).ContextMenu;
-                var ResetFloatingBarPositionTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 4];
-                var FoldFloatingBarTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 5];
-                var ForceFullScreenTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 6];
-                ResetFloatingBarPositionTrayIconMenuItem.IsEnabled = true;
-                FoldFloatingBarTrayIconMenuItem.IsEnabled = true;
-                ForceFullScreenTrayIconMenuItem.IsEnabled = true;
-                ResetFloatingBarPositionTrayIconMenuItem.Opacity = 1;
-                FoldFloatingBarTrayIconMenuItem.Opacity = 1;
-                ForceFullScreenTrayIconMenuItem.Opacity = 1;
+                if (s != null)
+                {
+                    var ResetFloatingBarPositionTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 4];
+                    var FoldFloatingBarTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 5];
+                    var ForceFullScreenTrayIconMenuItem = (MenuItem)s.Items[s.Items.Count - 6];
+                    ResetFloatingBarPositionTrayIconMenuItem.IsEnabled = true;
+                    FoldFloatingBarTrayIconMenuItem.IsEnabled = true;
+                    ForceFullScreenTrayIconMenuItem.IsEnabled = true;
+                    ResetFloatingBarPositionTrayIconMenuItem.Opacity = 1;
+                    FoldFloatingBarTrayIconMenuItem.Opacity = 1;
+                    ForceFullScreenTrayIconMenuItem.Opacity = 1;
+                }
             }
             else
             {
@@ -340,7 +506,7 @@ namespace Ink_Canvas
         private void DisableAllHotkeysMenuItem_Clicked(object sender, RoutedEventArgs e)
         {
             var mainWin = (MainWindow)Current.MainWindow;
-            if (mainWin.IsLoaded)
+            if (mainWin != null && mainWin.IsLoaded)
             {
                 try
                 {

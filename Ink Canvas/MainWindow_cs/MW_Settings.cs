@@ -1,4 +1,4 @@
-using Hardcodet.Wpf.TaskbarNotification;
+using H.NotifyIcon;
 using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using OSVersionExtension;
@@ -38,6 +38,8 @@ namespace Ink_Canvas
         /// 内部标记：是否正在内部更改更新通道
         /// </summary>
         private bool _isChangingUpdateChannelInternally;
+        /// <summary>内部标记：是否正在内部更改「更新包架构」（32/64 位 ZIP）</summary>
+        private bool _isChangingUpdatePackageArchInternally;
         /// <summary>
         /// 内部标记：是否正在内部更改遥测设置
         /// </summary>
@@ -187,7 +189,7 @@ namespace Ink_Canvas
                                 // 用户同意，保存设置
                                 Settings.Startup.HasAcceptedTelemetryPrivacy = true;
                                 Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
-                                
+
                                 // 更新UI，即使 isLoaded 为 false（启动时）
                                 // 使用标志避免触发事件处理程序
                                 // 使用 Dispatcher 确保在 UI 线程上更新
@@ -245,7 +247,7 @@ namespace Ink_Canvas
                 Settings.Startup.UpdateChannel = UpdateChannel.Release;
                 DeviceIdentifier.UpdateUsageChannel(UpdateChannel.Release);
                 SaveSettingsToFile();
-                
+
                 Dispatcher.BeginInvoke(new Action(() =>
                 {
                     _isChangingUpdateChannelInternally = true;
@@ -288,7 +290,7 @@ namespace Ink_Canvas
                 if (result == MessageBoxResult.Yes)
                 {
                     Settings.Startup.TelemetryUploadLevel = TelemetryUploadLevel.Basic;
-                    
+
                     if (isLoaded && ComboBoxTelemetryUploadLevel != null)
                     {
                         ComboBoxTelemetryUploadLevel.SelectedIndex = 1;
@@ -303,7 +305,7 @@ namespace Ink_Canvas
                     Settings.Startup.UpdateChannel = UpdateChannel.Release;
                     DeviceIdentifier.UpdateUsageChannel(UpdateChannel.Release);
                     SaveSettingsToFile();
-                    
+
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         _isChangingUpdateChannelInternally = true;
@@ -746,21 +748,21 @@ namespace Ink_Canvas
             if (!isLoaded) return;
 
             Settings.PowerPointSettings.PowerPointSupport = ToggleSwitchSupportPowerPoint.IsOn;
-            
+
             if (!Settings.PowerPointSettings.PowerPointSupport)
             {
                 if (Settings.PowerPointSettings.IsSupportWPS)
                 {
                     Settings.PowerPointSettings.IsSupportWPS = false;
                     ToggleSwitchSupportWPS.IsOn = false;
-                    
+
                     if (_pptManager != null)
                     {
                         _pptManager.IsSupportWPS = false;
                     }
                 }
             }
-            
+
             SaveSettingsToFile();
 
             // 使用新的PPT管理器
@@ -1207,17 +1209,12 @@ namespace Ink_Canvas
                             return;
                         }
 
-                        // 构建API URL，包含选中的分类参数
-                        var categories = Settings.Appearance.HitokotoCategories;
-                        if (categories == null || categories.Count == 0)
-                        {
-                            // 如果没有选中任何分类，默认全选
-                            categories = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
-                            Settings.Appearance.HitokotoCategories = categories;
-                        }
+                        var cats = Settings.Appearance.HitokotoCategories;
+                        if (cats == null || cats.Count == 0)
+                            cats = new List<string> { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l" };
 
                         var urlBuilder = new StringBuilder("https://v1.hitokoto.cn/?encode=text");
-                        foreach (var category in categories)
+                        foreach (var category in cats)
                         {
                             urlBuilder.Append($"&c={category}");
                         }
@@ -1264,16 +1261,21 @@ namespace Ink_Canvas
         /// </remarks>
         private async void ComboBoxChickenSoupSource_SelectionChanged(object sender, RoutedEventArgs e)
         {
+            if (_suppressChickenSoupSourceSelectionChanged) return;
             if (!isLoaded) return;
-            Settings.Appearance.ChickenSoupSource = ComboBoxChickenSoupSource.SelectedIndex;
-            
+            int idx = ComboBoxChickenSoupSource.SelectedIndex;
+            if (idx < 0) return;
+            if (Settings.Appearance.ChickenSoupSource == idx) return;
+
+            Settings.Appearance.ChickenSoupSource = idx;
+
             if (BtnHitokotoCustomize != null)
             {
-                BtnHitokotoCustomize.Visibility = ComboBoxChickenSoupSource.SelectedIndex == 3 
-                    ? Visibility.Visible 
+                BtnHitokotoCustomize.Visibility = ComboBoxChickenSoupSource.SelectedIndex == 3
+                    ? Visibility.Visible
                     : Visibility.Collapsed;
             }
-            
+
             SaveSettingsToFile();
             await UpdateChickenSoupTextAsync();
         }
@@ -1315,6 +1317,9 @@ namespace Ink_Canvas
             // 存储各个分类的复选框
             var categoryCheckBoxes = new Dictionary<string, CheckBox>();
 
+            var savedHitokoto = Settings.Appearance.HitokotoCategories;
+            bool implicitAllCategories = savedHitokoto == null || savedHitokoto.Count == 0;
+
             // 创建分类复选框
             foreach (var category in categories)
             {
@@ -1324,7 +1329,7 @@ namespace Ink_Canvas
                     Tag = category.Key,
                     FontSize = 13,
                     FontFamily = new FontFamily("Microsoft YaHei UI"),
-                    IsChecked = Settings.Appearance.HitokotoCategories.Contains(category.Key),
+                    IsChecked = implicitAllCategories || savedHitokoto.Contains(category.Key),
                     Margin = new Thickness(0, 0, 0, 8)
                 };
                 categoryCheckBoxes[category.Key] = checkBox;
@@ -1333,8 +1338,8 @@ namespace Ink_Canvas
 
             // 全选复选框逻辑
             bool isUpdatingSelectAll = false;
-            selectAllCheckBox.IsChecked = Settings.Appearance.HitokotoCategories.Count == categories.Count;
-            
+            selectAllCheckBox.IsChecked = implicitAllCategories || savedHitokoto.Count == categories.Count;
+
             selectAllCheckBox.Checked += (s, args) =>
             {
                 if (isUpdatingSelectAll) return;
@@ -1364,7 +1369,9 @@ namespace Ink_Canvas
                 {
                     if (isUpdatingSelectAll) return;
                     isUpdatingSelectAll = true;
-                    selectAllCheckBox.IsChecked = categoryCheckBoxes.Values.All(cb => cb.IsChecked == true);
+                    // 检查所有分类复选框是否都被勾选
+                    bool allChecked = categoryCheckBoxes.Values.All(cb => cb.IsChecked == true);
+                    selectAllCheckBox.IsChecked = allChecked;
                     isUpdatingSelectAll = false;
                 };
                 checkBox.Unchecked += (s, args) =>
@@ -1421,7 +1428,7 @@ namespace Ink_Canvas
                 }
 
                 SaveSettingsToFile();
-                
+
                 // 如果当前正在使用API，更新名言
                 if (Settings.Appearance.ChickenSoupSource == 3 && Settings.Appearance.EnableChickenSoupInWhiteboardMode)
                 {
@@ -1475,74 +1482,73 @@ namespace Ink_Canvas
             if (index == 0)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 1)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-noshadow.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-noshadow.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 2)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-dark.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-dark.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 3)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-sharpdark.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-sharpdark.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 4)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-light-small.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-light-small.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(0.5);
             }
             else if (index == 5)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(
-                        new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-dark-small.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc-transparent-dark-small.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(1.2);
             }
             else if (index == 6)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandoujiyanhuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandoujiyanhuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 7)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanshounvhuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanshounvhuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 8)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanciya.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanciya.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 9)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanneikuhuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuanneikuhuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 10)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandogeyuanliangwo.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/kuandogeyuanliangwo.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1.5);
             }
             else if (index == 11)
             {
                 FloatingbarHeadIconImg.Source =
-                    new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/tiebahuaji.png"));
+                    CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/tiebahuaji.png"));
                 FloatingbarHeadIconImg.Margin = new Thickness(2, 2, 2, 1);
             }
             else if (index >= 12 && index - 12 < Settings.Appearance.CustomFloatingBarImgs.Count)
@@ -1551,16 +1557,37 @@ namespace Ink_Canvas
                 var customIcon = Settings.Appearance.CustomFloatingBarImgs[index - 12];
                 try
                 {
-                    FloatingbarHeadIconImg.Source = new BitmapImage(new Uri(customIcon.FilePath));
+                    var dpi = VisualTreeHelper.GetDpi(this);
+                    var targetPixels = (int)Math.Round(58 * dpi.DpiScaleX);
+                    var decodePixels = targetPixels * 2;
+                    if (decodePixels < 64) decodePixels = 64;
+                    if (decodePixels > 512) decodePixels = 512;
+
+                    FloatingbarHeadIconImg.Source = CreateBitmapImage(new Uri(customIcon.FilePath), decodePixels);
                     FloatingbarHeadIconImg.Margin = new Thickness(2);
                 }
                 catch
                 {
                     // 如果加载失败，使用默认图标
-                    FloatingbarHeadIconImg.Source = new BitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
+                    FloatingbarHeadIconImg.Source = CreateBitmapImage(new Uri("pack://application:,,,/Resources/Icons-png/icc.png"));
                     FloatingbarHeadIconImg.Margin = new Thickness(0.5);
                 }
             }
+        }
+
+        private static BitmapImage CreateBitmapImage(Uri uri, int decodePixelWidth = 0)
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.UriSource = uri;
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            if (decodePixelWidth > 0)
+            {
+                image.DecodePixelWidth = decodePixelWidth;
+            }
+            image.EndInit();
+            image.Freeze();
+            return image;
         }
 
         /// <summary>
@@ -2678,6 +2705,15 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
+        private void ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+
+            Settings.Canvas.LaunchSeewoVideoShowcaseForWhiteboardBooth =
+                ToggleSwitchLaunchSeewoVideoShowcaseForWhiteboardBooth.IsOn;
+            SaveSettingsToFile();
+        }
+
         private void ToggleSwitchAutoStraightenLine_Toggled(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -2740,19 +2776,44 @@ namespace Ink_Canvas
 
         #region Canvas
 
+        /// <summary>笔锋下拉 UI 顺序：0 实时笔锋，1 基于点集，2 基于速率，3 关闭。与存储值 InkStyle：3,0,1,2 对应。</summary>
+        private static int PenStyleUiIndexFromInkStyle(int inkStyle)
+        {
+            switch (inkStyle)
+            {
+                case 3: return 0;
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 3;
+                default: return 1;
+            }
+        }
+
+        private static int InkStyleFromPenStyleUiIndex(int uiIndex)
+        {
+            switch (uiIndex)
+            {
+                case 0: return 3;
+                case 1: return 0;
+                case 2: return 1;
+                case 3: return 2;
+                default: return 0;
+            }
+        }
+
         private void ComboBoxPenStyle_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!isLoaded) return;
+            int uiIndex = sender == ComboBoxPenStyle
+                ? ComboBoxPenStyle.SelectedIndex
+                : BoardComboBoxPenStyle.SelectedIndex;
+            if (uiIndex < 0) return;
+
+            Settings.Canvas.InkStyle = InkStyleFromPenStyleUiIndex(uiIndex);
             if (sender == ComboBoxPenStyle)
-            {
-                Settings.Canvas.InkStyle = ComboBoxPenStyle.SelectedIndex;
-                BoardComboBoxPenStyle.SelectedIndex = ComboBoxPenStyle.SelectedIndex;
-            }
+                BoardComboBoxPenStyle.SelectedIndex = uiIndex;
             else
-            {
-                Settings.Canvas.InkStyle = BoardComboBoxPenStyle.SelectedIndex;
-                ComboBoxPenStyle.SelectedIndex = BoardComboBoxPenStyle.SelectedIndex;
-            }
+                ComboBoxPenStyle.SelectedIndex = uiIndex;
 
             SaveSettingsToFile();
         }
@@ -3382,59 +3443,21 @@ namespace Ink_Canvas
             SaveSettingsToFile();
         }
 
-        private void BtnDlassSettingsManage_Click(object sender, RoutedEventArgs e)
+        private void BtnCloudStorageManagementSettingsManage_Click(object sender, RoutedEventArgs e)
         {
             if (isOpeningOrHidingSettingsPane) return;
             HideSubPanels();
             try
             {
-                // 检查是否是第一次打开（检查用户是否已设置Token）
-                bool hasToken = !string.IsNullOrEmpty(Settings?.Dlass?.UserToken?.Trim());
-                bool isFirstTime = !hasToken;
-
-                if (isFirstTime)
-                {
-                    // 第一次打开，询问用户是否已注册
-                    var result = MessageBox.Show(
-                        "您是否已经注册了Dlass账号？\n\n" +
-                        "• 如果已注册：将直接打开设置管理页面\n" +
-                        "• 如果未注册：将打开浏览器跳转到注册页面",
-                        "Dlass账号注册",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Question);
-
-                    if (result == MessageBoxResult.No)
-                    {
-                        // 用户未注册，打开浏览器
-                        try
-                        {
-                            Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "https://dlass.tech/dashboard",
-                                UseShellExecute = true
-                            });
-                            LogHelper.WriteLogToFile("已打开浏览器跳转到Dlass注册页面", LogHelper.LogType.Event);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"打开浏览器时出错: {ex.Message}", LogHelper.LogType.Error);
-                            MessageBox.Show($"无法打开浏览器。请手动访问: https://dlass.tech/dashboard",
-                                "提示", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        return; // 不打开设置窗口
-                    }
-                    // 如果用户选择"是"，继续打开设置窗口
-                }
-
                 // 打开设置管理窗口
-                var dlassSettingsWindow = new Windows.DlassSettingsWindow();
-                dlassSettingsWindow.Owner = this;
-                dlassSettingsWindow.ShowDialog();
+                var CloudStorageManagementSettingsWindow = new Windows.CloudStorageManagementWindow();
+                CloudStorageManagementSettingsWindow.Owner = this;
+                CloudStorageManagementSettingsWindow.ShowDialog();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"打开Dlass设置管理窗口时出错: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"打开Dlass设置管理窗口时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogHelper.WriteLogToFile($"打开云存储管理窗口时出错: {ex.Message}", LogHelper.LogType.Error);
+                MessageBox.Show($"打开云存储管理窗口时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -3848,7 +3871,8 @@ namespace Ink_Canvas
             Settings.InkToShape.IsInkToShapeTriangle = true;
             Settings.InkToShape.IsInkToShapeRectangle = true;
             Settings.InkToShape.IsInkToShapeRounded = true;
-
+            Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify = false;
+            Settings.InkToShape.HandwritingCorrectionFontFamily = "Ink Free,KaiTi,Segoe Script";
 
             Settings.Startup.IsEnableNibMode = false;
             Settings.Startup.IsAutoUpdate = true;
@@ -3918,6 +3942,25 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
             Settings.InkToShape.IsInkToShapeEnabled = ToggleSwitchEnableInkToShape.IsOn;
+            SaveSettingsToFile();
+        }
+
+        private void ComboBoxShapeRecognitionEngine_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!isLoaded || ComboBoxShapeRecognitionEngine == null) return;
+            int idx = ComboBoxShapeRecognitionEngine.SelectedIndex;
+            if (idx < 0) idx = 0;
+            if (idx > 2) idx = 2;
+            Settings.InkToShape.ShapeRecognitionEngine = idx;
+            SaveSettingsToFile();
+        }
+
+        private void ToggleSwitchEnableWinRtHandwritingStrokeBeautify_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            Settings.InkToShape.EnableWinRtHandwritingStrokeBeautify =
+                ToggleSwitchEnableWinRtHandwritingStrokeBeautify != null &&
+                ToggleSwitchEnableWinRtHandwritingStrokeBeautify.IsOn;
             SaveSettingsToFile();
         }
 
@@ -4368,7 +4411,7 @@ namespace Ink_Canvas
                 Text = "方案名称",
                 Margin = new Thickness(0, 0, 0, 8)
             };
-            var content = new iNKORE.UI.WPF.Modern.Controls.SimpleStackPanel { Spacing = 6 };
+            var content = new iNKORE.UI.WPF.Controls.SimpleStackPanel { Spacing = 6 };
             content.Children.Add(label);
             content.Children.Add(input);
             var dialog = new iNKORE.UI.WPF.Modern.Controls.ContentDialog
@@ -5152,6 +5195,24 @@ namespace Ink_Canvas
             HideSubPanels();
         }
 
+        private void UpdatePackageArchitectureSelector_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!isLoaded) return;
+            if (_isChangingUpdatePackageArchInternally) return;
+            if (!(sender is RadioButton radioButton) || radioButton.Tag == null) return;
+
+            var newArch = string.Equals(radioButton.Tag.ToString(), "X64", StringComparison.OrdinalIgnoreCase)
+                ? UpdatePackageArchitecture.X64
+                : UpdatePackageArchitecture.X86;
+
+            if (Settings.Startup.UpdatePackageArchitecture == newArch)
+                return;
+
+            Settings.Startup.UpdatePackageArchitecture = newArch;
+            SaveSettingsToFile();
+            LogHelper.WriteLogToFile($"Settings | Update package architecture: {newArch}");
+        }
+
         private async void UpdateChannelSelector_Checked(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
@@ -5161,8 +5222,8 @@ namespace Ink_Canvas
             {
                 var oldChannel = Settings.Startup.UpdateChannel;
                 string channel = radioButton.Tag.ToString();
-                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta 
-                    : channel == "Preview" ? UpdateChannel.Preview 
+                UpdateChannel newChannel = channel == "Beta" ? UpdateChannel.Beta
+                    : channel == "Preview" ? UpdateChannel.Preview
                     : UpdateChannel.Release;
 
                 // 如果通道没有变化，不需要执行更新检查

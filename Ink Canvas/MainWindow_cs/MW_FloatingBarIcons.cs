@@ -370,7 +370,7 @@ namespace Ink_Canvas
         /// <param name="autoAlignCenter">
         ///     是否自動居中浮動工具欄
         /// </param>
-        private async void HideSubPanels(string mode = null, bool autoAlignCenter = false)
+        internal async void HideSubPanels(string mode = null, bool autoAlignCenter = false)
         {
             AnimationsHelper.HideWithSlideAndFade(BorderTools);
             AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
@@ -1161,10 +1161,10 @@ namespace Ink_Canvas
                 {
                     // 每次打开计时器窗口时重置计时器
                     TimerControl.ResetTimerState();
-                    
+
                     // 根据DPI缩放因子调整TimerContainer的尺寸
                     AdjustTimerContainerSize();
-                    
+
                     TimerContainer.Visibility = Visibility.Visible;
                     if (MinimizedTimerContainer != null)
                     {
@@ -1365,28 +1365,27 @@ namespace Ink_Canvas
             {
                 try
                 {
-                    string protocol = "";
+                    string[] protocols;
                     switch (Settings.RandSettings.ExternalCallerType)
                     {
                         case 0: // ClassIsland点名
-                            protocol = "classisland://plugins/IslandCaller/Simple/1";
+                            protocols = ExternalCallerLauncher.GetProtocolsByType(0);
                             break;
                         case 1: // SecRandom点名
-                            protocol = "secrandom://direct_extraction";
+                            protocols = ExternalCallerLauncher.GetProtocolsByType(1);
                             break;
                         case 2: // NamePicker点名
-                            protocol = "namepicker://";
+                            protocols = ExternalCallerLauncher.GetProtocolsByType(2);
                             break;
                         default:
-                            protocol = "classisland://plugins/IslandCaller/Simple/1";
+                            protocols = ExternalCallerLauncher.GetProtocolsByType(0);
                             break;
                     }
 
-                    Process.Start(new ProcessStartInfo
+                    if (!ExternalCallerLauncher.TryLaunch(protocols, out Exception lastException))
                     {
-                        FileName = protocol,
-                        UseShellExecute = true
-                    });
+                        throw lastException ?? new InvalidOperationException("external caller protocols are unavailable");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -3178,7 +3177,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="sender">发送者</param>
         /// <param name="e">路由事件参数</param>
-        private async void BtnSettings_Click(object sender, RoutedEventArgs e)
+        internal async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
             if (BorderSettings.Visibility == Visibility.Visible)
             {

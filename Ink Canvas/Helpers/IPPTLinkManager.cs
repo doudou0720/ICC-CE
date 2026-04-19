@@ -1,5 +1,4 @@
 using System;
-using Microsoft.Office.Interop.PowerPoint;
 
 namespace Ink_Canvas.Helpers
 {

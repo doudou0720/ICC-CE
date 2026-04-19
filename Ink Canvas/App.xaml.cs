@@ -1,8 +1,10 @@
-using Hardcodet.Wpf.TaskbarNotification;
+using H.NotifyIcon;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -20,7 +22,6 @@ using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using SplashScreen = Ink_Canvas.Windows.SplashScreen;
 using Timer = System.Threading.Timer;
-using Sentry;
 
 namespace Ink_Canvas
 {
@@ -645,7 +646,7 @@ namespace Ink_Canvas
                 }
             }
 
-            Ink_Canvas.MainWindow.ShowNewMessage("抱歉，出现未预期的异常，可能导致 InkCanvasForClass 运行不稳定。\n建议保存墨迹后重启应用。");
+            Ink_Canvas.MainWindow.ShowNewMessage(Strings.GetString("Msg_UnexpectedError"));
             LogHelper.NewLog(e.Exception.ToString());
 
             // 记录到崩溃日志
@@ -661,7 +662,7 @@ namespace Ink_Canvas
                 StartupCount.Increment();
                 if (StartupCount.GetCount() >= 5)
                 {
-                    MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                     StartupCount.Reset();
                     Environment.Exit(1);
                 }
@@ -699,7 +700,7 @@ namespace Ink_Canvas
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
                 ShowSplashScreen();
-                SetSplashMessage("正在启动 Ink Canvas...");
+                SetSplashMessage(Strings.GetString("Splash_Starting"));
                 SetSplashProgress(20);
                 await Task.Delay(500);
 
@@ -1060,6 +1061,7 @@ namespace Ink_Canvas
             }
 
             _taskbar = (TaskbarIcon)FindResource("TaskbarTrayIcon");
+            _taskbar.ForceCreate();
 
             StartArgs = e.Args;
 
@@ -1087,7 +1089,7 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile($"启动完成心跳已记录");
                 }
                 LogHelper.WriteLogToFile($"启动时长: {(startupCompleteHeartbeat - appStartupStartTime).TotalSeconds:F2}秒");
-                
+
                 if (_isSplashScreenShown)
                 {
                     SetSplashMessage("完成初始化...");
@@ -1222,8 +1224,8 @@ namespace Ink_Canvas
 
                 if (!isStartupComplete && appStartupStartTime != DateTime.MinValue)
                 {
-                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue 
-                        ? splashScreenStartTime 
+                    DateTime startTime = _isSplashScreenShown && splashScreenStartTime != DateTime.MinValue
+                        ? splashScreenStartTime
                         : appStartupStartTime;
                     TimeSpan elapsedSinceStart = DateTime.Now - startTime;
                     if (elapsedSinceStart.TotalMinutes >= 2)
@@ -1236,7 +1238,7 @@ namespace Ink_Canvas
                             StartupCount.Increment();
                             if (StartupCount.GetCount() >= 5)
                             {
-                                MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                                MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                                 StartupCount.Reset();
                                 Environment.Exit(1);
                             }
@@ -1251,27 +1253,41 @@ namespace Ink_Canvas
                         return;
                     }
                 }
-                
-                if (isStartupComplete && (DateTime.Now - lastHeartbeat).TotalSeconds > 10)
+
+                if (isStartupComplete)
                 {
-                    LogHelper.NewLog("检测到主线程无响应，自动重启。");
-                    SyncCrashActionFromSettings();
-                    if (CrashAction == CrashActionType.SilentRestart)
+                    var now = DateTime.Now;
+                    var sinceHeartbeat = now - lastHeartbeat;
+                    var sinceStartupComplete = startupCompleteHeartbeat == DateTime.MinValue
+                        ? TimeSpan.Zero
+                        : now - startupCompleteHeartbeat;
+
+                    if (sinceStartupComplete.TotalSeconds < 30)
                     {
-                        StartupCount.Increment();
-                        if (StartupCount.GetCount() >= 5)
+                        return;
+                    }
+
+                    if (sinceHeartbeat.TotalSeconds > 10)
+                    {
+                        LogHelper.NewLog("检测到主线程无响应，自动重启。");
+                        SyncCrashActionFromSettings();
+                        if (CrashAction == CrashActionType.SilentRestart)
                         {
-                            MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
-                            StartupCount.Reset();
+                            StartupCount.Increment();
+                            if (StartupCount.GetCount() >= 5)
+                            {
+                                MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+                                StartupCount.Reset();
+                                Environment.Exit(1);
+                            }
+                            try
+                            {
+                                string exePath = Process.GetCurrentProcess().MainModule.FileName;
+                                Process.Start(exePath);
+                            }
+                            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
                             Environment.Exit(1);
                         }
-                        try
-                        {
-                            string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                            Process.Start(exePath);
-                        }
-                        catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-                        Environment.Exit(1);
                     }
                 }
             }, null, 0, 3000);
@@ -1338,7 +1354,7 @@ namespace Ink_Canvas
                         StartupCount.Increment();
                         if (StartupCount.GetCount() >= 5)
                         {
-                            MessageBox.Show("检测到程序已连续重启5次，已停止自动重启。请联系开发者或检查系统环境。", "重启次数过多", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show(Strings.GetString("Msg_RestartLimit"), Strings.GetString("Msg_RestartLimitTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
                             StartupCount.Reset();
                             Environment.Exit(1);
                         }
@@ -1390,7 +1406,7 @@ namespace Ink_Canvas
 
                 string assemblyLocation = Assembly.GetExecutingAssembly().Location;
                 string currentDir = Path.GetDirectoryName(assemblyLocation);
-                
+
                 for (int i = 0; i < 5; i++)
                 {
                     string dsnFilePath = Path.Combine(currentDir, "telemetry_dsn.txt");
@@ -1402,7 +1418,7 @@ namespace Ink_Canvas
                             return dsn;
                         }
                     }
-                    
+
                     DirectoryInfo parentDir = Directory.GetParent(currentDir);
                     if (parentDir == null)
                     {

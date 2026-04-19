@@ -1,5 +1,4 @@
 using Ink_Canvas.Helpers;
-using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -36,6 +35,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchRequirePasswordOnExit"), sec.RequirePasswordOnExit);
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchRequirePasswordOnEnterSettings"), sec.RequirePasswordOnEnterSettings);
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchRequirePasswordOnResetConfig"), sec.RequirePasswordOnResetConfig);
+                SetToggleSwitchState(FindToggleSwitch("ToggleSwitchRequirePasswordOnModifyOrClearNameList"), sec.RequirePasswordOnModifyOrClearNameList);
                 SetToggleSwitchState(FindToggleSwitch("ToggleSwitchEnableProcessProtection"), sec.EnableProcessProtection);
 
                 UpdatePasswordUiState();
@@ -66,9 +66,11 @@ namespace Ink_Canvas.Windows.SettingsViews
             var t1 = FindToggleSwitch("ToggleSwitchRequirePasswordOnExit");
             var t2 = FindToggleSwitch("ToggleSwitchRequirePasswordOnEnterSettings");
             var t3 = FindToggleSwitch("ToggleSwitchRequirePasswordOnResetConfig");
+            var t4 = FindToggleSwitch("ToggleSwitchRequirePasswordOnModifyOrClearNameList");
             if (t1 != null) t1.IsEnabled = usageEnabled;
             if (t2 != null) t2.IsEnabled = usageEnabled;
             if (t3 != null) t3.IsEnabled = usageEnabled;
+            if (t4 != null) t4.IsEnabled = usageEnabled;
         }
 
         /// <summary>
@@ -142,6 +144,10 @@ namespace Ink_Canvas.Windows.SettingsViews
                     break;
                 case "RequirePasswordOnResetConfig":
                     sec.RequirePasswordOnResetConfig = newState;
+                    MainWindow.SaveSettingsToFile();
+                    break;
+                case "RequirePasswordOnModifyOrClearNameList":
+                    sec.RequirePasswordOnModifyOrClearNameList = newState;
                     MainWindow.SaveSettingsToFile();
                     break;
                 case "EnableProcessProtection":

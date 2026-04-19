@@ -1,3 +1,4 @@
+using Ink_Canvas.Helpers;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -6,9 +7,8 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
 using System.Windows.Ink;
-using Ink_Canvas.Helpers;
+using System.Windows.Media.Imaging;
 
 namespace Ink_Canvas
 {
@@ -356,7 +356,13 @@ namespace Ink_Canvas
 
             if (!isHideNotification)
             {
-                ShowNotification($"截图成功保存至 {savePath}");
+                Task.Delay(100).ContinueWith(t =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ShowNotification($"截图成功保存至 {savePath}");
+                    });
+                });
             }
             _ = Task.Run(async () =>
             {

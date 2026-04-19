@@ -1,9 +1,7 @@
 using Ink_Canvas.Helpers;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows;
 
 namespace Ink_Canvas
@@ -121,12 +119,12 @@ namespace Ink_Canvas
                             CursorIcon_Click(null, null);
                             break;
                         case "eraser":
-                            PenIcon_Click(null, null); 
+                            PenIcon_Click(null, null);
                             EraserIcon_Click(null, null);
                             break;
                         case "eraserbystrokes":
                         case "eraserstroke":
-                            PenIcon_Click(null, null); 
+                            PenIcon_Click(null, null);
                             EraserIconByStrokes_Click(EraserByStrokes_Icon, null);
                             break;
                         default:

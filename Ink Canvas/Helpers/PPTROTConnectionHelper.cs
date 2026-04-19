@@ -1,13 +1,10 @@
-using Microsoft.Office.Interop.PowerPoint;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using System.Threading;
 
 namespace Ink_Canvas.Helpers
 {
@@ -426,21 +423,21 @@ namespace Ink_Canvas.Helpers
 
                 if (fgPid == sswPid) return true;
 
-                    try
+                try
+                {
+                    using (Process fgProc = Process.GetProcessById((int)fgPid))
+                    using (Process appProc = Process.GetProcessById((int)sswPid))
                     {
-                        using (Process fgProc = Process.GetProcessById((int)fgPid))
-                        using (Process appProc = Process.GetProcessById((int)sswPid))
-                        {
-                            string fgName = fgProc.ProcessName.ToLower();
-                            string appName = appProc.ProcessName.ToLower();
+                        string fgName = fgProc.ProcessName.ToLower();
+                        string appName = appProc.ProcessName.ToLower();
 
-                            if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
-                            {
-                                return true;
-                            }
+                        if (fgName.StartsWith("wps") && appName.StartsWith("wpp"))
+                        {
+                            return true;
                         }
                     }
-                    catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
+                }
+                catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
 
                 return false;
             }

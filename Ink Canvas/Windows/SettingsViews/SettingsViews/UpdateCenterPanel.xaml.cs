@@ -1,6 +1,6 @@
+using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Helpers;
 using iNKORE.UI.WPF.Modern.Controls;
-using Ink_Canvas.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using static Ink_Canvas.Helpers.AutoUpdateHelper;
+using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 
 namespace Ink_Canvas.Windows.SettingsViews
 {
@@ -48,7 +48,10 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 var version = Assembly.GetExecutingAssembly().GetName().Version;
                 var platform = Environment.Is64BitOperatingSystem ? "windows-x64" : "windows-x86";
-                CurrentVersionText.Text = $"当前版本: v{version} | {platform}";
+                var pkgArch = MainWindow.Settings.Startup.UpdatePackageArchitecture == UpdatePackageArchitecture.X64
+                    ? "更新包: 64位"
+                    : "更新包: 32位";
+                CurrentVersionText.Text = $"当前版本: v{version} | {platform} | {pkgArch}";
 
                 LoadLastCheckTime();
 
@@ -70,7 +73,7 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 if (AutoUpdateTimePeriodBlock != null)
                 {
-                    AutoUpdateTimePeriodBlock.Visibility = 
+                    AutoUpdateTimePeriodBlock.Visibility =
                         (MainWindow.Settings.Startup.IsAutoUpdateWithSilence && MainWindow.Settings.Startup.IsAutoUpdate) ?
                         Visibility.Visible : Visibility.Collapsed;
                 }
@@ -111,6 +114,11 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     UpdateUpdateChannelButtons(UpdateChannel.Beta);
                 }
+
+                if (MainWindow.Settings.Startup.UpdatePackageArchitecture == UpdatePackageArchitecture.X64)
+                    UpdateUpdateArchitectureButtons(UpdatePackageArchitecture.X64);
+                else
+                    UpdateUpdateArchitectureButtons(UpdatePackageArchitecture.X86);
             }
             catch (Exception ex)
             {
@@ -127,7 +135,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     var now = DateTime.Now;
                     var timeDiff = now - lastCheckTime;
-                    
+
                     if (timeDiff.TotalDays < 1 && lastCheckTime.Date == now.Date)
                     {
                         LastCheckTimeText.Text = $"上次检查时间: 今天, {lastCheckTime:HH:mm}";
@@ -241,7 +249,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 }
 
                 var groups = _availableLineGroup != null ? new List<UpdateLineGroup> { _availableLineGroup } : AutoUpdateHelper.ChannelLineGroups[updateChannel];
-                
+
                 bool downloadSuccess = await AutoUpdateHelper.DownloadSetupFileWithFallback(_availableVersion, groups, (percent, text) =>
                 {
                     Dispatcher.BeginInvoke(new Action(() =>
@@ -298,7 +306,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 }
 
                 var groups = _availableLineGroup != null ? new List<AutoUpdateHelper.UpdateLineGroup> { _availableLineGroup } : AutoUpdateHelper.ChannelLineGroups[updateChannel];
-                
+
                 bool downloadSuccess = await AutoUpdateHelper.DownloadSetupFileWithFallback(_availableVersion, groups, (percent, text) =>
                 {
                     Dispatcher.BeginInvoke(new Action(() =>
@@ -404,7 +412,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     }
 
                     var (remoteVersion, lineGroup, releaseNotes) = await AutoUpdateHelper.CheckForUpdates(updateChannel, manualCheck, false);
-                    
+
                     if (manualCheck)
                     {
                         var mainWindow = Application.Current.MainWindow as MainWindow;
@@ -417,20 +425,20 @@ namespace Ink_Canvas.Windows.SettingsViews
                             }
                         }
                     }
-                    
+
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
                         StopLoadingAnimation();
-                        
+
                         if (!string.IsNullOrEmpty(remoteVersion))
                         {
                             var localVersion = Assembly.GetExecutingAssembly().GetName().Version;
                             var localVersionStr = localVersion.ToString();
                             var remoteVersionStr = remoteVersion.TrimStart('v', 'V');
-                            
+
                             Version local = new Version(localVersionStr);
                             Version remote = new Version(remoteVersionStr);
-                            
+
                             if (remote > local)
                             {
                                 UpdateStatusText.Text = "有可用更新";
@@ -463,12 +471,12 @@ namespace Ink_Canvas.Windows.SettingsViews
                         {
                             LoadUpdateLogAsFallback(updateChannel);
                         }
-                        
+
                         if (manualCheck)
                         {
                             SaveLastCheckTime();
                         }
-                        
+
                         CheckUpdateButton.IsEnabled = true;
                     }));
                 }
@@ -512,7 +520,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 var (remoteVersion, lineGroup, releaseNotes) = await AutoUpdateHelper.CheckForUpdates(channel, false, false);
-                
+
                 if (!string.IsNullOrEmpty(releaseNotes))
                 {
                     UpdateLogViewer.Markdown = releaseNotes;
@@ -543,12 +551,12 @@ namespace Ink_Canvas.Windows.SettingsViews
                 }
 
                 _historyVersions = await AutoUpdateHelper.GetAllGithubReleases(updateChannel);
-                
+
                 if (_historyVersions.Count > 0)
                 {
                     var markdown = new System.Text.StringBuilder();
                     markdown.AppendLine("# 历史版本列表\n");
-                    
+
                     foreach (var (version, downloadUrl, releaseNotes) in _historyVersions)
                     {
                         markdown.AppendLine($"## {version}\n");
@@ -559,7 +567,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         }
                         markdown.AppendLine("\n---\n");
                     }
-                    
+
                     HistoryLogViewer.Markdown = markdown.ToString();
 
                     foreach (var versionInfo in _historyVersions)
@@ -591,7 +599,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 var version = versionInfo.Item1;
                 var downloadUrl = versionInfo.Item2;
                 var releaseNotes = versionInfo.Item3;
-                
+
                 if (!string.IsNullOrEmpty(releaseNotes))
                 {
                     HistoryLogViewer.Markdown = $"# {version}\n\n{releaseNotes}";
@@ -626,7 +634,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         SecondaryButtonText = "取消"
                     };
 
-                    var panel = new iNKORE.UI.WPF.Modern.Controls.SimpleStackPanel
+                    var panel = new iNKORE.UI.WPF.Controls.SimpleStackPanel
                     {
                         Spacing = 16,
                         Margin = new Thickness(0, 10, 0, 0)
@@ -776,7 +784,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         MainWindow.Settings.Startup.UpdateChannel = UpdateChannel.Release;
                     }, "UpdateChannelSelector");
-                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked", 
+                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked",
                         new System.Windows.Controls.RadioButton { Tag = "Release" }, e);
                     UpdateUpdateChannelButtons(UpdateChannel.Release);
                     LoadHistoryVersions();
@@ -788,7 +796,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         MainWindow.Settings.Startup.UpdateChannel = UpdateChannel.Preview;
                     }, "UpdateChannelSelector");
-                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked", 
+                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked",
                         new System.Windows.Controls.RadioButton { Tag = "Preview" }, e);
                     UpdateUpdateChannelButtons(UpdateChannel.Preview);
                     LoadHistoryVersions();
@@ -800,12 +808,85 @@ namespace Ink_Canvas.Windows.SettingsViews
                     {
                         MainWindow.Settings.Startup.UpdateChannel = UpdateChannel.Beta;
                     }, "UpdateChannelSelector");
-                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked", 
+                    MainWindowSettingsHelper.InvokeMainWindowMethod("UpdateChannelSelector_Checked",
                         new System.Windows.Controls.RadioButton { Tag = "Beta" }, e);
                     UpdateUpdateChannelButtons(UpdateChannel.Beta);
                     LoadHistoryVersions();
                     LoadUpdateLogWithPriority(UpdateChannel.Beta);
                     break;
+
+                case "UpdateArch_X86":
+                    MainWindowSettingsHelper.UpdateSettingDirectly(() =>
+                    {
+                        MainWindow.Settings.Startup.UpdatePackageArchitecture = UpdatePackageArchitecture.X86;
+                    }, "UpdatePackageArchitecture");
+                    UpdateUpdateArchitectureButtons(UpdatePackageArchitecture.X86);
+                    MainWindow.SaveSettingsToFile();
+                    RefreshVersionArchLabel();
+                    break;
+
+                case "UpdateArch_X64":
+                    MainWindowSettingsHelper.UpdateSettingDirectly(() =>
+                    {
+                        MainWindow.Settings.Startup.UpdatePackageArchitecture = UpdatePackageArchitecture.X64;
+                    }, "UpdatePackageArchitecture");
+                    UpdateUpdateArchitectureButtons(UpdatePackageArchitecture.X64);
+                    MainWindow.SaveSettingsToFile();
+                    RefreshVersionArchLabel();
+                    break;
+            }
+        }
+
+        private void RefreshVersionArchLabel()
+        {
+            try
+            {
+                if (MainWindow.Settings == null || CurrentVersionText == null) return;
+                var version = Assembly.GetExecutingAssembly().GetName().Version;
+                var platform = Environment.Is64BitOperatingSystem ? "windows-x64" : "windows-x86";
+                var pkgArch = MainWindow.Settings.Startup.UpdatePackageArchitecture == UpdatePackageArchitecture.X64
+                    ? "更新包: 64位"
+                    : "更新包: 32位";
+                CurrentVersionText.Text = $"当前版本: v{version} | {platform} | {pkgArch}";
+            }
+            catch { /* ignore */ }
+        }
+
+        private void UpdateUpdateArchitectureButtons(UpdatePackageArchitecture selected)
+        {
+            try
+            {
+                bool isDarkTheme = ThemeHelper.IsDarkTheme;
+                var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
+                var unselectedBrush = new SolidColorBrush(Colors.Transparent);
+
+                if (UpdateArchX86Border != null)
+                {
+                    bool isSel = selected == UpdatePackageArchitecture.X86;
+                    UpdateArchX86Border.Background = isSel ? selectedBrush : unselectedBrush;
+                    var tb = UpdateArchX86Border.Child as TextBlock;
+                    if (tb != null)
+                    {
+                        tb.FontWeight = isSel ? FontWeights.Bold : FontWeights.Normal;
+                        tb.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                    }
+                }
+
+                if (UpdateArchX64Border != null)
+                {
+                    bool isSel = selected == UpdatePackageArchitecture.X64;
+                    UpdateArchX64Border.Background = isSel ? selectedBrush : unselectedBrush;
+                    var tb = UpdateArchX64Border.Child as TextBlock;
+                    if (tb != null)
+                    {
+                        tb.FontWeight = isSel ? FontWeights.Bold : FontWeights.Normal;
+                        tb.Foreground = ThemeHelper.GetTextPrimaryBrush();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"更新软件架构按钮状态时出错: {ex.Message}");
             }
         }
 
@@ -816,7 +897,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 bool isDarkTheme = ThemeHelper.IsDarkTheme;
                 var selectedBrush = isDarkTheme ? new SolidColorBrush(Color.FromRgb(25, 25, 25)) : new SolidColorBrush(Color.FromRgb(225, 225, 225));
                 var unselectedBrush = new SolidColorBrush(Colors.Transparent);
-                
+
                 if (UpdateChannelReleaseBorder != null)
                 {
                     bool isSelected = selectedChannel == UpdateChannel.Release;
@@ -828,7 +909,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                     }
                 }
-                
+
                 if (UpdateChannelPreviewBorder != null)
                 {
                     bool isSelected = selectedChannel == UpdateChannel.Preview;
@@ -840,7 +921,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                         textBlock.Foreground = ThemeHelper.GetTextPrimaryBrush();
                     }
                 }
-                
+
                 if (UpdateChannelBetaBorder != null)
                 {
                     bool isSelected = selectedChannel == UpdateChannel.Beta;
@@ -881,7 +962,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     AutoUpdateTimePeriodSeparator.Visibility = newState ? Visibility.Visible : Visibility.Collapsed;
                     if (AutoUpdateTimePeriodBlock != null)
                     {
-                        AutoUpdateTimePeriodBlock.Visibility = 
+                        AutoUpdateTimePeriodBlock.Visibility =
                             (MainWindow.Settings.Startup.IsAutoUpdateWithSilence && MainWindow.Settings.Startup.IsAutoUpdate) ?
                             Visibility.Visible : Visibility.Collapsed;
                     }
@@ -971,20 +1052,20 @@ namespace Ink_Canvas.Windows.SettingsViews
             try
             {
                 ThemeHelper.ApplyThemeToControl(this);
-                
+
                 if (UpdateAvailableBorder != null)
                 {
                     UpdateAvailableBorder.Background = ThemeHelper.GetBackgroundPrimaryBrush();
                     UpdateAvailableBorder.BorderBrush = ThemeHelper.GetBorderPrimaryBrush();
                 }
-                
+
                 if (CheckUpdateButton != null)
                 {
                     CheckUpdateButton.Background = ThemeHelper.GetButtonBackgroundBrush();
                     CheckUpdateButton.Foreground = ThemeHelper.GetTextPrimaryBrush();
                     CheckUpdateButton.BorderBrush = ThemeHelper.GetBorderPrimaryBrush();
                 }
-                
+
                 if (UpdateNowButton != null)
                 {
                     UpdateNowButton.Background = new SolidColorBrush(Color.FromRgb(37, 99, 235));

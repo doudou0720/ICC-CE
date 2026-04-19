@@ -10,7 +10,7 @@ namespace Ink_Canvas.Windows
     {
         private readonly Settings _settings;
         private int _currentStep = 0;
-        private const int MaxStepIndex = 11; 
+        private const int MaxStepIndex = 11;
 
         /// <summary>
         /// 初始化 OobeWindow，并使用指定的 Settings 填充初始状态与界面。
@@ -473,6 +473,8 @@ namespace Ink_Canvas.Windows
                 Opacity = 1;
             }
         }
+
+
 
         /// <summary>
         /// 根据当前步骤索引更新向导界面：显示对应步骤面板，播放切换动画，并刷新步骤指示、标题、子标题和按钮文本/可见性。

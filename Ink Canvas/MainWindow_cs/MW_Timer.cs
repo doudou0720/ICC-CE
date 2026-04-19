@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Timers;
@@ -743,7 +742,7 @@ namespace Ink_Canvas
                     {
                         return true;
                     }
-                    else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                    else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher &&
                              (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
                     {
                         return true;
@@ -760,7 +759,7 @@ namespace Ink_Canvas
                     {
                         return true;
                     }
-                    else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                    else if (Settings.Automation.IsAutoFoldInMSWhiteboard &&
                              (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
                     {
                         return true;
@@ -899,7 +898,7 @@ namespace Ink_Canvas
                     return true;
                 }
                 // 检查SeewoPinco
-                else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher && 
+                else if (Settings.Automation.IsAutoFoldInSeewoPincoTeacher &&
                          (windowProcessName == "BoardService" || windowProcessName == "seewoPincoTeacher"))
                 {
                     return true;
@@ -926,7 +925,7 @@ namespace Ink_Canvas
                     return true;
                 }
                 // 检查MSWhiteboard
-                else if (Settings.Automation.IsAutoFoldInMSWhiteboard && 
+                else if (Settings.Automation.IsAutoFoldInMSWhiteboard &&
                          (windowProcessName == "MicrosoftWhiteboard" || windowProcessName == "msedgewebview2"))
                 {
                     return true;
@@ -1027,19 +1026,20 @@ namespace Ink_Canvas
                 var windowTitle = ForegroundWindowInfo.WindowTitle();
 
                 Thickness currentMargin = new Thickness();
-                Dispatcher.Invoke(() => {
+                Dispatcher.Invoke(() =>
+                {
                     currentMargin = ViewboxFloatingBar.Margin;
                 });
-                
+
                 if (hasFullScreen)
                 {
-                    if (!isFloatingBarFolded) 
+                    if (!isFloatingBarFolded)
                     {
                         FoldFloatingBar_MouseUp(null, null);
                     }
                     else if (currentMargin.Left > -50 && !isFloatingBarChangingHideMode)
                     {
-                        FoldFloatingBar_MouseUp(null, null); 
+                        FoldFloatingBar_MouseUp(null, null);
                     }
                     return;
                 }
@@ -1052,20 +1052,20 @@ namespace Ink_Canvas
                         {
                             var versionInfo = FileVersionInfo.GetVersionInfo(ForegroundWindowInfo.ProcessPath());
                             string version = versionInfo.FileVersion;
-                            
+
                             if (version.StartsWith("5.") && Settings.Automation.IsAutoFoldInEasiNote)
                             {
                                 bool isAnnotationWindow = windowTitle.Length == 0 && ForegroundWindowInfo.WindowRect().Height < 500;
                                 if (Settings.Automation.IsAutoFoldInEasiNoteIgnoreDesktopAnno && isAnnotationWindow)
                                 {
-                                    if (!isFloatingBarFolded) 
+                                    if (!isFloatingBarFolded)
                                     {
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
                                 }
                                 else if (!isAnnotationWindow)
                                 {
-                                    if (!unfoldFloatingBarByUser && !isFloatingBarFolded) 
+                                    if (!unfoldFloatingBarByUser && !isFloatingBarFolded)
                                     {
                                         FoldFloatingBar_MouseUp(null, null);
                                     }
@@ -1146,8 +1146,7 @@ namespace Ink_Canvas
                 }
 
                 // 检查更新文件是否已下载
-                string updatesFolderPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "AutoUpdate");
-                string statusFilePath = Path.Combine(updatesFolderPath, $"DownloadV{AvailableLatestVersion}Status.txt");
+                string statusFilePath = AutoUpdateHelper.GetUpdateDownloadStatusFilePath(AvailableLatestVersion);
 
                 if (!File.Exists(statusFilePath) || File.ReadAllText(statusFilePath).Trim().ToLower() != "true")
                 {
@@ -1440,7 +1439,6 @@ namespace Ink_Canvas
                 if (_eraserAutoSwitchBackTimer != null)
                 {
                     _eraserAutoSwitchBackTimer.Stop();
-                    LogHelper.WriteLogToFile("橡皮擦自动切换计时器已停止", LogHelper.LogType.Trace);
                 }
             }
             catch (Exception ex)
@@ -1457,7 +1455,7 @@ namespace Ink_Canvas
             try
             {
                 // 检查是否仍然在橡皮擦模式
-                if (inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint && 
+                if (inkCanvas.EditingMode != InkCanvasEditingMode.EraseByPoint &&
                     inkCanvas.EditingMode != InkCanvasEditingMode.EraseByStroke)
                 {
                     StopEraserAutoSwitchBackTimer();

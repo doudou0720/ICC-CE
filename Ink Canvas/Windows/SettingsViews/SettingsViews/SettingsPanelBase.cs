@@ -1,4 +1,3 @@
-using Ink_Canvas;
 using iNKORE.UI.WPF.Helpers;
 using System;
 using System.Windows;
@@ -45,7 +44,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             {
                 System.Diagnostics.Debug.WriteLine($"SettingsPanelBase 应用主题时出错: {ex.Message}");
             }
-                LoadSettings();
+            LoadSettings();
             _isLoaded = true;
         }
 
@@ -78,7 +77,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
-                
+
                 // 为 Border 控件（ToggleSwitch、选项按钮等）启用触摸支持
                 if (child is Border border)
                 {
@@ -86,7 +85,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                     if (border.Tag != null || border.Cursor == Cursors.Hand)
                     {
                         border.IsManipulationEnabled = true;
-                        
+
                         // 添加触摸事件支持，将触摸事件转换为鼠标事件
                         border.TouchDown += Border_TouchDown;
                         border.PreviewTouchDown += Border_PreviewTouchDown;
@@ -112,7 +111,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 {
                     textBox.IsManipulationEnabled = true;
                 }
-                
+
                 // 递归处理子元素
                 EnableTouchSupportForControls(child);
             }
@@ -128,17 +127,17 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             // 获取触摸点位置
             var touchPoint = e.GetTouchPoint(border);
-            
+
             // 创建模拟的鼠标事件
             var mouseButtonEventArgs = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
             {
                 RoutedEvent = UIElement.MouseLeftButtonDownEvent,
                 Source = border
             };
-            
+
             // 触发鼠标按下事件
             border.RaiseEvent(mouseButtonEventArgs);
-            
+
             // 捕获触摸设备
             border.CaptureTouch(e.TouchDevice);
             e.Handled = true;
@@ -154,17 +153,17 @@ namespace Ink_Canvas.Windows.SettingsViews
 
             // 获取触摸点位置
             var touchPoint = e.GetTouchPoint(border);
-            
+
             // 创建模拟的鼠标事件
             var mouseButtonEventArgs = new MouseButtonEventArgs(Mouse.PrimaryDevice, Environment.TickCount, MouseButton.Left)
             {
                 RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
                 Source = border
             };
-            
+
             // 触发预览鼠标按下事件
             border.RaiseEvent(mouseButtonEventArgs);
-            
+
             e.Handled = true;
         }
 
@@ -187,8 +186,8 @@ namespace Ink_Canvas.Windows.SettingsViews
         protected void SetToggleSwitchState(Border toggleSwitch, bool isOn)
         {
             if (toggleSwitch == null) return;
-            toggleSwitch.Background = isOn 
-                ? new SolidColorBrush(Color.FromRgb(53, 132, 228)) 
+            toggleSwitch.Background = isOn
+                ? new SolidColorBrush(Color.FromRgb(53, 132, 228))
                 : (ThemeHelper.IsDarkTheme ? ThemeHelper.GetButtonBackgroundBrush() : new SolidColorBrush(Color.FromRgb(225, 225, 225)));
             var innerBorder = toggleSwitch.Child as Border;
             if (innerBorder != null)
