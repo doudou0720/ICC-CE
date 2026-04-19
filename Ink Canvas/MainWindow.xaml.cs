@@ -1516,6 +1516,10 @@ namespace Ink_Canvas
                     "兼容性变更",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
+
+                // 用户关闭提示后即视为已知晓，持久化后下次启动不再弹出（与设置内「确认」按钮一致）。
+                PersistNetCompatibilityChangeConfirmation();
+                ApplyNetCompatibilityConfirmationGateToUpdateSettingsUi();
             }
             catch (Exception ex)
             {
