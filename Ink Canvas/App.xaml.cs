@@ -1,5 +1,6 @@
 using H.NotifyIcon;
 using Ink_Canvas.Helpers;
+using Ink_Canvas.Plugins;
 using Ink_Canvas.Properties;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
@@ -7,6 +8,7 @@ using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -17,6 +19,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
@@ -31,6 +34,20 @@ namespace Ink_Canvas
     public partial class App : Application
     {
         Mutex mutex;
+
+        public void ReleaseMutexForRestart()
+        {
+            try
+            {
+                if (mutex != null)
+                {
+                    mutex.ReleaseMutex();
+                    mutex.Dispose();
+                    mutex = null;
+                }
+            }
+            catch { }
+        }
 
         public static string[] StartArgs;
         public static string RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
@@ -61,9 +78,16 @@ namespace Ink_Canvas
         private static string lastErrorMessage = string.Empty;
         // 新增：是否已初始化崩溃监听器
         private static bool crashListenersInitialized;
+        private IntPtr processDestroyHook = IntPtr.Zero;
+        private IntPtr monitoredMainWindowHandle = IntPtr.Zero;
+        private bool mainWindowDestroyedLogged;
+        private WinEventDelegate processDestroyHookCallback;
         // 新增：启动画面相关
         private static SplashScreen _splashScreen;
         private static bool _isSplashScreenShown = false;
+        private static System.Resources.ResourceSet _pendingLocalizedResourceSet;
+        private static readonly Stopwatch startupStopwatch = new Stopwatch();
+        private static readonly Stopwatch splashStopwatch = new Stopwatch();
 
         [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern int SetCurrentProcessExplicitAppUserModelID(string appId);
@@ -192,15 +216,13 @@ namespace Ink_Canvas
                 // 尝试注册Windows关闭消息监听
                 SetConsoleCtrlHandler(ConsoleCtrlHandler, true);
 
-                // 如果系统支持，添加Windows Management Instrumentation监听器
                 try
                 {
-                    // 使用反射动态加载和调用WMI
-                    TrySetupWmiMonitoring();
+                    TrySetupTerminationMonitoring();
                 }
-                catch (Exception wmiEx)
+                catch (Exception monitorEx)
                 {
-                    LogHelper.WriteLogToFile($"设置WMI进程监控失败: {wmiEx.Message}", LogHelper.LogType.Warning);
+                    LogHelper.WriteLogToFile($"设置终止监控失败: {monitorEx.Message}", LogHelper.LogType.Warning);
                 }
 
                 crashListenersInitialized = true;
@@ -212,80 +234,114 @@ namespace Ink_Canvas
             }
         }
 
-        // 动态加载WMI监控
-        private void TrySetupWmiMonitoring()
+        private void TrySetupTerminationMonitoring()
         {
             try
             {
-                // 检查System.Management程序集是否可用
-                var assemblyName = "System.Management, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
-                var assembly = Assembly.Load(assemblyName);
-                if (assembly == null)
-                {
-                    LogHelper.WriteLogToFile("未找到System.Management程序集，跳过WMI监控", LogHelper.LogType.Warning);
-                    return;
-                }
+                processDestroyHookCallback = OnWinEventMainWindowDestroyed;
 
-                // 使用反射创建WMI查询
-                var watcherType = assembly.GetType("System.Management.ManagementEventWatcher");
-                if (watcherType == null)
-                {
-                    LogHelper.WriteLogToFile("未找到ManagementEventWatcher类型，跳过WMI监控", LogHelper.LogType.Warning);
-                    return;
-                }
-
-                // 构建WMI查询字符串
-                string queryString = $"SELECT * FROM __InstanceDeletionEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ProcessId = {currentProcessId}";
-
-                // 创建ManagementEventWatcher实例
-                object watcher = Activator.CreateInstance(watcherType, queryString);
-
-                // 获取EventArrived事件信息
-                var eventInfo = watcherType.GetEvent("EventArrived");
-                if (eventInfo == null)
-                {
-                    LogHelper.WriteLogToFile("未找到EventArrived事件，跳过WMI监控", LogHelper.LogType.Warning);
-                    return;
-                }
-
-                // 创建委托并订阅事件
-                Type delegateType = eventInfo.EventHandlerType;
-                var handler = Delegate.CreateDelegate(delegateType, this, GetType().GetMethod("WmiEventHandler", BindingFlags.NonPublic | BindingFlags.Instance));
-                eventInfo.AddEventHandler(watcher, handler);
-
-                // 启动监听
-                var startMethod = watcherType.GetMethod("Start");
-                startMethod.Invoke(watcher, null);
-
-                LogHelper.WriteLogToFile("已成功启动WMI进程监控");
+                // 等主窗口句柄可用后再开始监听
+                Dispatcher.BeginInvoke(new Action(BindMainWindowLifecycle), DispatcherPriority.ApplicationIdle);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"动态加载WMI监控失败: {ex.Message}", LogHelper.LogType.Warning);
+                LogHelper.WriteLogToFile($"初始化终止监控失败: {ex.GetType().FullName}: {ex.Message}", LogHelper.LogType.Warning);
             }
         }
 
-        // WMI事件处理方法
-        private void WmiEventHandler(object sender, EventArgs e)
+        private void BindMainWindowLifecycle()
         {
             try
             {
-                // 尝试从事件参数中提取信息
-                dynamic eventArgs = e;
-                dynamic newEvent = eventArgs.NewEvent;
-                if (newEvent != null)
+                if (Current?.MainWindow == null)
                 {
-                    dynamic targetInstance = newEvent["TargetInstance"];
-                    if (targetInstance != null)
-                    {
-                        string processName = targetInstance["Name"]?.ToString() ?? "未知进程";
-                        WriteCrashLog($"WMI检测到进程{processName}(ID:{currentProcessId})已终止");
-                    }
+                    return;
                 }
+
+                Current.MainWindow.SourceInitialized -= MainWindow_SourceInitialized;
+                Current.MainWindow.SourceInitialized += MainWindow_SourceInitialized;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"处理WMI事件时出错: {ex.Message}", LogHelper.LogType.Warning);
+            }
+        }
+
+        private void MainWindow_SourceInitialized(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!(sender is Window window))
+                {
+                    return;
+                }
+
+                monitoredMainWindowHandle = new WindowInteropHelper(window).Handle;
+                if (monitoredMainWindowHandle == IntPtr.Zero)
+                {
+                    return;
+                }
+
+                RegisterMainWindowDestroyHook();
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void RegisterMainWindowDestroyHook()
+        {
+            if (processDestroyHook != IntPtr.Zero || monitoredMainWindowHandle == IntPtr.Zero)
+            {
+                return;
+            }
+
+            processDestroyHook = SetWinEventHook(
+                EVENT_OBJECT_DESTROY,
+                EVENT_OBJECT_DESTROY,
+                IntPtr.Zero,
+                processDestroyHookCallback,
+                (uint)currentProcessId,
+                0,
+                WINEVENT_OUTOFCONTEXT);
+
+            if (processDestroyHook == IntPtr.Zero)
+            {
+                return;
+            }
+        }
+
+        private void OnWinEventMainWindowDestroyed(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
+        {
+            if (eventType != EVENT_OBJECT_DESTROY || mainWindowDestroyedLogged)
+            {
+                return;
+            }
+
+            if (idObject != OBJID_WINDOW || idChild != CHILDID_SELF)
+            {
+                return;
+            }
+
+            if (hwnd != monitoredMainWindowHandle || hwnd == IntPtr.Zero)
+            {
+                return;
+            }
+
+            mainWindowDestroyedLogged = true;
+        }
+
+        private void CleanupTerminationMonitoring()
+        {
+            try
+            {
+                if (processDestroyHook != IntPtr.Zero)
+                {
+                    UnhookWinEvent(processDestroyHook);
+                    processDestroyHook = IntPtr.Zero;
+                }
+            }
+            catch
+            {
             }
         }
 
@@ -294,6 +350,19 @@ namespace Ink_Canvas
         private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handler, bool add);
 
         private delegate bool ConsoleCtrlDelegate(int ctrlType);
+        private delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
+
+        private const uint EVENT_OBJECT_DESTROY = 0x8001;
+        private const uint WINEVENT_OUTOFCONTEXT = 0x0000;
+        private const int OBJID_WINDOW = 0;
+        private const int CHILDID_SELF = 0;
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWinEvent(IntPtr hWinEventHook);
 
         private static bool ConsoleCtrlHandler(int ctrlType)
         {
@@ -428,6 +497,7 @@ namespace Ink_Canvas
         // 处理进程退出事件
         private void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
+            CleanupTerminationMonitoring();
             TimeSpan runDuration = DateTime.Now - appStartTime;
             string durationText = FormatTimeSpan(runDuration);
             WriteCrashLog($"应用程序退出，运行时长: {durationText}");
@@ -476,6 +546,7 @@ namespace Ink_Canvas
                 _splashScreen.Show();
                 _isSplashScreenShown = true;
                 splashScreenStartTime = DateTime.Now;
+                splashStopwatch.Restart();
                 LogHelper.WriteLogToFile("启动画面已显示");
             }
             catch (Exception ex)
@@ -695,20 +766,25 @@ namespace Ink_Canvas
         {
             appStartTime = DateTime.Now;
             appStartupStartTime = DateTime.Now;
+            startupStopwatch.Restart();
+
+            TryApplyPreferredLanguageFromSettings();
+
+            _pendingLocalizedResourceSet = Strings.ResourceManager.GetResourceSet(CultureInfo.CurrentUICulture, true, true);
 
             // 根据设置决定是否显示启动画面
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
+                await Task.Delay(100);
                 ShowSplashScreen();
                 SetSplashMessage(Strings.GetString("Splash_Starting"));
                 SetSplashProgress(20);
-                await Task.Delay(500);
 
                 // 强制刷新UI，确保启动画面显示
                 Application.Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
             }
 
-            await Task.Delay(500);
+            await Task.Delay(100);
             RootPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 
             LogHelper.NewLog(string.Format("Ink Canvas Starting (Version: {0})", Assembly.GetExecutingAssembly().GetName().Version));
@@ -744,15 +820,6 @@ namespace Ink_Canvas
             {
                 SetSplashMessage("正在初始化组件...");
                 SetSplashProgress(40);
-                await Task.Delay(500);
-            }
-            try
-            {
-                IACoreDllExtractor.ExtractIACoreDlls();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"释放IACore DLL时出错: {ex.Message}", LogHelper.LogType.Error);
             }
 
             // 释放UIAccess DLL
@@ -760,43 +827,13 @@ namespace Ink_Canvas
             {
                 SetSplashMessage("正在初始化组件...");
                 SetSplashProgress(50);
-                await Task.Delay(300);
-            }
-            try
-            {
-                UIAccessDllExtractor.ExtractUIAccessDlls();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"释放UIAccess DLL时出错: {ex.Message}", LogHelper.LogType.Error);
             }
 
-            // 记录应用启动（设备标识符）
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在加载配置...");
                 SetSplashProgress(60);
-                await Task.Delay(500);
             }
-            DeviceIdentifier.RecordAppLaunch();
-            try
-            {
-                var systemVersion = DeviceIdentifier.GetSystemVersion();
-                if (!string.IsNullOrWhiteSpace(systemVersion))
-                {
-                    SentrySdk.ConfigureScope(scope =>
-                    {
-                        scope.SetTag("system_version", systemVersion);
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"App | 初始化系统版本遥测标签失败: {ex.Message}", LogHelper.LogType.Warning);
-            }
-            LogHelper.WriteLogToFile($"App | 设备ID: {DeviceIdentifier.GetDeviceId()}");
-            LogHelper.WriteLogToFile($"App | 使用频率: {DeviceIdentifier.GetUsageFrequency()}");
-            LogHelper.WriteLogToFile($"App | 更新优先级: {DeviceIdentifier.GetUpdatePriority()}");
 
             // 处理更新模式启动
             bool isUpdateMode = AutoUpdateHelper.HandleUpdateModeStartup(e.Args);
@@ -1061,7 +1098,6 @@ namespace Ink_Canvas
             }
 
             _taskbar = (TaskbarIcon)FindResource("TaskbarTrayIcon");
-            _taskbar.ForceCreate();
 
             StartArgs = e.Args;
 
@@ -1070,25 +1106,47 @@ namespace Ink_Canvas
             {
                 SetSplashMessage("正在初始化主界面...");
                 SetSplashProgress(80);
-                await Task.Delay(500);
             }
             var mainWindow = new MainWindow();
             MainWindow = mainWindow;
+
+            // 注册 InkCanvas 服务供插件使用
+            try
+            {
+                var inkCanvasService = new Plugins.InkCanvasService(mainWindow);
+                Plugins.PluginManager.Instance.RegisterService<Plugins.IInkCanvasService>(inkCanvasService);
+                LogHelper.WriteLogToFile("InkCanvasService registered for plugins");
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"Failed to register InkCanvasService: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            try
+            {
+                var appRestartService = new Plugins.AppRestartService();
+                Plugins.PluginManager.Instance.RegisterService<Plugins.IAppRestartService>(appRestartService);
+                LogHelper.WriteLogToFile("AppRestartService registered for plugins");
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"Failed to register AppRestartService: {ex.Message}", LogHelper.LogType.Error);
+            }
 
             // 主窗口加载完成后关闭启动画面
             mainWindow.Loaded += (s, args) =>
             {
                 isStartupComplete = true;
                 startupCompleteHeartbeat = DateTime.Now;
-                if (_isSplashScreenShown && splashScreenStartTime != DateTime.MinValue)
+                if (_isSplashScreenShown && splashStopwatch.IsRunning)
                 {
-                    LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {(startupCompleteHeartbeat - splashScreenStartTime).TotalSeconds:F2}秒");
+                    LogHelper.WriteLogToFile($"启动完成心跳已记录，启动画面显示时长: {splashStopwatch.Elapsed.TotalSeconds:F2}秒");
                 }
                 else
                 {
                     LogHelper.WriteLogToFile($"启动完成心跳已记录");
                 }
-                LogHelper.WriteLogToFile($"启动时长: {(startupCompleteHeartbeat - appStartupStartTime).TotalSeconds:F2}秒");
+                LogHelper.WriteLogToFile($"启动时长: {startupStopwatch.Elapsed.TotalSeconds:F2}秒");
 
                 if (_isSplashScreenShown)
                 {
@@ -1111,6 +1169,19 @@ namespace Ink_Canvas
             };
 
             mainWindow.Show();
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(600);
+                Dispatcher.Invoke(() => _taskbar?.ForceCreate());
+            });
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_pendingLocalizedResourceSet != null)
+                {
+                    LoadLocalizedResources(_pendingLocalizedResourceSet);
+                    _pendingLocalizedResourceSet = null;
+                }
+            }), DispatcherPriority.ApplicationIdle);
 
             // 处理启动时的URI参数
             string startupUriArg = e.Args.FirstOrDefault(a => a.StartsWith("icc:", StringComparison.OrdinalIgnoreCase));
@@ -1127,40 +1198,132 @@ namespace Ink_Canvas
                 });
             }
 
-            // 注册.icstk文件关联
+            _ = RunDeferredStartupTasksAsync();
+
+        }
+
+        private async Task RunDeferredStartupTasksAsync()
+        {
             try
             {
-                LogHelper.WriteLogToFile("开始注册.icstk文件关联");
-                FileAssociationManager.RegisterFileAssociation();
-                FileAssociationManager.ShowFileAssociationStatus();
+                await Task.Delay(1200);
+
+                try
+                {
+                    IACoreDllExtractor.ExtractIACoreDlls();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"释放IACore DLL时出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    UIAccessDllExtractor.ExtractUIAccessDlls();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"释放UIAccess DLL时出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    LogHelper.WriteLogToFile("开始注册.icstk文件关联");
+                    FileAssociationManager.RegisterFileAssociation();
+                    FileAssociationManager.ShowFileAssociationStatus();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"注册文件关联时出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    LogHelper.WriteLogToFile("启动IPC监听器");
+                    FileAssociationManager.StartIpcListener();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"启动IPC监听器时出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    LogHelper.WriteLogToFile("初始化上传帮助类");
+                    Helpers.UploadHelper.Initialize();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"初始化上传帮助类时出错: {ex.Message}", LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    LogHelper.WriteLogToFile("开始加载插件");
+                    await PluginManager.Instance.LoadAllAsync();
+                    LogHelper.WriteLogToFile(string.Format("插件加载完成，共加载 {0} 个插件", PluginManager.Instance.Plugins.Count));
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile(string.Format("加载插件时出错: {0}", ex.Message), LogHelper.LogType.Error);
+                }
+
+                try
+                {
+                    await Task.Delay(1500);
+                    DeviceIdentifier.RecordAppLaunch();
+                    var systemVersion = DeviceIdentifier.GetSystemVersion();
+                    if (!string.IsNullOrWhiteSpace(systemVersion))
+                    {
+                        SentrySdk.ConfigureScope(scope =>
+                        {
+                            scope.SetTag("system_version", systemVersion);
+                        });
+                    }
+
+                    LogHelper.WriteLogToFile($"App | 设备ID: {DeviceIdentifier.GetDeviceId()}");
+                    LogHelper.WriteLogToFile($"App | 使用频率: {DeviceIdentifier.GetUsageFrequency()}");
+                    LogHelper.WriteLogToFile($"App | 更新优先级: {DeviceIdentifier.GetUpdatePriority()}");
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile($"App | 初始化设备统计与遥测标签失败: {ex.Message}", LogHelper.LogType.Warning);
+                }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"注册文件关联时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"启动阶段任务执行失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
 
-            // 启动IPC监听器
+        private void TryApplyPreferredLanguageFromSettings()
+        {
             try
             {
-                LogHelper.WriteLogToFile("启动IPC监听器");
-                FileAssociationManager.StartIpcListener();
+                var settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Configs", "Settings.json");
+                if (!File.Exists(settingsPath)) return;
+
+                var json = File.ReadAllText(settingsPath);
+                dynamic obj = JsonConvert.DeserializeObject(json);
+                string preferredLanguage = obj?["appearance"]?["language"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(preferredLanguage))
+                {
+                    LocalizationHelper.TrySetCulture(preferredLanguage);
+                }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"启动IPC监听器时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"启动时预加载语言失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
 
-            // 初始化上传帮助类
-            try
+        private void LoadLocalizedResources(System.Resources.ResourceSet resourceSet)
+        {
+            foreach (System.Collections.DictionaryEntry entry in resourceSet)
             {
-                LogHelper.WriteLogToFile("初始化上传帮助类");
-                Helpers.UploadHelper.Initialize();
+                if (entry.Key is string key && entry.Value is string value)
+                    Current.Resources[key] = value;
             }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化上传帮助类时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-
         }
 
         private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -1437,6 +1600,19 @@ namespace Ink_Canvas
 
         private void App_Exit(object sender, ExitEventArgs e)
         {
+            CleanupTerminationMonitoring();
+            // 卸载所有插件
+            try
+            {
+                LogHelper.WriteLogToFile("正在卸载插件...");
+                PluginManager.Instance.UnloadAll();
+                LogHelper.WriteLogToFile("插件卸载完成");
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"卸载插件时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+
             // 仅在软件内主动退出时关闭看门狗，并写入退出信号
             try
             {

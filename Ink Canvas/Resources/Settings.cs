@@ -371,6 +371,9 @@ namespace Ink_Canvas
         [JsonProperty("enablePPTButtonPageClickable")]
         public bool EnablePPTButtonPageClickable { get; set; } = true;
 
+        [JsonProperty("enablePPTButtonEnhancedPreview")]
+        public bool EnablePPTButtonEnhancedPreview { get; set; } = false;
+
         [JsonProperty("enablePPTButtonLongPressPageTurn")]
         public bool EnablePPTButtonLongPressPageTurn { get; set; } = true;
 
@@ -703,7 +706,7 @@ namespace Ink_Canvas
         public bool IsSecondConfirmWhenShutdownApp { get; set; }
 
         [JsonProperty("isEnableAvoidFullScreenHelper")]
-        public bool IsEnableAvoidFullScreenHelper { get; set; }
+        public bool IsEnableAvoidFullScreenHelper { get; set; } = true;
 
         [JsonProperty("isAutoBackupBeforeUpdate")]
         public bool IsAutoBackupBeforeUpdate { get; set; } = true;
@@ -731,6 +734,12 @@ namespace Ink_Canvas
 
         [JsonProperty("windowMode")]
         public bool WindowMode { get; set; } = true;
+
+        [JsonProperty("enableMultiScreenSupport")]
+        public bool EnableMultiScreenSupport { get; set; } = true;
+
+        [JsonProperty("followMouseForScreenSelection")]
+        public bool FollowMouseForScreenSelection { get; set; } = true;
     }
 
     public class InkToShape

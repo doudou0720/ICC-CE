@@ -8,9 +8,9 @@ namespace Ink_Canvas.Helpers
     {
         private static InkRecognitionManager _instance;
         private static readonly object _lock = new object();
+        private readonly object _initSync = new object();
 
         private ModernInkProcessor _modernProcessor;
-        private ModernInkAnalyzer _modernAnalyzer;
         private bool _isModernSystemAvailable;
         private bool _isInitialized;
 
@@ -31,35 +31,16 @@ namespace Ink_Canvas.Helpers
             }
         }
 
-        private InkRecognitionManager()
-        {
-            Initialize();
-        }
+        private InkRecognitionManager() { }
 
         private void Initialize()
         {
+            if (_isInitialized) return;
+
             try
             {
-                var tryModern = WinRtInkShapeRecognizer.IsApiAvailable && Environment.Is64BitProcess;
-
-                _isModernSystemAvailable = false;
-                if (tryModern)
-                {
-                    try
-                    {
-                        _modernProcessor = new ModernInkProcessor();
-                        _modernAnalyzer = new ModernInkAnalyzer();
-                        _isModernSystemAvailable = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        LogHelper.WriteLogToFile("WinRT 墨迹初始化失败: " + ex.Message, LogHelper.LogType.Warning);
-                        _isModernSystemAvailable = false;
-                        _modernProcessor = null;
-                        _modernAnalyzer = null;
-                    }
-                }
-
+                // 启动阶段只做能力探测，不做 WinRT 组件实例化（避免冷启动延迟）
+                _isModernSystemAvailable = WinRtInkShapeRecognizer.IsApiAvailable;
                 _isInitialized = true;
             }
             catch (Exception ex)
@@ -69,10 +50,41 @@ namespace Ink_Canvas.Helpers
             }
         }
 
+        private void EnsureInitialized()
+        {
+            if (_isInitialized) return;
+            lock (_initSync)
+            {
+                if (_isInitialized) return;
+                Initialize();
+            }
+        }
+
+        private void EnsureModernAnalyzerInitialized()
+        {
+            if (_modernProcessor != null || !_isModernSystemAvailable) return;
+
+            lock (_initSync)
+            {
+                if (_modernProcessor != null || !_isModernSystemAvailable) return;
+                try
+                {
+                    _modernProcessor ??= new ModernInkProcessor();
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.WriteLogToFile("WinRT 墨迹模块懒加载失败: " + ex.Message, LogHelper.LogType.Warning);
+                    _isModernSystemAvailable = false;
+                    _modernProcessor = null;
+                }
+            }
+        }
+
         public Task<InkShapeRecognitionResult> RecognizeShapeAsync(
             StrokeCollection strokes,
             ShapeRecognitionEngineMode mode)
         {
+            EnsureInitialized();
             if (!_isInitialized || strokes == null || strokes.Count == 0)
                 return Task.FromResult(InkShapeRecognitionResult.Empty);
 
@@ -108,6 +120,7 @@ namespace Ink_Canvas.Helpers
             bool applyHandwritingBeautify = false,
             string handwritingFontFamilyList = null)
         {
+            EnsureInitialized();
             if (!_isInitialized)
             {
                 LogHelper.WriteLogToFile("[手写体] CorrectInkAsync 跳过：InkRecognitionManager 未初始化。", LogHelper.LogType.Info);
@@ -140,18 +153,11 @@ namespace Ink_Canvas.Helpers
                     return Task.FromResult(strokes);
                 }
 
-                if (!Environment.Is64BitProcess)
+                EnsureModernAnalyzerInitialized();
+                if (_modernProcessor == null)
                 {
                     LogHelper.WriteLogToFile(
-                        "[手写体] CorrectInkAsync 跳过：非 64 位进程，WinRT 手写体替换不可用。笔画数=" + strokes.Count,
-                        LogHelper.LogType.Info);
-                    return Task.FromResult(strokes);
-                }
-
-                if (_modernAnalyzer == null)
-                {
-                    LogHelper.WriteLogToFile(
-                        "[手写体] CorrectInkAsync 跳过：ModernInkAnalyzer 未就绪（WinRT 初始化失败？）。笔画数=" +
+                        "[手写体] CorrectInkAsync 跳过：ModernInkProcessor 未就绪（WinRT 初始化失败？）。笔画数=" +
                         strokes.Count,
                         LogHelper.LogType.Warning);
                     return Task.FromResult(strokes);
@@ -161,7 +167,7 @@ namespace Ink_Canvas.Helpers
                     "[手写体] CorrectInkAsync 开始：笔画数=" + strokes.Count +
                     "，字体=" + (string.IsNullOrWhiteSpace(handwritingFontFamilyList) ? "(默认)" : handwritingFontFamilyList.Trim()),
                     LogHelper.LogType.Info);
-                return _modernAnalyzer.AnalyzeAndCorrectAsync(strokes, handwritingFontFamilyList);
+                return WinRtHandwritingRecognizer.ConvertRecognizedTextToHandwritingInkAsync(strokes, handwritingFontFamilyList);
             }
             catch (Exception ex)
             {
@@ -171,19 +177,19 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
-        /// WinRT 手写体识别（需 64 位进程、Windows 10+ 及系统手写识别组件）。返回分词候选与包围框，供剪贴板或插件使用。
+        /// WinRT 手写体识别（需 Windows 10+ 及系统手写识别组件）。返回分词候选与包围框，供剪贴板或插件使用。
         /// </summary>
         public Task<HandwritingRecognitionResult> RecognizeHandwritingAsync(
             StrokeCollection strokes,
             ShapeRecognitionEngineMode mode)
         {
+            EnsureInitialized();
             if (!_isInitialized || strokes == null || strokes.Count == 0)
                 return Task.FromResult(HandwritingRecognitionResult.Empty);
 
             try
             {
-                if (!Environment.Is64BitProcess
-                    || !ShapeRecognitionRouter.ResolveUseWinRt(mode)
+                if (!ShapeRecognitionRouter.ResolveUseWinRt(mode)
                     || !WinRtHandwritingRecognizer.IsApiAvailable)
                     return Task.FromResult(HandwritingRecognitionResult.Empty);
 
@@ -209,14 +215,13 @@ namespace Ink_Canvas.Helpers
         public string GetSystemInfo()
         {
             return _isModernSystemAvailable
-                ? $"现代化64位墨迹识别系统 (Windows Runtime API) - 进程架构: {Environment.Is64BitProcess}"
+                ? $"现代化墨迹识别系统 (Windows Runtime API) - 进程架构: {Environment.Is64BitProcess}"
                 : $"传统墨迹识别系统 (IACore) - 进程架构: {Environment.Is64BitProcess}";
         }
 
         public void Dispose()
         {
             _modernProcessor?.Dispose();
-            _modernAnalyzer?.Dispose();
             _isInitialized = false;
         }
     }
@@ -232,22 +237,6 @@ namespace Ink_Canvas.Helpers
         public Task<InkShapeRecognitionResult> RecognizeShapeAsync(StrokeCollection strokes)
         {
             return WinRtInkShapeRecognizer.RecognizeShapeAsync(strokes);
-        }
-
-        public void Dispose()
-        {
-        }
-    }
-
-    internal sealed class ModernInkAnalyzer : IDisposable
-    {
-        public Task<StrokeCollection> AnalyzeAndCorrectAsync(
-            StrokeCollection strokes,
-            string handwritingFontFamilyList)
-        {
-            return WinRtHandwritingRecognizer.ConvertRecognizedTextToHandwritingInkAsync(
-                strokes,
-                handwritingFontFamilyList);
         }
 
         public void Dispose()

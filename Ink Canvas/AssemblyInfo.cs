@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 
+[assembly: System.Runtime.Versioning.SupportedOSPlatform("windows")]
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
@@ -43,5 +44,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.7.18.9")]
-[assembly: AssemblyFileVersion("1.7.18.9")]
+[assembly: AssemblyVersion("1.7.18.10")]
+[assembly: AssemblyFileVersion("1.7.18.10")]

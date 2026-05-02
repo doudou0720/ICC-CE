@@ -12,8 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Ink;
+using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using File = System.IO.File;
@@ -180,6 +183,9 @@ namespace Ink_Canvas
         /// PowerPoint 全屏放映顶层窗口类名（与编辑态 PPTFrameClass 区分）。
         /// </summary>
         private const string PowerPointSlideShowWindowClassName = "screenClass";
+
+        private Popup _pptEnhancedPreviewPopup;
+        private ListBox _pptEnhancedPreviewListBox;
         #endregion
 
         #region PPT Managers
@@ -205,6 +211,7 @@ namespace Ink_Canvas
         /// 提供对内部PPT链接管理器的公共访问，用于外部代码与PowerPoint进行交互。
         /// </remarks>
         public IPPTLinkManager PPTManager => _pptManager;
+        public PPTUIManager PPTUIManager => _pptUIManager;
         #endregion
 
         #region PPT Manager Initialization
@@ -214,7 +221,7 @@ namespace Ink_Canvas
         /// <remarks>
         /// 清理并释放现有的 PPT 管理器与 COM/Interop 状态，创建并配置新的 PPT 管理器（ROT 或 COM 实现，取决于设置）、单一的 PPT 墨迹管理器及其自动保存行为，以及 PPT UI 管理器与其显示/按钮位置选项。方法内部会订阅必要的 PPT 事件并记录初始化过程中的错误或警告。同时初始化长按页翻页定时器以支持长按翻页功能。
         /// </remarks>
-        private void InitializePPTManagers()
+        public void InitializePPTManagers()
         {
             try
             {
@@ -298,7 +305,7 @@ namespace Ink_Canvas
         /// <remarks>
         /// 只有当Settings.PowerPointSettings.PowerPointSupport为true时才会启动监控，并记录启动事件日志。
         /// </remarks>
-        private void StartPPTMonitoring()
+        public void StartPPTMonitoring()
         {
             if (Settings.PowerPointSettings.PowerPointSupport)
             {
@@ -310,7 +317,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 停止 PowerPoint 相关的监控：停止并清除用于延迟退出 PPT 模式的定时器，并停止 PPT 管理器的监控，同时记录事件日志。
         /// </summary>
-        private void StopPPTMonitoring()
+        public void StopPPTMonitoring()
         {
             try
             {
@@ -334,7 +341,7 @@ namespace Ink_Canvas
         /// <remarks>
         /// 仅在 PowerPoint 增强功能已启用且未使用 ROT 链接时生效；方法将创建 PowerPoint 应用（若不存在）并启动用于定期检查应用状态的定时器。
         /// </remarks>
-        private void StartPowerPointProcessMonitoring()
+        public void StartPowerPointProcessMonitoring()
         {
             try
             {
@@ -364,7 +371,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 停止PowerPoint应用程序守护
         /// </summary>
-        private void StopPowerPointProcessMonitoring()
+        public void StopPowerPointProcessMonitoring()
         {
             try
             {
@@ -1370,6 +1377,8 @@ namespace Ink_Canvas
         {
             try
             {
+                await Application.Current.Dispatcher.InvokeAsync(() => DestroyPptEnhancedPreviewPopup());
+
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);
@@ -1517,6 +1526,8 @@ namespace Ink_Canvas
                             currentMode = 0;
                         }
 
+                        SyncPdfPageSidebarWithCanvas();
+
                         ClearStrokes(true);
                         // 清空备份历史记录，防止退出白板时恢复已结束PPT的墨迹
                         // 注意：这里只清空索引0的备份，不影响白板页面的墨迹（索引1及以上）
@@ -1650,7 +1661,7 @@ namespace Ink_Canvas
                 if (int.TryParse(File.ReadAllText(positionFile), out var page) && page > 0)
                 {
                     _lastPlaybackPage = page;
-                    new YesOrNoNotificationWindow($"上次播放到了第 {page} 页, 是否立即跳转", () =>
+                    var yesNoWindow = new YesOrNoNotificationWindow($"上次播放到了第 {page} 页, 是否立即跳转", () =>
                     {
                         try
                         {
@@ -1672,7 +1683,17 @@ namespace Ink_Canvas
                         {
                             LogHelper.WriteLogToFile($"跳转到第{page}页失败: {ex}", LogHelper.LogType.Error);
                         }
-                    }).ShowDialog();
+                    });
+                    yesNoWindow.Owner = this;
+                    PauseTopmostMaintenance();
+                    try
+                    {
+                        yesNoWindow.ShowDialog();
+                    }
+                    finally
+                    {
+                        ResumeTopmostMaintenance();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1714,7 +1735,7 @@ namespace Ink_Canvas
                 if (hasHiddenSlides && !IsShowingRestoreHiddenSlidesWindow)
                 {
                     IsShowingRestoreHiddenSlidesWindow = true;
-                    new YesOrNoNotificationWindow("检测到此演示文档中包含隐藏的幻灯片，是否取消隐藏？",
+                    var yesNoWindow = new YesOrNoNotificationWindow("检测到此演示文档中包含隐藏的幻灯片，是否取消隐藏？",
                         () =>
                         {
                             try
@@ -1738,7 +1759,17 @@ namespace Ink_Canvas
                             }
                         },
                         () => { IsShowingRestoreHiddenSlidesWindow = false; },
-                        () => { IsShowingRestoreHiddenSlidesWindow = false; }).ShowDialog();
+                        () => { IsShowingRestoreHiddenSlidesWindow = false; });
+                    yesNoWindow.Owner = this;
+                    PauseTopmostMaintenance();
+                    try
+                    {
+                        yesNoWindow.ShowDialog();
+                    }
+                    finally
+                    {
+                        ResumeTopmostMaintenance();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1784,7 +1815,7 @@ namespace Ink_Canvas
                 if (hasSlideTimings && !IsShowingAutoplaySlidesWindow)
                 {
                     IsShowingAutoplaySlidesWindow = true;
-                    new YesOrNoNotificationWindow("检测到此演示文档中自动播放或排练计时已经启用，可能导致幻灯片自动翻页，是否取消？",
+                    var yesNoWindow = new YesOrNoNotificationWindow("检测到此演示文档中自动播放或排练计时已经启用，可能导致幻灯片自动翻页，是否取消？",
                         () =>
                         {
                             try
@@ -1804,7 +1835,17 @@ namespace Ink_Canvas
                             }
                         },
                         () => { IsShowingAutoplaySlidesWindow = false; },
-                        () => { IsShowingAutoplaySlidesWindow = false; }).ShowDialog();
+                        () => { IsShowingAutoplaySlidesWindow = false; });
+                    yesNoWindow.Owner = this;
+                    PauseTopmostMaintenance();
+                    try
+                    {
+                        yesNoWindow.ShowDialog();
+                    }
+                    finally
+                    {
+                        ResumeTopmostMaintenance();
+                    }
                 }
             }
             catch (Exception ex)
@@ -1989,14 +2030,14 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            Settings.PowerPointSettings.EnablePowerPointEnhancement = ToggleSwitchPowerPointEnhancement.IsOn;
+            var toggle = sender as iNKORE.UI.WPF.Modern.Controls.ToggleSwitch;
+            if (toggle != null)
+                Settings.PowerPointSettings.EnablePowerPointEnhancement = toggle.IsOn;
 
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
             {
                 Settings.PowerPointSettings.IsSupportWPS = false;
-                ToggleSwitchSupportWPS.IsOn = false;
 
-                // 更新PPT管理器的WPS支持设置
                 if (_pptManager != null)
                 {
                     _pptManager.IsSupportWPS = false;
@@ -2005,7 +2046,6 @@ namespace Ink_Canvas
 
             SaveSettingsToFile();
 
-            // 启动或停止PowerPoint进程守护
             if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
             {
                 StartPowerPointProcessMonitoring();
@@ -2034,16 +2074,16 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            Settings.PowerPointSettings.IsSupportWPS = ToggleSwitchSupportWPS.IsOn;
+            var toggle = sender as iNKORE.UI.WPF.Modern.Controls.ToggleSwitch;
+            if (toggle != null)
+                Settings.PowerPointSettings.IsSupportWPS = toggle.IsOn;
 
             if (Settings.PowerPointSettings.IsSupportWPS)
             {
                 if (!Settings.PowerPointSettings.PowerPointSupport)
                 {
                     Settings.PowerPointSettings.PowerPointSupport = true;
-                    ToggleSwitchSupportPowerPoint.IsOn = true;
 
-                    // 启动PPT监控
                     if (_pptManager == null)
                     {
                         InitializePPTManagers();
@@ -2054,12 +2094,10 @@ namespace Ink_Canvas
                 if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
                 {
                     Settings.PowerPointSettings.EnablePowerPointEnhancement = false;
-                    ToggleSwitchPowerPointEnhancement.IsOn = false;
                     StopPowerPointProcessMonitoring();
                 }
             }
 
-            // 更新PPT管理器的WPS支持设置与翻页跳过动画设置
             if (_pptManager != null)
             {
                 _pptManager.IsSupportWPS = Settings.PowerPointSettings.IsSupportWPS;
@@ -2073,7 +2111,9 @@ namespace Ink_Canvas
         {
             if (!isLoaded) return;
 
-            Settings.PowerPointSettings.SkipAnimationsWhenGoNext = ToggleSwitchSkipAnimationsWhenGoNext.IsOn;
+            var toggle = sender as iNKORE.UI.WPF.Modern.Controls.ToggleSwitch;
+            if (toggle != null)
+                Settings.PowerPointSettings.SkipAnimationsWhenGoNext = toggle.IsOn;
 
             if (_pptManager != null)
             {
@@ -2317,19 +2357,26 @@ namespace Ink_Canvas
                 GridTransparencyFakeBackground.Background = new SolidColorBrush(StringToColor("#01FFFFFF"));
                 CursorIcon_Click(null, null);
 
-                // 使用新的PPT管理器显示导航
-                if (_pptManager.TryShowSlideNavigation())
+                if (Settings.PowerPointSettings.EnablePPTButtonEnhancedPreview)
                 {
-                    LogHelper.WriteLogToFile("成功显示PPT幻灯片导航", LogHelper.LogType.Trace);
-                    // 若启用了“翻页时跳过PPT动画”，显示导航后把焦点拉回本窗口
-                    if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
-                    {
-                        try { this.Activate(); } catch { }
-                    }
+                    await ShowEnhancedPptPreviewAsync(sender as FrameworkElement);
                 }
                 else
                 {
-                    LogHelper.WriteLogToFile("显示PPT幻灯片导航失败", LogHelper.LogType.Warning);
+                    // 使用新的PPT管理器显示导航
+                    if (_pptManager.TryShowSlideNavigation())
+                    {
+                        LogHelper.WriteLogToFile("成功显示PPT幻灯片导航", LogHelper.LogType.Trace);
+                        // 若启用了“翻页时跳过PPT动画”，显示导航后把焦点拉回本窗口
+                        if (Settings.PowerPointSettings.SkipAnimationsWhenGoNext)
+                        {
+                            try { this.Activate(); } catch { }
+                        }
+                    }
+                    else
+                    {
+                        LogHelper.WriteLogToFile("显示PPT幻灯片导航失败", LogHelper.LogType.Warning);
+                    }
                 }
 
                 // 控制居中
@@ -2342,6 +2389,273 @@ namespace Ink_Canvas
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"PPT翻页控件操作失败: {ex}", LogHelper.LogType.Error);
+            }
+        }
+
+        private sealed class PptEnhancedPreviewItem
+        {
+            public int SlideNumber { get; set; }
+            public BitmapImage Thumbnail { get; set; }
+        }
+
+        private async Task ShowEnhancedPptPreviewAsync(FrameworkElement placementTarget = null)
+        {
+            if (_pptEnhancedPreviewPopup != null && _pptEnhancedPreviewPopup.IsOpen && placementTarget != null &&
+                ReferenceEquals(_pptEnhancedPreviewPopup.PlacementTarget, placementTarget))
+            {
+                _pptEnhancedPreviewPopup.IsOpen = false;
+                return;
+            }
+
+            var slides = await Task.Run(BuildPptPreviewItems);
+            if (slides == null || slides.Count == 0)
+            {
+                LogHelper.WriteLogToFile("PPT增强预览未生成可用缩略图，改用默认导航", LogHelper.LogType.Warning);
+                _pptManager.TryShowSlideNavigation();
+                return;
+            }
+
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                EnsurePptEnhancedPreviewPopupCreated();
+                if (_pptEnhancedPreviewListBox == null || _pptEnhancedPreviewPopup == null) return;
+
+                _pptEnhancedPreviewListBox.ItemsSource = slides;
+                var currentSlide = _pptManager?.GetCurrentSlideNumber() ?? 0;
+                if (currentSlide > 0)
+                {
+                    var selected = slides.Find(s => s.SlideNumber == currentSlide);
+                    _pptEnhancedPreviewListBox.SelectedItem = selected;
+                    if (selected != null)
+                    {
+                        _pptEnhancedPreviewListBox.ScrollIntoView(selected);
+                    }
+                }
+
+                var anchor = placementTarget ?? PPTLSPageButton;
+                if (anchor != null)
+                {
+                    _pptEnhancedPreviewPopup.PlacementTarget = anchor;
+                    if (anchor == PPTLBPageButton || anchor == PPTRBPageButton)
+                    {
+                        _pptEnhancedPreviewPopup.Placement = PlacementMode.Top;
+                        _pptEnhancedPreviewPopup.HorizontalOffset = 0;
+                        _pptEnhancedPreviewPopup.VerticalOffset = -10;
+                    }
+                    else if (anchor == PPTRSPageButton)
+                    {
+                        _pptEnhancedPreviewPopup.Placement = PlacementMode.Left;
+                        _pptEnhancedPreviewPopup.HorizontalOffset = -12;
+                        _pptEnhancedPreviewPopup.VerticalOffset = 0;
+                    }
+                    else
+                    {
+                        _pptEnhancedPreviewPopup.Placement = PlacementMode.Right;
+                        _pptEnhancedPreviewPopup.HorizontalOffset = 12;
+                        _pptEnhancedPreviewPopup.VerticalOffset = 0;
+                    }
+                }
+
+                _pptEnhancedPreviewPopup.IsOpen = true;
+            });
+        }
+
+        private void DestroyPptEnhancedPreviewPopup()
+        {
+            try
+            {
+                if (_pptEnhancedPreviewListBox != null)
+                {
+                    _pptEnhancedPreviewListBox.MouseUp -= PPTEnhancedPreviewListBox_OnMouseUp;
+                    _pptEnhancedPreviewListBox.ItemsSource = null;
+                }
+
+                if (_pptEnhancedPreviewPopup != null)
+                {
+                    _pptEnhancedPreviewPopup.IsOpen = false;
+                    _pptEnhancedPreviewPopup.Child = null;
+                    _pptEnhancedPreviewPopup.PlacementTarget = null;
+                }
+            }
+            catch
+            {
+                // ignore dispose errors
+            }
+            finally
+            {
+                _pptEnhancedPreviewListBox = null;
+                _pptEnhancedPreviewPopup = null;
+            }
+        }
+
+        private void EnsurePptEnhancedPreviewPopupCreated()
+        {
+            if (_pptEnhancedPreviewPopup != null) return;
+
+            var listBox = new ListBox
+            {
+                Width = 220,
+                Height = 320,
+                Background = Brushes.Transparent,
+                BorderBrush = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
+                SelectionMode = SelectionMode.Single
+            };
+            listBox.SetValue(ScrollViewer.VerticalScrollBarVisibilityProperty, ScrollBarVisibility.Hidden);
+            listBox.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
+            listBox.MouseUp += PPTEnhancedPreviewListBox_OnMouseUp;
+
+            var templateXaml = @"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+  <Border Margin='6,5' Padding='0' Height='118' CornerRadius='6' BorderThickness='0' Background='Transparent'>
+    <Border BorderBrush='#7a8ea8' BorderThickness='0.6' CornerRadius='6' Background='Transparent' Padding='1'>
+      <Border CornerRadius='5' ClipToBounds='True' Background='Transparent'>
+        <Image Source='{Binding Thumbnail}' Stretch='UniformToFill'/>
+      </Border>
+    </Border>
+  </Border>
+</DataTemplate>";
+            listBox.ItemTemplate = (DataTemplate)XamlReader.Parse(templateXaml);
+            var itemStyleXaml = @"
+<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+       TargetType='ListBoxItem'>
+  <Setter Property='Background' Value='Transparent'/>
+  <Setter Property='BorderThickness' Value='0'/>
+  <Setter Property='FocusVisualStyle' Value='{x:Null}'/>
+  <Setter Property='Template'>
+    <Setter.Value>
+      <ControlTemplate TargetType='ListBoxItem'>
+        <ContentPresenter/>
+      </ControlTemplate>
+    </Setter.Value>
+  </Setter>
+</Style>";
+            listBox.ItemContainerStyle = (Style)XamlReader.Parse(itemStyleXaml);
+
+            _pptEnhancedPreviewListBox = listBox;
+            _pptEnhancedPreviewPopup = new Popup
+            {
+                AllowsTransparency = true,
+                StaysOpen = true,
+                Placement = PlacementMode.Right,
+                PopupAnimation = PopupAnimation.Fade,
+                Child = listBox
+            };
+        }
+
+        private void PPTEnhancedPreviewListBox_OnMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (_pptEnhancedPreviewListBox?.SelectedItem is not PptEnhancedPreviewItem item) return;
+            try
+            {
+                if (_pptManager?.TryNavigateToSlide(item.SlideNumber) == true)
+                {
+                    LogHelper.WriteLogToFile($"PPT增强预览跳转成功：{item.SlideNumber}", LogHelper.LogType.Trace);
+                }
+                else
+                {
+                    LogHelper.WriteLogToFile($"PPT增强预览跳转失败：{item.SlideNumber}", LogHelper.LogType.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"PPT增强预览跳转异常: {ex}", LogHelper.LogType.Error);
+            }
+            finally
+            {
+                if (_pptEnhancedPreviewPopup != null)
+                {
+                    _pptEnhancedPreviewPopup.IsOpen = false;
+                }
+            }
+        }
+
+        private List<PptEnhancedPreviewItem> BuildPptPreviewItems()
+        {
+            var result = new List<PptEnhancedPreviewItem>();
+            string tempDir = null;
+            Presentation activePresentation = null;
+            Slides slides = null;
+
+            try
+            {
+                activePresentation = _pptManager?.GetCurrentActivePresentation() as Presentation;
+                if (activePresentation == null)
+                {
+                    return result;
+                }
+
+                slides = activePresentation.Slides;
+                if (slides == null) return result;
+
+                int count = slides.Count;
+                if (count <= 0) return result;
+
+                tempDir = Path.Combine(Path.GetTempPath(), "InkCanvas", "PPTPreviews", Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tempDir);
+
+                for (int i = 1; i <= count; i++)
+                {
+                    Slide slide = null;
+                    try
+                    {
+                        slide = slides[i];
+                        var imagePath = Path.Combine(tempDir, $"slide_{i:0000}.png");
+                        slide.Export(imagePath, "PNG", 320, 180);
+                        var image = LoadBitmapImage(imagePath);
+                        if (image == null) continue;
+
+                        result.Add(new PptEnhancedPreviewItem
+                        {
+                            SlideNumber = i,
+                            Thumbnail = image
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.WriteLogToFile($"生成PPT第{i}页缩略图失败: {ex.Message}", LogHelper.LogType.Warning);
+                    }
+                    finally
+                    {
+                        if (slide != null)
+                        {
+                            try { Marshal.ReleaseComObject(slide); } catch { }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"构建PPT增强预览列表失败: {ex}", LogHelper.LogType.Error);
+            }
+            finally
+            {
+                if (!string.IsNullOrWhiteSpace(tempDir) && Directory.Exists(tempDir))
+                {
+                    try { Directory.Delete(tempDir, true); } catch { }
+                }
+            }
+
+            return result;
+        }
+
+        private static BitmapImage LoadBitmapImage(string path)
+        {
+            try
+            {
+                if (!File.Exists(path)) return null;
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(path, UriKind.Absolute);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -2473,6 +2787,8 @@ namespace Ink_Canvas
         {
             try
             {
+                await Application.Current.Dispatcher.InvokeAsync(() => DestroyPptEnhancedPreviewPopup());
+
                 if (Settings.Automation.IsAutoFoldAfterPPTSlideShow && !isFloatingBarFolded)
                 {
                     FoldFloatingBar_MouseUp(new object(), null);

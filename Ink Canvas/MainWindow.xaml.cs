@@ -1,9 +1,9 @@
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows;
+using Ink_Canvas.Windows.SettingsViews.Helpers;
 using iNKORE.UI.WPF.Modern;
 using iNKORE.UI.WPF.Modern.Controls;
 using Microsoft.Win32;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -31,7 +30,6 @@ using Cursor = System.Windows.Input.Cursor;
 using Cursors = System.Windows.Input.Cursors;
 using DpiChangedEventArgs = System.Windows.DpiChangedEventArgs;
 using File = System.IO.File;
-using GroupBox = System.Windows.Controls.GroupBox;
 using HorizontalAlignment = System.Windows.HorizontalAlignment;
 using MessageBox = iNKORE.UI.WPF.Modern.Controls.MessageBox;
 using Point = System.Windows.Point;
@@ -60,16 +58,14 @@ namespace Ink_Canvas
         private InkFadeManager _inkFadeManager;
 
         // 悬浮窗拦截管理器
-        private FloatingWindowInterceptorManager _floatingWindowInterceptorManager;
+        public FloatingWindowInterceptorManager _floatingWindowInterceptorManager;
 
         // 窗口概览模型
         private WindowOverviewModel _windowOverviewModel;
 
         // 设置面板相关状态
-        private bool isTemporarilyDisablingNoFocusMode = false;
-
-        private bool _isApplyingLanguageFromSettings;
-        private bool _isReloadingForLanguageChange;
+        // _isApplyingLanguageFromSettings migrated to AppearancePage
+        internal bool _isReloadingForLanguageChange;
 
         // 全屏处理状态标志
         public bool isFullScreenApplied = false;
@@ -99,35 +95,14 @@ namespace Ink_Canvas
                 处于画板模式内：Topmost == false / currentMode != 0
                 处于 PPT 放映内：BtnPPTSlideShowEnd.Visibility
             */
-            try
-            {
-                var path = App.RootPath + settingsFileName;
-                if (File.Exists(path))
-                {
-                    var json = File.ReadAllText(path);
-                    var loadedSettings = JsonConvert.DeserializeObject<Settings>(json);
-                    var preferredLanguage = loadedSettings?.Appearance?.Language;
-                    if (!string.IsNullOrWhiteSpace(preferredLanguage))
-                    {
-                        LocalizationHelper.TrySetCulture(preferredLanguage);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"启动时预加载语言失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-
             InitializeComponent();
 
             BlackboardLeftSide.Visibility = Visibility.Collapsed;
             BlackboardCenterSide.Visibility = Visibility.Collapsed;
             BlackboardRightSide.Visibility = Visibility.Collapsed;
             BorderTools.Visibility = Visibility.Collapsed;
-            BorderSettings.Visibility = Visibility.Collapsed;
             LeftSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
             RightSidePanelForPPTNavigation.Visibility = Visibility.Collapsed;
-            BorderSettings.Margin = new Thickness(0, 0, 0, 0);
             TwoFingerGestureBorder.Visibility = Visibility.Collapsed;
             BoardTwoFingerGestureBorder.Visibility = Visibility.Collapsed;
             BorderDrawShape.Visibility = Visibility.Collapsed;
@@ -202,6 +177,10 @@ namespace Ink_Canvas
             }
 
             InitTimers();
+
+            WindowSettingsHelper.OnStopKillProcessTimer = () => timerKillProcess.Stop();
+            WindowSettingsHelper.OnStartKillProcessTimer = () => timerKillProcess.Start();
+            WindowSettingsHelper.OnPptOnlyModeChanged = (enabled) => CheckMainWindowVisibility();
             timeMachine.OnRedoStateChanged += TimeMachine_OnRedoStateChanged;
             timeMachine.OnUndoStateChanged += TimeMachine_OnUndoStateChanged;
             inkCanvas.Strokes.StrokesChanged += StrokesOnStrokesChanged;
@@ -329,19 +308,17 @@ namespace Ink_Canvas
                 BlackBoardRightSidePageListScrollViewer.ReleaseTouchCapture(e.TouchDevice);
                 e.Handled = true;
             };
-            // 初始化无焦点模式开关
-            ToggleSwitchNoFocusMode.IsOn = Settings.Advanced.IsNoFocusMode;
+            // 应用无焦点模式设置
             ApplyNoFocusMode();
-            // 初始化窗口置顶开关
-            ToggleSwitchAlwaysOnTop.IsOn = Settings.Advanced.IsAlwaysOnTop;
-            ApplyAlwaysOnTop();
+            // 应用窗口置顶设置
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ApplyAlwaysOnTop();
+            }), DispatcherPriority.ApplicationIdle);
 
             // 添加窗口激活事件处理，确保置顶状态在窗口重新激活时得到保持
             Activated += Window_Activated;
             Deactivated += Window_Deactivated;
-
-            // 为滑块控件添加触摸事件支持
-            AddTouchSupportToSliders();
 
             // 初始化计时器控件事件
             Dispatcher.BeginInvoke(new Action(() =>
@@ -1163,11 +1140,38 @@ namespace Ink_Canvas
 
         #region Definations and Loading
 
-        public static Settings Settings = new Settings();
-        public static string settingsFileName = Path.Combine("Configs", "Settings.json");
+        public static Settings Settings { get => SettingsManager.Settings; set => SettingsManager.Settings = value; }
+        public static string settingsFileName => SettingsManager.SettingsFileName;
+
+        public void UpdateInkSmoothingConfig()
+        {
+            _inkSmoothingManager?.UpdateConfig();
+        }
+
+        public void UpdateInkFadeManager(bool isEnabled, int fadeTime = 0)
+        {
+            if (_inkFadeManager != null)
+            {
+                _inkFadeManager.IsEnabled = isEnabled;
+                if (fadeTime > 0)
+                    _inkFadeManager.UpdateFadeTime(fadeTime);
+            }
+        }
+
+        public void UpdatePickNameBackgroundsInComboBox()
+        {
+        }
+
+        public void UpdatePickNameBackgroundDisplay()
+        {
+        }
+
+        public string _lastAppliedProfileName;
         private bool isLoaded;
         private bool _suppressChickenSoupSourceSelectionChanged;
         private bool forcePointEraser;
+        private bool _pendingStartupAutoUpdateCheck;
+        private bool _sliderTouchSupportInitialized;
 
         /// <summary>
         /// 在窗口加载完成后初始化应用的核心子系统、UI 状态和运行时监控组件。
@@ -1181,101 +1185,13 @@ namespace Ink_Canvas
             //加载设置
             LoadSettings(true);
             ApplyLanguageFromSettings();
-            AutoBackupManager.Initialize(Settings);
-            CheckUpdateChannelAndTelemetryConsistency();
-
-            // 初始化上传队列（恢复上次的上传队列）
-            try
-            {
-                UploadQueueHelper.InitializeAllQueues();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"[MainWindow] 初始化上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
-                // 继续执行其他初始化操作，不中断整个加载过程
-            }
 
             _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
 
-            // 检查保存路径是否可用，不可用则修正
-            try
-            {
-                string savePath = Settings.Automation.AutoSavedStrokesLocation;
-                bool needFix = false;
-                if (string.IsNullOrWhiteSpace(savePath) || !Directory.Exists(savePath))
-                {
-                    needFix = true;
-                }
-                else
-                {
-                    // 检查是否可写
-                    try
-                    {
-                        string testFile = Path.Combine(savePath, "test.tmp");
-                        File.WriteAllText(testFile, "test");
-                        File.Delete(testFile);
-                    }
-                    catch
-                    {
-                        needFix = true;
-                    }
-                }
-                if (needFix)
-                {
-                    string newPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Saves");
-                    Settings.Automation.AutoSavedStrokesLocation = newPath;
-                    if (!Directory.Exists(newPath))
-                        Directory.CreateDirectory(newPath);
-                    SaveSettingsToFile();
-                    LogHelper.WriteLogToFile($"自动修正保存路径为: {newPath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"检测或修正保存路径时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-
-            // 加载自定义背景颜色
             LoadCustomBackgroundColor();
-
-            // 设置窗口模式
             SetWindowMode();
 
-            // 注册设置面板滚动事件
-            if (SettingsPanelScrollViewer != null)
-            {
-                SettingsPanelScrollViewer.ScrollChanged += SettingsPanelScrollViewer_ScrollChanged;
-            }
-
-            // 初始化PPT管理器
-            InitializePPTManagers();
-
-            // 如果启用PPT支持，开始监控
-            if (Settings.PowerPointSettings.PowerPointSupport)
-            {
-                StartPPTMonitoring();
-            }
-
-            // 初始化窗口概览模型
-            try
-            {
-                _windowOverviewModel = new WindowOverviewModel();
-                LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"初始化窗口概览模型失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-
-            // 如果启用PowerPoint联动增强功能，启动进程守护
-            if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
-            {
-                StartPowerPointProcessMonitoring();
-            }
-
             // HasNewUpdateWindow hasNewUpdateWindow = new HasNewUpdateWindow();
-            if (Environment.Is64BitProcess) GroupBoxInkRecognition.Visibility = Visibility.Collapsed;
-
             // 根据设置应用主题
             switch (Settings.Appearance.Theme)
             {
@@ -1305,15 +1221,16 @@ namespace Ink_Canvas
             LogHelper.WriteLogToFile("Ink Canvas Loaded", LogHelper.LogType.Event);
 
             isLoaded = true;
+            EnsureRealtimeStylusPipelineBinding();
             BlackBoardLeftSidePageListView.ItemsSource = blackBoardSidePageListViewObservableCollection;
             BlackBoardRightSidePageListView.ItemsSource = blackBoardSidePageListViewObservableCollection;
 
-            BtnLeftWhiteBoardSwitchPreviousGeometry.Brush =
+            BtnLeftWhiteBoardSwitchPrevious.IconGeometryDrawing.Brush =
                 new SolidColorBrush(Color.FromArgb(127, 24, 24, 27));
-            BtnLeftWhiteBoardSwitchPreviousLabel.Opacity = 0.5;
-            BtnRightWhiteBoardSwitchPreviousGeometry.Brush =
+            BtnLeftWhiteBoardSwitchPrevious.LabelTextBlockControl.Opacity = 0.5;
+            BtnRightWhiteBoardSwitchPrevious.IconGeometryDrawing.Brush =
                 new SolidColorBrush(Color.FromArgb(127, 24, 24, 27));
-            BtnRightWhiteBoardSwitchPreviousLabel.Opacity = 0.5;
+            BtnRightWhiteBoardSwitchPrevious.LabelTextBlockControl.Opacity = 0.5;
 
             // 应用颜色主题，这将考虑自定义背景色
             CheckColorTheme(true);
@@ -1321,13 +1238,19 @@ namespace Ink_Canvas
             BtnWhiteBoardSwitchPrevious.IsEnabled = CurrentWhiteboardIndex != 1;
             BorderInkReplayToolBox.Visibility = Visibility.Collapsed;
 
-            // 提前加载识别后端，优化第一笔等待时间
+            // 识别后端预热改为后台低优先级执行，避免启动主线程被 WinRT 初始化拖慢。
             if (ShapeRecognitionRouter.ShouldRunShapeRecognition(
                     Settings.InkToShape.IsInkToShapeEnabled,
                     ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine)))
             {
-                InkRecognizeHelper.WarmupShapeRecognition(
-                    ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine));
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    Task.Run(() =>
+                    {
+                        InkRecognizeHelper.WarmupShapeRecognition(
+                            ShapeRecognitionRouter.FromSettingsInt(Settings.InkToShape.ShapeRecognitionEngine));
+                    });
+                }), DispatcherPriority.ContextIdle);
             }
 
             SystemEvents.DisplaySettingsChanged += SystemEventsOnDisplaySettingsChanged;
@@ -1337,12 +1260,6 @@ namespace Ink_Canvas
                 FoldFloatingBar_MouseUp(new object(), null);
                 ScheduleStartupFoldAbsenceVerification();
             }
-
-            // 恢复崩溃后操作设置
-            if (App.CrashAction == App.CrashActionType.SilentRestart)
-                RadioCrashSilentRestart.IsChecked = true;
-            else
-                RadioCrashNoAction.IsChecked = true;
 
             // 显示快抽悬浮按钮
             ShowQuickDrawFloatingButton();
@@ -1367,39 +1284,34 @@ namespace Ink_Canvas
                 }), DispatcherPriority.Loaded);
             }
 
-            // 确保开关和设置同步
-            ToggleSwitchNoFocusMode.IsOn = Settings.Advanced.IsNoFocusMode;
+            // 应用无焦点模式设置
             ApplyNoFocusMode();
-            ToggleSwitchAlwaysOnTop.IsOn = Settings.Advanced.IsAlwaysOnTop;
-            ApplyAlwaysOnTop();
+            // 应用窗口置顶设置
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ApplyAlwaysOnTop();
+            }), DispatcherPriority.ApplicationIdle);
 
-            // 初始化UIA置顶开关
-            ToggleSwitchUIAccessTopMost.IsOn = Settings.Advanced.EnableUIAccessTopMost;
-            UpdateUIAccessTopMostVisibility();
-
+            // 设置UIA置顶状态
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
-
-            // 初始化橡皮擦自动切换回批注模式开关
-            if (ToggleSwitchEnableEraserAutoSwitchBack != null)
+            if (Settings.Advanced.EnableUIAccessTopMost && Settings.Advanced.IsAlwaysOnTop)
             {
-                ToggleSwitchEnableEraserAutoSwitchBack.IsOn = Settings.Canvas.EnableEraserAutoSwitchBack;
-            }
-            if (EraserAutoSwitchBackDelaySlider != null)
-            {
-                EraserAutoSwitchBackDelaySlider.Value = Settings.Canvas.EraserAutoSwitchBackDelaySeconds;
+                ApplyUIAccessTopMost();
             }
 
-            // 初始化剪贴板监控
-            InitializeClipboardMonitoring();
+            _ = RunDeferredStartupPhaseBAsync();
 
-            // 初始化悬浮窗拦截管理器
-            InitializeFloatingWindowInterceptor();
-
-            // 初始化全局快捷键管理器
-            InitializeGlobalHotkeyManager();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LoadInkFadeSettings();
+                LoadBrushAutoRestoreSettings();
+            }), DispatcherPriority.ApplicationIdle);
 
             // 初始化墨迹渐隐管理器
-            InitializeInkFadeManager();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                InitializeInkFadeManager();
+            }), DispatcherPriority.ApplicationIdle);
 
             // 处理命令行参数中的文件路径
             HandleCommandLineFileOpen();
@@ -1498,43 +1410,25 @@ namespace Ink_Canvas
                     };
                 }
             }), DispatcherPriority.Loaded);
-            AddTouchSupportToSliders();
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_sliderTouchSupportInitialized) return;
+                AddTouchSupportToSliders();
+                _sliderTouchSupportInitialized = true;
+            }), DispatcherPriority.ApplicationIdle);
         }
 
         private void ApplyLanguageFromSettings()
         {
             try
             {
-                if (ComboBoxLanguage == null || Settings?.Appearance == null) return;
+                if (Settings?.Appearance == null) return;
 
                 var preferredLanguage = Settings.Appearance.Language ?? string.Empty;
-                int index;
 
-                if (string.IsNullOrWhiteSpace(preferredLanguage))
+                if (!string.IsNullOrWhiteSpace(preferredLanguage))
                 {
-                    index = 0;
-                }
-                else if (string.Equals(preferredLanguage, "zh-CN", StringComparison.OrdinalIgnoreCase))
-                {
-                    index = 1;
-                }
-                else if (string.Equals(preferredLanguage, "en-US", StringComparison.OrdinalIgnoreCase))
-                {
-                    index = 2;
-                }
-                else
-                {
-                    index = 0;
-                }
-
-                _isApplyingLanguageFromSettings = true;
-                try
-                {
-                    ComboBoxLanguage.SelectedIndex = index;
-                }
-                finally
-                {
-                    _isApplyingLanguageFromSettings = false;
+                    LocalizationHelper.TrySetCulture(preferredLanguage);
                 }
             }
             catch (Exception ex)
@@ -1619,24 +1513,14 @@ namespace Ink_Canvas
         /// 如果该设置为 true，将窗口置为普通状态并调整到主屏幕的左上角(0,0)及主屏幕分辨率的宽高，使窗口覆盖整个主屏幕；
         /// 否则将窗口设为最大化状态。
         /// </remarks>
-        private void SetWindowMode()
+        public void SetWindowMode()
         {
-            if (Settings.Advanced.WindowMode)
-            {
-                WindowState = WindowState.Normal;
-                Left = 0.0;
-                Top = 0.0;
-                Height = SystemParameters.PrimaryScreenHeight;
-                Width = SystemParameters.PrimaryScreenWidth;
-            }
-            else // 全屏
-            {
-                WindowState = WindowState.Maximized;
-            }
+            WindowSettingsHelper.SetWindowMode(this);
         }
 
         private bool _allowCloseAfterExitVerification;
         private bool _isExitVerificationInProgress;
+        private bool _forceCloseFromExitOrRestartButton;
 
         /// <summary>
         /// 处理主窗口的关闭流程：记录关闭事件，按需进行退出密码验证或多次确认并据此取消或允许关闭。
@@ -1659,14 +1543,15 @@ namespace Ink_Canvas
                 return;
             }
 
-            if (BtnPPTSlideShowEnd != null && BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+            if (!_forceCloseFromExitOrRestartButton &&
+                BtnPPTSlideShowEnd != null && BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
             {
                 e.Cancel = true;
                 BtnPPTSlideShowEnd_Click(BtnPPTSlideShowEnd, null);
                 LogHelper.WriteLogToFile("Ink Canvas closing converted to exit PPT", LogHelper.LogType.Event);
                 return;
             }
-            if (currentMode != 0)
+            if (!_forceCloseFromExitOrRestartButton && currentMode != 0)
             {
                 e.Cancel = true;
                 CloseWhiteboardImmediately();
@@ -1698,6 +1583,7 @@ namespace Ink_Canvas
                             bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "退出验证", "请输入安全密码以退出软件。");
                             if (!ok)
                             {
+                                _forceCloseFromExitOrRestartButton = false;
                                 LogHelper.WriteLogToFile("Ink Canvas closing cancelled by security password", LogHelper.LogType.Event);
                                 return;
                             }
@@ -1728,6 +1614,7 @@ namespace Ink_Canvas
 
                 if (result1 == MessageBoxResult.Cancel)
                 {
+                    _forceCloseFromExitOrRestartButton = false;
                     e.Cancel = true;
                     LogHelper.WriteLogToFile("Ink Canvas closing cancelled at first confirmation", LogHelper.LogType.Event);
                     return;
@@ -1739,6 +1626,7 @@ namespace Ink_Canvas
 
                 if (result2 == MessageBoxResult.Cancel)
                 {
+                    _forceCloseFromExitOrRestartButton = false;
                     e.Cancel = true;
                     LogHelper.WriteLogToFile("Ink Canvas closing cancelled at second confirmation", LogHelper.LogType.Event);
                     return;
@@ -1750,6 +1638,7 @@ namespace Ink_Canvas
 
                 if (result3 == MessageBoxResult.Cancel)
                 {
+                    _forceCloseFromExitOrRestartButton = false;
                     e.Cancel = true;
                     LogHelper.WriteLogToFile("Ink Canvas closing cancelled at final confirmation", LogHelper.LogType.Event);
                     return;
@@ -1791,6 +1680,8 @@ namespace Ink_Canvas
 
             try
             {
+                PPTTimeCapsule?.Dispose();
+
                 // 清理视频展台资源
                 if (_cameraService != null)
                 {
@@ -1885,7 +1776,7 @@ namespace Ink_Canvas
         }
 
         // 使用多线路组下载更新
-        private async Task<bool> DownloadUpdateWithFallback(string version, AutoUpdateHelper.UpdateLineGroup primaryGroup, UpdateChannel channel)
+        internal async Task<bool> DownloadUpdateWithFallback(string version, AutoUpdateHelper.UpdateLineGroup primaryGroup, UpdateChannel channel)
         {
             try
             {
@@ -1915,7 +1806,7 @@ namespace Ink_Canvas
             }
         }
 
-        private async void AutoUpdate()
+        public async void AutoUpdate()
         {
             if (!string.IsNullOrEmpty(Settings.Startup.AutoUpdatePauseUntilDate))
             {
@@ -2145,24 +2036,6 @@ namespace Ink_Canvas
             }
         }
 
-        // 新增：崩溃后操作设置按钮事件
-        private void RadioCrashAction_Checked(object sender, RoutedEventArgs e)
-        {
-            if (RadioCrashSilentRestart != null && RadioCrashSilentRestart.IsChecked == true)
-            {
-                App.CrashAction = App.CrashActionType.SilentRestart;
-                Settings.Startup.CrashAction = 0;
-            }
-            else if (RadioCrashNoAction != null && RadioCrashNoAction.IsChecked == true)
-            {
-                App.CrashAction = App.CrashActionType.NoAction;
-                Settings.Startup.CrashAction = 1;
-            }
-            SaveSettingsToFile();
-            // 强制同步全局变量，防止后台逻辑未及时感知
-            App.SyncCrashActionFromSettings();
-        }
-
         // 添加一个辅助方法，根据当前编辑模式设置光标
         public void SetCursorBasedOnEditingMode(InkCanvas canvas)
         {
@@ -2317,534 +2190,6 @@ namespace Ink_Canvas
 
         #endregion Definations and Loading
 
-        #region Navigation Sidebar Methods
-
-        // 侧边栏导航按钮事件处理
-        private void NavStartup_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到启动设置页面
-            ShowSettingsSection("startup");
-        }
-
-        private void NavCanvas_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到画布设置页面
-            ShowSettingsSection("canvas");
-        }
-
-        private void NavGesture_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到手势设置页面
-            ShowSettingsSection("gesture");
-        }
-
-        private void NavInkRecognition_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到墨迹识别设置页面
-            ShowSettingsSection("inkrecognition");
-        }
-
-        private void NavCrashAction_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到崩溃处理设置页面
-            ShowSettingsSection("crashaction");
-        }
-
-        private void NavPPT_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到PPT设置页面
-            ShowSettingsSection("ppt");
-        }
-
-        private void NavAdvanced_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到高级设置页面
-            ShowSettingsSection("advanced");
-        }
-
-        private void NavAutomation_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到自动化设置页面
-            ShowSettingsSection("automation");
-        }
-
-        private void NavRandomWindow_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到随机窗口设置页面
-            ShowSettingsSection("randomwindow");
-        }
-
-        private void NavAbout_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到关于页面
-            ShowSettingsSection("about");
-            // 刷新设备信息
-            RefreshDeviceInfo();
-        }
-
-        // 个性化设置
-        private void NavTheme_Click(object sender, RoutedEventArgs e)
-        {
-            // 切换到个性化设置页面
-            ShowSettingsSection("theme");
-        }
-
-        // 快捷键设置
-        private void NavShortcuts_Click(object sender, RoutedEventArgs e)
-        {
-            OpenHotkeySettingsWindow();
-        }
-
-        private void BtnCloseSettings_Click(object sender, RoutedEventArgs e)
-        {
-            // 关闭设置面板
-            BorderSettings.Visibility = Visibility.Collapsed;
-            // 设置蒙版为不可点击，并清除背景
-            BorderSettingsMask.IsHitTestVisible = false;
-            BorderSettingsMask.Background = null; // 确保清除蒙层背景
-        }
-
-        /// <summary>
-        /// 刷新设备信息按钮点击事件
-        /// </summary>
-        private void RefreshDeviceInfo_Click(object sender, RoutedEventArgs e)
-        {
-            RefreshDeviceInfo();
-        }
-
-        /// <summary>
-        /// 刷新设备信息显示
-        /// </summary>
-        private void RefreshDeviceInfo()
-        {
-            try
-            {
-                // 获取设备ID
-                string deviceId = DeviceIdentifier.GetDeviceId();
-                DeviceIdTextBlock.Text = deviceId;
-
-                // 获取使用频率
-                var usageFrequency = DeviceIdentifier.GetUsageFrequency();
-                string frequencyText;
-                switch (usageFrequency)
-                {
-                    case DeviceIdentifier.UsageFrequency.High:
-                        frequencyText = "高频用户";
-                        break;
-                    case DeviceIdentifier.UsageFrequency.Medium:
-                        frequencyText = "中频用户";
-                        break;
-                    case DeviceIdentifier.UsageFrequency.Low:
-                        frequencyText = "低频用户";
-                        break;
-                    default:
-                        frequencyText = "未知";
-                        break;
-                }
-                UsageFrequencyTextBlock.Text = frequencyText;
-
-                // 获取更新优先级
-                var updatePriority = DeviceIdentifier.GetUpdatePriority();
-                string priorityText;
-                switch (updatePriority)
-                {
-                    case DeviceIdentifier.UpdatePriority.High:
-                        priorityText = "高优先级（优先推送更新）";
-                        break;
-                    case DeviceIdentifier.UpdatePriority.Medium:
-                        priorityText = "中优先级（正常推送更新）";
-                        break;
-                    case DeviceIdentifier.UpdatePriority.Low:
-                        priorityText = "低优先级（延迟推送更新）";
-                        break;
-                    default:
-                        priorityText = "未知";
-                        break;
-                }
-                UpdatePriorityTextBlock.Text = priorityText;
-
-                // 获取使用统计（秒级精度）
-                var (launchCount, totalSeconds, avgSessionSeconds, _) = DeviceIdentifier.GetUsageStats();
-                LaunchCountTextBlock.Text = launchCount.ToString();
-
-                // 使用新的格式化方法显示秒级精度的使用时长
-                string totalUsageText = DeviceIdentifier.FormatDuration(totalSeconds);
-                TotalUsageTextBlock.Text = totalUsageText;
-
-                LogHelper.WriteLogToFile($"MainWindow | 设备信息已刷新 - ID: {deviceId}, 频率: {frequencyText}, 优先级: {priorityText}");
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"MainWindow | 刷新设备信息失败: {ex.Message}", LogHelper.LogType.Error);
-
-                // 显示错误信息
-                DeviceIdTextBlock.Text = "获取失败";
-                UsageFrequencyTextBlock.Text = "获取失败";
-                UpdatePriorityTextBlock.Text = "获取失败";
-                LaunchCountTextBlock.Text = "获取失败";
-                TotalUsageTextBlock.Text = "获取失败";
-            }
-        }
-
-        // 折叠侧边栏
-        private void CollapseNavSidebar_Click(object sender, RoutedEventArgs e)
-        {
-            // 折叠/展开侧边栏
-            var columnDefinitions = ((Grid)BorderSettings.Child).ColumnDefinitions;
-            if (columnDefinitions[0].Width.Value == 50)
-            {
-                // 折叠侧边栏
-                columnDefinitions[0].Width = new GridLength(0);
-            }
-            else
-            {
-                // 展开侧边栏
-                columnDefinitions[0].Width = new GridLength(50);
-            }
-        }
-
-        // 显示侧边栏
-        private void ShowNavSidebar_Click(object sender, RoutedEventArgs e)
-        {
-            // 确保侧边栏展开
-            var columnDefinitions = ((Grid)BorderSettings.Child).ColumnDefinitions;
-            columnDefinitions[0].Width = new GridLength(50);
-        }
-
-        // 显示指定的设置部分
-        private async void ShowSettingsSection(string sectionTag)
-        {
-            // 显示设置面板
-            BorderSettings.Visibility = Visibility.Visible;
-            // 设置蒙版为可点击，并添加半透明背景
-            BorderSettingsMask.IsHitTestVisible = true;
-            BorderSettingsMask.Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
-
-            // 获取SettingsPanelScrollViewer中的所有GroupBox
-            var stackPanel = SettingsPanelScrollViewer.Content as StackPanel;
-            if (stackPanel == null) return;
-
-            // 确保所有GroupBox都是可见的
-            foreach (var child in stackPanel.Children)
-            {
-                if (child is GroupBox groupBox)
-                {
-                    groupBox.Visibility = Visibility.Visible;
-                }
-            }
-
-            // 确保UI完全更新
-            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
-
-            // 根据传入的sectionTag滚动到相应的设置部分
-            GroupBox targetGroupBox = null;
-
-            switch (sectionTag.ToLower())
-            {
-                case "startup":
-                    targetGroupBox = GroupBoxStartup;
-                    break;
-                case "canvas":
-                    targetGroupBox = GroupBoxCanvas;
-                    break;
-                case "gesture":
-                    targetGroupBox = GroupBoxGesture;
-                    break;
-                case "inkrecognition":
-                    targetGroupBox = GroupBoxInkRecognition;
-                    break;
-                case "crashaction":
-                    targetGroupBox = GroupBoxCrashAction;
-                    break;
-                case "ppt":
-                    targetGroupBox = GroupBoxPPT;
-                    break;
-                case "advanced":
-                    targetGroupBox = GroupBoxAdvanced;
-                    break;
-                case "automation":
-                    targetGroupBox = GroupBoxAutomation;
-                    break;
-                case "randomwindow":
-                    targetGroupBox = GroupBoxRandWindow;
-                    break;
-                case "theme":
-                    targetGroupBox = GroupBoxAppearanceNewUI;
-                    break;
-                case "shortcuts":
-                    // 快捷键设置部分可能尚未实现
-                    targetGroupBox = null;
-                    break;
-                case "about":
-                    targetGroupBox = GroupBoxAbout;
-                    break;
-                default:
-                    // 默认滚动到顶部
-                    SettingsPanelScrollViewer.ScrollToTop();
-                    return;
-            }
-
-            // 如果找到目标GroupBox，则滚动到它的位置
-            if (targetGroupBox != null)
-            {
-                // 使用动画平滑滚动到目标位置
-                ScrollToElement(targetGroupBox);
-
-                // 高亮显示当前选中的导航项
-                UpdateNavigationButtonState(sectionTag);
-            }
-            else
-            {
-                // 如果没有找到目标GroupBox，则滚动到顶部
-                SettingsPanelScrollViewer.ScrollToTop();
-            }
-        }
-
-        // 根据Header文本查找GroupBox
-        private GroupBox FindGroupBoxByHeader(StackPanel parent, string headerText)
-        {
-            foreach (var child in parent.Children)
-            {
-                if (child is GroupBox groupBox)
-                {
-                    // 查找GroupBox的Header
-                    if (groupBox.Header is TextBlock headerTextBlock &&
-                        headerTextBlock.Text != null &&
-                        headerTextBlock.Text.Contains(headerText))
-                    {
-                        return groupBox;
-                    }
-                }
-            }
-            return null;
-        }
-
-        // 平滑滚动到指定元素
-        private async void ScrollToElement(FrameworkElement element)
-        {
-            if (element == null || SettingsPanelScrollViewer == null) return;
-
-            try
-            {
-                // 暂时禁用滚动事件处理
-                SettingsPanelScrollViewer.ScrollChanged -= SettingsPanelScrollViewer_ScrollChanged;
-
-                // 记录当前滚动位置
-                double originalOffset = SettingsPanelScrollViewer.VerticalOffset;
-
-                // 将ScrollViewer内部的位置信息重置到顶部（不会触发视觉更新）
-                SettingsPanelScrollViewer.ScrollToHome();
-
-                // 使用Dispatcher进行延迟处理，确保布局更新
-                await Dispatcher.InvokeAsync(() =>
-                {
-                    try
-                    {
-                        // 强制更新布局
-                        SettingsPanelScrollViewer.UpdateLayout();
-
-                        // 获取元素相对于顶部的准确位置
-                        Point elementPosition = element.TransformToAncestor(SettingsPanelScrollViewer).Transform(new Point(0, 0));
-
-                        // 计算目标位置，减去一些偏移，使元素不会贴在顶部
-                        double targetPosition = elementPosition.Y - 20;
-
-                        // 确保目标位置不小于0
-                        targetPosition = Math.Max(0, targetPosition);
-
-                        // 直接设置滚动位置，不使用动画
-                        SettingsPanelScrollViewer.ScrollToVerticalOffset(targetPosition);
-                    }
-                    catch (Exception)
-                    {
-                        // 如果出现异常，恢复到原来的滚动位置
-                        SettingsPanelScrollViewer.ScrollToVerticalOffset(originalOffset);
-                    }
-                    finally
-                    {
-                        // 重新启用滚动事件处理
-                        SettingsPanelScrollViewer.ScrollChanged += SettingsPanelScrollViewer_ScrollChanged;
-                    }
-                }, DispatcherPriority.Render);
-            }
-            catch (Exception)
-            {
-                // 确保在异常情况下也重新启用滚动事件处理
-                SettingsPanelScrollViewer.ScrollChanged += SettingsPanelScrollViewer_ScrollChanged;
-            }
-        }
-
-        // 滚动条变化事件处理
-        private void SettingsPanelScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            // 可以在这里添加滚动事件的处理逻辑，如果需要的话
-        }
-
-        // 更新导航按钮状态
-        private void UpdateNavigationButtonState(string activeTag)
-        {
-            // 清除所有导航按钮的Tag属性
-            ClearAllNavButtonTags();
-
-            // 设置当前活动按钮的Tag属性
-            switch (activeTag.ToLower())
-            {
-                case "startup":
-                    SetNavButtonTag("startup");
-                    break;
-                case "canvas":
-                    SetNavButtonTag("canvas");
-                    break;
-                case "gesture":
-                    SetNavButtonTag("gesture");
-                    break;
-                case "inkrecognition":
-                    SetNavButtonTag("inkrecognition");
-                    break;
-                case "crashaction":
-                    SetNavButtonTag("crashaction");
-                    break;
-                case "ppt":
-                    SetNavButtonTag("ppt");
-                    break;
-                case "advanced":
-                    SetNavButtonTag("advanced");
-                    break;
-                case "automation":
-                    SetNavButtonTag("automation");
-                    break;
-                case "randomwindow":
-                    SetNavButtonTag("randomwindow");
-                    break;
-                case "theme":
-                    SetNavButtonTag("theme");
-                    break;
-                case "shortcuts":
-                    SetNavButtonTag("shortcuts");
-                    break;
-                case "about":
-                    SetNavButtonTag("about");
-                    break;
-            }
-        }
-
-        // 清除所有导航按钮的Tag属性
-        private void ClearAllNavButtonTags()
-        {
-            var grid = BorderSettings.Child as Grid;
-            if (grid == null) return;
-
-            var navSidebar = grid.Children[0] as Border;
-            if (navSidebar == null) return;
-
-            var navGrid = navSidebar.Child as Grid;
-            if (navGrid == null) return;
-
-            var scrollViewer = navGrid.Children[1] as ScrollViewer;
-            if (scrollViewer == null) return;
-
-            var stackPanel = scrollViewer.Content as StackPanel;
-            if (stackPanel == null) return;
-
-            foreach (var child in stackPanel.Children)
-            {
-                if (child is Button button)
-                {
-                    button.Tag = null;
-                }
-            }
-        }
-
-        // 设置导航按钮的Tag属性
-        private void SetNavButtonTag(string tag)
-        {
-            var grid = BorderSettings.Child as Grid;
-            if (grid == null) return;
-
-            var navSidebar = grid.Children[0] as Border;
-            if (navSidebar == null) return;
-
-            var navGrid = navSidebar.Child as Grid;
-            if (navGrid == null) return;
-
-            var scrollViewer = navGrid.Children[1] as ScrollViewer;
-            if (scrollViewer == null) return;
-
-            var stackPanel = scrollViewer.Content as StackPanel;
-            if (stackPanel == null) return;
-
-            foreach (var child in stackPanel.Children)
-            {
-                if (child is Button button)
-                {
-                    // 检查按钮的ToolTip属性，根据tag设置对应的按钮
-                    string buttonTag = button.Tag as string;
-
-                    // 如果按钮的Tag与要设置的tag匹配，则设置Tag
-                    if (buttonTag != null && buttonTag.ToLower() == tag.ToLower())
-                    {
-                        button.Tag = tag;
-                        return;
-                    }
-                }
-            }
-        }
-
-        // 根据Header文本查找并显示GroupBox
-        private void ShowGroupBoxByHeader(StackPanel parent, string headerText)
-        {
-            foreach (var child in parent.Children)
-            {
-                if (child is GroupBox groupBox)
-                {
-                    // 查找GroupBox的Header
-                    if (groupBox.Header is TextBlock headerTextBlock &&
-                        headerTextBlock.Text != null &&
-                        headerTextBlock.Text.Contains(headerText))
-                    {
-                        groupBox.Visibility = Visibility.Visible;
-                        return;
-                    }
-                }
-            }
-        }
-
-        #endregion Navigation Sidebar Methods
-
-        #region 新设置窗口
-
-        /// <summary>
-        /// 在隐藏子面板后打开新的设置窗口；若需要则先提示并验证安全密码，并在正在打开或隐藏设置面板时不执行任何操作。
-        /// </summary>
-        /// <remarks>
-        /// 在验证密码失败或发生异常时会中止操作。成功通过验证后以模式窗口方式显示设置窗口并将当前窗口设为其所有者。
-        /// </remarks>
-        private async void BtnOpenNewSettings_Click(object sender, RoutedEventArgs e)
-        {
-            if (isOpeningOrHidingSettingsPane) return;
-            HideSubPanels();
-            {
-                try
-                {
-                    if (SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
-                    {
-                        bool ok = await SecurityManager.PromptAndVerifyAsync(Settings, this, "进入设置", "请输入安全密码以进入设置。");
-                        if (!ok) return;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.WriteLogToFile($"安全密码校验失败: {ex}", LogHelper.LogType.Error);
-                    return;
-                }
-
-                var settingsWindow = new SettingsWindow();
-                settingsWindow.Owner = this;
-                settingsWindow.ShowDialog();
-            }
-        }
-
-        #endregion 新设置窗口
 
         // 在MainWindow类中添加：
         private void ApplyCurrentEraserShape()
@@ -2914,14 +2259,9 @@ namespace Ink_Canvas
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)
         {
-            // 收起设置面板（与插件面板一致）
-            BorderSettings.Visibility = Visibility.Hidden;
-            BorderSettingsMask.Visibility = Visibility.Hidden;
             var win = new HistoryRollbackWindow(Settings.Startup.UpdateChannel);
+            win.Owner = this;
             win.ShowDialog();
-            // 可选：回滚窗口关闭后恢复设置面板显示
-            BorderSettings.Visibility = Visibility.Visible;
-            BorderSettingsMask.Visibility = Visibility.Visible;
         }
 
         [DllImport("user32.dll")]
@@ -2970,9 +2310,6 @@ namespace Ink_Canvas
             public IntPtr dwExtraInfo;
         }
 
-        private LowLevelKeyboardProc _keyboardProc;
-        private IntPtr _keyboardHookId = IntPtr.Zero;
-
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_NOACTIVATE = 0x08000000;
         private const int WS_EX_TOPMOST = 0x00000008;
@@ -2984,228 +2321,49 @@ namespace Ink_Canvas
         private const uint SWP_SHOWWINDOW = 0x0040;
         private const uint SWP_NOOWNERZORDER = 0x0200;
 
-        // 添加定时器来维护置顶状态
-        private DispatcherTimer topmostMaintenanceTimer;
         private DispatcherTimer autoSaveStrokesTimer;
-        private bool isTopmostMaintenanceEnabled;
-
-        private IntPtr KeyboardHookProc(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-            return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
-        }
 
         private void InstallKeyboardHook()
         {
-            if (_keyboardHookId == IntPtr.Zero)
-            {
-                _keyboardProc = KeyboardHookProc;
-                _keyboardHookId = SetWindowsHookEx(WH_KEYBOARD_LL, _keyboardProc,
-                    GetModuleHandle(null), 0);
-                if (_keyboardHookId == IntPtr.Zero)
-                {
-                    LogHelper.WriteLogToFile("安装低级键盘钩子失败", LogHelper.LogType.Error);
-                }
-            }
+            WindowSettingsHelper.InstallKeyboardHook();
         }
 
         private void UninstallKeyboardHook()
         {
-            if (_keyboardHookId != IntPtr.Zero)
-            {
-                UnhookWindowsHookEx(_keyboardHookId);
-                _keyboardHookId = IntPtr.Zero;
-                _keyboardProc = null;
-            }
+            WindowSettingsHelper.UninstallKeyboardHook();
         }
 
-        private void ApplyNoFocusMode()
+        public void ApplyNoFocusMode()
         {
-            var hwnd = new WindowInteropHelper(this).Handle;
-            int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-
-            bool shouldBeNoFocus = isTemporarilyDisablingNoFocusMode ?
-                false : Settings.Advanced.IsNoFocusMode;
-
-            if (shouldBeNoFocus)
-            {
-                SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_NOACTIVATE);
-                InstallKeyboardHook();
-            }
-            else
-            {
-                SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_NOACTIVATE);
-                UninstallKeyboardHook();
-            }
+            WindowSettingsHelper.ApplyNoFocusMode(this);
         }
 
-        private void ApplyAlwaysOnTop()
+        public void ApplyAlwaysOnTop()
         {
-            try
-            {
-                var hwnd = new WindowInteropHelper(this).Handle;
-                if (Settings.Advanced.IsAlwaysOnTop)
-                {
-                    Topmost = true;
-
-                    // 1. 设置窗口样式为置顶
-                    int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-                    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOPMOST);
-
-                    // 2. 使用SetWindowPos确保窗口在最顶层
-                    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
-
-                    // 3. 如果启用了无焦点模式且未启用UIA置顶，需要特殊处理
-                    if (Settings.Advanced.IsNoFocusMode && !Settings.Advanced.EnableUIAccessTopMost)
-                    {
-                        // 启动置顶维护定时器
-                        StartTopmostMaintenance();
-                    }
-                    else
-                    {
-                        // 停止置顶维护定时器
-                        StopTopmostMaintenance();
-                    }
-                }
-                else
-                {
-                    // 取消置顶时
-                    // 1. 先使用Win32 API取消置顶
-                    SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
-
-                    // 2. 移除置顶窗口样式
-                    int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-                    SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_TOPMOST);
-
-                    // 3. 停止置顶维护定时器
-                    StopTopmostMaintenance();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"应用窗口置顶失败: {ex.Message}", LogHelper.LogType.Error);
-            }
+            WindowSettingsHelper.ApplyAlwaysOnTop(this);
         }
 
-        /// <summary>
-        /// 启动置顶维护定时器
-        /// </summary>
         private void StartTopmostMaintenance()
         {
-            if (Settings.Advanced.EnableUIAccessTopMost)
-            {
-                return;
-            }
-
-            if (isTopmostMaintenanceEnabled) return;
-
-            if (topmostMaintenanceTimer == null)
-            {
-                topmostMaintenanceTimer = new DispatcherTimer();
-                topmostMaintenanceTimer.Interval = TimeSpan.FromMilliseconds(500); // 每500ms检查一次
-                topmostMaintenanceTimer.Tick += TopmostMaintenanceTimer_Tick;
-            }
-
-            topmostMaintenanceTimer.Start();
-            isTopmostMaintenanceEnabled = true;
-            LogHelper.WriteLogToFile("启动置顶维护定时器", LogHelper.LogType.Trace);
+            WindowSettingsHelper.PauseTopmostMaintenance();
         }
 
-        /// <summary>
-        /// 停止置顶维护定时器
-        /// </summary>
         private void StopTopmostMaintenance()
         {
-            if (topmostMaintenanceTimer != null && isTopmostMaintenanceEnabled)
-            {
-                topmostMaintenanceTimer.Stop();
-                isTopmostMaintenanceEnabled = false;
-                LogHelper.WriteLogToFile("停止置顶维护定时器", LogHelper.LogType.Trace);
-            }
+            WindowSettingsHelper.PauseTopmostMaintenance();
         }
 
         public void PauseTopmostMaintenance()
         {
-            if (topmostMaintenanceTimer != null && isTopmostMaintenanceEnabled)
-            {
-                topmostMaintenanceTimer.Stop();
-            }
+            WindowSettingsHelper.PauseTopmostMaintenance();
         }
 
         public void ResumeTopmostMaintenance()
         {
-            if (Settings.Advanced.IsAlwaysOnTop &&
-                Settings.Advanced.IsNoFocusMode &&
-                !Settings.Advanced.EnableUIAccessTopMost)
-            {
-                if (topmostMaintenanceTimer != null && !isTopmostMaintenanceEnabled)
-                {
-                    topmostMaintenanceTimer.Start();
-                    isTopmostMaintenanceEnabled = true;
-                }
-            }
+            WindowSettingsHelper.ResumeTopmostMaintenance(this);
         }
 
-        /// <summary>
-        /// 置顶维护定时器事件
-        /// </summary>
-        private void TopmostMaintenanceTimer_Tick(object sender, EventArgs e)
-        {
-            try
-            {
-                if (Settings.Advanced.EnableUIAccessTopMost)
-                {
-                    StopTopmostMaintenance();
-                    return;
-                }
 
-                if (!Settings.Advanced.IsAlwaysOnTop || !Settings.Advanced.IsNoFocusMode)
-                {
-                    StopTopmostMaintenance();
-                    return;
-                }
-
-                var hwnd = new WindowInteropHelper(this).Handle;
-                if (hwnd == IntPtr.Zero) return;
-
-                // 检查窗口是否仍然可见且不是最小化状态
-                if (!IsWindow(hwnd) || !IsWindowVisible(hwnd) || IsIconic(hwnd))
-                {
-                    return;
-                }
-
-                // 检查是否有子窗口在前景
-                var foregroundWindow = GetForegroundWindow();
-                if (foregroundWindow != hwnd)
-                {
-                    // 检查前景窗口是否是当前应用程序的子窗口
-                    var foregroundWindowProcessId = GetWindowThreadProcessId(foregroundWindow, out uint processId);
-                    var currentProcessId = GetCurrentProcessId();
-
-                    if (processId == currentProcessId)
-                    {
-                        // 如果有子窗口在前景，暂停置顶维护
-                        return;
-                    }
-
-                    // 如果窗口不在最顶层且没有子窗口，重新设置置顶
-                    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOOWNERZORDER);
-
-                    // 确保窗口样式正确
-                    int exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-                    if ((exStyle & WS_EX_TOPMOST) == 0)
-                    {
-                        SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOPMOST);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"置顶维护定时器出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
 
         /// <summary>
         /// 根据窗口置顶设置和当前模式设置窗口的Topmost属性
@@ -3213,67 +2371,7 @@ namespace Ink_Canvas
         /// <param name="shouldBeTopmost">当前模式是否需要窗口置顶</param>
         public void SetTopmostBasedOnSettings(bool shouldBeTopmost)
         {
-            if (Settings.Advanced.IsAlwaysOnTop)
-            {
-                // 如果启用了窗口置顶设置，则始终置顶
-                Topmost = true;
-                ApplyAlwaysOnTop();
-            }
-            else
-            {
-                // 如果未启用窗口置顶设置，则根据当前模式决定
-                Topmost = shouldBeTopmost;
-                if (!shouldBeTopmost)
-                {
-                    ApplyAlwaysOnTop(); // 确保取消置顶
-                }
-            }
-        }
-
-        private void ToggleSwitchNoFocusMode_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            var toggle = sender as ToggleSwitch;
-            Settings.Advanced.IsNoFocusMode = toggle != null && toggle.IsOn;
-            SaveSettingsToFile();
-
-            if (isTemporarilyDisablingNoFocusMode)
-            {
-                isTemporarilyDisablingNoFocusMode = false;
-            }
-
-            ApplyNoFocusMode();
-
-            // 如果启用了窗口置顶，需要重新应用置顶设置以处理无焦点模式的变化
-            if (Settings.Advanced.IsAlwaysOnTop)
-            {
-                ApplyAlwaysOnTop();
-            }
-
-        }
-
-        private void ToggleSwitchAlwaysOnTop_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            var toggle = sender as ToggleSwitch;
-            Settings.Advanced.IsAlwaysOnTop = toggle != null && toggle.IsOn;
-            SaveSettingsToFile();
-            ApplyAlwaysOnTop();
-            UpdateUIAccessTopMostVisibility();
-        }
-
-        private void ToggleSwitchUIAccessTopMost_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!isLoaded) return;
-            var toggle = sender as ToggleSwitch;
-            bool newValue = toggle != null && toggle.IsOn;
-
-            Settings.Advanced.EnableUIAccessTopMost = newValue;
-            SaveSettingsToFile();
-            ApplyUIAccessTopMost();
-
-            App.IsUIAccessTopMostEnabled = newValue;
-
+            WindowSettingsHelper.SetTopmostBasedOnSettings(this, shouldBeTopmost);
         }
 
         private void Window_Activated(object sender, EventArgs e)
@@ -3286,6 +2384,102 @@ namespace Ink_Canvas
                 {
                     ApplyAlwaysOnTop();
                 }), DispatcherPriority.Loaded);
+            }
+        }
+
+        private async Task RunDeferredStartupPhaseBAsync()
+        {
+            await Task.Delay(1200);
+
+            try
+            {
+                AutoBackupManager.Initialize(Settings);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[MainWindow] 初始化自动备份管理器时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            try
+            {
+                UploadQueueHelper.InitializeAllQueues();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"[MainWindow] 初始化上传队列时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            InitializeClipboardMonitoring();
+            InitializeFloatingWindowInterceptor();
+            InitializeGlobalHotkeyManager();
+
+            try
+            {
+                string savePath = Settings.Automation.AutoSavedStrokesLocation;
+                bool needFix = false;
+                if (string.IsNullOrWhiteSpace(savePath) || !Directory.Exists(savePath))
+                {
+                    needFix = true;
+                }
+                else
+                {
+                    try
+                    {
+                        string testFile = Path.Combine(savePath, "test.tmp");
+                        File.WriteAllText(testFile, "test");
+                        File.Delete(testFile);
+                    }
+                    catch
+                    {
+                        needFix = true;
+                    }
+                }
+
+                if (needFix)
+                {
+                    string newPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Saves");
+                    Settings.Automation.AutoSavedStrokesLocation = newPath;
+                    if (!Directory.Exists(newPath))
+                        Directory.CreateDirectory(newPath);
+                    SaveSettingsToFile();
+                    LogHelper.WriteLogToFile($"自动修正保存路径为: {newPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"检测或修正保存路径时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            InitializePPTManagers();
+            if (Settings.PowerPointSettings.PowerPointSupport)
+            {
+                StartPPTMonitoring();
+            }
+
+            try
+            {
+                _windowOverviewModel = new WindowOverviewModel();
+                LogHelper.WriteLogToFile("窗口概览模型已初始化", LogHelper.LogType.Event);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"初始化窗口概览模型失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+
+            if (Settings.PowerPointSettings.EnablePowerPointEnhancement)
+            {
+                StartPowerPointProcessMonitoring();
+            }
+
+            if (_pendingStartupAutoUpdateCheck && Settings.Startup?.IsAutoUpdate == true)
+            {
+                _pendingStartupAutoUpdateCheck = false;
+                await Task.Delay(3000);
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    LogHelper.WriteLogToFile("AutoUpdate | Running deferred auto-update check at UI idle");
+                    AutoUpdate();
+                }), DispatcherPriority.ApplicationIdle);
             }
         }
 
@@ -3354,6 +2548,22 @@ namespace Ink_Canvas
         }
 
         /// <summary>
+        /// 应用多屏设置到全局热键管理器。
+        /// </summary>
+        public void ApplyMultiScreenSettings()
+        {
+            try
+            {
+                _globalHotkeyManager?.RefreshMultiScreenSettings();
+                RefreshFloatingBarScreenFollowState();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"应用多屏设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
         /// 打开快捷键设置窗口
         /// </summary>
         private void OpenHotkeySettingsWindow()
@@ -3366,30 +2576,12 @@ namespace Ink_Canvas
                     return;
                 }
 
-                // 暂时隐藏设置面板
-                BorderSettings.Visibility = Visibility.Hidden;
-                BorderSettingsMask.Visibility = Visibility.Hidden;
-
-                // 创建快捷键设置窗口
                 var hotkeySettingsWindow = new HotkeySettingsWindow(this, _globalHotkeyManager);
-
-                // 设置窗口关闭事件，用于在快捷键设置窗口关闭后恢复设置面板
-                hotkeySettingsWindow.Closed += (s, e) =>
-                {
-                    // 恢复设置面板显示
-                    BorderSettings.Visibility = Visibility.Visible;
-                    BorderSettingsMask.Visibility = Visibility.Visible;
-                };
-
-                // 显示快捷键设置窗口
+                hotkeySettingsWindow.Owner = this;
                 hotkeySettingsWindow.ShowDialog();
             }
             catch (Exception ex)
             {
-                // 确保在发生错误时也恢复设置面板显示
-                BorderSettings.Visibility = Visibility.Visible;
-                BorderSettingsMask.Visibility = Visibility.Visible;
-
                 LogHelper.WriteLogToFile($"打开快捷键设置窗口时出错: {ex.Message}", LogHelper.LogType.Error);
                 MessageBox.Show($"打开快捷键设置窗口时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -3452,29 +2644,46 @@ namespace Ink_Canvas
         }
         #endregion
 
-        #region 墨迹渐隐功能
-        /// <summary>
-        /// 墨迹渐隐开关切换事件处理
-        /// </summary>
-        private void ToggleSwitchEnableInkFade_Toggled(object sender, RoutedEventArgs e)
+
+        private void ToggleSwitchEnableInkToShape_Toggled(object sender, RoutedEventArgs e)
         {
             try
             {
-                Settings.Canvas.EnableInkFade = ToggleSwitchEnableInkFade.IsOn;
-                _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
+                var toggle = sender as ToggleSwitch;
+                if (toggle == null) return;
 
-                // 同步批注子面板中的开关状态
-                if (ToggleSwitchInkFadeInPanel != null)
+                if (sender == FloatingBarToggleSwitchEnableInkToShape)
+                    BoardToggleSwitchEnableInkToShape.IsOn = FloatingBarToggleSwitchEnableInkToShape.IsOn;
+                else
+                    FloatingBarToggleSwitchEnableInkToShape.IsOn = BoardToggleSwitchEnableInkToShape.IsOn;
+
+                Settings.InkToShape.IsInkToShapeEnabled = FloatingBarToggleSwitchEnableInkToShape.IsOn;
+                SaveSettingsToFile();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"切换墨迹纠正功能时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ToggleSwitchInkFadeInPanel_Toggled(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var toggle = sender as ToggleSwitch;
+                if (toggle == null) return;
+                Settings.Canvas.EnableInkFade = toggle.IsOn;
+                if (_inkFadeManager != null)
                 {
-                    ToggleSwitchInkFadeInPanel.IsOn = Settings.Canvas.EnableInkFade;
+                    _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
                 }
 
-                // 同步普通画笔面板中的开关状态
                 if (ToggleSwitchInkFadeInPanel2 != null)
                 {
                     ToggleSwitchInkFadeInPanel2.IsOn = Settings.Canvas.EnableInkFade;
                 }
 
+                SaveSettingsToFile();
             }
             catch (Exception ex)
             {
@@ -3482,259 +2691,29 @@ namespace Ink_Canvas
             }
         }
 
-        /// <summary>
-        /// 墨迹渐隐时间滑块值改变事件处理
-        /// </summary>
-        private void InkFadeTimeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            try
-            {
-                Settings.Canvas.InkFadeTime = (int)e.NewValue;
-                if (_inkFadeManager != null)
-                {
-                    _inkFadeManager.UpdateFadeTime(Settings.Canvas.InkFadeTime);
-                }
-                LogHelper.WriteLogToFile($"墨迹渐隐时间已更新为 {Settings.Canvas.InkFadeTime}ms", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新墨迹渐隐时间时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-
-
-        /// <summary>
-        /// 批注子面板中墨迹渐隐开关切换事件处理
-        /// </summary>
-        private void ToggleSwitchInkFadeInPanel_Toggled(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Settings.Canvas.EnableInkFade = ToggleSwitchInkFadeInPanel.IsOn;
-                _inkFadeManager.IsEnabled = Settings.Canvas.EnableInkFade;
-
-                // 同步设置面板中的开关状态
-                if (ToggleSwitchEnableInkFade != null)
-                {
-                    ToggleSwitchEnableInkFade.IsOn = Settings.Canvas.EnableInkFade;
-                }
-
-                // 同步普通画笔面板中的开关状态
-                if (ToggleSwitchInkFadeInPanel2 != null)
-                {
-                    ToggleSwitchInkFadeInPanel2.IsOn = Settings.Canvas.EnableInkFade;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"批注子面板中切换墨迹渐隐功能时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 在笔工具菜单中隐藏墨迹渐隐控制开关切换事件处理
-        /// <summary>
-        /// 切换“在笔工具菜单中隐藏墨迹渐隐控制开关”设置并立即应用该更改。
-        /// </summary>
-        /// <remarks>
-        /// 当控件切换时，方法会更新 Settings.Canvas.HideInkFadeControlInPenMenu 的值、将设置写回配置文件、刷新墨迹渐隐控件的可见性，并记录事件日志或错误日志。
-        /// </remarks>
-        private void ToggleSwitchHideInkFadeControlInPenMenu_Toggled(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (isLoaded)
-                {
-                    Settings.Canvas.HideInkFadeControlInPenMenu = ToggleSwitchHideInkFadeControlInPenMenu.IsOn;
-                    SaveSettingsToFile();
-                }
-
-                // 立即更新墨迹渐隐控制开关的可见性
-                UpdateInkFadeControlVisibility();
-
-                LogHelper.WriteLogToFile($"在笔工具菜单中隐藏墨迹渐隐控制开关已{(Settings.Canvas.HideInkFadeControlInPenMenu ? "启用" : "禁用")}", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换在笔工具菜单中隐藏墨迹渐隐控制开关时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 橡皮擦自动切换回批注模式开关切换事件处理
-        /// </summary>
-        private void ToggleSwitchEnableEraserAutoSwitchBack_Toggled(object sender, RoutedEventArgs e)
+        private void ComboBoxEraserSizeFloatingBar_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 if (!isLoaded) return;
-                Settings.Canvas.EnableEraserAutoSwitchBack = ToggleSwitchEnableEraserAutoSwitchBack.IsOn;
+                var comboBox = sender as System.Windows.Controls.ComboBox;
+                if (comboBox == null) return;
+
+                Settings.Canvas.EraserSize = comboBox.SelectedIndex;
                 SaveSettingsToFile();
 
-                // 如果禁用，停止计时器
-                if (!Settings.Canvas.EnableEraserAutoSwitchBack)
+                if (comboBox.Name == "ComboBoxEraserSizeFloatingBar" && BoardComboBoxEraserSize != null)
                 {
-                    StopEraserAutoSwitchBackTimer();
+                    BoardComboBoxEraserSize.SelectedIndex = comboBox.SelectedIndex;
                 }
-
-                LogHelper.WriteLogToFile($"橡皮擦自动切换回批注模式已{(Settings.Canvas.EnableEraserAutoSwitchBack ? "启用" : "禁用")}", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换橡皮擦自动切换回批注模式时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 橡皮擦自动切换延迟时间滑块值改变事件处理
-        /// </summary>
-        private void EraserAutoSwitchBackDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                Settings.Canvas.EraserAutoSwitchBackDelaySeconds = (int)e.NewValue;
-                SaveSettingsToFile();
-
-                // 如果计时器正在运行，重新启动以应用新的延迟时间
-                if (_eraserAutoSwitchBackTimer != null && _eraserAutoSwitchBackTimer.IsEnabled)
+                else if (comboBox.Name == "BoardComboBoxEraserSize" && ComboBoxEraserSizeFloatingBar != null)
                 {
-                    StartEraserAutoSwitchBackTimer();
-                }
-
-                LogHelper.WriteLogToFile($"橡皮擦自动切换延迟时间已更新为 {Settings.Canvas.EraserAutoSwitchBackDelaySeconds} 秒", LogHelper.LogType.Event);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新橡皮擦自动切换延迟时间时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 根据开关状态启用或禁用画笔自动恢复：更新设置并保存，启用时初始化并安排恢复定时器，禁用时停止计时器。
-        /// </summary>
-        private void ToggleSwitchBrushAutoRestore_Toggled(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                Settings.Canvas.EnableBrushAutoRestore = ToggleSwitchBrushAutoRestore.IsOn;
-                SaveSettingsToFile();
-
-                if (Settings.Canvas.EnableBrushAutoRestore)
-                {
-                    InitBrushAutoRestoreTimer();
-                    ScheduleBrushAutoRestore();
-                }
-                else
-                {
-                    if (_brushAutoRestoreTimer != null)
-                    {
-                        _brushAutoRestoreTimer.Stop();
-                    }
+                    ComboBoxEraserSizeFloatingBar.SelectedIndex = comboBox.SelectedIndex;
                 }
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"切换画笔自动恢复功能时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 当“画笔自动恢复次数”文本改变时更新并保存设置；若启用画笔自动恢复，则重新调度自动恢复定时器。
-        /// </summary>
-        /// <remarks>
-        /// 在窗口未完成加载或 Settings.Canvas 为 null 时不执行任何操作；方法内部会捕获并记录异常，不向调用方抛出异常。
-        /// </remarks>
-        private void BrushAutoRestoreTimesTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                if (Settings?.Canvas == null) return;
-
-                Settings.Canvas.BrushAutoRestoreTimes = BrushAutoRestoreTimesTextBox.Text ?? string.Empty;
-                SaveSettingsToFile();
-                if (Settings.Canvas.EnableBrushAutoRestore)
-                {
-                    ScheduleBrushAutoRestore();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"BrushAutoRestoreTimes: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 响应画笔自动恢复颜色下拉框的选择变更并将选中项保存为设置中的目标颜色。
-        /// </summary>
-        /// <remarks>
-        /// 当窗口已加载且 Settings.Canvas 可用时，将选中 ComboBoxItem 的 Tag（十六进制颜色字符串）写入 Settings.Canvas.BrushAutoRestoreColor 并持久化到设置文件；若发生异常则记录错误日志。
-        /// </remarks>
-        private void ComboBoxBrushAutoRestoreColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                if (Settings?.Canvas == null) return;
-
-                if (ComboBoxBrushAutoRestoreColor.SelectedItem is ComboBoxItem item)
-                {
-                    string hex = item.Tag as string ?? string.Empty;
-                    Settings.Canvas.BrushAutoRestoreColor = hex;
-                    SaveSettingsToFile();
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新画笔自动恢复目标颜色时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 将画笔自动恢复的目标粗细设置为滑块的新值并将更改保存到设置文件。
-        /// </summary>
-        /// <param name="sender">触发事件的滑块控件（通常为 BrushAutoRestoreWidthSlider）。</param>
-        /// <param name="e">包含滑块的新值的事件参数；使用 <c>e.NewValue</c> 作为目标粗细。</param>
-        /// <remarks>
-        /// 如果窗口尚未完成加载或 Settings.Canvas 为 null，则不执行任何操作。
-        /// </remarks>
-        private void BrushAutoRestoreWidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                if (Settings?.Canvas == null) return;
-
-                Settings.Canvas.BrushAutoRestoreWidth = e.NewValue;
-                SaveSettingsToFile();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新画笔自动恢复目标粗细时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
-        /// 在画笔自动恢复透明度滑块的值发生变化时，将新的透明度值保存到 Settings.Canvas.BrushAutoRestoreAlpha 并持久化到设置文件。
-        /// </summary>
-        /// <param name="e">来自滑块的事件参数；使用 <c>e.NewValue</c> 的整数值作为新的透明度目标。</param>
-        private void BrushAutoRestoreAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                if (Settings?.Canvas == null) return;
-
-                Settings.Canvas.BrushAutoRestoreAlpha = (int)e.NewValue;
-                SaveSettingsToFile();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新画笔自动恢复目标透明度时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"切换橡皮擦大小时出错: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
@@ -3820,18 +2799,18 @@ namespace Ink_Canvas
             try
             {
                 if (!isLoaded) return;
-                if (ComboBoxPPTTimeCapsulePosition != null)
+                var comboBox = sender as System.Windows.Controls.ComboBox;
+                if (comboBox != null)
                 {
-                    Settings.PowerPointSettings.PPTTimeCapsulePosition = ComboBoxPPTTimeCapsulePosition.SelectedIndex;
+                    Settings.PowerPointSettings.PPTTimeCapsulePosition = comboBox.SelectedIndex;
                     SaveSettingsToFile();
 
-                    // 如果当前在PPT放映模式，需要立即更新时间胶囊的位置
                     if (BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                     {
                         UpdatePPTTimeCapsulePosition();
                     }
 
-                    LogHelper.WriteLogToFile($"PPT时间胶囊位置已更改为: {ComboBoxPPTTimeCapsulePosition.SelectedIndex}", LogHelper.LogType.Event);
+                    LogHelper.WriteLogToFile($"PPT时间胶囊位置已更改为: {comboBox.SelectedIndex}", LogHelper.LogType.Event);
                 }
             }
             catch (Exception ex)
@@ -3843,7 +2822,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 更新PPT模式下手势按钮的显示状态
         /// </summary>
-        private void UpdateGestureButtonVisibilityInPPTMode()
+        public void UpdateGestureButtonVisibilityInPPTMode()
         {
             try
             {
@@ -3922,7 +2901,7 @@ namespace Ink_Canvas
         /// <summary>
         /// 更新PPT时间胶囊的位置
         /// </summary>
-        private void UpdatePPTTimeCapsulePosition()
+        public void UpdatePPTTimeCapsulePosition()
         {
             try
             {
@@ -3955,34 +2934,12 @@ namespace Ink_Canvas
             }
         }
 
-        #endregion
-
 
         /// <summary>
         /// 初始化文件关联状态显示
         /// </summary>
         private void InitializeFileAssociationStatus()
         {
-            try
-            {
-                bool isRegistered = FileAssociationManager.IsFileAssociationRegistered();
-                if (isRegistered)
-                {
-                    TextBlockFileAssociationStatus.Text = "✓ .icstk文件关联已注册";
-                    TextBlockFileAssociationStatus.Foreground = new SolidColorBrush(Colors.LightGreen);
-                }
-                else
-                {
-                    TextBlockFileAssociationStatus.Text = "✗ .icstk文件关联未注册";
-                    TextBlockFileAssociationStatus.Foreground = new SolidColorBrush(Colors.LightCoral);
-                }
-            }
-            catch (Exception ex)
-            {
-                TextBlockFileAssociationStatus.Text = "✗ 检查文件关联状态时出错";
-                TextBlockFileAssociationStatus.Foreground = new SolidColorBrush(Colors.LightCoral);
-                LogHelper.WriteLogToFile($"初始化文件关联状态显示时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
         }
 
         /// <summary>
@@ -4083,39 +3040,12 @@ namespace Ink_Canvas
                 // 获取所有滑块控件并添加触摸支持
                 var sliders = new List<Slider>
                 {
-                    InkFadeTimeSlider,
-                    AutoStraightenLineThresholdSlider,
-                    LineStraightenSensitivitySlider,
-                    LineEndpointSnappingThresholdSlider,
-                    ViewboxFloatingBarScaleTransformValueSlider,
-                    ViewboxFloatingBarOpacityValueSlider,
-                    ViewboxFloatingBarOpacityInPPTValueSlider,
-                    PPTButtonLeftPositionValueSlider,
-                    PPTButtonRightPositionValueSlider,
-                    PPTButtonLBPositionValueSlider,
-                    PPTButtonRBPositionValueSlider,
-                    PPTLSButtonOpacityValueSlider,
-                    PPTRSButtonOpacityValueSlider,
-                    PPTLBButtonOpacityValueSlider,
-                    PPTRBButtonOpacityValueSlider,
-                    TouchMultiplierSlider,
-                    NibModeBoundsWidthSlider,
-                    FingerModeBoundsWidthSlider,
-                    SideControlMinimumAutomationSlider,
-                    RandWindowOnceCloseLatencySlider,
-                    RandWindowOnceMaxStudentsSlider,
-                    TimerVolumeSlider,
-                    ProgressiveReminderVolumeSlider,
                     BoardInkWidthSlider,
                     BoardInkAlphaSlider,
                     BoardHighlighterWidthSlider,
                     InkWidthSlider,
                     InkAlphaSlider,
-                    HighlighterWidthSlider,
-                    MLAvoidanceHistorySlider,
-                    MLAvoidanceWeightSlider,
-                    BrushAutoRestoreWidthSlider,
-                    BrushAutoRestoreAlphaSlider
+                    HighlighterWidthSlider
                 };
 
                 foreach (var slider in sliders)
@@ -4360,42 +3290,7 @@ namespace Ink_Canvas
 
         #region 模式切换相关
 
-        /// <summary>
-        /// 模式切换开关事件处理
-        /// </summary>
-        private void ToggleSwitchMode_Toggled(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var toggle = sender as ToggleSwitch;
-                if (toggle != null)
-                {
-                    Settings.ModeSettings.IsPPTOnlyMode = toggle.IsOn;
 
-                    // 保存设置到文件
-                    SaveSettingsToFile();
-
-                    // 如果切换到仅PPT模式，立即隐藏主窗口
-                    if (Settings.ModeSettings.IsPPTOnlyMode)
-                    {
-                        Hide();
-                        LogHelper.WriteLogToFile("已切换到仅PPT模式，主窗口已隐藏", LogHelper.LogType.Event);
-                        EnsurePptOnlyVisibilityProbeTimer();
-                    }
-                    else
-                    {
-                        StopPptOnlyVisibilityProbeTimer();
-                        // 如果切换到正常模式，显示主窗口
-                        Show();
-                        LogHelper.WriteLogToFile("已切换到正常模式，主窗口已显示", LogHelper.LogType.Event);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换模式时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
 
         /// <summary>
         /// 检查是否应该显示主窗口（基于PPT模式和PPT放映状态）
@@ -4404,6 +3299,9 @@ namespace Ink_Canvas
         {
             try
             {
+                if (!IsLoaded)
+                    return;
+
                 if (Settings.ModeSettings.IsPPTOnlyMode)
                 {
                     if (TrayTemporaryShowUntilUtc.HasValue && DateTime.UtcNow < TrayTemporaryShowUntilUtc.Value)
@@ -4436,6 +3334,11 @@ namespace Ink_Canvas
                     }
                 }
             }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Close") || ex.Message.Contains("关闭") || ex.Message.Contains("Show") || ex.Message.Contains("Visibility"))
+            {
+                // 窗口已关闭，忽略此异常
+                LogHelper.WriteLogToFile($"检查主窗口可见性时发现窗口已关闭，忽略异常。", LogHelper.LogType.Trace);
+            }
             catch (Exception ex)
             {
                 LogHelper.WriteLogToFile($"检查主窗口可见性时出错: {ex.Message}", LogHelper.LogType.Error);
@@ -4467,122 +3370,14 @@ namespace Ink_Canvas
 
         #region Theme Toggle
 
-        /// <summary>
-        /// 主题下拉框选择变化事件
-        /// </summary>
-        private void ComboBoxTheme_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!isLoaded) return;
+        // ComboBoxTheme_SelectionChanged and ComboBoxLanguage_SelectionChanged migrated to AppearancePage
 
-            try
-            {
-                System.Windows.Controls.ComboBox comboBox = sender as System.Windows.Controls.ComboBox;
-                if (comboBox != null)
-                {
-                    Settings.Appearance.Theme = comboBox.SelectedIndex;
-
-                    // 应用新主题
-                    ApplyTheme(comboBox.SelectedIndex);
-
-                    // 保存设置
-                    SaveSettingsToFile();
-
-                    // 显示通知
-                    string themeName;
-                    switch (comboBox.SelectedIndex)
-                    {
-                        case 0:
-                            themeName = "浅色主题";
-                            break;
-                        case 1:
-                            themeName = "深色主题";
-                            break;
-                        case 2:
-                            themeName = "跟随系统";
-                            break;
-                        default:
-                            themeName = "未知主题";
-                            break;
-                    }
-
-                    ShowNotification($"已切换到{themeName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换主题时出错: {ex.Message}", LogHelper.LogType.Error);
-                ShowNotification("主题切换失败");
-            }
-        }
-
-
-        private void ComboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            try
-            {
-                if (!isLoaded) return;
-                if (_isApplyingLanguageFromSettings) return;
-                if (_isReloadingForLanguageChange) return;
-                if (Settings?.Appearance == null) return;
-                if (ComboBoxLanguage == null) return;
-
-                var index = ComboBoxLanguage.SelectedIndex;
-                string language;
-
-                switch (index)
-                {
-                    case 1:
-                        language = "zh-CN";
-                        break;
-                    case 2:
-                        language = "en-US";
-                        break;
-                    case 0:
-                    default:
-                        language = string.Empty;
-                        break;
-                }
-
-                Settings.Appearance.Language = language;
-                SaveSettingsToFile();
-
-                LocalizationHelper.TrySetCulture(language);
-
-                _isReloadingForLanguageChange = true;
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    try
-                    {
-                        var newWindow = new MainWindow
-                        {
-                            WindowState = WindowState,
-                            Left = Left,
-                            Top = Top
-                        };
-                        newWindow.Show();
-                        Close();
-                    }
-                    catch (Exception ex2)
-                    {
-                        LogHelper.WriteLogToFile($"重建主窗口以应用语言时出错: {ex2.Message}", LogHelper.LogType.Error);
-                        ShowNotification("已更新界面语言设置，重启应用后可完全生效。");
-                        _isReloadingForLanguageChange = false;
-                    }
-                }), DispatcherPriority.ApplicationIdle);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"切换界面语言时出错: {ex.Message}", LogHelper.LogType.Error);
-                ShowNotification("切换界面语言失败。");
-                _isReloadingForLanguageChange = false;
-            }
-        }
 
         /// <summary>
         /// 应用指定主题
         /// </summary>
         /// <param name="themeIndex">主题索引：0-浅色，1-深色，2-跟随系统</param>
-        private void ApplyTheme(int themeIndex)
+        internal void ApplyTheme(int themeIndex)
         {
             try
             {
@@ -4649,93 +3444,34 @@ namespace Ink_Canvas
         #region UIA置顶功能
 
         /// <summary>
-        /// 更新UIA置顶开关的可见性
-        /// </summary>
-        private void UpdateUIAccessTopMostVisibility()
-        {
-            try
-            {
-                var visibility = Settings.Advanced.IsAlwaysOnTop ? Visibility.Visible : Visibility.Collapsed;
-
-                if (UIAccessTopMostPanel != null)
-                {
-                    UIAccessTopMostPanel.Visibility = visibility;
-                }
-
-                if (UIAccessTopMostDescription != null)
-                {
-                    UIAccessTopMostDescription.Visibility = visibility;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新UIA置顶开关可见性时出错: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        /// <summary>
         /// 应用UIA置顶功能
         /// </summary>
-        private void ApplyUIAccessTopMost()
+        public void ApplyUIAccessTopMost()
+        {
+            WindowSettingsHelper.ApplyUIAccessTopMost(this);
+        }
+
+        internal void OpenQuickDrawFromHotkey()
         {
             try
             {
-                if (Settings.Advanced.EnableUIAccessTopMost && Settings.Advanced.IsAlwaysOnTop)
-                {
-                    // 检查是否以管理员权限运行
-                    var identity = WindowsIdentity.GetCurrent();
-                    var principal = new WindowsPrincipal(identity);
+                if (Settings?.RandSettings?.EnableQuickDraw != true)
+                    return;
 
-                    if (principal.IsInRole(WindowsBuiltInRole.Administrator))
-                    {
-                        try
-                        {
-                            timerKillProcess.Stop();
-                            if (App.watchdogProcess != null && !App.watchdogProcess.HasExited)
-                            {
-                                App.watchdogProcess.Kill();
-                                App.watchdogProcess = null;
-                            }
-
-
-                            // 调用UIAccess DLL
-                            if (Environment.Is64BitProcess)
-                            {
-                                PrepareUIAccessX64();
-                            }
-                            else
-                            {
-                                PrepareUIAccessX86();
-                            }
-
-                            App.StartWatchdogIfNeeded();
-                            timerKillProcess.Start();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.WriteLogToFile($"启用UIA置顶功能时出错: {ex.Message}", LogHelper.LogType.Error);
-                        }
-                    }
-                    else
-                    {
-                        LogHelper.WriteLogToFile("UIA置顶功能需要管理员权限", LogHelper.LogType.Warning);
-                    }
-                }
-                else
-                {
-                    LogHelper.WriteLogToFile("UIA置顶功能已禁用", LogHelper.LogType.Trace);
-                }
+                var quickDrawWindow = new QuickDrawWindow();
+                quickDrawWindow.Owner = this;
+                quickDrawWindow.ShowDialog();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"应用UIA置顶功能时出错: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"打开快抽窗口失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
         /// <summary>
         /// 显示快抽悬浮按钮
         /// </summary>
-        private void ShowQuickDrawFloatingButton()
+        public void ShowQuickDrawFloatingButton()
         {
             try
             {

@@ -271,7 +271,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("PowerPoint.Application");
+                var pptApp = (Microsoft.Office.Interop.PowerPoint.Application)OleActiveObject.GetActiveObject("PowerPoint.Application");
 
                 if (pptApp != null && Marshal.IsComObject(pptApp))
                 {
@@ -298,7 +298,7 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)Marshal.GetActiveObject("kwpp.Application");
+                var wpsApp = (Microsoft.Office.Interop.PowerPoint.Application)OleActiveObject.GetActiveObject("kwpp.Application");
 
                 if (wpsApp != null && Marshal.IsComObject(wpsApp))
                 {
@@ -390,11 +390,15 @@ namespace Ink_Canvas.Helpers
                             {
                                 try
                                 {
-                                    PPTApplication.PresentationOpen -= OnPresentationOpen;
-                                    PPTApplication.PresentationClose -= OnPresentationClose;
-                                    PPTApplication.SlideShowBegin -= OnSlideShowBegin;
-                                    PPTApplication.SlideShowNextSlide -= OnSlideShowNextSlide;
-                                    PPTApplication.SlideShowEnd -= OnSlideShowEnd;
+                                    // 再次检查PPTApplication是否为null，因为可能在异步操作期间被修改
+                                    if (PPTApplication != null && Marshal.IsComObject(PPTApplication))
+                                    {
+                                        PPTApplication.PresentationOpen -= OnPresentationOpen;
+                                        PPTApplication.PresentationClose -= OnPresentationClose;
+                                        PPTApplication.SlideShowBegin -= OnSlideShowBegin;
+                                        PPTApplication.SlideShowNextSlide -= OnSlideShowNextSlide;
+                                        PPTApplication.SlideShowEnd -= OnSlideShowEnd;
+                                    }
                                 }
                                 catch (COMException comEx)
                                 {

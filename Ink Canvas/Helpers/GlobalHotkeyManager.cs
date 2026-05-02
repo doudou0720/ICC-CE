@@ -285,6 +285,7 @@ namespace Ink_Canvas.Helpers
                 // 功能快捷键
                 RegisterHotkey("DrawLine", Key.L, ModifierKeys.Alt, () => _mainWindow.BtnDrawLine_Click(null, null));
                 RegisterHotkey("Screenshot", Key.C, ModifierKeys.Alt, () => _mainWindow.SaveScreenShotToDesktop());
+                RegisterHotkey("QuickDraw", Key.K, ModifierKeys.Alt, () => _mainWindow.OpenQuickDrawFromHotkey());
                 RegisterHotkey("Hide", Key.V, ModifierKeys.Alt, () => _mainWindow.SymbolIconEmoji_MouseUp(null, null));
 
                 // 退出快捷键
@@ -567,6 +568,36 @@ namespace Ink_Canvas.Helpers
         }
 
         /// <summary>
+        /// 刷新多屏相关设置（开关和跟随鼠标策略）。
+        /// </summary>
+        public void RefreshMultiScreenSettings()
+        {
+            try
+            {
+                var advanced = MainWindow.Settings.Advanced;
+                _isMultiScreenMode = advanced.EnableMultiScreenSupport && ScreenDetectionHelper.HasMultipleScreens();
+                _enableScreenSpecificHotkeys = _isMultiScreenMode;
+
+                if (_isMultiScreenMode)
+                {
+                    _currentScreen = advanced.FollowMouseForScreenSelection
+                        ? Screen.FromPoint(Control.MousePosition)
+                        : ScreenDetectionHelper.GetWindowScreen(_mainWindow);
+                }
+                else
+                {
+                    _currentScreen = ScreenDetectionHelper.GetPrimaryScreen();
+                }
+
+                RefreshHotkeysForCurrentScreen();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"刷新多屏设置时出错: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        /// <summary>
         /// 获取当前屏幕信息
         /// </summary>
         /// <returns>当前屏幕信息</returns>
@@ -623,13 +654,15 @@ namespace Ink_Canvas.Helpers
         {
             try
             {
-                // 检测是否有多个屏幕
-                _isMultiScreenMode = ScreenDetectionHelper.HasMultipleScreens();
+                var advanced = MainWindow.Settings.Advanced;
+                _isMultiScreenMode = advanced.EnableMultiScreenSupport && ScreenDetectionHelper.HasMultipleScreens();
+                _enableScreenSpecificHotkeys = _isMultiScreenMode;
 
                 if (_isMultiScreenMode)
                 {
-                    // 获取当前窗口所在的屏幕
-                    _currentScreen = ScreenDetectionHelper.GetWindowScreen(_mainWindow);
+                    _currentScreen = advanced.FollowMouseForScreenSelection
+                        ? Screen.FromPoint(Control.MousePosition)
+                        : ScreenDetectionHelper.GetWindowScreen(_mainWindow);
 
                     // 监听窗口位置变化事件
                     _mainWindow.LocationChanged += OnWindowLocationChanged;
@@ -685,6 +718,9 @@ namespace Ink_Canvas.Helpers
             try
             {
                 if (!_isMultiScreenMode || !_enableScreenSpecificHotkeys)
+                    return;
+
+                if (MainWindow.Settings.Advanced.FollowMouseForScreenSelection)
                     return;
 
                 var newScreen = ScreenDetectionHelper.GetWindowScreen(_mainWindow);
@@ -799,9 +835,16 @@ namespace Ink_Canvas.Helpers
                 if (!_isMultiScreenMode || !_enableScreenSpecificHotkeys)
                     return;
 
-                // 检查鼠标是否在当前窗口所在的屏幕上
                 var mousePosition = Control.MousePosition;
-                var currentScreen = Screen.FromPoint(mousePosition);
+                var mouseScreen = Screen.FromPoint(mousePosition);
+
+                if (MainWindow.Settings.Advanced.FollowMouseForScreenSelection &&
+                    mouseScreen != null &&
+                    mouseScreen != _currentScreen)
+                {
+                    _currentScreen = mouseScreen;
+                    RefreshHotkeysForCurrentScreen();
+                }
 
                 // 无论屏幕是否变化，都检查热键状态
                 // 这样可以确保热键状态始终与当前上下文保持一致
@@ -1033,6 +1076,7 @@ namespace Ink_Canvas.Helpers
                     new HotkeyConfigItem { Name = "Pen5", Key = Key.D5, Modifiers = ModifierKeys.Alt },
                     new HotkeyConfigItem { Name = "DrawLine", Key = Key.L, Modifiers = ModifierKeys.Alt },
                     new HotkeyConfigItem { Name = "Screenshot", Key = Key.C, Modifiers = ModifierKeys.Alt },
+                    new HotkeyConfigItem { Name = "QuickDraw", Key = Key.K, Modifiers = ModifierKeys.Alt },
                     new HotkeyConfigItem { Name = "Hide", Key = Key.V, Modifiers = ModifierKeys.Alt },
                     new HotkeyConfigItem { Name = "Exit", Key = Key.Escape, Modifiers = ModifierKeys.None }
                 });
@@ -1109,6 +1153,14 @@ namespace Ink_Canvas.Helpers
                     {
                         LogHelper.WriteLogToFile($"注册快捷键 {hotkeyConfig.Name} 时出错: {ex.Message}", LogHelper.LogType.Error);
                     }
+                }
+
+                // 旧版 HotkeyConfig.json 无「快抽」项时补注册默认组合，避免升级后无快捷键
+                if (successCount > 0 && !IsHotkeyRegistered("QuickDraw"))
+                {
+                    var quickDrawAction = GetActionByName("QuickDraw");
+                    if (quickDrawAction != null && RegisterHotkey("QuickDraw", Key.K, ModifierKeys.Alt, quickDrawAction))
+                        successCount++;
                 }
 
                 if (successCount > 0)
@@ -1221,6 +1273,8 @@ namespace Ink_Canvas.Helpers
                         return () => _mainWindow.BtnDrawLine_Click(null, null);
                     case "Screenshot":
                         return () => _mainWindow.SaveScreenShotToDesktop();
+                    case "QuickDraw":
+                        return () => _mainWindow.OpenQuickDrawFromHotkey();
                     case "Hide":
                         return () => _mainWindow.SymbolIconEmoji_MouseUp(null, null);
                     case "Exit":
