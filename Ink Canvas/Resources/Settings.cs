@@ -108,6 +108,10 @@ namespace Ink_Canvas
         public int AutoStraightenLineThreshold { get; set; } = 80; // 直线自动拉直的长度阈值（像素）
         [JsonProperty("highPrecisionLineStraighten")]
         public bool HighPrecisionLineStraighten { get; set; } = true; // 是否启用高精度直线拉直
+        [JsonProperty("pauseStraightenLine")]
+        public bool PauseStraightenLine { get; set; } = false; // 是否启用停顿拉直（书写中停顿时自动拉直笔画）
+        [JsonProperty("pauseStraightenDelay")]
+        public int PauseStraightenDelay { get; set; } = 300; // 停顿拉直触发延迟（毫秒）
         [JsonProperty("lineEndpointSnapping")]
         public bool LineEndpointSnapping { get; set; } = true; // 是否启用直线端点吸附
         [JsonProperty("lineEndpointSnappingThreshold")]
@@ -256,6 +260,20 @@ namespace Ink_Canvas
         public bool HasShownOobe { get; set; } = false;
     }
 
+    public enum TrayClickAction
+    {
+        ShowMenu = 0,
+        HideShowMainWindow = 1,
+        TempShowMainWindow = 2,
+        OpenSettings = 3,
+        DisableAllHotkeys = 4,
+        ForceFullScreen = 5,
+        ToggleFoldFloatingBar = 6,
+        ResetFloatingBarPosition = 7,
+        RestartApp = 8,
+        CloseApp = 9
+    }
+
     public class Appearance
     {
         [JsonProperty("isEnableDisPlayNibModeToggler")]
@@ -274,6 +292,10 @@ namespace Ink_Canvas
         public double ViewboxFloatingBarOpacityValue { get; set; } = 1.0;
         [JsonProperty("enableTrayIcon")]
         public bool EnableTrayIcon { get; set; } = true;
+        [JsonProperty("trayLeftClickAction")]
+        public TrayClickAction TrayLeftClickAction { get; set; } = TrayClickAction.ShowMenu;
+        [JsonProperty("trayRightClickAction")]
+        public TrayClickAction TrayRightClickAction { get; set; } = TrayClickAction.ShowMenu;
         [JsonProperty("viewboxFloatingBarOpacityInPPTValue")]
         public double ViewboxFloatingBarOpacityInPPTValue { get; set; } = 0.5;
         [JsonProperty("viewboxBlackBoardScaleTransformValue")]
@@ -308,6 +330,8 @@ namespace Ink_Canvas
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]
         public int Theme { get; set; } = 2;
+        [JsonProperty("windowBackdrop")]
+        public string WindowBackdrop { get; set; } = "Mica";
 
         // 浮动栏按钮显示控制
         [JsonProperty("useLegacyFloatingBarUI")]
@@ -433,6 +457,14 @@ namespace Ink_Canvas
         public bool EnablePPTTimeCapsule { get; set; } = true;
         [JsonProperty("pptTimeCapsulePosition")]
         public int PPTTimeCapsulePosition { get; set; } = 1;
+        [JsonProperty("pptTimeCapsuleOpacity")]
+        public double PPTTimeCapsuleOpacity { get; set; } = 1.0;
+        [JsonProperty("pptTimeCapsuleScale")]
+        public double PPTTimeCapsuleScale { get; set; } = 1.0;
+        [JsonProperty("pptTimeCapsuleOffsetX")]
+        public double PPTTimeCapsuleOffsetX { get; set; } = 0;
+        [JsonProperty("pptTimeCapsuleOffsetY")]
+        public double PPTTimeCapsuleOffsetY { get; set; } = 0;
         [JsonProperty("useRotPptLink")]
         public bool UseRotPptLink { get; set; } = false;
         [JsonProperty("showPPTSidebarByDefault")]

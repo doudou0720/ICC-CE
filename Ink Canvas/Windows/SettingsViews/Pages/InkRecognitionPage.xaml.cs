@@ -20,6 +20,21 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             LoadSettings();
             _isLoaded = true;
+            UpdateAllSliderTexts();
+        }
+
+        private void UpdateAllSliderTexts()
+        {
+            UpdateSliderText(AutoStraightenLineThresholdSlider, AutoStraightenLineThresholdText, "{0:0}");
+            UpdateSliderText(LineStraightenSensitivitySlider, LineStraightenSensitivityText, "{0:F2}");
+            UpdateSliderText(PauseStraightenDelaySlider, PauseStraightenDelayText, "{0:0} ms");
+            UpdateSliderText(LineEndpointSnappingThresholdSlider, LineEndpointSnappingThresholdText, "{0:0}");
+        }
+
+        private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
+        {
+            if (slider == null || textBlock == null) return;
+            textBlock.Text = string.Format(format, slider.Value);
         }
 
         private void LoadSettings()
@@ -52,6 +67,8 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                     ToggleSwitchAutoStraightenLine.IsOn = settings.Canvas.AutoStraightenLine;
                     AutoStraightenLineThresholdSlider.Value = settings.Canvas.AutoStraightenLineThreshold;
                     ToggleSwitchHighPrecisionLineStraighten.IsOn = settings.Canvas.HighPrecisionLineStraighten;
+                    ToggleSwitchPauseStraightenLine.IsOn = settings.Canvas.PauseStraightenLine;
+                    PauseStraightenDelaySlider.Value = settings.Canvas.PauseStraightenDelay;
                     ToggleSwitchLineEndpointSnapping.IsOn = settings.Canvas.LineEndpointSnapping;
                 }
             }
@@ -171,6 +188,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void AutoStraightenLineThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(AutoStraightenLineThresholdSlider, AutoStraightenLineThresholdText, "{0:0}");
             if (!_isLoaded) return;
             SettingsManager.Settings.Canvas.AutoStraightenLineThreshold = (int)e.NewValue;
             SettingsManager.SaveSettingsToFile();
@@ -178,6 +196,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void LineStraightenSensitivitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(LineStraightenSensitivitySlider, LineStraightenSensitivityText, "{0:F2}");
             if (!_isLoaded) return;
             var val = Math.Round(LineStraightenSensitivitySlider.Value, 2);
             LineStraightenSensitivitySlider.Value = val;
@@ -192,6 +211,21 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.SaveSettingsToFile();
         }
 
+        private void ToggleSwitchPauseStraightenLine_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Canvas.PauseStraightenLine = ToggleSwitchPauseStraightenLine.IsOn;
+            SettingsManager.SaveSettingsToFile();
+        }
+
+        private void PauseStraightenDelaySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateSliderText(PauseStraightenDelaySlider, PauseStraightenDelayText, "{0:0} ms");
+            if (!_isLoaded) return;
+            SettingsManager.Settings.Canvas.PauseStraightenDelay = (int)PauseStraightenDelaySlider.Value;
+            SettingsManager.SaveSettingsToFile();
+        }
+
         private void ToggleSwitchLineEndpointSnapping_Toggled(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded) return;
@@ -202,6 +236,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void LineEndpointSnappingThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            UpdateSliderText(LineEndpointSnappingThresholdSlider, LineEndpointSnappingThresholdText, "{0:0}");
             if (!_isLoaded) return;
             SettingsManager.Settings.Canvas.LineEndpointSnappingThreshold = (int)e.NewValue;
             SettingsManager.SaveSettingsToFile();

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Ink;
 using System.Windows.Input;
@@ -33,6 +34,8 @@ namespace Ink_Canvas
         /// 当前工具模式
         /// </summary>
         private string _currentToolMode = "cursor";
+
+        private static Windows.SettingsViews.SettingsWindow _settingsWindow = null;
 
         #region "手勢"按鈕
 
@@ -210,6 +213,11 @@ namespace Ink_Canvas
         private bool _isRebuildingCanvasForScreen;
 
         /// <summary>
+        /// Popup 管理器（负责置顶和拖动跟随）
+        /// </summary>
+        private PopupManagerHelper _popupManager;
+
+        /// <summary>
         /// 浮动工具栏移动事件处理
         /// </summary>
         /// <param name="sender">发送者</param>
@@ -227,6 +235,35 @@ namespace Ink_Canvas
                     pointPPT = new Point(xPos, yPos);
                 else
                     pointDesktop = new Point(xPos, yPos);
+
+                // 标记需要更新 Popup 位置（使用 PopupManagerHelper）
+                _popupManager?.MarkNeedsUpdate();
+            }
+        }
+
+        /// <summary>
+        /// 初始化 Popup 管理器（创建实例、注册 Popup、启动跟随系统）
+        /// 在 Window_Loaded 中调用一次
+        /// </summary>
+        internal void InitializePopupManager()
+        {
+            try
+            {
+                _popupManager = new PopupManagerHelper();
+
+                _popupManager.ShouldBeTopmost = () => Settings.Advanced.IsAlwaysOnTop;
+
+                _popupManager.RegisterPopup(BorderTools);
+                _popupManager.RegisterPopup(BoardBorderToolsPopup);
+                _popupManager.RegisterPopup(BorderDrawShape);
+
+                _popupManager.Initialize();
+
+                System.Diagnostics.Debug.WriteLine("[PopupManager] Initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PopupManager] Initialize error: {ex.Message}");
             }
         }
 
@@ -285,7 +322,7 @@ namespace Ink_Canvas
         /// </summary>
         private void CollapseBorderDrawShape()
         {
-            AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderDrawShape);
             AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
         }
 
@@ -294,8 +331,8 @@ namespace Ink_Canvas
         /// </summary>
         private void HideSubPanelsImmediately()
         {
-            BorderTools.Visibility = Visibility.Collapsed;
-            BoardBorderTools.Visibility = Visibility.Collapsed;
+            BorderTools.IsOpen = false;
+            BoardBorderToolsPopup.IsOpen = false;
             PenPalette.Visibility = Visibility.Collapsed;
             BoardPenPalette.Visibility = Visibility.Collapsed;
             BoardEraserSizePanel.Visibility = Visibility.Collapsed;
@@ -306,7 +343,7 @@ namespace Ink_Canvas
             TwoFingerGestureBorder.Visibility = Visibility.Collapsed;
             BoardTwoFingerGestureBorder.Visibility = Visibility.Collapsed;
             // 添加隐藏图形工具的二级菜单面板
-            BorderDrawShape.Visibility = Visibility.Collapsed;
+            BorderDrawShape.IsOpen = false;
             BoardBorderDrawShape.Visibility = Visibility.Collapsed;
 
             if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is UIElement bgPalette)
@@ -376,13 +413,13 @@ namespace Ink_Canvas
         /// </param>
         internal async void HideSubPanels(string mode = null, bool autoAlignCenter = false)
         {
-            AnimationsHelper.HideWithSlideAndFade(BorderTools);
-            AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(PenPalette);
             AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
             AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
             AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-            AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderDrawShape);
             AnimationsHelper.HideWithSlideAndFade(BoardBorderLeftPageListView);
             AnimationsHelper.HideWithSlideAndFade(BoardBorderRightPageListView);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
@@ -400,7 +437,7 @@ namespace Ink_Canvas
             AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
             if (ToggleSwitchDrawShapeBorderAutoHide.IsOn)
             {
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
+                AnimationsHelper.HidePopupWithSlideAndFade(BorderDrawShape);
                 AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
             }
 
@@ -1099,8 +1136,8 @@ namespace Ink_Canvas
         {
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
             RightUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
-            AnimationsHelper.HideWithSlideAndFade(BorderTools);
-            AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
 
             if (Settings.RandSettings?.UseNewStyleUI == true)
@@ -1151,8 +1188,8 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         private void OperatingGuideWindowIcon_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            AnimationsHelper.HideWithSlideAndFade(BorderTools);
-            AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
 
             new OperatingGuideWindow().Show();
@@ -1171,8 +1208,8 @@ namespace Ink_Canvas
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
             RightUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
 
-            AnimationsHelper.HideWithSlideAndFade(BorderTools);
-            AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
 
             // 根据设置决定使用哪个点名窗口
@@ -1306,8 +1343,8 @@ namespace Ink_Canvas
             LeftUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
             RightUnFoldButtonQuickPanel.Visibility = Visibility.Collapsed;
 
-            AnimationsHelper.HideWithSlideAndFade(BorderTools);
-            AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
 
             // 检查是否启用了外部点名功能
@@ -1385,8 +1422,8 @@ namespace Ink_Canvas
         {
             //if (lastBorderMouseDownObject != sender) return;
 
-            AnimationsHelper.HideWithSlideAndFade(BorderTools);
-            AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+            AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             AnimationsHelper.HideWithSlideAndFade(BoardImageOptionsPanel);
 
             CollapseBorderDrawShape();
@@ -1687,22 +1724,23 @@ namespace Ink_Canvas
         /// <param name="e">鼠标按钮事件参数</param>
         internal void SymbolIconTools_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (BorderTools.Visibility == Visibility.Visible || BoardBorderTools.Visibility == Visibility.Visible)
+            if (BorderTools.IsOpen || BoardBorderToolsPopup.IsOpen)
             {
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+                AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+                AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
             }
             else
             {
                 HideSubPanels();
                 if (currentMode == 0)
                 {
-                    UpdateBorderToolsPosition();
-                    AnimationsHelper.ShowWithSlideFromBottomAndFade(BorderTools);
+                    AnimationsHelper.ShowPopupWithSlideAndFade(BorderTools);
+                    _popupManager?.BringToFront(BorderTools);
                 }
                 else
                 {
-                    AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardBorderTools);
+                    AnimationsHelper.ShowPopupWithSlideAndFade(BoardBorderToolsPopup);
+                    _popupManager?.BringToFront(BoardBorderToolsPopup);
                 }
             }
         }
@@ -3307,6 +3345,15 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         internal async void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
+            if (_settingsWindow != null)
+            {
+                if (_settingsWindow.WindowState == System.Windows.WindowState.Minimized)
+                    _settingsWindow.WindowState = System.Windows.WindowState.Normal;
+                _settingsWindow.Activate();
+                _settingsWindow.Focus();
+                return;
+            }
+
             try
             {
                 if (Ink_Canvas.Helpers.SecurityManager.IsPasswordRequiredForEnterSettings(Settings))
@@ -3322,10 +3369,11 @@ namespace Ink_Canvas
             }
 
             HideSubPanels();
-            var settingsWindow = new Windows.SettingsViews.SettingsWindow();
-            settingsWindow.Owner = this;
-            settingsWindow.Topmost = this.Topmost;
-            settingsWindow.ShowDialog();
+            _settingsWindow = new Windows.SettingsViews.SettingsWindow();
+            _settingsWindow.Owner = this;
+            _settingsWindow.Topmost = this.Topmost;
+            _settingsWindow.Closed += (s, args) => _settingsWindow = null;
+            _settingsWindow.ShowDialog();
         }
 
         private void BtnThickness_Click(object sender, RoutedEventArgs e) { }
@@ -4386,7 +4434,6 @@ namespace Ink_Canvas
         /// </summary>
         private void UpdateBorderDrawShapePosition()
         {
-            UpdateSubPanelPosition(ShapeDrawFloatingBarBtn, BorderDrawShape, 317);
         }
 
         /// <summary>

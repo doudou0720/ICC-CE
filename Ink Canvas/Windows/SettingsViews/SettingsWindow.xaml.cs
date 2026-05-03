@@ -34,6 +34,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             InitializeComponent();
 
             ApplyCurrentTheme();
+            global::Ink_Canvas.Helpers.WindowBackdropHelper.Apply(this, Helpers.SettingsManager.Settings);
 
             // 初始化内置页面映射
             _pageTypes = new Dictionary<string, Type>
@@ -45,6 +46,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "WindowPage", typeof(WindowPage) },
                 { "AppearancePage", typeof(AppearancePage) },
                 { "HotkeyPage", typeof(HotkeyPage) },
+                { "ToolbarPage", typeof(ToolbarPage) },
                 { "UpdatePage", typeof(UpdatePage) },
                 { "ExperimentalPage", typeof(ExperimentalPage) },
                 { "AdvancedPage", typeof(AdvancedPage) },
@@ -55,6 +57,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 { "CanvasPage", typeof(CanvasPage) },
                 { "InkRecognitionPage", typeof(InkRecognitionPage) },
                 { "DebugPage", typeof(DebugPage) },
+                { "FriendlyLinksPage", typeof(FriendlyLinksPage) },
                 { "AboutPage", typeof(AboutPage) },
                 { "Settings", typeof(SettingsPage) },
                 { "PluginPage", typeof(PluginPage) },
@@ -78,6 +81,7 @@ namespace Ink_Canvas.Windows.SettingsViews
                 RegisterDpiChangedListener();
                 LoadPluginSettingsPages();
                 UpdateUpdateBadgeVisibility();
+                _ = PreloadAllPagesAsync();
             };
 
             this.Closed += (sender, e) =>
@@ -133,6 +137,12 @@ namespace Ink_Canvas.Windows.SettingsViews
         public void RefreshTheme()
         {
             ApplyCurrentTheme();
+            global::Ink_Canvas.Helpers.WindowBackdropHelper.Apply(this, Helpers.SettingsManager.Settings);
+        }
+
+        public void ApplyWindowBackdrop(string backdropName)
+        {
+            global::Ink_Canvas.Helpers.WindowBackdropHelper.Apply(this, backdropName);
         }
 
         private void ApplyCurrentTheme()
@@ -312,8 +322,10 @@ namespace Ink_Canvas.Windows.SettingsViews
 
                 if (!_pages.TryGetValue(pageTag, out var cachedPage))
                 {
+                    Ink_Canvas.Helpers.LogHelper.WriteLogToFile($"SettingsWindow: 创建页面实例 {pageTag} ({pageType.Name})", Ink_Canvas.Helpers.LogHelper.LogType.Info);
                     cachedPage = Activator.CreateInstance(pageType);
                     _pages.Add(pageTag, cachedPage);
+                    Ink_Canvas.Helpers.LogHelper.WriteLogToFile($"SettingsWindow: 页面实例 {pageTag} 创建成功", Ink_Canvas.Helpers.LogHelper.LogType.Info);
                 }
 
                 if (cachedPage is PluginSettingsPage pluginSettingsPage && pluginInfo != null)
@@ -325,6 +337,7 @@ namespace Ink_Canvas.Windows.SettingsViews
             }
             catch (Exception ex)
             {
+                Ink_Canvas.Helpers.LogHelper.WriteLogToFile($"SettingsWindow: 导航到 {pageTag} 异常: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}", Ink_Canvas.Helpers.LogHelper.LogType.Error);
                 MessageBox.Show($"导航到页面时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -587,10 +600,9 @@ namespace Ink_Canvas.Windows.SettingsViews
             if (string.IsNullOrWhiteSpace(raw)) return;
 
             string query = raw.Trim();
-            string queryLower = query.ToLower();
 
             var entry = _searchIndex.FirstOrDefault(e => e.Text.Equals(query, StringComparison.OrdinalIgnoreCase))
-                        ?? _searchIndex.FirstOrDefault(e => e.Text.ToLower().Contains(queryLower));
+                        ?? _searchIndex.FirstOrDefault(e => e.Text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0);
 
             NavigateToSearchEntry(entry);
         }
@@ -608,9 +620,8 @@ namespace Ink_Canvas.Windows.SettingsViews
                 return;
             }
 
-            string queryLower = query.ToLower();
             var suggestions = _searchIndex
-                .Where(e => e.Text.ToLower().Contains(queryLower))
+                .Where(e => e.Text.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
                 .Select(e => e.Text)
                 .Distinct()
                 .Take(50)
@@ -690,6 +701,42 @@ namespace Ink_Canvas.Windows.SettingsViews
         public NavigationView GetNavigationView()
         {
             return NavigationViewControl;
+        }
+
+        private async System.Threading.Tasks.Task PreloadAllPagesAsync()
+        {
+            try
+            {
+                var tags = _pageTypes.Keys.ToList();
+                foreach (var tag in tags)
+                {
+                    if (_pages.ContainsKey(tag))
+                        continue;
+                    if (!_pageTypes.TryGetValue(tag, out var type))
+                        continue;
+                    if (type == typeof(PluginSettingsPage))
+                        continue;
+
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        try
+                        {
+                            if (_pages.ContainsKey(tag))
+                                return;
+                            var page = Activator.CreateInstance(type);
+                            _pages[tag] = page;
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"预加载设置页面 {tag} 失败: {ex.Message}");
+                        }
+                    }, System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"异步预加载设置页面时出错: {ex.Message}");
+            }
         }
 
         public void UpdateUpdateBadgeVisibility()

@@ -289,7 +289,7 @@ namespace Ink_Canvas
                 }
 
                 // 如果是图片元素，更新选择点位置
-                if (IsBitmapLikeCanvasElement(element) && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && ImageSelectionOverlay?.Visibility == Visibility.Visible)
                 {
                     UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
                 }
@@ -325,7 +325,7 @@ namespace Ink_Canvas
                 }
 
                 // 如果是图片元素，更新选择点位置
-                if (IsBitmapLikeCanvasElement(element) && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && ImageSelectionOverlay?.Visibility == Visibility.Visible)
                 {
                     UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
                 }
@@ -415,7 +415,7 @@ namespace Ink_Canvas
                 }
 
                 // 如果是图片元素，更新选择点位置
-                if (IsBitmapLikeCanvasElement(element) && ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                if (IsBitmapLikeCanvasElement(element) && ImageSelectionOverlay?.Visibility == Visibility.Visible)
                 {
                     UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
                 }
@@ -510,11 +510,22 @@ namespace Ink_Canvas
         {
             if (element.RenderTransform is TransformGroup transformGroup)
             {
+                var scaleTransform = transformGroup.Children.OfType<ScaleTransform>().FirstOrDefault();
+                var translateTransform = transformGroup.Children.OfType<TranslateTransform>().FirstOrDefault();
                 var rotateTransform = transformGroup.Children.OfType<RotateTransform>().FirstOrDefault();
-                if (rotateTransform != null)
-                {
-                    rotateTransform.Angle += angle;
-                }
+                if (rotateTransform == null) return;
+
+                var (ox, oy, visW, visH) = GetElementVisualBox(element);
+                double sX = scaleTransform?.ScaleX ?? 1;
+                double sY = scaleTransform?.ScaleY ?? 1;
+                double tx = translateTransform?.X ?? 0;
+                double ty = translateTransform?.Y ?? 0;
+
+                // Rotate runs last in the group, so its Center is in post-scale/translate space —
+                // i.e. the current visual center of the element.
+                rotateTransform.CenterX = tx + (ox + visW / 2) * sX;
+                rotateTransform.CenterY = ty + (oy + visH / 2) * sY;
+                rotateTransform.Angle += angle;
             }
         }
 
@@ -2176,7 +2187,7 @@ namespace Ink_Canvas
                 if (currentSelectedElement != null && IsBitmapLikeCanvasElement(currentSelectedElement))
                 {
                     UpdateImageSelectionToolbarPosition(currentSelectedElement);
-                    if (ImageResizeHandlesCanvas?.Visibility == Visibility.Visible)
+                    if (ImageSelectionOverlay?.Visibility == Visibility.Visible)
                         UpdateImageResizeHandlesPosition(GetElementActualBounds(currentSelectedElement));
                 }
             }), DispatcherPriority.Loaded);
@@ -2379,238 +2390,359 @@ namespace Ink_Canvas
 
         #endregion
 
-        #region Image Resize Handles
+        #region Image Selection Overlay
 
-        // 图片缩放选择点相关变量
-        private bool isResizingImage = false;
-        private Point imageResizeStartPoint;
-        private string activeResizeHandle = "";
+        private bool _imageOverlayHooked;
+        private FrameworkElement _overlayTrackedElement;
 
-        // 显示图片缩放选择点
+        private void EnsureImageOverlayHooks()
+        {
+            if (_imageOverlayHooked || ImageSelectionOverlay == null) return;
+            ImageSelectionOverlay.CoordinateSource = inkCanvas;
+            ImageSelectionOverlay.ResizeDelta += ImageSelectionOverlay_ResizeDelta;
+            ImageSelectionOverlay.MoveDelta += ImageSelectionOverlay_MoveDelta;
+            ImageSelectionOverlay.RotateDelta += ImageSelectionOverlay_RotateDelta;
+            _imageOverlayHooked = true;
+        }
+
+        private void AttachOverlayTracking(FrameworkElement element)
+        {
+            if (_overlayTrackedElement == element) return;
+            DetachOverlayTracking();
+            _overlayTrackedElement = element;
+            if (element != null) element.LayoutUpdated += OverlayTrackedElement_LayoutUpdated;
+        }
+
+        private void DetachOverlayTracking()
+        {
+            if (_overlayTrackedElement != null)
+            {
+                _overlayTrackedElement.LayoutUpdated -= OverlayTrackedElement_LayoutUpdated;
+                _overlayTrackedElement = null;
+            }
+        }
+
+        private void OverlayTrackedElement_LayoutUpdated(object sender, EventArgs e)
+        {
+            if (ImageSelectionOverlay?.Visibility != Visibility.Visible) return;
+            if (currentSelectedElement == null || _overlayTrackedElement == null) return;
+            if (!ReferenceEquals(currentSelectedElement, _overlayTrackedElement)) return;
+            UpdateImageResizeHandlesPosition(default);
+        }
+
         private void ShowImageResizeHandles(FrameworkElement element)
         {
             try
             {
-                if (ImageResizeHandlesCanvas == null || element == null) return;
-
-                // 获取元素的实际边界
-                Rect elementBounds = GetElementActualBounds(element);
-
-                // 设置选择点位置
-                UpdateImageResizeHandlesPosition(elementBounds);
-
-                // 显示选择点
-                ImageResizeHandlesCanvas.Visibility = Visibility.Visible;
+                if (ImageSelectionOverlay == null || element == null) return;
+                EnsureImageOverlayHooks();
+                AttachOverlayTracking(element);
+                UpdateImageResizeHandlesPosition(default);
+                ImageSelectionOverlay.Visibility = Visibility.Visible;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"显示图片缩放选择点失败: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"显示图片选中框失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
-        // 隐藏图片缩放选择点
         private void HideImageResizeHandles()
         {
             try
             {
-                if (ImageResizeHandlesCanvas != null)
-                {
-                    ImageResizeHandlesCanvas.Visibility = Visibility.Collapsed;
-                }
+                DetachOverlayTracking();
+                if (ImageSelectionOverlay != null)
+                    ImageSelectionOverlay.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"隐藏图片缩放选择点失败: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"隐藏图片选中框失败: {ex.Message}", LogHelper.LogType.Error);
             }
         }
 
-        // 更新图片缩放选择点位置
+        // elementBounds parameter is ignored — overlay needs the UNROTATED bounds of the element,
+        // computed directly from the element's own state so rotation never distorts the frame.
         private void UpdateImageResizeHandlesPosition(Rect elementBounds)
         {
             try
             {
-                if (ImageResizeHandlesCanvas == null) return;
+                if (ImageSelectionOverlay == null || currentSelectedElement == null) return;
 
-                ImageResizeHandlesCanvas.Margin = new Thickness(elementBounds.Left, elementBounds.Top, 0, 0);
+                var element = currentSelectedElement;
+                var (ox, oy, visW, visH) = GetElementVisualBox(element);
+                if (visW <= 0 || visH <= 0) return;
 
-                // 四个角控制点
-                System.Windows.Controls.Canvas.SetLeft(ImageTopLeftHandle, -4);
-                System.Windows.Controls.Canvas.SetTop(ImageTopLeftHandle, -4);
-
-                System.Windows.Controls.Canvas.SetLeft(ImageTopRightHandle, elementBounds.Width - 4);
-                System.Windows.Controls.Canvas.SetTop(ImageTopRightHandle, -4);
-
-                System.Windows.Controls.Canvas.SetLeft(ImageBottomLeftHandle, -4);
-                System.Windows.Controls.Canvas.SetTop(ImageBottomLeftHandle, elementBounds.Height - 4);
-
-                System.Windows.Controls.Canvas.SetLeft(ImageBottomRightHandle, elementBounds.Width - 4);
-                System.Windows.Controls.Canvas.SetTop(ImageBottomRightHandle, elementBounds.Height - 4);
-
-                // 四个边控制点
-                System.Windows.Controls.Canvas.SetLeft(ImageTopHandle, elementBounds.Width / 2 - 4);
-                System.Windows.Controls.Canvas.SetTop(ImageTopHandle, -4);
-
-                System.Windows.Controls.Canvas.SetLeft(ImageBottomHandle, elementBounds.Width / 2 - 4);
-                System.Windows.Controls.Canvas.SetTop(ImageBottomHandle, elementBounds.Height - 4);
-
-                System.Windows.Controls.Canvas.SetLeft(ImageLeftHandle, -4);
-                System.Windows.Controls.Canvas.SetTop(ImageLeftHandle, elementBounds.Height / 2 - 4);
-
-                System.Windows.Controls.Canvas.SetLeft(ImageRightHandle, elementBounds.Width - 4);
-                System.Windows.Controls.Canvas.SetTop(ImageRightHandle, elementBounds.Height / 2 - 4);
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"更新图片缩放选择点位置失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        // 图片缩放选择点鼠标按下事件
-        private void ImageResizeHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                if (IsBitmapLikeCanvasElement(currentSelectedElement) && sender is Ellipse ellipse)
+                double scaleX = 1, scaleY = 1, angle = 0;
+                if (element.RenderTransform is TransformGroup tg)
                 {
-                    isResizingImage = true;
-                    imageResizeStartPoint = e.GetPosition(inkCanvas);
-
-                    // 确定是哪个控制点
-                    activeResizeHandle = ellipse.Name;
-
-                    // 捕获鼠标
-                    ellipse.CaptureMouse();
-                    e.Handled = true;
+                    var st = tg.Children.OfType<ScaleTransform>().FirstOrDefault();
+                    var rt = tg.Children.OfType<RotateTransform>().FirstOrDefault();
+                    if (st != null) { scaleX = st.ScaleX; scaleY = st.ScaleY; }
+                    if (rt != null) angle = rt.Angle;
                 }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"图片缩放选择点鼠标按下事件失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
 
-        // 图片缩放选择点鼠标释放事件
-        private void ImageResizeHandle_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                if (isResizingImage && sender is Ellipse ellipse)
+                // Compute the visual center directly from the element's actual transform,
+                // so we don't have to model the transform chain ourselves.
+                Point visualCenterLocal = new Point(ox + visW / 2, oy + visH / 2);
+                Point centerCanvas;
+                try
                 {
-                    isResizingImage = false;
-                    ellipse.ReleaseMouseCapture();
-                    activeResizeHandle = "";
-                    e.Handled = true;
+                    var t = element.TransformToAncestor(inkCanvas);
+                    centerCanvas = t.Transform(visualCenterLocal);
+                    // Cancel out rotation: TransformToAncestor includes Rotate; we need pre-rotation
+                    // center in canvas coords for the overlay (overlay applies rotation itself).
+                    // The visual center is invariant under rotation around itself, so this is the
+                    // same point in canvas coords either way.
                 }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"图片缩放选择点鼠标释放事件失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        // 图片缩放选择点鼠标移动事件
-        private void ImageResizeHandle_MouseMove(object sender, MouseEventArgs e)
-        {
-            try
-            {
-                if (isResizingImage && IsBitmapLikeCanvasElement(currentSelectedElement) && sender is Ellipse ellipse)
+                catch
                 {
-                    var currentPoint = e.GetPosition(inkCanvas);
-                    ResizeImageByHandle(currentSelectedElement, imageResizeStartPoint, currentPoint, activeResizeHandle);
-                    imageResizeStartPoint = currentPoint;
-                    e.Handled = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"图片缩放选择点鼠标移动事件失败: {ex.Message}", LogHelper.LogType.Error);
-            }
-        }
-
-        // 根据控制点缩放图片
-        private void ResizeImageByHandle(FrameworkElement element, Point startPoint, Point currentPoint, string handleName)
-        {
-            try
-            {
-                if (element.RenderTransform is TransformGroup transformGroup)
-                {
-                    var scaleTransform = transformGroup.Children.OfType<ScaleTransform>().FirstOrDefault();
-                    var translateTransform = transformGroup.Children.OfType<TranslateTransform>().FirstOrDefault();
-
-                    if (scaleTransform == null || translateTransform == null) return;
-
-                    // 获取图片的当前边界
-                    Rect currentBounds = GetElementActualBounds(element);
-                    double deltaX = currentPoint.X - startPoint.X;
-                    double deltaY = currentPoint.Y - startPoint.Y;
-
-                    // 计算缩放比例
-                    double scaleX = 1.0;
-                    double scaleY = 1.0;
-                    double translateX = 0;
-                    double translateY = 0;
-
-                    switch (handleName)
+                    double left = InkCanvas.GetLeft(element); if (double.IsNaN(left)) left = 0;
+                    double top = InkCanvas.GetTop(element); if (double.IsNaN(top)) top = 0;
+                    double tx = 0, ty = 0;
+                    if (element.RenderTransform is TransformGroup tg2)
                     {
-                        case "ImageTopLeftHandle":
-                            scaleX = (currentBounds.Width - deltaX) / currentBounds.Width;
-                            scaleY = (currentBounds.Height - deltaY) / currentBounds.Height;
-                            translateX = deltaX;
-                            translateY = deltaY;
-                            break;
-                        case "ImageTopRightHandle":
-                            scaleX = (currentBounds.Width + deltaX) / currentBounds.Width;
-                            scaleY = (currentBounds.Height - deltaY) / currentBounds.Height;
-                            translateY = deltaY;
-                            break;
-                        case "ImageBottomLeftHandle":
-                            scaleX = (currentBounds.Width - deltaX) / currentBounds.Width;
-                            scaleY = (currentBounds.Height + deltaY) / currentBounds.Height;
-                            translateX = deltaX;
-                            break;
-                        case "ImageBottomRightHandle":
-                            scaleX = (currentBounds.Width + deltaX) / currentBounds.Width;
-                            scaleY = (currentBounds.Height + deltaY) / currentBounds.Height;
-                            break;
-                        case "ImageTopHandle":
-                            scaleY = (currentBounds.Height - deltaY) / currentBounds.Height;
-                            translateY = deltaY;
-                            break;
-                        case "ImageBottomHandle":
-                            scaleY = (currentBounds.Height + deltaY) / currentBounds.Height;
-                            break;
-                        case "ImageLeftHandle":
-                            scaleX = (currentBounds.Width - deltaX) / currentBounds.Width;
-                            translateX = deltaX;
-                            break;
-                        case "ImageRightHandle":
-                            scaleX = (currentBounds.Width + deltaX) / currentBounds.Width;
-                            break;
+                        var tt = tg2.Children.OfType<TranslateTransform>().FirstOrDefault();
+                        if (tt != null) { tx = tt.X; ty = tt.Y; }
                     }
-
-                    // 限制缩放范围
-                    scaleX = Math.Max(0.1, Math.Min(scaleX, 5.0));
-                    scaleY = Math.Max(0.1, Math.Min(scaleY, 5.0));
-
-                    // 应用缩放
-                    scaleTransform.ScaleX *= scaleX;
-                    scaleTransform.ScaleY *= scaleY;
-
-                    // 应用平移
-                    translateTransform.X += translateX;
-                    translateTransform.Y += translateY;
-
-                    // 更新选择点位置
-                    UpdateImageResizeHandlesPosition(GetElementActualBounds(element));
-
-                    if (BorderImageSelectionControl?.Visibility == Visibility.Visible)
-                        UpdateImageSelectionToolbarPosition(element);
+                    centerCanvas = new Point(left + tx + (ox + visW / 2) * scaleX,
+                                             top + ty + (oy + visH / 2) * scaleY);
                 }
+
+                double scaledW = visW * scaleX;
+                double scaledH = visH * scaleY;
+
+                ImageSelectionOverlay.UpdateFrame(centerCanvas, scaledW, scaledH, angle);
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLogToFile($"根据控制点缩放图片失败: {ex.Message}", LogHelper.LogType.Error);
+                LogHelper.WriteLogToFile($"更新图片选中框位置失败: {ex.Message}", LogHelper.LogType.Error);
             }
+        }
+
+        private double GetElementRotationAngle(FrameworkElement element)
+        {
+            if (element?.RenderTransform is TransformGroup tg)
+            {
+                var rt = tg.Children.OfType<RotateTransform>().FirstOrDefault();
+                if (rt != null) return rt.Angle;
+            }
+            return 0;
+        }
+
+        // Visual box of the rendered content inside element.ActualWidth/Height,
+        // accounting for Stretch=Uniform letterboxing on Image elements.
+        // Returns (offsetX, offsetY, visibleW, visibleH) in base (unscaled) coords.
+        private static (double ox, double oy, double w, double h) GetElementVisualBox(FrameworkElement element)
+        {
+            double boxW = element.ActualWidth > 0 ? element.ActualWidth : element.Width;
+            double boxH = element.ActualHeight > 0 ? element.ActualHeight : element.Height;
+            if (double.IsNaN(boxW) || double.IsNaN(boxH) || boxW <= 0 || boxH <= 0)
+                return (0, 0, 0, 0);
+
+            if (element is Image img && img.Stretch == Stretch.Uniform && img.Source is BitmapSource bs
+                && bs.PixelWidth > 0 && bs.PixelHeight > 0)
+            {
+                double srcAspect = (double)bs.PixelWidth / bs.PixelHeight;
+                double boxAspect = boxW / boxH;
+                double vW, vH;
+                if (srcAspect > boxAspect) { vW = boxW; vH = boxW / srcAspect; }
+                else { vH = boxH; vW = boxH * srcAspect; }
+                return ((boxW - vW) / 2, (boxH - vH) / 2, vW, vH);
+            }
+
+            return (0, 0, boxW, boxH);
+        }
+
+        // Rotate a canvas-space vector back into the element's local (unrotated) space.
+        private Vector CanvasVectorToLocal(Vector canvasDelta, double angleDegrees)
+        {
+            double rad = -angleDegrees * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+            return new Vector(canvasDelta.X * cos - canvasDelta.Y * sin,
+                              canvasDelta.X * sin + canvasDelta.Y * cos);
+        }
+
+        private void ImageSelectionOverlay_ResizeDelta(object sender, ImageResizeDeltaEventArgs e)
+        {
+            try
+            {
+                if (!IsBitmapLikeCanvasElement(currentSelectedElement)) return;
+                ResizeImageByCorner(currentSelectedElement, e.CanvasDelta, e.Corner, e.LockAspectRatio);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"图片缩放失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ImageSelectionOverlay_MoveDelta(object sender, ImageMoveDeltaEventArgs e)
+        {
+            try
+            {
+                if (currentSelectedElement == null) return;
+                if (currentSelectedElement.RenderTransform is TransformGroup tg)
+                {
+                    var tt = tg.Children.OfType<TranslateTransform>().FirstOrDefault();
+                    var rt = tg.Children.OfType<RotateTransform>().FirstOrDefault();
+                    if (tt != null)
+                    {
+                        tt.X += e.CanvasDelta.X;
+                        tt.Y += e.CanvasDelta.Y;
+                        // Keep rotation center locked to the visual center so the element
+                        // translates rigidly instead of swinging around an old pivot.
+                        if (rt != null)
+                        {
+                            rt.CenterX += e.CanvasDelta.X;
+                            rt.CenterY += e.CanvasDelta.Y;
+                        }
+                    }
+                }
+                UpdateImageResizeHandlesPosition(default);
+                if (BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                    UpdateImageSelectionToolbarPosition(currentSelectedElement);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"图片拖动失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ImageSelectionOverlay_RotateDelta(object sender, ImageRotateDeltaEventArgs e)
+        {
+            try
+            {
+                if (currentSelectedElement == null) return;
+                ApplyRotateTransform(currentSelectedElement, e.AngleDelta);
+                UpdateImageResizeHandlesPosition(default);
+                if (BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                    UpdateImageSelectionToolbarPosition(currentSelectedElement);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLogToFile($"图片旋转失败: {ex.Message}", LogHelper.LogType.Error);
+            }
+        }
+
+        private void ResizeImageByCorner(FrameworkElement element, Vector canvasDelta,
+                                         ImageResizeCorner corner, bool lockAspect)
+        {
+            if (!(element.RenderTransform is TransformGroup transformGroup)) return;
+            var scaleTransform = transformGroup.Children.OfType<ScaleTransform>().FirstOrDefault();
+            var translateTransform = transformGroup.Children.OfType<TranslateTransform>().FirstOrDefault();
+            var rotateTransform = transformGroup.Children.OfType<RotateTransform>().FirstOrDefault();
+            if (scaleTransform == null || translateTransform == null) return;
+
+            double angle = rotateTransform?.Angle ?? 0;
+
+            var (ox, oy, visW, visH) = GetElementVisualBox(element);
+            if (visW <= 0 || visH <= 0) return;
+
+            double left = InkCanvas.GetLeft(element); if (double.IsNaN(left)) left = 0;
+            double top = InkCanvas.GetTop(element); if (double.IsNaN(top)) top = 0;
+
+            double curW = visW * scaleTransform.ScaleX;
+            double curH = visH * scaleTransform.ScaleY;
+
+            // Drag delta → local (unrotated) space so corner tracks cursor under any rotation.
+            Vector local = CanvasVectorToLocal(canvasDelta, angle);
+
+            double newW = curW, newH = curH;
+            double pivotFracX = 0, pivotFracY = 0; // opposite visual corner
+            switch (corner)
+            {
+                case ImageResizeCorner.TopLeft:
+                    newW = curW - local.X; newH = curH - local.Y;
+                    pivotFracX = 1; pivotFracY = 1;
+                    break;
+                case ImageResizeCorner.TopRight:
+                    newW = curW + local.X; newH = curH - local.Y;
+                    pivotFracX = 0; pivotFracY = 1;
+                    break;
+                case ImageResizeCorner.BottomLeft:
+                    newW = curW - local.X; newH = curH + local.Y;
+                    pivotFracX = 1; pivotFracY = 0;
+                    break;
+                case ImageResizeCorner.BottomRight:
+                    newW = curW + local.X; newH = curH + local.Y;
+                    pivotFracX = 0; pivotFracY = 0;
+                    break;
+            }
+
+            if (lockAspect && curW > 0 && curH > 0)
+            {
+                double uniform = Math.Min(newW / curW, newH / curH);
+                newW = curW * uniform;
+                newH = curH * uniform;
+            }
+
+            double newScaleX = newW / visW;
+            double newScaleY = newH / visH;
+            newScaleX = Math.Max(0.1, Math.Min(newScaleX, 10.0));
+            newScaleY = Math.Max(0.1, Math.Min(newScaleY, 10.0));
+            newW = visW * newScaleX;
+            newH = visH * newScaleY;
+
+            double tx = translateTransform.X;
+            double ty = translateTransform.Y;
+
+            // Visual pivot canvas position BEFORE the change.
+            // Visual box origin (pre-scale) is (ox, oy); after scale its top-left in post-scale
+            // space (before rotation/translate) is (ox*sx, oy*sy), size (visW*sx, visH*sy).
+            // Pivot pre-rotation = (tx + (ox + pivotFrac*visW) * sx,  ty + (oy + pivotFrac*visH) * sy).
+            // Rotation center is the element visual center, which is the SAME pre-rotation anchor
+            // we derive below — so pre-rotation coord == canvas coord relative to (left, top) up
+            // to a rotation around that center. Because we rotate around the center and both
+            // before/after share the same center (we'll update it to newCenter below after shift),
+            // we must match canvas positions WITH rotation applied.
+            Point pivotBefore = ApplyCanvasTransform(ox + pivotFracX * visW, oy + pivotFracY * visH,
+                                                     ox + visW / 2, oy + visH / 2,
+                                                     scaleTransform.ScaleX, scaleTransform.ScaleY,
+                                                     tx, ty, angle, left, top);
+
+            Point pivotAfter = ApplyCanvasTransform(ox + pivotFracX * visW, oy + pivotFracY * visH,
+                                                    ox + visW / 2, oy + visH / 2,
+                                                    newScaleX, newScaleY,
+                                                    tx, ty, angle, left, top);
+
+            Vector canvasDrift = pivotBefore - pivotAfter;
+            translateTransform.X += canvasDrift.X;
+            translateTransform.Y += canvasDrift.Y;
+
+            scaleTransform.ScaleX = newScaleX;
+            scaleTransform.ScaleY = newScaleY;
+
+            // Update rotation center to the new visual center so future rotations behave.
+            if (rotateTransform != null)
+            {
+                rotateTransform.CenterX = translateTransform.X + (ox + visW / 2) * newScaleX;
+                rotateTransform.CenterY = translateTransform.Y + (oy + visH / 2) * newScaleY;
+            }
+
+            UpdateImageResizeHandlesPosition(default);
+            if (BorderImageSelectionControl?.Visibility == Visibility.Visible)
+                UpdateImageSelectionToolbarPosition(element);
+        }
+
+        // Canvas position of element-local point (lx, ly) under the given transform.
+        // Model: P_canvas = (left, top) + Rotate_center(S * (lx,ly) + T)
+        // where center = S * (cx, cy) + T, and rotation angle is angleDeg.
+        private static Point ApplyCanvasTransform(double lx, double ly, double cx, double cy,
+                                                  double sx, double sy, double tx, double ty,
+                                                  double angleDeg, double left, double top)
+        {
+            double preX = sx * lx + tx;
+            double preY = sy * ly + ty;
+            double centerX = sx * cx + tx;
+            double centerY = sy * cy + ty;
+            double rad = angleDeg * Math.PI / 180.0;
+            double cos = Math.Cos(rad);
+            double sin = Math.Sin(rad);
+            double relX = preX - centerX;
+            double relY = preY - centerY;
+            double rotX = relX * cos - relY * sin + centerX;
+            double rotY = relX * sin + relY * cos + centerY;
+            return new Point(left + rotX, top + rotY);
         }
 
         #endregion

@@ -23,6 +23,25 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         {
             LoadSettings();
             _isLoaded = true;
+            UpdateAllSliderTexts();
+        }
+
+        private void UpdateAllSliderTexts()
+        {
+            UpdateSliderText(PPTButtonLeftPositionValueSlider, PPTButtonLeftPositionText, "{0:F0}");
+            UpdateSliderText(PPTButtonRightPositionValueSlider, PPTButtonRightPositionText, "{0:F0}");
+            UpdateSliderText(PPTButtonLBPositionValueSlider, PPTButtonLBPositionText, "{0:F0}");
+            UpdateSliderText(PPTButtonRBPositionValueSlider, PPTButtonRBPositionText, "{0:F0}");
+            UpdateSliderText(PPTLSButtonOpacityValueSlider, PPTLSButtonOpacityText, "{0:P0}");
+            UpdateSliderText(PPTRSButtonOpacityValueSlider, PPTRSButtonOpacityText, "{0:P0}");
+            UpdateSliderText(PPTLBButtonOpacityValueSlider, PPTLBButtonOpacityText, "{0:P0}");
+            UpdateSliderText(PPTRBButtonOpacityValueSlider, PPTRBButtonOpacityText, "{0:P0}");
+        }
+
+        private void UpdateSliderText(Slider slider, TextBlock textBlock, string format)
+        {
+            if (slider == null || textBlock == null) return;
+            textBlock.Text = string.Format(format, slider.Value);
         }
 
         private void PowerPointPage_Unloaded(object sender, RoutedEventArgs e)
@@ -275,6 +294,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTButtonLeftPositionValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTButtonLeftPositionValueSlider, PPTButtonLeftPositionText, "{0:F0}");
             if (!_isLoaded) return;
             var mw = GetMainWindow();
             SettingsManager.Settings.PowerPointSettings.PPTLSButtonPosition = (int)PPTButtonLeftPositionValueSlider.Value;
@@ -286,6 +306,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTButtonRightPositionValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTButtonRightPositionValueSlider, PPTButtonRightPositionText, "{0:F0}");
             if (!_isLoaded) return;
             var mw = GetMainWindow();
             SettingsManager.Settings.PowerPointSettings.PPTRSButtonPosition = (int)PPTButtonRightPositionValueSlider.Value;
@@ -297,6 +318,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTButtonLBPositionValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTButtonLBPositionValueSlider, PPTButtonLBPositionText, "{0:F0}");
             if (!_isLoaded) return;
             var mw = GetMainWindow();
             SettingsManager.Settings.PowerPointSettings.PPTLBButtonPosition = (int)PPTButtonLBPositionValueSlider.Value;
@@ -308,6 +330,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTButtonRBPositionValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTButtonRBPositionValueSlider, PPTButtonRBPositionText, "{0:F0}");
             if (!_isLoaded) return;
             var mw = GetMainWindow();
             SettingsManager.Settings.PowerPointSettings.PPTRBButtonPosition = (int)PPTButtonRBPositionValueSlider.Value;
@@ -319,6 +342,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTLSButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTLSButtonOpacityValueSlider, PPTLSButtonOpacityText, "{0:P0}");
             if (!_isLoaded) return;
             double roundedValue = Math.Round(PPTLSButtonOpacityValueSlider.Value, 1);
             PPTLSButtonOpacityValueSlider.ValueChanged -= PPTLSButtonOpacityValueSlider_ValueChanged;
@@ -337,6 +361,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTRSButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTRSButtonOpacityValueSlider, PPTRSButtonOpacityText, "{0:P0}");
             if (!_isLoaded) return;
             double roundedValue = Math.Round(PPTRSButtonOpacityValueSlider.Value, 1);
             PPTRSButtonOpacityValueSlider.ValueChanged -= PPTRSButtonOpacityValueSlider_ValueChanged;
@@ -355,6 +380,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTLBButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTLBButtonOpacityValueSlider, PPTLBButtonOpacityText, "{0:P0}");
             if (!_isLoaded) return;
             double roundedValue = Math.Round(PPTLBButtonOpacityValueSlider.Value, 1);
             PPTLBButtonOpacityValueSlider.ValueChanged -= PPTLBButtonOpacityValueSlider_ValueChanged;
@@ -373,6 +399,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
 
         private void PPTRBButtonOpacityValueSlider_ValueChanged(object sender, RoutedEventArgs e)
         {
+            UpdateSliderText(PPTRBButtonOpacityValueSlider, PPTRBButtonOpacityText, "{0:P0}");
             if (!_isLoaded) return;
             double roundedValue = Math.Round(PPTRBButtonOpacityValueSlider.Value, 1);
             PPTRBButtonOpacityValueSlider.ValueChanged -= PPTRBButtonOpacityValueSlider_ValueChanged;
@@ -655,6 +682,45 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
             SettingsManager.SaveSettingsToFile();
             if (mw != null && mw.BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
                 mw.UpdatePPTTimeCapsulePosition();
+        }
+
+        private void SliderPPTTimeCapsuleOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!_isLoaded || SliderPPTTimeCapsuleOpacity == null) return;
+            var val = Math.Round(SliderPPTTimeCapsuleOpacity.Value, 2);
+            if (SliderPPTTimeCapsuleOpacity.Value != val)
+            {
+                SliderPPTTimeCapsuleOpacity.Value = val;
+                return;
+            }
+            SettingsManager.Settings.PowerPointSettings.PPTTimeCapsuleOpacity = val;
+            SettingsManager.SaveSettingsToFile();
+            var mw = GetMainWindow();
+            if (mw != null && mw.BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                mw.UpdatePPTTimeCapsuleOpacity();
+        }
+
+        private void SliderPPTTimeCapsuleScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!_isLoaded || SliderPPTTimeCapsuleScale == null) return;
+            var val = Math.Round(SliderPPTTimeCapsuleScale.Value, 1);
+            if (SliderPPTTimeCapsuleScale.Value != val)
+            {
+                SliderPPTTimeCapsuleScale.Value = val;
+                return;
+            }
+            SettingsManager.Settings.PowerPointSettings.PPTTimeCapsuleScale = val;
+            SettingsManager.SaveSettingsToFile();
+            var mw = GetMainWindow();
+            if (mw != null && mw.BtnPPTSlideShowEnd.Visibility == Visibility.Visible)
+                mw.UpdatePPTTimeCapsuleScale();
+        }
+
+        private void ButtonResetPPTTimeCapsulePosition_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoaded) return;
+            var mw = GetMainWindow();
+            mw?.ResetPPTTimeCapsuleOffset();
         }
 
         #endregion

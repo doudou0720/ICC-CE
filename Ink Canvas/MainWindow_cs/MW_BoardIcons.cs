@@ -34,11 +34,11 @@ namespace Ink_Canvas
             else
             {
                 AnimationsHelper.HideWithSlideAndFade(EraserSizePanel);
-                AnimationsHelper.HideWithSlideAndFade(BorderTools);
-                AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
+                AnimationsHelper.HidePopupWithSlideAndFade(BorderTools);
+                AnimationsHelper.HidePopupWithSlideAndFade(BoardBorderToolsPopup);
                 AnimationsHelper.HideWithSlideAndFade(PenPalette);
                 AnimationsHelper.HideWithSlideAndFade(BoardPenPalette);
-                AnimationsHelper.HideWithSlideAndFade(BorderDrawShape);
+                AnimationsHelper.HidePopupWithSlideAndFade(BorderDrawShape);
                 AnimationsHelper.HideWithSlideAndFade(BoardBorderDrawShape);
                 AnimationsHelper.HideWithSlideAndFade(BoardEraserSizePanel);
                 AnimationsHelper.HideWithSlideAndFade(TwoFingerGestureBorder);

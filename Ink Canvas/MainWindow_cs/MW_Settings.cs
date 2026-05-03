@@ -915,6 +915,8 @@ namespace Ink_Canvas
             Settings.Canvas.DisablePressure = false;
             Settings.Canvas.AutoStraightenLine = true;
             Settings.Canvas.AutoStraightenLineThreshold = 80;
+            Settings.Canvas.PauseStraightenLine = false;
+            Settings.Canvas.PauseStraightenDelay = 300;
             Settings.Canvas.LineEndpointSnapping = true;
             Settings.Canvas.LineEndpointSnappingThreshold = 15;
             Settings.Canvas.UsingWhiteboard = false;

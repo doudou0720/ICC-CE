@@ -45,6 +45,23 @@
                         </ComboBox>
                     </ui:SettingsCard>
 
+                    <ui:SettingsCard Header="窗口背景样式">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.FullScreen}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ComboBox x:Name="ComboBoxWindowBackdrop"
+                                  MinWidth="180"
+                                  SelectionChanged="ComboBoxWindowBackdrop_SelectionChanged">
+                            <ComboBoxItem Content="None" Tag="None" />
+                            <ComboBoxItem Content="Mica" Tag="Mica" />
+                            <ComboBoxItem Content="Acrylic" Tag="Acrylic" />
+                            <ComboBoxItem Content="Tabbed" Tag="Tabbed" />
+                            <ComboBoxItem Content="Transient" Tag="Transient" />
+                            <ComboBoxItem Content="Acrylic10" Tag="Acrylic10" />
+                            <ComboBoxItem Content="Acrylic11" Tag="Acrylic11" />
+                        </ComboBox>
+                    </ui:SettingsCard>
+
                     <ui:SettingsCard Header="{i18n:I18n Key=Theme_LanguageLabel}"
                             Description="{i18n:I18n Key=Theme_Language_RestartHint}">
                         <ui:SettingsCard.HeaderIcon>
@@ -122,8 +139,13 @@
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Pinned}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding ElementName=ViewboxFloatingBarScaleTransformValueSlider, Path=Value, StringFormat={}{0:F2}}"
-                                       VerticalAlignment="Center" FontFamily="Consolas"/>
+                            <TextBlock x:Name="ViewboxFloatingBarActualScaleText"
+                                       Text="1.50x"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <TextBlock Text=" (" VerticalAlignment="Center" FontSize="11" Foreground="Gray"/>
+                            <TextBlock x:Name="ViewboxFloatingBarScaleSliderText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
+                            <TextBlock Text=")" VerticalAlignment="Center" FontSize="11" Foreground="Gray"/>
                             <Slider x:Name="ViewboxFloatingBarScaleTransformValueSlider" Minimum="0.5"
                                     Maximum="1.25" Width="200"
                                     IsSnapToTickEnabled="True" Value="1" TickFrequency="0.05"
@@ -137,8 +159,8 @@
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.EaseOfAccess}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding ElementName=ViewboxFloatingBarOpacityValueSlider, Path=Value, StringFormat={}{0:F2}}"
-                                       VerticalAlignment="Center" FontFamily="Consolas"/>
+                            <TextBlock x:Name="ViewboxFloatingBarOpacityText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
                             <Slider x:Name="ViewboxFloatingBarOpacityValueSlider" Minimum="0.3"
                                     Maximum="1" Width="200"
                                     IsSnapToTickEnabled="True" Value="1" TickFrequency="0.05"
@@ -153,8 +175,8 @@
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Play}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding ElementName=ViewboxFloatingBarOpacityInPPTValueSlider, Path=Value, StringFormat={}{0:F2}}"
-                                       VerticalAlignment="Center" FontFamily="Consolas"/>
+                            <TextBlock x:Name="ViewboxFloatingBarOpacityInPPTText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
                             <Slider x:Name="ViewboxFloatingBarOpacityInPPTValueSlider" Minimum="0.3"
                                     Maximum="1" Width="200"
                                     IsSnapToTickEnabled="True" Value="1" TickFrequency="0.05"
@@ -174,8 +196,8 @@
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.BackToWindow}" />
                         </ui:SettingsCard.HeaderIcon>
                         <ikw:SimpleStackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding ElementName=ViewboxBlackBoardScaleTransformValueSlider, Path=Value, StringFormat={}{0:F2}}"
-                                       VerticalAlignment="Center" FontFamily="Consolas"/>
+                            <TextBlock x:Name="ViewboxBlackBoardScaleText"
+                                       VerticalAlignment="Center" FontFamily="Consolas" TextAlignment="Right"/>
                             <Slider x:Name="ViewboxBlackBoardScaleTransformValueSlider" Minimum="0.5"
                                     Maximum="1.5" Width="200"
                                     IsSnapToTickEnabled="True" Value="1" TickFrequency="0.05"
@@ -324,6 +346,46 @@
                             Icon="{x:Static ui:SegoeFluentIcons.Pin}"
                             SwitchName="ToggleSwitchEnableTrayIcon"
                             Toggled="ToggleSwitchEnableTrayIcon_Toggled" />
+
+                    <ui:SettingsCard Header="托盘左键点击">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronLeft}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ComboBox x:Name="ComboBoxTrayLeftClickAction"
+                                  SelectedIndex="0"
+                                  SelectionChanged="ComboBoxTrayLeftClickAction_SelectionChanged">
+                            <ComboBoxItem Content="打开菜单" />
+                            <ComboBoxItem Content="隐藏/显示主窗口" />
+                            <ComboBoxItem Content="临时显示主窗口" />
+                            <ComboBoxItem Content="打开设置" />
+                            <ComboBoxItem Content="禁用/启用所有快捷键" />
+                            <ComboBoxItem Content="强制全屏化" />
+                            <ComboBoxItem Content="切换浮动栏收纳模式" />
+                            <ComboBoxItem Content="重置工具栏位置" />
+                            <ComboBoxItem Content="重启软件" />
+                            <ComboBoxItem Content="退出软件" />
+                        </ComboBox>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="托盘右键点击">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ChevronRight}" />
+                        </ui:SettingsCard.HeaderIcon>
+                        <ComboBox x:Name="ComboBoxTrayRightClickAction"
+                                  SelectedIndex="0"
+                                  SelectionChanged="ComboBoxTrayRightClickAction_SelectionChanged">
+                            <ComboBoxItem Content="打开菜单" />
+                            <ComboBoxItem Content="隐藏/显示主窗口" />
+                            <ComboBoxItem Content="临时显示主窗口" />
+                            <ComboBoxItem Content="打开设置" />
+                            <ComboBoxItem Content="禁用/启用所有快捷键" />
+                            <ComboBoxItem Content="强制全屏化" />
+                            <ComboBoxItem Content="切换浮动栏收纳模式" />
+                            <ComboBoxItem Content="重置工具栏位置" />
+                            <ComboBoxItem Content="重启软件" />
+                            <ComboBoxItem Content="退出软件" />
+                        </ComboBox>
+                    </ui:SettingsCard>
 
                     <Rectangle Height="48" />
                 </ikw:SimpleStackPanel>

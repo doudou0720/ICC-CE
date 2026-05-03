@@ -13,8 +13,9 @@
     WindowStartupLocation="CenterScreen"
     ui:ThemeManager.IsThemeAware="True"
     ui:TitleBar.ExtendViewIntoTitleBar="True"
-    ui:WindowHelper.SystemBackdropType="Mica"
+    ui:WindowHelper.SystemBackdropType="None"
     ui:WindowHelper.UseModernWindowStyle="True"
+    ui:WindowHelper.CornerStyle="Round"
     ui:TitleBar.Height="48"
     mc:Ignorable="d">
 
@@ -155,9 +156,9 @@
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="SecurityPageItem"
-                            Content="安全"
+                            Content="{i18n:I18n Key=Settings_Nav_Security}"
                             Tag="SecurityPage"
-                            ToolTipService.ToolTip="安全密码与进程保护">
+                            ToolTipService.ToolTip="{i18n:I18n Key=Settings_Nav_Security_Tooltip}">
                             <ui:NavigationViewItem.Icon>
                                 <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Permissions}"/>
                             </ui:NavigationViewItem.Icon>
@@ -195,11 +196,20 @@
                         </ui:NavigationViewItem>
                         <ui:NavigationViewItem
                             x:Name="HotkeyPageItem"
-                            Content="快捷键"
+                            Content="{i18n:I18n Key=Settings_Nav_Hotkey}"
                             Tag="HotkeyPage"
-                            ToolTipService.ToolTip="快捷键设置">
+                            ToolTipService.ToolTip="{i18n:I18n Key=Settings_Nav_Hotkey_Tooltip}">
                             <ui:NavigationViewItem.Icon>
                                 <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.KeyboardStandard}"/>
+                            </ui:NavigationViewItem.Icon>
+                        </ui:NavigationViewItem>
+                        <ui:NavigationViewItem
+                            x:Name="ToolbarPageItem"
+                            Content="工具栏"
+                            Tag="ToolbarPage"
+                            ToolTipService.ToolTip="工具栏按钮排序与可见性">
+                            <ui:NavigationViewItem.Icon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Rename}"/>
                             </ui:NavigationViewItem.Icon>
                         </ui:NavigationViewItem>
                     </ui:NavigationViewItem.MenuItems>
@@ -342,6 +352,14 @@
             </ui:NavigationView.MenuItems>
 
             <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem
+                    x:Name="FriendlyLinksItem"
+                    Content="友链"
+                    Tag="FriendlyLinksPage">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Link}" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItem
                     x:Name="AboutItem"
                     Content="关于 InkCanvasForClass"
