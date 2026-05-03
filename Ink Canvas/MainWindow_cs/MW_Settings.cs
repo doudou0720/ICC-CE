@@ -20,13 +20,6 @@ namespace Ink_Canvas
     {
         #region Behavior
 
-        /// <summary>
-        /// 内部标记：是否正在内部更改更新通道
-        /// </summary>
-        private bool _isChangingUpdateChannelInternally;
-        /// <summary>内部标记：是否正在内部更改「更新包架构」（32/64 位 ZIP）</summary>
-        private bool _isChangingUpdatePackageArchInternally;
-
 
         /// <summary>
         /// 处理PowerPoint支持开关状态更改事件
@@ -829,7 +822,7 @@ namespace Ink_Canvas
             Settings.Appearance.IsEnableDisPlayNibModeToggler = false;
             Settings.Appearance.IsColorfulViewboxFloatingBar = false;
             Settings.Appearance.ViewboxFloatingBarScaleTransformValue = 1;
-            Settings.Appearance.EnableViewboxBlackBoardScaleTransform = false;
+            Settings.Appearance.ViewboxBlackBoardScaleTransformValue = 0.8;
             Settings.Appearance.IsTransparentButtonBackground = true;
             Settings.Appearance.IsShowExitButton = true;
             Settings.Appearance.IsShowEraserButton = true;
@@ -1299,7 +1292,6 @@ namespace Ink_Canvas
         private void UpdatePackageArchitectureSelector_Checked(object sender, RoutedEventArgs e)
         {
             if (!isLoaded) return;
-            if (_isChangingUpdatePackageArchInternally) return;
             if (!(sender is RadioButton radioButton) || radioButton.Tag == null) return;
 
             var newArch = string.Equals(radioButton.Tag.ToString(), "X64", StringComparison.OrdinalIgnoreCase)

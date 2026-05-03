@@ -95,7 +95,11 @@ namespace Ink_Canvas
         /// <summary>
         /// 可用的最新版本号
         /// </summary>
-        private string AvailableLatestVersion;
+        internal string AvailableLatestVersion;
+        /// <summary>
+        /// 最近一次自动检查得到的更新说明（Markdown）
+        /// </summary>
+        internal string AvailableLatestReleaseNotes;
         /// <summary>
         /// 静默更新检查定时器
         /// </summary>
@@ -588,7 +592,7 @@ namespace Ink_Canvas
                                 {
                                     // 先展开浮动栏，然后进入批注状态
                                     // UnFoldFloatingBar 方法内部会根据设置自动进入批注模式
-                                    UnFoldFloatingBar(null);
+                                    _ = UnFoldFloatingBar(null);
                                 }
                                 else
                                 {

@@ -76,6 +76,13 @@
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Shield}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="安全" Description="安全密码与进程保护"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="SecurityPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Permissions}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
                     
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="主界面" />
@@ -92,7 +99,30 @@
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Personalize}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="快捷键" Description="快捷键设置"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="HotkeyPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.KeyboardStandard}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
                     
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Text="画板" />
+                    <ui:SettingsCard Header="画板" Description="画板设置"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="CanvasPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Header="墨迹纠正" Description="墨迹纠正设置"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="InkRecognitionPage">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Draw}" />
+                        </ui:SettingsCard.HeaderIcon>
+                    </ui:SettingsCard>
+
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Text="其他" />
                     <ui:SettingsCard Header="更新" Description="更新设置"
@@ -116,17 +146,10 @@
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Header="画板" Description="画板设置"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="CanvasPage">
+                    <ui:SettingsCard Header="{i18n:I18n Key=Storage_Title}" Description="{i18n:I18n Key=Storage_NavTooltip}"
+                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="StoragePage">
                         <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Edit}" />
-                        </ui:SettingsCard.HeaderIcon>
-                    </ui:SettingsCard>
-
-                    <ui:SettingsCard Header="墨迹纠正" Description="墨迹纠正设置"
-                        IsClickEnabled="True" Click="QuickNavCard_Click" Tag="InkRecognitionPage">
-                        <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Draw}" />
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}" />
                         </ui:SettingsCard.HeaderIcon>
                     </ui:SettingsCard>
 

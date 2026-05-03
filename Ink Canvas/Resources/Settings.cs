@@ -1,3 +1,4 @@
+using Ink_Canvas.Controls.Toolbar;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,9 @@ namespace Ink_Canvas
 
         [JsonProperty("security")]
         public Security Security { get; set; } = new Security();
+
+        [JsonProperty("toolbar")]
+        public ToolbarLayoutSettings Toolbar { get; set; } = new ToolbarLayoutSettings();
     }
 
     public class Security
@@ -272,8 +276,8 @@ namespace Ink_Canvas
         public bool EnableTrayIcon { get; set; } = true;
         [JsonProperty("viewboxFloatingBarOpacityInPPTValue")]
         public double ViewboxFloatingBarOpacityInPPTValue { get; set; } = 0.5;
-        [JsonProperty("enableViewboxBlackBoardScaleTransform")]
-        public bool EnableViewboxBlackBoardScaleTransform { get; set; }
+        [JsonProperty("viewboxBlackBoardScaleTransformValue")]
+        public double ViewboxBlackBoardScaleTransformValue { get; set; } = 1;
         [JsonProperty("isTransparentButtonBackground")]
         public bool IsTransparentButtonBackground { get; set; } = true;
         [JsonProperty("isShowExitButton")]
@@ -303,7 +307,7 @@ namespace Ink_Canvas
         [JsonProperty("isShowModeFingerToggleSwitch")]
         public bool IsShowModeFingerToggleSwitch { get; set; } = true;
         [JsonProperty("theme")]
-        public int Theme { get; set; }
+        public int Theme { get; set; } = 2;
 
         // 浮动栏按钮显示控制
         [JsonProperty("useLegacyFloatingBarUI")]
@@ -581,6 +585,12 @@ namespace Ink_Canvas
         [JsonProperty("isSaveFullPageStrokes")]
         public bool IsSaveFullPageStrokes;
 
+        [JsonProperty("isUseCustomSaveFileName")]
+        public bool IsUseCustomSaveFileName { get; set; } = false;
+
+        [JsonProperty("customSaveFileNameTemplate")]
+        public string CustomSaveFileNameTemplate { get; set; } = "{datetime}";
+
         [JsonProperty("isSaveStrokesAsXML")]
         public bool IsSaveStrokesAsXML { get; set; } = false;
 
@@ -617,32 +627,32 @@ namespace Ink_Canvas
         [JsonProperty("interceptRules")]
         public Dictionary<string, bool> InterceptRules { get; set; } = new Dictionary<string, bool>
         {
-            { "SeewoWhiteboard3Floating", true },
-            { "SeewoWhiteboard5Floating", true },
-            { "SeewoWhiteboard5CFloating", true },
-            { "SeewoPincoSideBarFloating", true },
-            { "SeewoPincoDrawingFloating", true },
-            { "SeewoPincoBoardService", true },
-            { "SeewoPPTFloating", true },
-            { "AiClassFloating", true },
-            { "HiteAnnotationFloating", true },
-            { "ChangYanFloating", true },
-            { "ChangYanBrushSettings", true },
-            { "ChangYanSwipeClear", true },
-            { "ChangYanInteraction", true },
-            { "ChangYanSubjectApp", true },
-            { "ChangYanControl", true },
-            { "ChangYanCommonTools", true },
-            { "ChangYanSceneToolbar", true },
-            { "ChangYanDrawWindow", true },
-            { "ChangYanPptFloating", true },
-            { "ChangYanPptPageControl", true },
-            { "ChangYanPptGoBack", true },
-            { "ChangYanPptPreview", true },
-            { "IntelligentClassFloating", true },
-            { "IntelligentClassPptFloating", true },
-            { "SeewoDesktopAnnotationFloating", true },
-            { "SeewoDesktopSideBarFloating", true }
+            { "SeewoWhiteboard3Floating", false },
+            { "SeewoWhiteboard5Floating", false },
+            { "SeewoWhiteboard5CFloating", false },
+            { "SeewoPincoSideBarFloating", false },
+            { "SeewoPincoDrawingFloating", false },
+            { "SeewoPincoBoardService", false },
+            { "SeewoPPTFloating", false },
+            { "AiClassFloating", false },
+            { "HiteAnnotationFloating", false },
+            { "ChangYanFloating", false },
+            { "ChangYanBrushSettings", false },
+            { "ChangYanSwipeClear", false },
+            { "ChangYanInteraction", false },
+            { "ChangYanSubjectApp", false },
+            { "ChangYanControl", false },
+            { "ChangYanCommonTools", false },
+            { "ChangYanSceneToolbar", false },
+            { "ChangYanDrawWindow", false },
+            { "ChangYanPptFloating", false },
+            { "ChangYanPptPageControl", false },
+            { "ChangYanPptGoBack", false },
+            { "ChangYanPptPreview", false },
+            { "IntelligentClassFloating", false },
+            { "IntelligentClassPptFloating", false },
+            { "SeewoDesktopAnnotationFloating", false },
+            { "SeewoDesktopSideBarFloating", false }
         };
     }
 
@@ -683,6 +693,9 @@ namespace Ink_Canvas
 
         [JsonProperty("isSaveLogByDate")]
         public bool IsSaveLogByDate { get; set; } = true;
+
+        [JsonProperty("isDebugConsoleEnabled")]
+        public bool IsDebugConsoleEnabled { get; set; } = false;
 
         [JsonProperty("isEnableFullScreenHelper")]
         public bool IsEnableFullScreenHelper { get; set; }

@@ -62,7 +62,7 @@ namespace Ink_Canvas
         {
             // 根据主题选择手势图标和颜色
             bool isDarkTheme = Settings.Appearance.Theme == 1 ||
-                               (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                               (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
             bool isLightTheme = !isDarkTheme;
             string gestureIconPath = isLightTheme ? "/Resources/new-icons/gesture.png" : "/Resources/new-icons/gesture_white.png";
 
@@ -309,7 +309,7 @@ namespace Ink_Canvas
             BorderDrawShape.Visibility = Visibility.Collapsed;
             BoardBorderDrawShape.Visibility = Visibility.Collapsed;
 
-            if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is Border bgPalette)
+            if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is UIElement bgPalette)
             {
                 bgPalette.Visibility = Visibility.Collapsed;
             }
@@ -390,7 +390,7 @@ namespace Ink_Canvas
             AnimationsHelper.HideWithSlideAndFade(BoardTwoFingerGestureBorder);
 
             // 隐藏背景设置面板
-            if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is Border bgPalette)
+            if (LogicalTreeHelper.FindLogicalNode(this, "BackgroundPalette") is UIElement bgPalette)
             {
                 AnimationsHelper.HideWithSlideAndFade(bgPalette);
             }
@@ -422,7 +422,7 @@ namespace Ink_Canvas
                     SymbolIconSelect.Icon.Geometry = Geometry.Parse(GetCorrectIcon("lassoSelect", false));
 
                     bool isDarkThemeForButtons = Settings.Appearance.Theme == 1 ||
-                                                 (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                                                 (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
                     if (isDarkThemeForButtons)
                     {
                         BoardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
@@ -460,7 +460,7 @@ namespace Ink_Canvas
                 // 根据主题选择高光颜色
                 Color highlightColor;
                 bool isDarkTheme = Settings.Appearance.Theme == 1 ||
-                                   (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                                   (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
 
                 if (isDarkTheme)
                 {
@@ -531,7 +531,7 @@ namespace Ink_Canvas
                             Cursor_Icon.Icon.Geometry =
                                 Geometry.Parse(GetCorrectIcon("cursor", true));
                             bool isDarkThemeForCursor = Settings.Appearance.Theme == 1 ||
-                                                        (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                                                        (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
                             if (isDarkThemeForCursor)
                             {
                                 BoardPen.Background = new SolidColorBrush(Color.FromRgb(42, 42, 42));
@@ -1685,9 +1685,9 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="sender">发送者</param>
         /// <param name="e">鼠标按钮事件参数</param>
-        private void SymbolIconTools_MouseUp(object sender, MouseButtonEventArgs e)
+        internal void SymbolIconTools_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (BorderTools.Visibility == Visibility.Visible)
+            if (BorderTools.Visibility == Visibility.Visible || BoardBorderTools.Visibility == Visibility.Visible)
             {
                 AnimationsHelper.HideWithSlideAndFade(BorderTools);
                 AnimationsHelper.HideWithSlideAndFade(BoardBorderTools);
@@ -1695,9 +1695,15 @@ namespace Ink_Canvas
             else
             {
                 HideSubPanels();
-                UpdateBorderToolsPosition();
-                AnimationsHelper.ShowWithSlideFromBottomAndFade(BorderTools);
-                AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardBorderTools);
+                if (currentMode == 0)
+                {
+                    UpdateBorderToolsPosition();
+                    AnimationsHelper.ShowWithSlideFromBottomAndFade(BorderTools);
+                }
+                else
+                {
+                    AnimationsHelper.ShowWithSlideFromBottomAndFade(BoardBorderTools);
+                }
             }
         }
 
@@ -2787,7 +2793,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="sender">发送者</param>
         /// <param name="e">路由事件参数</param>
-        private void EraserIconByStrokes_Click(object sender, MouseButtonEventArgs e)
+        internal void EraserIconByStrokes_Click(object sender, MouseButtonEventArgs e)
         {
             // 禁用高级橡皮擦系统
             DisableEraserOverlay();
@@ -2819,7 +2825,7 @@ namespace Ink_Canvas
         /// </summary>
         /// <param name="sender">发送者</param>
         /// <param name="e">路由事件参数</param>
-        private void CursorWithDelIcon_Click(object sender, MouseButtonEventArgs e)
+        internal void CursorWithDelIcon_Click(object sender, MouseButtonEventArgs e)
         {
             SymbolIconDelete_MouseUp(sender, null);
             CursorIcon_Click(null, null);
@@ -3277,10 +3283,20 @@ namespace Ink_Canvas
         /// <param name="e">路由事件参数</param>
         public void BtnRestart_Click(object sender, RoutedEventArgs e)
         {
+            if (Settings.Advanced.IsSecondConfirmWhenShutdownApp)
+            {
+                if (MessageBox.Show("是否继续关闭 InkCanvasForClass，这将丢失当前未保存的墨迹。", "InkCanvasForClass",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.Cancel) return;
+                if (MessageBox.Show("真的狠心关闭 InkCanvasForClass吗？", "InkCanvasForClass",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Error) == MessageBoxResult.Cancel) return;
+                if (MessageBox.Show("最后确认：确定要关闭 InkCanvasForClass 吗？", "InkCanvasForClass",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
+            }
+
             Process.Start(System.Windows.Forms.Application.ExecutablePath, "-m");
             _forceCloseFromExitOrRestartButton = true;
             App.IsAppExitByUser = true;
-            // 不设置 CloseIsFromButton = true，让它也经过确认流程
+            CloseIsFromButton = true;
             Close();
         }
 
@@ -4252,7 +4268,7 @@ namespace Ink_Canvas
                 Color highlightBackgroundColor;
                 Color highlightBarColor;
                 bool isDarkTheme = Settings.Appearance.Theme == 1 ||
-                                   (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                                   (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
 
                 if (isDarkTheme)
                 {

@@ -261,7 +261,7 @@ namespace Ink_Canvas
                 Current.MainWindow.SourceInitialized -= MainWindow_SourceInitialized;
                 Current.MainWindow.SourceInitialized += MainWindow_SourceInitialized;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -283,7 +283,7 @@ namespace Ink_Canvas
 
                 RegisterMainWindowDestroyHook();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -775,10 +775,9 @@ namespace Ink_Canvas
             // 根据设置决定是否显示启动画面
             if (ShouldShowSplashScreen() && !IsLaunchByFileOrUri(e.Args))
             {
-                await Task.Delay(100);
                 ShowSplashScreen();
                 SetSplashMessage(Strings.GetString("Splash_Starting"));
-                SetSplashProgress(20);
+                SetSplashProgress(25);
 
                 // 强制刷新UI，确保启动画面显示
                 Application.Current.Dispatcher.Invoke(() => { }, DispatcherPriority.Render);
@@ -815,24 +814,12 @@ namespace Ink_Canvas
                 LogHelper.WriteLogToFile("App | 检测到最终应用启动（更新后的应用）");
             }
 
-            // 释放IACore相关DLL
-            if (_isSplashScreenShown)
-            {
-                SetSplashMessage("正在初始化组件...");
-                SetSplashProgress(40);
-            }
-
-            // 释放UIAccess DLL
-            if (_isSplashScreenShown)
-            {
-                SetSplashMessage("正在初始化组件...");
-                SetSplashProgress(50);
-            }
 
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在加载配置...");
-                SetSplashProgress(60);
+                SetSplashProgress(50);
+                await Task.Delay(100);
             }
 
             // 处理更新模式启动
@@ -868,7 +855,7 @@ namespace Ink_Canvas
                     LogHelper.WriteLogToFile($"App | 清理更新标记文件失败: {ex.Message}", LogHelper.LogType.Warning);
                 }
 
-                Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
                     try
                     {
@@ -1105,7 +1092,7 @@ namespace Ink_Canvas
             if (_isSplashScreenShown)
             {
                 SetSplashMessage("正在初始化主界面...");
-                SetSplashProgress(80);
+                SetSplashProgress(75);
             }
             var mainWindow = new MainWindow();
             MainWindow = mainWindow;
@@ -1150,16 +1137,14 @@ namespace Ink_Canvas
 
                 if (_isSplashScreenShown)
                 {
-                    SetSplashMessage("完成初始化...");
-                    SetSplashProgress(80);
-                    Task.Delay(300).ContinueWith(_ =>
+                    SetSplashMessage("启动完成！");
+                    SetSplashProgress(100);
+                    Task.Delay(100).ContinueWith(_ =>
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            SetSplashMessage("启动完成！");
-                            SetSplashProgress(100);
                             // 延迟关闭启动画面，让用户看到完成消息
-                            Task.Delay(500).ContinueWith(__ =>
+                            Task.Delay(100).ContinueWith(__ =>
                             {
                                 Dispatcher.Invoke(() => CloseSplashScreen());
                             });
@@ -1174,7 +1159,7 @@ namespace Ink_Canvas
                 await Task.Delay(600);
                 Dispatcher.Invoke(() => _taskbar?.ForceCreate());
             });
-            Dispatcher.BeginInvoke(new Action(() =>
+            _ = Dispatcher.BeginInvoke(new Action(() =>
             {
                 if (_pendingLocalizedResourceSet != null)
                 {
@@ -1189,7 +1174,7 @@ namespace Ink_Canvas
             {
                 LogHelper.WriteLogToFile($"App | 处理启动URI参数: {startupUriArg}", LogHelper.LogType.Event);
                 // 延迟一点执行，确保窗口初始化完成
-                Task.Delay(1000).ContinueWith(_ =>
+                _ = Task.Delay(1000).ContinueWith(_ =>
                 {
                     mainWindow.Dispatcher.Invoke(() =>
                     {
@@ -1219,11 +1204,18 @@ namespace Ink_Canvas
 
                 try
                 {
-                    UIAccessDllExtractor.ExtractUIAccessDlls();
+                    var shapeMode = ShapeRecognitionRouter.FromSettingsInt(
+                        Ink_Canvas.Windows.SettingsViews.Helpers.SettingsManager.Settings?.InkToShape?.ShapeRecognitionEngine ?? 0);
+                    if (!ShapeRecognitionRouter.ResolveUseWinRt(shapeMode))
+                    {
+                        LogHelper.WriteLogToFile("启动 IACore IPC 辅助进程");
+                        bool ipcStarted = IpcIACoreClient.Instance.Start();
+                        LogHelper.WriteLogToFile($"IACore IPC 辅助进程{(ipcStarted ? "启动成功" : "启动失败")}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.WriteLogToFile($"释放UIAccess DLL时出错: {ex.Message}", LogHelper.LogType.Error);
+                    LogHelper.WriteLogToFile($"启动 IACore IPC 辅助进程时出错: {ex.Message}", LogHelper.LogType.Error);
                 }
 
                 try
@@ -1601,6 +1593,13 @@ namespace Ink_Canvas
         private void App_Exit(object sender, ExitEventArgs e)
         {
             CleanupTerminationMonitoring();
+
+            try
+            {
+                IpcIACoreClient.Instance.Dispose();
+            }
+            catch { }
+
             // 卸载所有插件
             try
             {

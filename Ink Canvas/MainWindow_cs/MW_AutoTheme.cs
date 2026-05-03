@@ -1,3 +1,4 @@
+using Ink_Canvas.Helpers;
 using iNKORE.UI.WPF.Modern;
 using Microsoft.Win32;
 using System;
@@ -152,7 +153,7 @@ namespace Ink_Canvas
         private bool IsCurrentThemeDark()
         {
             return Settings.Appearance.Theme == 1 ||
-                   (Settings.Appearance.Theme == 2 && !IsSystemThemeLight());
+                   (Settings.Appearance.Theme == 2 && !ThemeHelper.IsSystemThemeLight());
         }
 
         private void RefreshFloatingBarButtonColors()
@@ -246,25 +247,9 @@ namespace Ink_Canvas
                     SetTheme(ThemeDark);
                     break;
                 case 2:
-                    SetTheme(IsSystemThemeLight() ? ThemeLight : ThemeDark);
+                    SetTheme(ThemeHelper.IsSystemThemeLightLegacy() ? ThemeLight : ThemeDark);
                     break;
             }
-        }
-
-        private bool IsSystemThemeLight()
-        {
-            try
-            {
-                var registryKey = Registry.CurrentUser;
-                var themeKey = registryKey.OpenSubKey("software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
-                if (themeKey != null)
-                {
-                    int keyValue = (int)themeKey.GetValue("SystemUsesLightTheme");
-                    return keyValue == 1;
-                }
-            }
-            catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex); }
-            return false;
         }
 
         private void AutoSwitchFloatingBarIconForTheme(string theme)

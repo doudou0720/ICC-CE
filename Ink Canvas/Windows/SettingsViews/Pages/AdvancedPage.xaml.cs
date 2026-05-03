@@ -92,7 +92,9 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
         private void TouchMultiplierSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (!_isLoaded) return;
-            SettingsManager.Settings.Advanced.TouchMultiplier = e.NewValue;
+            var val = Math.Round(TouchMultiplierSlider.Value, 2);
+            TouchMultiplierSlider.Value = val;
+            SettingsManager.Settings.Advanced.TouchMultiplier = val;
             SettingsManager.SaveSettingsToFile();
         }
 
@@ -389,7 +391,7 @@ namespace Ink_Canvas.Windows.SettingsViews.Pages
                 Content = content,
                 PrimaryButtonText = "保存",
                 SecondaryButtonText = "取消",
-                Owner = GetMainWindow()
+                Owner = Window.GetWindow(this) ?? GetMainWindow()
             };
             var result = await dialog.ShowAsync();
             if (result != ContentDialogResult.Primary) return;

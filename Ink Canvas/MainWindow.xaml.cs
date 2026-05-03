@@ -1,3 +1,5 @@
+using Ink_Canvas.Controls;
+using Ink_Canvas.Controls.Toolbar;
 using Ink_Canvas.Helpers;
 using Ink_Canvas.Windows;
 using Ink_Canvas.Windows.SettingsViews.Helpers;
@@ -10,7 +12,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,17 +40,11 @@ namespace Ink_Canvas
 {
     public partial class MainWindow : Window
     {
-        [DllImport("UIAccessDLL_x86.dll", EntryPoint = "PrepareUIAccess", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Int32 PrepareUIAccessX86();
-
-        [DllImport("UIAccessDLL_x64.dll", EntryPoint = "PrepareUIAccess", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Int32 PrepareUIAccessX64();
-
         // 每一页一个Canvas对象
         private List<System.Windows.Controls.Canvas> whiteboardPages = new List<System.Windows.Controls.Canvas>();
         private int currentPageIndex;
         private System.Windows.Controls.Canvas currentCanvas;
-        private AutoUpdateHelper.UpdateLineGroup AvailableLatestLineGroup;
+        internal AutoUpdateHelper.UpdateLineGroup AvailableLatestLineGroup;
 
         // 全局快捷键管理器
         private GlobalHotkeyManager _globalHotkeyManager;
@@ -79,6 +74,14 @@ namespace Ink_Canvas
         private static readonly object _cursorLock = new object();
 
         internal static DateTime? TrayTemporaryShowUntilUtc;
+
+        // Phase 1: Cursor_Icon / Pen_Icon 原为 XAML 自动生成字段，迁移到 ToolbarRegistry 动态注入后
+        // 由 ToolbarHost 在 Window_Loaded 中回填。外部代码 (MW_AutoTheme / MW_FloatingBarIcons 等)
+        // 以原字段名继续访问，无需修改。
+        internal ToolbarImageButton Cursor_Icon { get; private set; }
+        internal ToolbarImageButton Pen_Icon { get; private set; }
+
+        internal ToolbarHost ToolbarHost { get; private set; }
 
         #region Window Initialization
 
@@ -1168,7 +1171,6 @@ namespace Ink_Canvas
 
         public string _lastAppliedProfileName;
         private bool isLoaded;
-        private bool _suppressChickenSoupSourceSelectionChanged;
         private bool forcePointEraser;
         private bool _pendingStartupAutoUpdateCheck;
         private bool _sliderTouchSupportInitialized;
@@ -1182,16 +1184,22 @@ namespace Ink_Canvas
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             loadPenCanvas();
+            // 工具栏插件化按钮先注入到容器，确保 LoadSettings 内部对 Cursor_Icon / Pen_Icon 等的访问非空。
+            // Settings.Toolbar 此时尚为默认值（全部可见），与旧 XAML 行为一致。
+            InitializeToolbarPlugins();
             //加载设置
             LoadSettings(true);
             ApplyLanguageFromSettings();
 
-            _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
+            // 启动时根据设置恢复调试控制台显示状态
+            if (Settings?.Advanced != null && Settings.Advanced.IsDebugConsoleEnabled)
+            {
+                Helpers.DebugConsoleManager.Show();
+            }
 
             LoadCustomBackgroundColor();
             SetWindowMode();
 
-            // HasNewUpdateWindow hasNewUpdateWindow = new HasNewUpdateWindow();
             // 根据设置应用主题
             switch (Settings.Appearance.Theme)
             {
@@ -1204,7 +1212,7 @@ namespace Ink_Canvas
                     SetTheme("Dark");
                     break;
                 case 2: // 跟随系统
-                    if (IsSystemThemeLight())
+                    if (ThemeHelper.IsSystemThemeLight())
                     {
                         ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
                         SetTheme("Light");
@@ -1286,11 +1294,6 @@ namespace Ink_Canvas
 
             // 应用无焦点模式设置
             ApplyNoFocusMode();
-            // 应用窗口置顶设置
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                ApplyAlwaysOnTop();
-            }), DispatcherPriority.ApplicationIdle);
 
             // 设置UIA置顶状态
             App.IsUIAccessTopMostEnabled = Settings.Advanced.EnableUIAccessTopMost;
@@ -1300,18 +1303,6 @@ namespace Ink_Canvas
             }
 
             _ = RunDeferredStartupPhaseBAsync();
-
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                LoadInkFadeSettings();
-                LoadBrushAutoRestoreSettings();
-            }), DispatcherPriority.ApplicationIdle);
-
-            // 初始化墨迹渐隐管理器
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                InitializeInkFadeManager();
-            }), DispatcherPriority.ApplicationIdle);
 
             // 处理命令行参数中的文件路径
             HandleCommandLineFileOpen();
@@ -1410,12 +1401,6 @@ namespace Ink_Canvas
                     };
                 }
             }), DispatcherPriority.Loaded);
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (_sliderTouchSupportInitialized) return;
-                AddTouchSupportToSliders();
-                _sliderTouchSupportInitialized = true;
-            }), DispatcherPriority.ApplicationIdle);
         }
 
         private void ApplyLanguageFromSettings()
@@ -1834,6 +1819,7 @@ namespace Ink_Canvas
             var (remoteVersion, lineGroup, apiReleaseNotes) = await AutoUpdateHelper.CheckForUpdates(Settings.Startup.UpdateChannel);
             AvailableLatestVersion = remoteVersion;
             AvailableLatestLineGroup = lineGroup;
+            AvailableLatestReleaseNotes = apiReleaseNotes;
 
             // 声明下载状态变量，用于整个方法
             bool isDownloadSuccessful = false;
@@ -1870,9 +1856,6 @@ namespace Ink_Canvas
                     SaveSettingsToFile();
                 }
 
-                // 获取当前版本
-                string currentVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
                 // 如果启用了静默更新，则自动下载更新而不显示提示
                 if (Settings.Startup.IsAutoUpdateWithSilence)
                 {
@@ -1896,121 +1879,10 @@ namespace Ink_Canvas
                     return;
                 }
 
-                // 如果没有启用静默更新，则显示常规更新窗口
-                string releaseDate = DateTime.Now.ToString("yyyy年MM月dd日");
-
-                // 从服务器获取更新日志
-                string releaseNotes = await AutoUpdateHelper.GetUpdateLog(Settings.Startup.UpdateChannel);
-
-                // 如果获取失败，使用默认文本
-                if (string.IsNullOrEmpty(releaseNotes))
-                {
-                    releaseNotes = $@"# InkCanvasForClass v{AvailableLatestVersion}更新
-                
-                    无法获取更新日志，但新版本已准备就绪。";
-                }
-
-                // 创建并显示更新窗口
-                HasNewUpdateWindow updateWindow = new HasNewUpdateWindow(currentVersion, AvailableLatestVersion, releaseDate, releaseNotes);
-                updateWindow.Owner = this;
-                bool? dialogResult = updateWindow.ShowDialog();
-
-                // 如果窗口被关闭但没有点击按钮，则不执行任何操作
-                if (dialogResult != true)
-                {
-                    LogHelper.WriteLogToFile("AutoUpdate | Update dialog closed without selection");
-                    return;
-                }
-
-                // 不再从更新窗口获取自动更新设置
-
-                // 根据用户选择处理更新
-                switch (updateWindow.Result)
-                {
-                    case HasNewUpdateWindow.UpdateResult.UpdateNow:
-                        // 立即更新：显示下载进度，下载完成后立即安装
-                        LogHelper.WriteLogToFile("AutoUpdate | User chose to update now");
-
-                        // 显示下载进度提示
-                        MessageBox.Show("开始下载更新，请稍候...", "正在更新", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                        // 下载更新文件，使用多线路组下载功能
-                        isDownloadSuccessful = await DownloadUpdateWithFallback(AvailableLatestVersion, AvailableLatestLineGroup, Settings.Startup.UpdateChannel);
-
-                        if (isDownloadSuccessful)
-                        {
-                            // 下载成功，提示用户准备安装
-                            MessageBoxResult result = MessageBox.Show("更新已下载完成，点击确定后将关闭软件并安装新版本！", "安装更新", MessageBoxButton.OKCancel, MessageBoxImage.Information);
-
-                            // 只有当用户点击确定按钮后才关闭软件
-                            if (result == MessageBoxResult.OK)
-                            {
-                                // 设置为用户主动退出，避免被看门狗判定为崩溃
-                                App.IsAppExitByUser = true;
-
-                                // 准备批处理脚本
-                                AutoUpdateHelper.InstallNewVersionApp(AvailableLatestVersion, true);  // 修改为静默模式，避免重复启动进程
-
-                                // 关闭软件，让安装程序接管
-                                Application.Current.Shutdown();
-                            }
-                            else
-                            {
-                                LogHelper.WriteLogToFile("AutoUpdate | User cancelled update installation");
-                            }
-                        }
-                        else
-                        {
-                            // 下载失败
-                            MessageBox.Show("更新下载失败，请检查网络连接后重试。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                        break;
-
-                    case HasNewUpdateWindow.UpdateResult.UpdateLater:
-                        // 稍后更新：静默下载，在软件关闭时自动安装
-                        LogHelper.WriteLogToFile("AutoUpdate | User chose to update later");
-
-                        // 不管设置如何，都进行下载，使用多线路组下载功能
-                        isDownloadSuccessful = await DownloadUpdateWithFallback(AvailableLatestVersion, AvailableLatestLineGroup, Settings.Startup.UpdateChannel);
-
-                        if (isDownloadSuccessful)
-                        {
-                            LogHelper.WriteLogToFile("AutoUpdate | Update downloaded successfully, will install when application closes");
-
-                            // 设置标志，在应用程序关闭时安装
-                            Settings.Startup.IsAutoUpdate = true;
-                            Settings.Startup.IsAutoUpdateWithSilence = true;
-
-                            // 启动检查定时器
-                            timerCheckAutoUpdateWithSilence.Start();
-
-                            // 通知用户
-                            MessageBox.Show("更新已下载完成，将在软件关闭时自动安装。", "更新已准备就绪", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                        else
-                        {
-                            LogHelper.WriteLogToFile("AutoUpdate | Update download failed", LogHelper.LogType.Error);
-                            MessageBox.Show("更新下载失败，请检查网络连接后重试。", "下载失败", MessageBoxButton.OK, MessageBoxImage.Error);
-                        }
-                        break;
-
-                    case HasNewUpdateWindow.UpdateResult.SkipVersion:
-                        // 跳过该版本：记录到设置中
-                        LogHelper.WriteLogToFile($"AutoUpdate | User chose to skip version {AvailableLatestVersion}");
-
-                        // 记录要跳过的版本号
-                        Settings.Startup.SkippedVersion = AvailableLatestVersion;
-
-                        // 保存设置到文件
-                        SaveSettingsToFile();
-
-                        // 通知用户
-                        MessageBox.Show($"已设置跳过版本 {AvailableLatestVersion}，在下次发布新版本之前不会再提示更新。",
-                                       "已跳过此版本",
-                                       MessageBoxButton.OK,
-                                       MessageBoxImage.Information);
-                        break;
-                }
+                // 如果没有启用静默更新，则记录日志并依赖 Toast 通知用户。
+                // 用户可在 设置 → 更新 中查看版本说明并选择更新方式。
+                LogHelper.WriteLogToFile(
+                    $"AutoUpdate | New version {AvailableLatestVersion} available; user notified via toast, will act from settings page.");
             }
             else if (hasValidLineGroup)
             {
@@ -2259,9 +2131,10 @@ namespace Ink_Canvas
 
         private void HistoryRollbackButton_Click(object sender, RoutedEventArgs e)
         {
-            var win = new HistoryRollbackWindow(Settings.Startup.UpdateChannel);
-            win.Owner = this;
-            win.ShowDialog();
+            var settingsWindow = new Windows.SettingsViews.SettingsWindow();
+            settingsWindow.Owner = this;
+            settingsWindow.Show();
+            settingsWindow.NavigateToPage("UpdatePage");
         }
 
         [DllImport("user32.dll")]
@@ -2413,6 +2286,27 @@ namespace Ink_Canvas
             InitializeFloatingWindowInterceptor();
             InitializeGlobalHotkeyManager();
 
+            _ = TelemetryUploader.UploadTelemetryIfNeededAsync();
+
+            _ = Dispatcher.BeginInvoke(new Action(() =>
+            {
+                ApplyAlwaysOnTop();
+            }), DispatcherPriority.ApplicationIdle);
+
+            _ = Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LoadInkFadeSettings();
+                LoadBrushAutoRestoreSettings();
+                InitializeInkFadeManager();
+            }), DispatcherPriority.ApplicationIdle);
+
+            _ = Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_sliderTouchSupportInitialized) return;
+                AddTouchSupportToSliders();
+                _sliderTouchSupportInitialized = true;
+            }), DispatcherPriority.ApplicationIdle);
+
             try
             {
                 string savePath = Settings.Automation.AutoSavedStrokesLocation;
@@ -2475,7 +2369,7 @@ namespace Ink_Canvas
             {
                 _pendingStartupAutoUpdateCheck = false;
                 await Task.Delay(3000);
-                Dispatcher.BeginInvoke(new Action(() =>
+                _ = Dispatcher.BeginInvoke(new Action(() =>
                 {
                     LogHelper.WriteLogToFile("AutoUpdate | Running deferred auto-update check at UI idle");
                     AutoUpdate();
@@ -2563,29 +2457,6 @@ namespace Ink_Canvas
             }
         }
 
-        /// <summary>
-        /// 打开快捷键设置窗口
-        /// </summary>
-        private void OpenHotkeySettingsWindow()
-        {
-            try
-            {
-                if (_globalHotkeyManager == null)
-                {
-                    MessageBox.Show("快捷键管理器尚未初始化，请稍后重试。", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                var hotkeySettingsWindow = new HotkeySettingsWindow(this, _globalHotkeyManager);
-                hotkeySettingsWindow.Owner = this;
-                hotkeySettingsWindow.ShowDialog();
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLogToFile($"打开快捷键设置窗口时出错: {ex.Message}", LogHelper.LogType.Error);
-                MessageBox.Show($"打开快捷键设置窗口时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
         #endregion
 
         #region 展台/白板分辨率切换
@@ -3394,7 +3265,7 @@ namespace Ink_Canvas
                         ViewboxFloatingBar.Opacity = 1.0;
                         break;
                     case 2: // 跟随系统
-                        if (IsSystemThemeLight())
+                        if (ThemeHelper.IsSystemThemeLight())
                         {
                             SetTheme("Light", true);
                             ViewboxFloatingBar.Opacity = 1.0;
